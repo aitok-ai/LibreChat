@@ -47,6 +47,10 @@ const convoSchema = mongoose.Schema(
     invocationId: {
       type: Number,
       default: 1
+    },
+    deleted: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }
