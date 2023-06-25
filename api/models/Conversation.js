@@ -1,6 +1,6 @@
 // const { Conversation } = require('./plugins');
 const Conversation = require('./schema/convoSchema');
-const { getMessages, deleteMessages } = require('./Message');
+const { getMessages, tagMessages } = require('./Message');
 
 const getConvo = async (user, conversationId) => {
   try {
@@ -121,8 +121,12 @@ module.exports = {
   deleteConvos: async (user, filter) => {
     let toRemove = await Conversation.find({ ...filter, user }).select('conversationId');
     const ids = toRemove.map((instance) => instance.conversationId);
-    let deleteCount = await Conversation.deleteMany({ ...filter, user }).exec();
-    deleteCount.messages = await deleteMessages({ conversationId: { $in: ids } });
+
+    // let deleteCount = await Conversation.deleteMany({ ...filter, user }).exec();
+    // deleteCount.messages = await deleteMessages({ conversationId: { $in: ids } });
+
+    let deleteCount = await Conversation.findOneAndUpdate({ ...filter, user }, {deleted: true}).exec();
+    deleteCount.messages = await tagMessages({ conversationId: { $in: ids } }, true);
     return deleteCount;
   }
 };

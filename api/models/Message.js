@@ -17,6 +17,7 @@ module.exports = {
     plugin = null,
     model = null,
     senderId = null,
+    deleted = false,
   }) {
     try {
       // may also need to update the conversation here
@@ -35,6 +36,7 @@ module.exports = {
           plugin,
           model,
           senderId,
+          deleted,
         },
         { upsert: true, new: true }
       );
@@ -92,6 +94,15 @@ module.exports = {
     } catch (err) {
       console.error(`Error counting messages: ${err}`);
       throw new Error('Failed to count messages.');
+    }
+  },
+
+  async tagMessages(filter, deleted) {
+    try {
+      return await Message.updateMany({filter}, {deleted});
+    } catch (err) {
+      console.error(`Error tagging messages: ${err}`);
+      throw new Error(`Failed to tag messages.`);
     }
   },
 };
