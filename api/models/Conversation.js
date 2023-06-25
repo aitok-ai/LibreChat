@@ -34,7 +34,7 @@ module.exports = {
     try {
       const totalConvos = (await Conversation.countDocuments({ user })) || 1;
       const totalPages = Math.ceil(totalConvos / pageSize);
-      const convos = await Conversation.find({ user })
+      const convos = await Conversation.find({ user, deleted:false })
         .sort({ createdAt: -1, created: -1 })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
