@@ -78,7 +78,7 @@ const messageSchema = mongoose.Schema(
         required: false
       }
     },
-    deleted: {
+    isDeleted: {
       type: Boolean,
       default: false
     }

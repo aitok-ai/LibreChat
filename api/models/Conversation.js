@@ -125,8 +125,8 @@ module.exports = {
     // let deleteCount = await Conversation.deleteMany({ ...filter, user }).exec();
     // deleteCount.messages = await deleteMessages({ conversationId: { $in: ids } });
 
-    let deleteCount = await Conversation.findOneAndUpdate({ ...filter, user }, {deleted: true}).exec();
-    deleteCount.messages = await tagMessages({ conversationId: { $in: ids } }, true);
+    let deleteCount = await Conversation.findOneAndUpdate({ ...filter, user }, {isDeleted: false}).exec();
+    deleteCount.messages = await tagMessages({ conversationId: { $in: ids } }, false);
     return deleteCount;
   }
 };

@@ -17,7 +17,7 @@ module.exports = {
     plugin = null,
     model = null,
     senderId = null,
-    deleted = false,
+    isDeleted = false,
   }) {
     try {
       // may also need to update the conversation here
@@ -36,7 +36,7 @@ module.exports = {
           plugin,
           model,
           senderId,
-          deleted,
+          isDeleted,
         },
         { upsert: true, new: true }
       );
@@ -99,7 +99,8 @@ module.exports = {
 
   async tagMessages(filter, deleted) {
     try {
-      return await Message.updateMany({filter}, {$set: {deleted: deleted}}).exec();
+      const res = await Message.updateMany({filter}, {isDeleted: deleted}).exec();
+      return res;
     } catch (err) {
       console.error(`Error tagging messages: ${err}`);
       throw new Error(`Failed to tag messages.`);

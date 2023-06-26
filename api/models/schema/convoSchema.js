@@ -48,7 +48,7 @@ const convoSchema = mongoose.Schema(
       type: Number,
       default: 1
     },
-    deleted: {
+    isDeleted: {
       type: Boolean,
       default: false
     }
