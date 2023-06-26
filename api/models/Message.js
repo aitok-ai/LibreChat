@@ -99,7 +99,7 @@ module.exports = {
 
   async tagMessages(filter, deleted) {
     try {
-      return await Message.updateMany({filter}, {deleted});
+      return await Message.updateMany({filter}, {$set: {deleted: deleted}}).exec();
     } catch (err) {
       console.error(`Error tagging messages: ${err}`);
       throw new Error(`Failed to tag messages.`);
