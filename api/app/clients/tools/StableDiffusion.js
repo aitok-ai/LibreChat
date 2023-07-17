@@ -10,7 +10,7 @@ class StableDiffusionAPI extends Tool {
     super();
     this.name = 'stable-diffusion';
     this.url = fields.SD_WEBUI_URL || this.getServerURL();
-    this.description = `You can generate images with 'stable-diffusion'. This tool is exclusively for visual content.
+    this.description = `You can generate image(s) with 'stable-diffusion'. This tool is exclusively for visual content.
 Guidelines:
 - Visually describe the moods, details, structures, styles, and/or proportions of the image. Remember, the focus is on visual attributes.
 - Craft your input by "showing" and not "telling" the imagery. Think in terms of what you'd want to see in a photograph or a painting.
