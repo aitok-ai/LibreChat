@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { getResponseSender } = require('../endpoints/schemas');
 const { validateTools } = require('../../../app');
-const { addTitle } = require('../endpoints/openAI');
 const { initializeClient } = require('../endpoints/gptPlugins');
 const { saveMessage, getConvoTitle, getConvo } = require('../../../models');
 const { sendMessage, createOnProgress, formatSteps, formatAction } = require('../../utils');
@@ -27,20 +26,20 @@ router.post(
   async (req, res) => {
     let {
       text,
+      generation,
       endpointOption,
       conversationId,
+      responseMessageId,
       parentMessageId = null,
       overrideParentMessageId = null,
     } = req.body;
-    console.log('ask log');
+    console.log('edit log');
     console.dir({ text, conversationId, endpointOption }, { depth: null });
     let metadata;
     let userMessage;
-    let userMessageId;
-    let responseMessageId;
     let lastSavedTimestamp = 0;
     let saveDelay = 100;
-    const newConvo = !conversationId;
+    const userMessageId = parentMessageId;
     const user = req.user.id;
 
     const plugin = {
@@ -51,20 +50,14 @@ router.post(
     };
 
     const addMetadata = (data) => (metadata = data);
-    const getIds = (data) => {
-      userMessage = data.userMessage;
-      userMessageId = userMessage.messageId;
-      responseMessageId = data.responseMessageId;
-      if (!conversationId) {
-        conversationId = data.conversationId;
-      }
-    };
+    const getIds = (data) => (userMessage = data.userMessage);
 
     const {
       onProgress: progressCallback,
       sendIntermediateMessage,
       getPartialText,
     } = createOnProgress({
+      generation,
       onProgress: ({ text: partialText }) => {
         const currentTimestamp = Date.now();
 
@@ -131,12 +124,14 @@ router.post(
 
     try {
       endpointOption.tools = await validateTools(user, endpointOption.tools);
-      const { client, azure, openAIApiKey } = initializeClient(req, endpointOption);
+      const { client } = initializeClient(req, endpointOption);
 
       let response = await client.sendMessage(text, {
         user,
+        isEdited: true,
         conversationId,
         parentMessageId,
+        responseMessageId,
         overrideParentMessageId,
         getIds,
         onAgentAction,
@@ -174,14 +169,6 @@ router.post(
         responseMessage: response,
       });
       res.end();
-      addTitle(req, {
-        text,
-        newConvo,
-        response,
-        openAIApiKey,
-        parentMessageId,
-        azure: !!azure,
-      });
     } catch (error) {
       const partialText = getPartialText();
       handleAbortError(res, req, error, {

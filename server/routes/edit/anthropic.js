@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getResponseSender } = require('../endpoints/schemas');
-const { sendMessage, createOnProgress } = require('../../utils');
-const { addTitle, initializeClient } = require('../endpoints/openAI');
-const { saveMessage, getConvoTitle, getConvo } = require('../../../models');
+const { initializeClient } = require('../endpoints/anthropic');
 const {
   handleAbort,
   createAbortController,
@@ -13,6 +11,8 @@ const {
   validateEndpoint,
   buildEndpointOption,
 } = require('../../middleware');
+const { saveMessage, getConvoTitle, getConvo } = require('../../../models');
+const { sendMessage, createOnProgress } = require('../../utils');
 
 router.post('/abort', requireJwtAuth, handleAbort());
 
@@ -25,37 +25,28 @@ router.post(
   async (req, res) => {
     let {
       text,
+      generation,
       endpointOption,
       conversationId,
+      responseMessageId,
       parentMessageId = null,
       overrideParentMessageId = null,
     } = req.body;
-    console.log('ask log');
+    console.log('edit log');
     console.dir({ text, conversationId, endpointOption }, { depth: null });
     let metadata;
     let userMessage;
-    let userMessageId;
-    let responseMessageId;
     let lastSavedTimestamp = 0;
     let saveDelay = 100;
-    const newConvo = !conversationId;
-    const user = req.user.id;
+    const userMessageId = parentMessageId;
 
     const addMetadata = (data) => (metadata = data);
-
-    const getIds = (data) => {
-      userMessage = data.userMessage;
-      userMessageId = userMessage.messageId;
-      responseMessageId = data.responseMessageId;
-      if (!conversationId) {
-        conversationId = data.conversationId;
-      }
-    };
+    const getIds = (data) => (userMessage = data.userMessage);
 
     const { onProgress: progressCallback, getPartialText } = createOnProgress({
+      generation,
       onProgress: ({ text: partialText }) => {
         const currentTimestamp = Date.now();
-
         if (currentTimestamp - lastSavedTimestamp > saveDelay) {
           lastSavedTimestamp = currentTimestamp;
           saveMessage({
@@ -64,7 +55,6 @@ router.post(
             conversationId,
             parentMessageId: overrideParentMessageId ?? userMessageId,
             text: partialText,
-            model: endpointOption.modelOptions.model,
             unfinished: true,
             cancelled: false,
             error: false,
@@ -76,57 +66,53 @@ router.post(
         }
       },
     });
-
-    const getAbortData = () => ({
-      sender: getResponseSender(endpointOption),
-      conversationId,
-      messageId: responseMessageId,
-      parentMessageId: overrideParentMessageId ?? userMessageId,
-      text: getPartialText(),
-      userMessage,
-    });
-
-    const { abortController, onStart } = createAbortController(
-      res,
-      req,
-      endpointOption,
-      getAbortData,
-    );
-
     try {
-      const { client, openAIApiKey } = initializeClient(req, endpointOption);
+      const getAbortData = () => ({
+        conversationId,
+        messageId: responseMessageId,
+        sender: getResponseSender(endpointOption),
+        parentMessageId: overrideParentMessageId ?? userMessageId,
+        text: getPartialText(),
+        userMessage,
+      });
+
+      const { abortController, onStart } = createAbortController(
+        res,
+        req,
+        endpointOption,
+        getAbortData,
+      );
+
+      const { client } = initializeClient(req, endpointOption);
 
       let response = await client.sendMessage(text, {
-        user,
-        parentMessageId,
+        user: req.user.id,
+        isEdited: true,
         conversationId,
+        parentMessageId,
+        responseMessageId,
         overrideParentMessageId,
+        ...endpointOption,
+        onProgress: progressCallback.call(null, {
+          res,
+          text,
+          parentMessageId: overrideParentMessageId ?? userMessageId,
+        }),
         getIds,
         onStart,
         addMetadata,
         abortController,
-        onProgress: progressCallback.call(null, {
-          res,
-          text,
-          parentMessageId: overrideParentMessageId || userMessageId,
-        }),
       });
-
-      if (overrideParentMessageId) {
-        response.parentMessageId = overrideParentMessageId;
-      }
 
       if (metadata) {
         response = { ...response, ...metadata };
       }
 
-      console.log(
-        'promptTokens, completionTokens:',
-        response.promptTokens,
-        response.completionTokens,
-      );
-      await saveMessage(response);
+      if (overrideParentMessageId) {
+        response.parentMessageId = overrideParentMessageId;
+      }
 
+      await saveMessage(response);
       sendMessage(res, {
         title: await getConvoTitle(req.user.id, conversationId),
         final: true,
@@ -136,14 +122,7 @@ router.post(
       });
       res.end();
 
-      addTitle(req, {
-        text,
-        newConvo,
-        response,
-        openAIApiKey,
-        parentMessageId,
-        azure: endpointOption.endpoint === 'azureOpenAI',
-      });
+      // TODO: add anthropic titling
     } catch (error) {
       const partialText = getPartialText();
       handleAbortError(res, req, error, {
