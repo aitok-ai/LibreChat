@@ -1,21 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const { getResponseSender } = require('~/server/services/Endpoints');
-const { initializeClient } = require('~/server/services/Endpoints/openAI');
-const { saveMessage, getConvoTitle, getConvo } = require('~/models');
 const { sendMessage, createOnProgress } = require('~/server/utils');
-const {
-  handleAbort,
-  createAbortController,
-  handleAbortError,
-  setHeaders,
-  validateEndpoint,
-  buildEndpointOption,
-} = require('~/server/middleware');
+const { saveMessage, getConvoTitle, getConvo } = require('~/models');
+const { getResponseSender } = require('~/server/services/Endpoints');
+const { createAbortController, handleAbortError } = require('~/server/middleware');
 
-router.post('/abort', handleAbort());
-
-router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, res) => {
+const EditController = async (req, res, next, initializeClient) => {
   let {
     text,
     generation,
@@ -54,16 +42,14 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
     generation,
     onProgress: ({ text: partialText }) => {
       const currentTimestamp = Date.now();
-
       if (currentTimestamp - lastSavedTimestamp > saveDelay) {
         lastSavedTimestamp = currentTimestamp;
         saveMessage({
           messageId: responseMessageId,
           sender,
           conversationId,
-          parentMessageId: overrideParentMessageId || userMessageId,
+          parentMessageId: overrideParentMessageId ?? userMessageId,
           text: partialText,
-          model: endpointOption.modelOptions.model,
           unfinished: true,
           cancelled: false,
           isEdited: true,
@@ -77,20 +63,19 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
       }
     },
   });
-
-  const getAbortData = () => ({
-    sender,
-    conversationId,
-    messageId: responseMessageId,
-    parentMessageId: overrideParentMessageId ?? userMessageId,
-    text: getPartialText(),
-    userMessage,
-    promptTokens,
-  });
-
-  const { abortController, onStart } = createAbortController(req, res, getAbortData);
-
   try {
+    const getAbortData = () => ({
+      conversationId,
+      messageId: responseMessageId,
+      sender,
+      parentMessageId: overrideParentMessageId ?? userMessageId,
+      text: getPartialText(),
+      userMessage,
+      promptTokens,
+    });
+
+    const { abortController, onStart } = createAbortController(req, res, getAbortData);
+
     const { client } = await initializeClient({ req, res, endpointOption });
 
     let response = await client.sendMessage(text, {
@@ -102,22 +87,25 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
       parentMessageId,
       responseMessageId,
       overrideParentMessageId,
+      ...endpointOption,
+      onProgress: progressCallback.call(null, {
+        res,
+        text,
+        parentMessageId: overrideParentMessageId ?? userMessageId,
+      }),
       getReqData,
       onStart,
       addMetadata,
       abortController,
-      onProgress: progressCallback.call(null, {
-        res,
-        text,
-        parentMessageId: overrideParentMessageId || userMessageId,
-      }),
     });
 
     if (metadata) {
       response = { ...response, ...metadata };
     }
 
-    await saveMessage({ ...response, user });
+    if (overrideParentMessageId) {
+      response.parentMessageId = overrideParentMessageId;
+    }
 
     sendMessage(res, {
       title: await getConvoTitle(user, conversationId),
@@ -127,6 +115,11 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
       responseMessage: response,
     });
     res.end();
+
+    await saveMessage({ ...response, user });
+    await saveMessage(userMessage);
+
+    // TODO: add title service
   } catch (error) {
     const partialText = getPartialText();
     handleAbortError(res, req, error, {
@@ -137,6 +130,6 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
       parentMessageId: userMessageId ?? parentMessageId,
     });
   }
-});
+};
 
-module.exports = router;
+module.exports = EditController;

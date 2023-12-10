@@ -1,6 +1,6 @@
 const express = require('express');
 const EditController = require('~/server/controllers/EditController');
-const { initializeClient } = require('~/server/services/Endpoints/anthropic');
+const { initializeClient } = require('~/server/services/Endpoints/google');
 const {
   setHeaders,
   handleAbort,

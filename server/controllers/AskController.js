@@ -1,57 +1,44 @@
-const express = require('express');
-const router = express.Router();
-const { getResponseSender } = require('~/server/services/Endpoints');
-const { initializeClient } = require('~/server/services/Endpoints/openAI');
-const { saveMessage, getConvoTitle, getConvo } = require('~/models');
 const { sendMessage, createOnProgress } = require('~/server/utils');
-const {
-  handleAbort,
-  createAbortController,
-  handleAbortError,
-  setHeaders,
-  validateEndpoint,
-  buildEndpointOption,
-} = require('~/server/middleware');
+const { saveMessage, getConvoTitle, getConvo } = require('~/models');
+const { getResponseSender } = require('~/server/services/Endpoints');
+const { createAbortController, handleAbortError } = require('~/server/middleware');
 
-router.post('/abort', handleAbort());
-
-router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, res) => {
+const AskController = async (req, res, next, initializeClient) => {
   let {
     text,
-    generation,
     endpointOption,
     conversationId,
-    responseMessageId,
-    isContinued = false,
     parentMessageId = null,
     overrideParentMessageId = null,
   } = req.body;
-  console.log('edit log');
-  console.dir({ text, generation, isContinued, conversationId, endpointOption }, { depth: null });
+  console.log('ask log');
+  console.dir({ text, conversationId, endpointOption }, { depth: null });
   let metadata;
   let userMessage;
   let promptTokens;
+  let userMessageId;
+  let responseMessageId;
   let lastSavedTimestamp = 0;
   let saveDelay = 100;
   const sender = getResponseSender({ ...endpointOption, model: endpointOption.modelOptions.model });
-  const userMessageId = parentMessageId;
   const user = req.user.id;
 
-  const addMetadata = (data) => (metadata = data);
   const getReqData = (data = {}) => {
     for (let key in data) {
       if (key === 'userMessage') {
         userMessage = data[key];
+        userMessageId = data[key].messageId;
       } else if (key === 'responseMessageId') {
         responseMessageId = data[key];
       } else if (key === 'promptTokens') {
         promptTokens = data[key];
+      } else if (!conversationId && key === 'conversationId') {
+        conversationId = data[key];
       }
     }
   };
 
   const { onProgress: progressCallback, getPartialText } = createOnProgress({
-    generation,
     onProgress: ({ text: partialText }) => {
       const currentTimestamp = Date.now();
 
@@ -61,12 +48,10 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
           messageId: responseMessageId,
           sender,
           conversationId,
-          parentMessageId: overrideParentMessageId || userMessageId,
+          parentMessageId: overrideParentMessageId ?? userMessageId,
           text: partialText,
-          model: endpointOption.modelOptions.model,
           unfinished: true,
           cancelled: false,
-          isEdited: true,
           error: false,
           user,
         });
@@ -77,47 +62,47 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
       }
     },
   });
-
-  const getAbortData = () => ({
-    sender,
-    conversationId,
-    messageId: responseMessageId,
-    parentMessageId: overrideParentMessageId ?? userMessageId,
-    text: getPartialText(),
-    userMessage,
-    promptTokens,
-  });
-
-  const { abortController, onStart } = createAbortController(req, res, getAbortData);
-
   try {
+    const addMetadata = (data) => (metadata = data);
+    const getAbortData = () => ({
+      conversationId,
+      messageId: responseMessageId,
+      sender,
+      parentMessageId: overrideParentMessageId ?? userMessageId,
+      text: getPartialText(),
+      userMessage,
+      promptTokens,
+    });
+
+    const { abortController, onStart } = createAbortController(req, res, getAbortData);
+
     const { client } = await initializeClient({ req, res, endpointOption });
 
     let response = await client.sendMessage(text, {
+      // debug: true,
       user,
-      generation,
-      isContinued,
-      isEdited: true,
       conversationId,
       parentMessageId,
-      responseMessageId,
       overrideParentMessageId,
-      getReqData,
-      onStart,
-      addMetadata,
-      abortController,
+      ...endpointOption,
       onProgress: progressCallback.call(null, {
         res,
         text,
-        parentMessageId: overrideParentMessageId || userMessageId,
+        parentMessageId: overrideParentMessageId ?? userMessageId,
       }),
+      onStart,
+      getReqData,
+      addMetadata,
+      abortController,
     });
 
     if (metadata) {
       response = { ...response, ...metadata };
     }
 
-    await saveMessage({ ...response, user });
+    if (overrideParentMessageId) {
+      response.parentMessageId = overrideParentMessageId;
+    }
 
     sendMessage(res, {
       title: await getConvoTitle(user, conversationId),
@@ -127,6 +112,11 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
       responseMessage: response,
     });
     res.end();
+
+    await saveMessage({ ...response, user });
+    await saveMessage(userMessage);
+
+    // TODO: add title service
   } catch (error) {
     const partialText = getPartialText();
     handleAbortError(res, req, error, {
@@ -137,6 +127,6 @@ router.post('/', validateEndpoint, buildEndpointOption, setHeaders, async (req, 
       parentMessageId: userMessageId ?? parentMessageId,
     });
   }
-});
+};
 
-module.exports = router;
+module.exports = AskController;
