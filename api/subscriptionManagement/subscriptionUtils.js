@@ -7,13 +7,13 @@ const calcExpiryDate = (planType) => {
 
   switch (planType) {
     case 'month':
-      expirationDate.setMonth(subscriptionStartDate.getMonth() + 1);
+      expirationDate.setDate(subscriptionStartDate.getDate() + 31);
       break;
     case 'quarter':
-      expirationDate.setMonth(subscriptionStartDate.getMonth() + 3);
+      expirationDate.setDate(subscriptionStartDate.getDate() + 31 * 3);
       break;
     case 'year':
-      expirationDate.setFullYear(subscriptionStartDate.getFullYear() + 1);
+      expirationDate.setDate(subscriptionStartDate.getDate() + 31 * 12);
       break;
     default:
       throw new Error('Invalid plan type');
