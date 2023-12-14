@@ -1,6 +1,36 @@
 const PaymentRefUserId = require('../models/paymentReference.js'); // Store paymentreference and userID
 const Payment = require('../models/payments.js');
 
+function getStripeLocale(req) {
+  const browserLanguage = req.headers['accept-language'].split(',')[0];
+  let stripeLocale = 'en'; // Default to English
+
+  if (browserLanguage.startsWith('zh')) {
+    stripeLocale = 'zh'; // Simplified Chinese for 'zh' language codes
+  }
+
+  return stripeLocale;
+}
+
+function translate(planId, locale) {
+  const translations = {
+    'zh': {
+      'month': '订阅 - 月',
+      'quarter': '订阅 - 季度',
+      'year': '订阅 - 年'
+    },
+    // other locales as needed
+  };
+
+  // If locale is English or translation is not found, return the default text
+  if (locale === 'en' || !translations[locale] || !translations[locale][planId]) {
+    return `Subscription - ${planId}`;
+  }
+
+  // Return the translation for the given planId and locale
+  return translations[locale][planId];
+}
+
 const calcExpiryDate = (planType) => {
   const subscriptionStartDate = new Date();
   let expirationDate = new Date(subscriptionStartDate);
@@ -69,6 +99,8 @@ async function getUserSessionFromReference(paymentReference) {
 }
 
 module.exports = {
+  getStripeLocale,
+  translate,
   calcExpiryDate,
   createPaymentRecord,
   getUserSessionFromReference

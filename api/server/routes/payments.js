@@ -5,8 +5,10 @@ const Payment = require('../../models/payments.js');
 const PaymentRefUserId = require('../../models/paymentReference.js');
 const requireJwtAuth = require('../../middleware/requireJwtAuth');
 const {
+  getStripeLocale,
+  translate,
   calcExpiryDate,
-  createPaymentRecord } = require('../../subscriptionManagement/subscriptionUtils.js'); // getUserSessionFromReference
+  createPaymentRecord } = require('../../subscriptionManagement/subscriptionUtils.js');
 const moment = require('moment-timezone');
 const Stripe = require('stripe');
 
@@ -33,12 +35,14 @@ const planPricing = {
 // Endpoint for creating WeChat Pay payment
 router.post('/create-payment-wechatpay', requireJwtAuth, async (req, res) => {
   const { userId, paymentReference, planId } = req.body;
+  const stripeLocale = getStripeLocale(req); // get user's browser language setting
 
   if (!planPricing[planId]) {
     return res.status(400).json({ error: 'Invalid planId' });
   }
 
   const priceDetails = planPricing[planId];
+  const planName = translate(planId, stripeLocale);
 
   await PaymentRefUserId.savePaymentRefUserId({
     paymentReference,
@@ -55,7 +59,7 @@ router.post('/create-payment-wechatpay', requireJwtAuth, async (req, res) => {
         price_data: {
           currency: priceDetails.currency,
           product_data: {
-            name: `Subscription - ${planId}`,
+            name: planName,
           },
           unit_amount: priceDetails.price * 100, // Convert to smallest currency unit, e.g., cents
         },
@@ -82,12 +86,14 @@ router.post('/create-payment-wechatpay', requireJwtAuth, async (req, res) => {
 // Alipay Endpoint
 router.post('/create-payment-alipay', requireJwtAuth, async (req, res) => {
   const { userId, paymentReference, planId } = req.body;
+  const stripeLocale = getStripeLocale(req); // get user's browser language setting
 
   if (!planPricing[planId]) {
     return res.status(400).json({ error: 'Invalid planId' });
   }
 
   const priceDetails = planPricing[planId];
+  const planName = translate(planId, stripeLocale);
 
   await PaymentRefUserId.savePaymentRefUserId({
     paymentReference,
@@ -101,7 +107,7 @@ router.post('/create-payment-alipay', requireJwtAuth, async (req, res) => {
         price_data: {
           currency: priceDetails.currency,
           product_data: {
-            name: `Subscription - ${planId}`,
+            name: planName,
           },
           unit_amount: priceDetails.price * 100, // Convert to smallest currency unit
         },
@@ -126,9 +132,8 @@ router.post('/create-payment-alipay', requireJwtAuth, async (req, res) => {
 });
 
 router.post('/create-payment-unionpay', requireJwtAuth, async (req, res) => {
-  console.log('Create Union Pay - Start');
-
   const { userId, paymentReference, planId } = req.body;
+  const stripeLocale = getStripeLocale(req); // get user's browser language setting
 
   console.log(`Received data: Payment Reference: ${paymentReference}, Plan ID: ${planId}, User ID: ${userId}`);
 
@@ -139,6 +144,7 @@ router.post('/create-payment-unionpay', requireJwtAuth, async (req, res) => {
 
   const priceDetails = planPricing[planId];
   console.log(`Price Details: ${JSON.stringify(priceDetails)}`);
+  const planName = translate(planId, stripeLocale);
 
   try {
     // Save the payment reference and user ID for later verification
@@ -154,7 +160,7 @@ router.post('/create-payment-unionpay', requireJwtAuth, async (req, res) => {
         price_data: {
           currency: priceDetails.currency,
           product_data: {
-            name: `Subscription - ${planId}`,
+            name: planName,
           },
           unit_amount: priceDetails.price * 100,
         },
