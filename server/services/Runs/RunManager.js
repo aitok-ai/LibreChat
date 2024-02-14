@@ -44,15 +44,23 @@ class RunManager {
    */
   async fetchRunSteps({ openai, thread_id, run_id, runStatus, final = false }) {
     // const { data: steps, first_id, last_id, has_more } = await openai.beta.threads.runs.steps.list(thread_id, run_id);
-    const { data: _steps } = await openai.beta.threads.runs.steps.list(thread_id, run_id);
+    const { data: _steps } = await openai.beta.threads.runs.steps.list(
+      thread_id,
+      run_id,
+      {},
+      {
+        timeout: 3000,
+        maxRetries: 5,
+      },
+    );
     const steps = _steps.sort((a, b) => a.created_at - b.created_at);
     for (const [i, step] of steps.entries()) {
-      if (this.seenSteps.has(step.id)) {
+      if (!final && this.seenSteps.has(`${step.id}-${step.status}`)) {
         continue;
       }
 
       const isLast = i === steps.length - 1;
-      this.seenSteps.add(step.id);
+      this.seenSteps.add(`${step.id}-${step.status}`);
       this.stepsByStatus[runStatus] = this.stepsByStatus[runStatus] || [];
 
       const currentStepPromise = (async () => {
@@ -62,6 +70,13 @@ class RunManager {
 
       if (final && isLast) {
         return await currentStepPromise;
+      }
+
+      if (step.type === 'tool_calls') {
+        await currentStepPromise;
+      }
+      if (step.type === 'message_creation' && step.status === 'completed') {
+        await currentStepPromise;
       }
 
       this.lastStepPromiseByStatus[runStatus] = currentStepPromise;
@@ -79,7 +94,7 @@ class RunManager {
    */
   async handleStep({ step, runStatus, final, isLast }) {
     if (this.handlers[runStatus]) {
-      return this.handlers[runStatus]({ step, final, isLast });
+      return await this.handlers[runStatus]({ step, final, isLast });
     }
 
     if (final && isLast && this.handlers['final']) {
