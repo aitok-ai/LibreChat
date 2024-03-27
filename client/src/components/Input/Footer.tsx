@@ -12,11 +12,12 @@ export default function Footer() {
         config.customFooter
       ) : (
         <>
-          {config?.appTitle || 'LibreChat'}
-          {' - '}. {localize('com_ui_pay_per_call')}
+          {/*{config?.appTitle || 'LibreChat'}*/}
+          {/*{' - '}.*/}
+          {localize('com_ui_pay_per_call')}
         </>
       )}
-      {config?.appTitle || 'AITok Chat'}
+      {/*{config?.appTitle || 'AITok Chat'}*/}
     </div>
   );
 }
