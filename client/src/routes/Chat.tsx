@@ -97,7 +97,7 @@ export default function Chat() {
         setShouldNavigate(true);
       }
     }
-    document.title = conversation?.title || config?.appTitle || 'Chat';
+    document.title = conversation?.title || 'Chat';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation, conversationId, config]);
 

@@ -11,8 +11,9 @@ export default function Footer() {
           config.customFooter
         ) : (
           <>
-            {config?.appTitle || 'LibreChat'}
-            {' - '} {localize('com_ui_new_footer')}
+            {/*{config?.appTitle || 'LibreChat'}*/}
+            {/*{' - '} */}
+            {localize('com_ui_new_footer')}
           </>
         )}
       </span>
