@@ -4,7 +4,7 @@ frontend:
     preBuild:
       commands:
         - npm ci
-        - npm run frontend  # use frontend:ci for development mode
+        - npm run frontend:ci  # use frontend:ci for development mode
     # IMPORTANT - Please verify your build commands
     build:
       commands: []
