@@ -35,41 +35,41 @@ function Login() {
           </div>
         )}
         <LoginForm onSubmit={login} />
-        {startupConfig?.registrationEnabled &&
-          !window.location.hostname.match(/^(.*\.)?toatu\.com$/) && (
-          <p className="my-4 text-center text-sm font-light text-gray-700">
-            {' '}
-            {localize('com_auth_no_account')}{' '}
-            <a href="/register" className="p-1 font-medium text-green-500 hover:underline">
-              {localize('com_auth_sign_up')}
-            </a>
-          </p>
-        )}
-        {startupConfig?.socialLoginEnabled &&
-          !window.location.hostname.match(/^(.*\.)?toatu\.com$/) && (
-          <>
-            <div className="relative mt-6 flex w-full items-center justify-center border border-t uppercase">
-              <div className="absolute bg-white px-3 text-xs">Or</div>
-            </div>
-            <div className="mt-8" />
-          </>
-        )}
-        {startupConfig?.googleLoginEnabled &&
-          !window.location.hostname.match(/^(.*\.)?toatu\.com$/) &&
-          startupConfig?.socialLoginEnabled && (
-          <>
-            <div className="mt-2 flex gap-x-2">
-              <a
-                aria-label="Login with Google"
-                className="justify-left flex w-full items-center space-x-3 rounded-md border border-gray-300 px-5 py-3 hover:bg-gray-50 focus:ring-2 focus:ring-violet-600 focus:ring-offset-1"
-                href={`${startupConfig.serverDomain}/oauth/google`}
-              >
-                <GoogleIcon />
-                <p>{localize('com_auth_google_login')}</p>
-              </a>
-            </div>
-          </>
-        )}
+        {/*{startupConfig?.registrationEnabled &&*/}
+        {/*  !window.location.hostname.match(/^(.*\.)?toatu\.com$/) && (*/}
+        {/*  <p className="my-4 text-center text-sm font-light text-gray-700">*/}
+        {/*    {' '}*/}
+        {/*    {localize('com_auth_no_account')}{' '}*/}
+        {/*    <a href="/register" className="p-1 font-medium text-green-500 hover:underline">*/}
+        {/*      {localize('com_auth_sign_up')}*/}
+        {/*    </a>*/}
+        {/*  </p>*/}
+        {/*)}*/}
+        {/*{startupConfig?.socialLoginEnabled &&*/}
+        {/*  !window.location.hostname.match(/^(.*\.)?toatu\.com$/) && (*/}
+        {/*  <>*/}
+        {/*    <div className="relative mt-6 flex w-full items-center justify-center border border-t uppercase">*/}
+        {/*      <div className="absolute bg-white px-3 text-xs">Or</div>*/}
+        {/*    </div>*/}
+        {/*    <div className="mt-8" />*/}
+        {/*  </>*/}
+        {/*)}*/}
+        {/*{startupConfig?.googleLoginEnabled &&*/}
+        {/*  !window.location.hostname.match(/^(.*\.)?toatu\.com$/) &&*/}
+        {/*  startupConfig?.socialLoginEnabled && (*/}
+        {/*  <>*/}
+        {/*    <div className="mt-2 flex gap-x-2">*/}
+        {/*      <a*/}
+        {/*        aria-label="Login with Google"*/}
+        {/*        className="justify-left flex w-full items-center space-x-3 rounded-md border border-gray-300 px-5 py-3 hover:bg-gray-50 focus:ring-2 focus:ring-violet-600 focus:ring-offset-1"*/}
+        {/*        href={`${startupConfig.serverDomain}/oauth/google`}*/}
+        {/*      >*/}
+        {/*        <GoogleIcon />*/}
+        {/*        <p>{localize('com_auth_google_login')}</p>*/}
+        {/*      </a>*/}
+        {/*    </div>*/}
+        {/*  </>*/}
+        {/*)}*/}
         {startupConfig?.facebookLoginEnabled && startupConfig?.socialLoginEnabled && (
           <>
             <div className="mt-2 flex gap-x-2">

@@ -99,11 +99,11 @@ function LoginForm({ onSubmit }: TLoginFormProps) {
           </span>
         )}
       </div>
-      {!window.location.hostname.match(/^(.*\.)?toatu\.com$/) && (
-        <a href="/forgot-password" className="text-sm font-medium text-green-500 hover:underline">
-          {localize('com_auth_password_forgot')}
-        </a>
-      )}
+      {/*{!window.location.hostname.match(/^(.*\.)?toatu\.com$/) && (*/}
+      {/*  <a href="/forgot-password" className="text-sm font-medium text-green-500 hover:underline">*/}
+      {/*    {localize('com_auth_password_forgot')}*/}
+      {/*  </a>*/}
+      {/*)}*/}
       <div className="mt-6">
         <button
           aria-label="Sign in"
