@@ -1,12 +1,11 @@
 name: Production Release to https://zhao.toatu.com via CloudFront/S3
 on:
   workflow_dispatch:
-    branches:
-      - release/zhao.toatu.com
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: release-zhao.toatu.com
     steps:
       # Check out the repository
       - name: Checkout
