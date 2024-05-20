@@ -1,6 +1,7 @@
-const { z } = require('zod');
-const crypto = require('crypto');
-const Message = require('./schema/messageSchema');
+const { z } = require("zod");
+const crypto = require("crypto");
+const Message = require("./schema/messageSchema");
+const logger = require("~/config/winston");
 
 const idSchema = z.string().uuid();
 
@@ -9,23 +10,24 @@ module.exports = {
 
   async saveMessage({
     user,
+    endpoint,
+    iconURL,
     messageId,
     newMessageId,
     conversationId,
     parentMessageId,
     sender,
     text,
-    isCreatedByUser = false,
+    isCreatedByUser,
     error,
     unfinished,
-    cancelled,
     files,
-    isEdited = false,
-    finish_reason = null,
-    tokenCount = null,
-    plugin = null,
-    plugins = null,
-    model = null,
+    isEdited,
+    finish_reason,
+    tokenCount,
+    plugin,
+    plugins,
+    model,
     senderId = null,
   }) {
     try {
@@ -36,6 +38,8 @@ module.exports = {
 
       const update = {
         user,
+        iconURL,
+        endpoint,
         messageId: newMessageId || messageId,
         conversationId,
         parentMessageId,
@@ -46,7 +50,6 @@ module.exports = {
         finish_reason,
         error,
         unfinished,
-        cancelled,
         tokenCount,
         plugin,
         plugins,
@@ -58,7 +61,10 @@ module.exports = {
         update.files = files;
       }
       // may also need to update the conversation here
-      await Message.findOneAndUpdate({ messageId }, update, { upsert: true, new: true });
+      await Message.findOneAndUpdate({ messageId }, update, {
+        upsert: true,
+        new: true,
+      });
 
       return {
         messageId,
@@ -70,18 +76,86 @@ module.exports = {
         tokenCount,
       };
     } catch (err) {
-      console.error(`Error saving message: ${err}`);
-      throw new Error('Failed to save message.');
+      logger.error("Error saving message:", err);
+      throw new Error("Failed to save message.");
+    }
+  },
+
+  async bulkSaveMessages(messages) {
+    try {
+      const bulkOps = messages.map((message) => ({
+        updateOne: {
+          filter: { messageId: message.messageId },
+          update: message,
+          upsert: true,
+        },
+      }));
+
+      const result = await Message.bulkWrite(bulkOps);
+      return result;
+    } catch (err) {
+      logger.error("Error saving messages in bulk:", err);
+      throw new Error("Failed to save messages in bulk.");
+    }
+  },
+
+  /**
+   * Records a message in the database.
+   *
+   * @async
+   * @function recordMessage
+   * @param {Object} params - The message data object.
+   * @param {string} params.user - The identifier of the user.
+   * @param {string} params.endpoint - The endpoint where the message originated.
+   * @param {string} params.messageId - The unique identifier for the message.
+   * @param {string} params.conversationId - The identifier of the conversation.
+   * @param {string} [params.parentMessageId] - The identifier of the parent message, if any.
+   * @param {Partial<TMessage>} rest - Any additional properties from the TMessage typedef not explicitly listed.
+   * @returns {Promise<Object>} The updated or newly inserted message document.
+   * @throws {Error} If there is an error in saving the message.
+   */
+  async recordMessage({
+    user,
+    endpoint,
+    messageId,
+    conversationId,
+    parentMessageId,
+    ...rest
+  }) {
+    try {
+      // No parsing of convoId as may use threadId
+      const message = {
+        user,
+        endpoint,
+        messageId,
+        conversationId,
+        parentMessageId,
+        ...rest,
+      };
+
+      return await Message.findOneAndUpdate({ user, messageId }, message, {
+        upsert: true,
+        new: true,
+      });
+    } catch (err) {
+      logger.error("Error saving message:", err);
+      throw new Error("Failed to save message.");
     }
   },
   async updateMessage(message) {
     try {
       const { messageId, ...update } = message;
       update.isEdited = true;
-      const updatedMessage = await Message.findOneAndUpdate({ messageId }, update, { new: true });
+      const updatedMessage = await Message.findOneAndUpdate(
+        { messageId },
+        update,
+        {
+          new: true,
+        }
+      );
 
       if (!updatedMessage) {
-        throw new Error('Message not found.');
+        throw new Error("Message not found.");
       }
 
       return {
@@ -95,8 +169,8 @@ module.exports = {
         isEdited: true,
       };
     } catch (err) {
-      console.error(`Error updating message: ${err}`);
-      throw new Error('Failed to update message.');
+      logger.error("Error updating message:", err);
+      throw new Error("Failed to update message.");
     }
   },
 
@@ -114,13 +188,15 @@ module.exports = {
           update.likesMsg = false;
         }
 
-        return await Message.findOneAndUpdate({ messageId }, update, { new: true }).exec();
+        return await Message.findOneAndUpdate({ messageId }, update, {
+          new: true,
+        }).exec();
       } else {
-        return { message: 'Message not found.' };
+        return { message: "Message not found." };
       }
     } catch (error) {
       console.log(error);
-      return { message: 'Error liking Message' };
+      return { message: "Error liking Message" };
     }
   },
 
@@ -134,8 +210,8 @@ module.exports = {
         });
       }
     } catch (err) {
-      console.error(`Error deleting messages: ${err}`);
-      throw new Error('Failed to delete messages.');
+      logger.error("Error deleting messages:", err);
+      throw new Error("Failed to delete messages.");
     }
   },
 
@@ -143,8 +219,8 @@ module.exports = {
     try {
       return await Message.find(filter).sort({ createdAt: 1 }).lean();
     } catch (err) {
-      console.error(`Error getting messages: ${err}`);
-      throw new Error('Failed to get messages.');
+      logger.error("Error getting messages:", err);
+      throw new Error("Failed to get messages.");
     }
   },
 
@@ -152,23 +228,27 @@ module.exports = {
     try {
       return await Message.deleteMany(filter);
     } catch (err) {
-      console.error(`Error deleting messages: ${err}`);
-      throw new Error('Failed to delete messages.');
+      logger.error("Error deleting messages:", err);
+      throw new Error("Failed to delete messages.");
     }
   },
 
   async getRecentMessages() {
     try {
-      return await Message.find().sort({ createdAt: -1 }).select('conversationId').limit(30).exec();
+      return await Message.find()
+        .sort({ createdAt: -1 })
+        .select("conversationId")
+        .limit(30)
+        .exec();
     } catch (err) {
       console.error(`Error fetching recents messages: ${err}`);
-      throw new Error('Failed to fetch recent messages.');
+      throw new Error("Failed to fetch recent messages.");
     }
   },
 
   async duplicateMessages({ newConversationId, msgData }) {
     try {
-      let newParentMessageId = '00000000-0000-0000-0000-000000000000';
+      let newParentMessageId = "00000000-0000-0000-0000-000000000000";
       let newMessageId = crypto.randomUUID();
       const msgObjIds = [];
 
@@ -191,7 +271,7 @@ module.exports = {
       return msgObjIds;
     } catch (err) {
       console.error(`Error duplicating messages: ${err}`);
-      throw new Error('Failed to duplicate messages.');
+      throw new Error("Failed to duplicate messages.");
     }
   },
 
@@ -200,7 +280,7 @@ module.exports = {
       return await Message.countDocuments(filter);
     } catch (err) {
       console.error(`Error counting messages: ${err}`);
-      throw new Error('Failed to count messages.');
+      throw new Error("Failed to count messages.");
     }
   },
 };

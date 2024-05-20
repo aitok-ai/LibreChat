@@ -34,6 +34,13 @@ describe('getValueKey', () => {
     expect(getValueKey('openai/gpt-4-1106')).toBe('gpt-4-1106');
     expect(getValueKey('gpt-4-1106/openai/')).toBe('gpt-4-1106');
   });
+
+  it('should return "gpt-4-1106" for model type of "gpt-4-1106"', () => {
+    expect(getValueKey('gpt-4-vision-preview')).toBe('gpt-4-1106');
+    expect(getValueKey('openai/gpt-4-1106')).toBe('gpt-4-1106');
+    expect(getValueKey('gpt-4-turbo')).toBe('gpt-4-1106');
+    expect(getValueKey('gpt-4-0125')).toBe('gpt-4-1106');
+  });
 });
 
 describe('getMultiplier', () => {
@@ -83,6 +90,15 @@ describe('getMultiplier', () => {
     ).toBe(tokenValues['gpt-3.5-turbo-1106'].prompt);
     expect(getMultiplier({ tokenType: 'completion', model: 'gpt-4-1106-vision-preview' })).toBe(
       tokenValues['gpt-4-1106'].completion,
+    );
+    expect(getMultiplier({ tokenType: 'completion', model: 'gpt-4-0125-preview' })).toBe(
+      tokenValues['gpt-4-1106'].completion,
+    );
+    expect(getMultiplier({ tokenType: 'completion', model: 'gpt-4-turbo-vision-preview' })).toBe(
+      tokenValues['gpt-4-1106'].completion,
+    );
+    expect(getMultiplier({ tokenType: 'completion', model: 'gpt-3.5-turbo-0125' })).toBe(
+      tokenValues['gpt-3.5-turbo-0125'].completion,
     );
   });
 

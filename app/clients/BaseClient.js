@@ -1,59 +1,69 @@
-const crypto = require('crypto');
-const TextStream = require('./TextStream');
-const { getConvo, getMessages, saveMessage, updateMessage, saveConvo } = require('~/models');
-const { addSpaceIfNeeded, isEnabled } = require('~/server/utils');
-const checkBalance = require('~/models/checkBalance');
+const crypto = require("crypto");
+const { supportsBalanceCheck, Constants } = require("librechat-data-provider");
+const {
+  getConvo,
+  getMessages,
+  saveMessage,
+  updateMessage,
+  saveConvo,
+} = require("~/models");
+const { addSpaceIfNeeded, isEnabled } = require("~/server/utils");
+const checkBalance = require("~/models/checkBalance");
+const { getFiles } = require("~/models/File");
+const TextStream = require("./TextStream");
+const { logger } = require("~/config");
 
 class BaseClient {
   constructor(apiKey, options = {}) {
     this.apiKey = apiKey;
-    this.sender = options.sender ?? 'AI';
+    this.sender = options.sender ?? "AI";
     this.contextStrategy = null;
-    this.currentDateString = new Date().toLocaleDateString('en-us', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    this.currentDateString = new Date().toLocaleDateString("en-us", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   }
 
   setOptions() {
-    throw new Error('Method \'setOptions\' must be implemented.');
+    throw new Error("Method 'setOptions' must be implemented.");
   }
 
-  getCompletion() {
-    throw new Error('Method \'getCompletion\' must be implemented.');
+  async getCompletion() {
+    throw new Error("Method 'getCompletion' must be implemented.");
   }
 
   async sendCompletion() {
-    throw new Error('Method \'sendCompletion\' must be implemented.');
+    throw new Error("Method 'sendCompletion' must be implemented.");
   }
 
   getSaveOptions() {
-    throw new Error('Subclasses must implement getSaveOptions');
+    throw new Error("Subclasses must implement getSaveOptions");
   }
 
   async buildMessages() {
-    throw new Error('Subclasses must implement buildMessages');
+    throw new Error("Subclasses must implement buildMessages");
   }
 
   async summarizeMessages() {
-    throw new Error('Subclasses attempted to call summarizeMessages without implementing it');
+    throw new Error(
+      "Subclasses attempted to call summarizeMessages without implementing it"
+    );
   }
 
   async getTokenCountForResponse(response) {
-    if (this.options.debug) {
-      console.debug('`recordTokenUsage` not implemented.', response);
-    }
+    logger.debug("`[BaseClient] recordTokenUsage` not implemented.", response);
   }
 
   async recordTokenUsage({ promptTokens, completionTokens }) {
-    if (this.options.debug) {
-      console.debug('`recordTokenUsage` not implemented.', { promptTokens, completionTokens });
-    }
+    logger.debug("`[BaseClient] recordTokenUsage` not implemented.", {
+      promptTokens,
+      completionTokens,
+    });
   }
 
   getBuildMessagesOptions() {
-    throw new Error('Subclasses must implement getBuildMessagesOptions');
+    throw new Error("Subclasses must implement getBuildMessagesOptions");
   }
 
   async generateTextStream(text, onProgress, options = {}) {
@@ -72,7 +82,7 @@ class BaseClient {
     const saveOptions = this.getSaveOptions();
     this.abortController = opts.abortController ?? new AbortController();
     const conversationId = opts.conversationId ?? crypto.randomUUID();
-    const parentMessageId = opts.parentMessageId ?? '00000000-0000-0000-0000-000000000000';
+    const parentMessageId = opts.parentMessageId ?? Constants.NO_PARENT;
     const userMessageId = opts.overrideParentMessageId ?? crypto.randomUUID();
     let responseMessageId = opts.responseMessageId ?? crypto.randomUUID();
     let head = isEdited ? responseMessageId : parentMessageId;
@@ -102,7 +112,7 @@ class BaseClient {
       messageId,
       parentMessageId,
       conversationId,
-      sender: 'User',
+      sender: "User",
       text,
       isCreatedByUser: true,
     };
@@ -122,13 +132,13 @@ class BaseClient {
     const userMessage = opts.isEdited
       ? this.currentMessages[this.currentMessages.length - 2]
       : this.createUserMessage({
-        messageId: userMessageId,
-        parentMessageId,
-        conversationId,
-        text: message,
-      });
+          messageId: userMessageId,
+          parentMessageId,
+          conversationId,
+          text: message,
+        });
 
-    if (typeof opts?.getReqData === 'function') {
+    if (typeof opts?.getReqData === "function") {
       opts.getReqData({
         userMessage,
         conversationId,
@@ -136,7 +146,7 @@ class BaseClient {
       });
     }
 
-    if (typeof opts?.onStart === 'function') {
+    if (typeof opts?.onStart === "function") {
       opts.onStart(userMessage);
     }
 
@@ -194,14 +204,16 @@ class BaseClient {
       const update = {};
 
       if (messageId === tokenCountMap.summaryMessage?.messageId) {
-        this.options.debug && console.debug(`Adding summary props to ${messageId}.`);
+        logger.debug(`[BaseClient] Adding summary props to ${messageId}.`);
 
         update.summary = tokenCountMap.summaryMessage.content;
         update.summaryTokenCount = tokenCountMap.summaryMessage.tokenCount;
       }
 
       if (message.tokenCount && !update.summaryTokenCount) {
-        this.options.debug && console.debug(`Skipping ${messageId}: already had a token count.`);
+        logger.debug(
+          `[BaseClient] Skipping ${messageId}: already had a token count.`
+        );
         continue;
       }
 
@@ -218,7 +230,7 @@ class BaseClient {
     return messages.reduce((acc, message) => {
       const nameOrRole = message.name ?? message.role;
       return acc + `${nameOrRole}:\n${message.content}\n\n`;
-    }, '');
+    }, "");
   }
 
   /**
@@ -245,11 +257,17 @@ class BaseClient {
 
     const context = [];
     if (currentTokenCount < remainingContextTokens) {
-      while (messages.length > 0 && currentTokenCount < remainingContextTokens) {
+      while (
+        messages.length > 0 &&
+        currentTokenCount < remainingContextTokens
+      ) {
         const poppedMessage = messages.pop();
         const { tokenCount } = poppedMessage;
 
-        if (poppedMessage && currentTokenCount + tokenCount <= remainingContextTokens) {
+        if (
+          poppedMessage &&
+          currentTokenCount + tokenCount <= remainingContextTokens
+        ) {
           context.push(poppedMessage);
           currentTokenCount += tokenCount;
         } else {
@@ -271,26 +289,32 @@ class BaseClient {
     };
   }
 
-  async handleContextStrategy({ instructions, orderedMessages, formattedMessages }) {
+  async handleContextStrategy({
+    instructions,
+    orderedMessages,
+    formattedMessages,
+  }) {
     let _instructions;
     let tokenCount;
 
     if (instructions) {
       ({ tokenCount, ..._instructions } = instructions);
     }
-    this.options.debug && _instructions && console.debug('instructions tokenCount', tokenCount);
+    _instructions &&
+      logger.debug("[BaseClient] instructions tokenCount: " + tokenCount);
     let payload = this.addInstructions(formattedMessages, _instructions);
-    let orderedWithInstructions = this.addInstructions(orderedMessages, instructions);
+    let orderedWithInstructions = this.addInstructions(
+      orderedMessages,
+      instructions
+    );
 
     let { context, remainingContextTokens, messagesToRefine, summaryIndex } =
       await this.getMessagesWithinTokenLimit(orderedWithInstructions);
 
-    this.options.debug &&
-      console.debug(
-        'remainingContextTokens, this.maxContextTokens (1/2)',
-        remainingContextTokens,
-        this.maxContextTokens,
-      );
+    logger.debug("[BaseClient] Context Count (1/2)", {
+      remainingContextTokens,
+      maxContextTokens: this.maxContextTokens,
+    });
 
     let summaryMessage;
     let summaryTokenCount;
@@ -308,21 +332,21 @@ class BaseClient {
 
     if (diff > 0) {
       payload = payload.slice(diff);
-      this.options.debug &&
-        console.debug(
-          `Difference between original payload (${length}) and context (${context.length}): ${diff}`,
-        );
+      logger.debug(
+        `[BaseClient] Difference between original payload (${length}) and context (${context.length}): ${diff}`
+      );
     }
 
-    const latestMessage = orderedWithInstructions[orderedWithInstructions.length - 1];
+    const latestMessage =
+      orderedWithInstructions[orderedWithInstructions.length - 1];
     if (payload.length === 0 && !shouldSummarize && latestMessage) {
       throw new Error(
-        `Prompt token count of ${latestMessage.tokenCount} exceeds max token count of ${this.maxContextTokens}.`,
+        `Prompt token count of ${latestMessage.tokenCount} exceeds max token count of ${this.maxContextTokens}.`
       );
     }
 
     if (usePrevSummary) {
-      summaryMessage = { role: 'system', content: firstMessage.summary };
+      summaryMessage = { role: "system", content: firstMessage.summary };
       summaryTokenCount = firstMessage.summaryTokenCount;
       payload.unshift(summaryMessage);
       remainingContextTokens -= summaryTokenCount;
@@ -338,51 +362,62 @@ class BaseClient {
     // Make sure to only continue summarization logic if the summary message was generated
     shouldSummarize = summaryMessage && shouldSummarize;
 
-    this.options.debug &&
-      console.debug(
-        'remainingContextTokens, this.maxContextTokens (2/2)',
-        remainingContextTokens,
-        this.maxContextTokens,
-      );
+    logger.debug("[BaseClient] Context Count (2/2)", {
+      remainingContextTokens,
+      maxContextTokens: this.maxContextTokens,
+    });
 
-    let tokenCountMap = orderedWithInstructions.reduce((map, message, index) => {
-      const { messageId } = message;
-      if (!messageId) {
+    let tokenCountMap = orderedWithInstructions.reduce(
+      (map, message, index) => {
+        const { messageId } = message;
+        if (!messageId) {
+          return map;
+        }
+
+        if (shouldSummarize && index === summaryIndex && !usePrevSummary) {
+          map.summaryMessage = {
+            ...summaryMessage,
+            messageId,
+            tokenCount: summaryTokenCount,
+          };
+        }
+
+        map[messageId] = orderedWithInstructions[index].tokenCount;
         return map;
-      }
-
-      if (shouldSummarize && index === summaryIndex && !usePrevSummary) {
-        map.summaryMessage = { ...summaryMessage, messageId, tokenCount: summaryTokenCount };
-      }
-
-      map[messageId] = orderedWithInstructions[index].tokenCount;
-      return map;
-    }, {});
+      },
+      {}
+    );
 
     const promptTokens = this.maxContextTokens - remainingContextTokens;
 
-    if (this.options.debug) {
-      console.debug('<-------------------------PAYLOAD/TOKEN COUNT MAP------------------------->');
-      console.debug('Payload:', payload);
-      console.debug('Token Count Map:', tokenCountMap);
-      console.debug(
-        'Prompt Tokens',
-        promptTokens,
-        'remainingContextTokens',
-        remainingContextTokens,
-        'this.maxContextTokens',
-        this.maxContextTokens,
-      );
-    }
+    logger.debug("[BaseClient] tokenCountMap:", tokenCountMap);
+    logger.debug("[BaseClient]", {
+      promptTokens,
+      remainingContextTokens,
+      payloadSize: payload.length,
+      maxContextTokens: this.maxContextTokens,
+    });
 
-    return { payload, tokenCountMap, promptTokens, messages: orderedWithInstructions };
+    return {
+      payload,
+      tokenCountMap,
+      promptTokens,
+      messages: orderedWithInstructions,
+    };
   }
 
   async sendMessage(message, opts = {}) {
-    const { user, head, isEdited, conversationId, responseMessageId, saveOptions, userMessage } =
-      await this.handleStartMethods(message, opts);
+    const {
+      user,
+      head,
+      isEdited,
+      conversationId,
+      responseMessageId,
+      saveOptions,
+      userMessage,
+    } = await this.handleStartMethods(message, opts);
 
-    const { generation = '' } = opts;
+    const { generation = "" } = opts;
 
     // It's not necessary to push to currentMessages
     // depending on subclass implementation of handling messages
@@ -417,15 +452,14 @@ class BaseClient {
       // this only matters when buildMessages is utilizing the parentMessageId, and may vary on implementation
       isEdited ? head : userMessage.messageId,
       this.getBuildMessagesOptions(opts),
-      opts,
+      opts
     );
 
     if (tokenCountMap) {
-      console.dir(tokenCountMap, { depth: null });
+      logger.debug("[BaseClient] tokenCountMap", tokenCountMap);
       if (tokenCountMap[userMessage.messageId]) {
         userMessage.tokenCount = tokenCountMap[userMessage.messageId];
-        console.log('userMessage.tokenCount', userMessage.tokenCount);
-        console.log('userMessage', userMessage);
+        logger.debug("[BaseClient] userMessage", userMessage);
       }
 
       this.handleTokenCountMap(tokenCountMap);
@@ -435,21 +469,27 @@ class BaseClient {
       await this.saveMessageToDatabase(userMessage, saveOptions, user);
     }
 
-    if (isEnabled(process.env.CHECK_BALANCE)) {
+    if (
+      isEnabled(process.env.CHECK_BALANCE) &&
+      supportsBalanceCheck[this.options.endpointType ?? this.options.endpoint]
+    ) {
       await checkBalance({
         req: this.options.req,
         res: this.options.res,
         txData: {
           user: this.user,
-          tokenType: 'prompt',
+          tokenType: "prompt",
           amount: promptTokens,
-          debug: this.options.debug,
           model: this.modelOptions.model,
+          endpoint: this.options.endpoint,
+          endpointTokenConfig: this.options.endpointTokenConfig,
         },
       });
     }
 
     const completion = await this.sendCompletion(payload, opts);
+    this.abortController.requestCompleted = true;
+
     const responseMessage = {
       messageId: responseMessageId,
       conversationId,
@@ -460,6 +500,9 @@ class BaseClient {
       sender: this.sender,
       text: addSpaceIfNeeded(generation) + completion,
       promptTokens,
+      iconURL: this.options.iconURL,
+      endpoint: this.options.endpoint,
+      ...(this.metadata ?? {}),
       senderId: user,
     };
 
@@ -469,7 +512,8 @@ class BaseClient {
       this.getTokenCountForResponse &&
       this.getTokenCount
     ) {
-      responseMessage.tokenCount = this.getTokenCountForResponse(responseMessage);
+      responseMessage.tokenCount =
+        this.getTokenCountForResponse(responseMessage);
       const completionTokens = this.getTokenCount(completion);
       await this.recordTokenUsage({ promptTokens, completionTokens });
     }
@@ -483,9 +527,10 @@ class BaseClient {
   }
 
   async loadHistory(conversationId, parentMessageId = null) {
-    if (this.options.debug) {
-      console.debug('Loading history for conversation', conversationId, parentMessageId);
-    }
+    logger.debug("[BaseClient] Loading history:", {
+      conversationId,
+      parentMessageId,
+    });
 
     const messages = (await getMessages({ conversationId })) ?? [];
 
@@ -498,37 +543,57 @@ class BaseClient {
       mapMethod = this.getMessageMapMethod();
     }
 
-    const orderedMessages = this.constructor.getMessagesForConversation({
+    let _messages = this.constructor.getMessagesForConversation({
       messages,
       parentMessageId,
       mapMethod,
     });
 
+    _messages = await this.addPreviousAttachments(_messages);
+
     if (!this.shouldSummarize) {
-      return orderedMessages;
+      return _messages;
     }
 
     // Find the latest message with a 'summary' property
-    for (let i = orderedMessages.length - 1; i >= 0; i--) {
-      if (orderedMessages[i]?.summary) {
-        this.previous_summary = orderedMessages[i];
+    for (let i = _messages.length - 1; i >= 0; i--) {
+      if (_messages[i]?.summary) {
+        this.previous_summary = _messages[i];
         break;
       }
     }
 
-    if (this.options.debug && this.previous_summary) {
-      const { messageId, summary, tokenCount, summaryTokenCount } = this.previous_summary;
-      console.debug('Previous summary:', { messageId, summary, tokenCount, summaryTokenCount });
+    if (this.previous_summary) {
+      const { messageId, summary, tokenCount, summaryTokenCount } =
+        this.previous_summary;
+      logger.debug("[BaseClient] Previous summary:", {
+        messageId,
+        summary,
+        tokenCount,
+        summaryTokenCount,
+      });
     }
 
-    return orderedMessages;
+    return _messages;
   }
 
+  /**
+   * Save a message to the database.
+   * @param {TMessage} message
+   * @param {Partial<TConversation>} endpointOptions
+   * @param {string | null} user
+   */
   async saveMessageToDatabase(message, endpointOptions, user = null) {
-    await saveMessage({ ...message, user, unfinished: false, cancelled: false });
+    await saveMessage({
+      ...message,
+      endpoint: this.options.endpoint,
+      unfinished: false,
+      user,
+    });
     await saveConvo(user, {
       conversationId: message.conversationId,
       endpoint: this.options.endpoint,
+      endpointType: this.options.endpointType,
       ...endpointOptions,
     });
   }
@@ -550,15 +615,15 @@ class BaseClient {
    *
    * Each message object should have an 'id' or 'messageId' property and may have a 'parentMessageId' property.
    * The 'parentMessageId' is the ID of the message that the current message is a reply to.
-   * If 'parentMessageId' is not present, null, or is '00000000-0000-0000-0000-000000000000',
+   * If 'parentMessageId' is not present, null, or is Constants.NO_PARENT,
    * the message is considered a root message.
    *
    * @param {Object} options - The options for the function.
-   * @param {Array} options.messages - An array of message objects. Each object should have either an 'id' or 'messageId' property, and may have a 'parentMessageId' property.
+   * @param {TMessage[]} options.messages - An array of message objects. Each object should have either an 'id' or 'messageId' property, and may have a 'parentMessageId' property.
    * @param {string} options.parentMessageId - The ID of the parent message to start the traversal from.
    * @param {Function} [options.mapMethod] - An optional function to map over the ordered messages. If provided, it will be applied to each message in the resulting array.
    * @param {boolean} [options.summary=false] - If set to true, the traversal modifies messages with 'summary' and 'summaryTokenCount' properties and stops at the message with a 'summary' property.
-   * @returns {Array} An array containing the messages in the order they should be displayed, starting with the most recent message with a 'summary' property if the 'summary' option is true, and ending with the message identified by 'parentMessageId'.
+   * @returns {TMessage[]} An array containing the messages in the order they should be displayed, starting with the most recent message with a 'summary' property if the 'summary' option is true, and ending with the message identified by 'parentMessageId'.
    */
   static getMessagesForConversation({
     messages,
@@ -590,7 +655,7 @@ class BaseClient {
       }
 
       if (summary && message.summary) {
-        message.role = 'system';
+        message.role = "system";
         message.text = message.summary;
       }
 
@@ -605,7 +670,7 @@ class BaseClient {
       }
 
       currentMessageId =
-        message.parentMessageId === '00000000-0000-0000-0000-000000000000'
+        message.parentMessageId === Constants.NO_PARENT
           ? null
           : message.parentMessageId;
     }
@@ -626,6 +691,11 @@ class BaseClient {
    * An additional 3 tokens need to be added for assistant label priming after all messages have been counted.
    * In our implementation, this is accounted for in the getMessagesWithinTokenLimit method.
    *
+   * The content parts example was adapted from the following example:
+   * https://github.com/openai/openai-cookbook/pull/881/files
+   *
+   * Note: image token calculation is to be done elsewhere where we have access to the image metadata
+   *
    * @param {Object} message
    */
   getTokenCountForMessage(message) {
@@ -633,17 +703,24 @@ class BaseClient {
     let tokensPerMessage = 3;
     let tokensPerName = 1;
 
-    if (this.modelOptions.model === 'gpt-3.5-turbo-0301') {
+    if (this.modelOptions.model === "gpt-3.5-turbo-0301") {
       tokensPerMessage = 4;
       tokensPerName = -1;
     }
 
     const processValue = (value) => {
-      if (typeof value === 'object' && value !== null) {
-        for (let [nestedKey, nestedValue] of Object.entries(value)) {
-          if (nestedKey === 'image_url' || nestedValue === 'image_url') {
+      if (Array.isArray(value)) {
+        for (let item of value) {
+          if (!item || !item.type || item.type === "image_url") {
             continue;
           }
+
+          const nestedValue = item[item.type];
+
+          if (!nestedValue) {
+            continue;
+          }
+
           processValue(nestedValue);
         }
       } else {
@@ -655,7 +732,7 @@ class BaseClient {
     for (let [key, value] of Object.entries(message)) {
       processValue(value);
 
-      if (key === 'name') {
+      if (key === "name") {
         numTokens += tokensPerName;
       }
     }
@@ -663,11 +740,59 @@ class BaseClient {
   }
 
   async sendPayload(payload, opts = {}) {
-    if (opts && typeof opts === 'object') {
+    if (opts && typeof opts === "object") {
       this.setOptions(opts);
     }
 
     return await this.sendCompletion(payload, opts);
+  }
+
+  /**
+   *
+   * @param {TMessage[]} _messages
+   * @returns {Promise<TMessage[]>}
+   */
+  async addPreviousAttachments(_messages) {
+    if (!this.options.resendFiles) {
+      return _messages;
+    }
+
+    /**
+     *
+     * @param {TMessage} message
+     */
+    const processMessage = async (message) => {
+      if (!this.message_file_map) {
+        /** @type {Record<string, MongoFile[]> */
+        this.message_file_map = {};
+      }
+
+      const fileIds = message.files.map((file) => file.file_id);
+      const files = await getFiles({
+        file_id: { $in: fileIds },
+      });
+
+      await this.addImageURLs(message, files);
+
+      this.message_file_map[message.messageId] = files;
+      return message;
+    };
+
+    const promises = [];
+
+    for (const message of _messages) {
+      if (!message.files) {
+        promises.push(message);
+        continue;
+      }
+
+      promises.push(processMessage(message));
+    }
+
+    const messages = await Promise.all(promises);
+
+    this.checkVisionRequest(Object.values(this.message_file_map ?? {}).flat());
+    return messages;
   }
 }
 
