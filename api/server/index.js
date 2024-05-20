@@ -25,6 +25,9 @@ const startServer = async () => {
   const app = express();
   app.locals.config = config;
 
+  // Web Hooks, note that is has to be ahead of the express.json() call since webhooks uses RAW
+  app.use('/api/webhooks', routes.webhooks);
+
   // Middleware
   app.use(errorController);
   app.use(express.json({ limit: '3mb' }));
