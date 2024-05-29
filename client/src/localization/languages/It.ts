@@ -619,6 +619,7 @@ export default {
     'Oops! Qualcosa è andato storto. Riprova tra qualche istante. Ecco il messaggio di errore specifico che abbiamo incontrato: {0}',
   com_nav_setting_beta: 'Funzioni Beta',
   com_nav_setting_account: 'Profilo',
+  com_nav_setting_speech: 'Voce',
   /* The following are AI Translated */
   com_assistants_file_search: 'Ricerca File',
   com_assistants_file_search_info:

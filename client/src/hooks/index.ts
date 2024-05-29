@@ -26,3 +26,5 @@ export { default as useMessageHandler } from './useMessageHandler';
 export { default as useOriginNavigate } from './useOriginNavigate';
 export { default as useGenerations } from './useGenerations';
 export { default as useGenerationsByLatest } from './useGenerationsByLatest';
+export { default as useSpeechToText } from './Input/useSpeechToText';
+export { default as useTextToSpeech } from './Input/useTextToSpeech';

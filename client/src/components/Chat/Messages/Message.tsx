@@ -32,6 +32,7 @@ export default function Message(props: TMessageProps) {
   const {
     ask,
     edit,
+    index,
     isLast,
     enterEdit,
     handleScroll,
@@ -184,6 +185,7 @@ export default function Message(props: TMessageProps) {
                   />
                   <HoverButtons
                     showStopButton={false}
+                    index={index}
                     isEditing={edit}
                     message={message}
                     enterEdit={enterEdit}

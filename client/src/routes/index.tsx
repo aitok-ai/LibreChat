@@ -12,6 +12,8 @@ import Leaderboard from '~/components/ui/Leaderboard';
 import SharedConvo from '~/components/ui/SharedConvo';
 import Recommendations from '~/components/ui/Recommendations';
 import { useEffect } from 'react';
+import StartupLayout from './Layouts/Startup';
+import LoginLayout from './Layouts/Login';
 import ShareRoute from './ShareRoute';
 import ChatRoute from './ChatRoute';
 import Search from './Search';
@@ -32,27 +34,39 @@ const AuthLayout = () => {
 
 export const router = createBrowserRouter([
   {
-    path: 'register/:userId?',
-    element: <Registration />,
-  },
-  {
-    path: 'forgot-password',
-    element: <RequestPasswordReset />,
-  },
-  {
-    path: 'reset-password',
-    element: <ResetPassword />,
-  },
-  {
     path: 'share/:shareId',
     element: <ShareRoute />,
+  },
+  {
+    path: '/',
+    element: <StartupLayout />,
+    children: [
+      {
+        path: 'register/:userId?',
+        element: <Registration />,
+      },
+      {
+        path: 'forgot-password',
+        element: <RequestPasswordReset />,
+      },
+      {
+        path: 'reset-password',
+        element: <ResetPassword />,
+      },
+    ],
   },
   {
     element: <AuthLayout />,
     children: [
       {
-        path: 'login',
-        element: <Login />,
+        path: '/',
+        element: <LoginLayout />,
+        children: [
+          {
+            path: 'login',
+            element: <Login />,
+          },
+        ],
       },
       {
         path: 'chat/share/:conversationId?',

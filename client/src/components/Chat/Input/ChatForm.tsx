@@ -1,7 +1,8 @@
-import { useRecoilState } from 'recoil';
 import { useForm } from 'react-hook-form';
 // import TextareaAutosize from 'react-textarea-autosize';
 import { memo, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useRecoilState, useRecoilValue } from 'recoil';
+// import { memo, useCallback, useRef, useMemo } from 'react';
 import {
   supportsFiles,
   mergeFileConfig,
@@ -14,7 +15,9 @@ import { TextareaAutosize } from '~/components/ui';
 import { useGetFileConfig } from '~/data-provider';
 import { cn, removeFocusOutlines } from '~/utils';
 import AttachFile from './Files/AttachFile';
+import AudioRecorder from './AudioRecorder';
 import { mainTextareaId } from '~/common';
+import StreamAudio from './StreamAudio';
 import StopButton from './StopButton';
 import SendButton from './SendButton';
 import FileRow from './Files/FileRow';
@@ -24,6 +27,9 @@ import store from '~/store';
 const ChatForm = ({ index = 0 }) => {
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const SpeechToText = useRecoilValue(store.SpeechToText);
+  const TextToSpeech = useRecoilValue(store.TextToSpeech);
+  const automaticPlayback = useRecoilValue(store.automaticPlayback);
   const [showStopButton, setShowStopButton] = useRecoilState(store.showStopButtonByIndex(index));
   const [text, setText] = useRecoilState(store.textByIndex(index)); // 从Recoil获取到text状态
   const [showMentionPopover, setShowMentionPopover] = useRecoilState(
@@ -97,7 +103,7 @@ const ChatForm = ({ index = 0 }) => {
   const { ref, ...registerProps } = methods.register('text', {
     required: true,
     onChange: (e) => {
-      methods.setValue('text', e.target.value);
+      methods.setValue('text', e.target.value, { shouldValidate: true });
       setText(e.target.value); // 更新Recoil中text状态的值
     },
   });
@@ -154,7 +160,8 @@ const ChatForm = ({ index = 0 }) => {
                   supportsFiles[endpointType ?? endpoint ?? ''] && !endpointFileConfig?.disabled
                     ? ' pl-10 md:pl-[55px]'
                     : 'pl-3 md:pl-4',
-                  'm-0 w-full resize-none border-0 bg-transparent py-[10px] pr-10 placeholder-black/50 focus:ring-0 focus-visible:ring-0 dark:bg-transparent dark:placeholder-white/50 md:py-3.5 md:pr-12 ',
+                  'm-0 w-full resize-none border-0 bg-transparent py-[10px] placeholder-black/50 focus:ring-0 focus-visible:ring-0 dark:bg-transparent dark:placeholder-white/50 md:py-3.5  ',
+                  SpeechToText ? 'pr-20 md:pr-[85px]' : 'pr-10 md:pr-12',
                   removeFocusOutlines,
                   'max-h-[65vh] md:max-h-[75vh]',
                 )}
@@ -176,6 +183,15 @@ const ChatForm = ({ index = 0 }) => {
                 />
               )
             )}
+            {SpeechToText && (
+              <AudioRecorder
+                disabled={!!disableInputs}
+                textAreaRef={textAreaRef}
+                ask={submitMessage}
+                methods={methods}
+              />
+            )}
+            {TextToSpeech && automaticPlayback && <StreamAudio index={index} />}
           </div>
         </div>
       </div>
