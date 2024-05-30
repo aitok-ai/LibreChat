@@ -144,7 +144,8 @@ const useNewConvo = (index = 0) => {
         }
 
         if (conversation.conversationId === 'new' && !modelsData) {
-          const appTitle = localStorage.getItem(LocalStorageKeys.APP_TITLE);
+          // const appTitle = localStorage.getItem(LocalStorageKeys.APP_TITLE);
+          const appTitle = 'New Chat';
           if (appTitle) {
             document.title = appTitle;
           }
