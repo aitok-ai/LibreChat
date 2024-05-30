@@ -4,10 +4,11 @@ import PrivateButton from '../Conversations/PrivateButton';
 import { CSSTransition } from 'react-transition-group';
 import store from '~/store';
 import { useAuthContext } from '~/hooks/AuthContext';
-import {
-  useLikeConversationMutation,
-  useUpdateConversationMutation,
-} from 'librechat-data-provider';
+// import {
+//   useLikeConversationMutation,
+//   // useUpdateConversationMutation,
+// } from 'librechat-data-provider/react-query';
+import { useUpdateConversationMutation } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 
 export default function MessageHeaderButtons({ conversationId, index = 0 }) {
@@ -18,15 +19,15 @@ export default function MessageHeaderButtons({ conversationId, index = 0 }) {
   // const conversation = useRecoilValue(store.conversation);
   // const { conversationId } = conversation;
   const updateConvoMutation = useUpdateConversationMutation(conversation?.conversationId);
-  const likeConvoMutation = useLikeConversationMutation(conversation?.conversationId);
+  // const likeConvoMutation = useLikeConversationMutation(conversation?.conversationId);
   const { viewCount } = conversation;
 
   // UI states
   const [privateState, setPrivateState] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [numOfLikes, setNumOfLikes] = useState(0);
-  const [likedBy, setLikedBy] = useState({});
+  // const [liked, setLiked] = useState(false);
+  // const [numOfLikes, setNumOfLikes] = useState(0);
+  // const [likedBy, setLikedBy] = useState({});
 
   // Copies conversation share link
   const copyShareLinkHandler = () => {
@@ -48,33 +49,33 @@ export default function MessageHeaderButtons({ conversationId, index = 0 }) {
   };
 
   // Likes the conversation
-  const likeHandler = async () => {
-    // update component state
-    setLiked(!liked);
+  // const likeHandler = async () => {
+  //   // update component state
+  //   setLiked(!liked);
 
-    // Initiate these properties if they do not exist
-    if (!likedBy) {
-      setLikedBy({});
-    }
+  //   // Initiate these properties if they do not exist
+  //   if (!likedBy) {
+  //     setLikedBy({});
+  //   }
 
-    // update states
-    if (liked) {
-      delete likedBy[user.id];
-      setNumOfLikes(numOfLikes - 1);
-    } else {
-      likedBy[user.id] = new Date();
-      setNumOfLikes(numOfLikes + 1);
-    }
+  //   // update states
+  //   if (liked) {
+  //     delete likedBy[user.id];
+  //     setNumOfLikes(numOfLikes - 1);
+  //   } else {
+  //     likedBy[user.id] = new Date();
+  //     setNumOfLikes(numOfLikes + 1);
+  //   }
 
-    // update DB
-    likeConvoMutation.mutate({ conversationId: conversationId, userId: user.id, liked: !liked });
-  };
+  //   // update DB
+  //   likeConvoMutation.mutate({ conversationId: conversationId, userId: user.id, liked: !liked });
+  // };
 
   useEffect(() => {
-    setLiked(conversation.likedBy && conversation.likedBy[user.id] ? true : false);
-    setNumOfLikes(conversation.likes);
+    // setLiked(conversation.likedBy && conversation.likedBy[user.id] ? true : false);
+    // setNumOfLikes(conversation.likes);
     setPrivateState(conversation.isPrivate);
-    setLikedBy({ ...(conversation.likedBy || {}) });
+    // setLikedBy({ ...(conversation.likedBy || {}) });
   }, [conversation, user.id]);
 
   return (
@@ -112,7 +113,7 @@ export default function MessageHeaderButtons({ conversationId, index = 0 }) {
           <PrivateButton isPrivate={privateState} setPrivateHandler={setPrivateHandler} />
 
           {/*Like button and number of likes*/}
-          <button
+          {/* <button
             className="ml-0.5 flex flex-row items-center gap-1 pr-1 hover:bg-gray-200 hover:dark:bg-gray-600"
             onClick={likeHandler}
           >
@@ -135,14 +136,14 @@ export default function MessageHeaderButtons({ conversationId, index = 0 }) {
             <div>
               {localize('com_ui_number_of_likes', numOfLikes ? numOfLikes.toString() : '0')}
             </div>
-          </button>
+          </button> */}
           {/*View Count Display*/}
           <div>{localize('com_ui_number_of_views', viewCount ? viewCount.toString() : '0')}</div>
         </div>
       </div>
       {/*Copied indicator*/}
       <CSSTransition in={copied} timeout={2000} classNames="copied-toast" unmountOnExit={false}>
-        <div className="text-md invisible absolute bottom-32 z-10 rounded-full bg-gray-200 px-3 py-1 text-black opacity-0">
+        <div className="text-md bottom-81 invisible absolute left-40 z-10 flex items-center justify-center bg-gray-200 px-4 py-1 text-black opacity-0 ">
           {localize('com_ui_copied')}
         </div>
       </CSSTransition>
