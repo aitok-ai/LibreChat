@@ -33,13 +33,13 @@ export default function useAppStartup({
     select: selectPlugins,
   });
 
-  /** Set the app title */
-  useEffect(() => {
-    if (startupConfig?.appTitle) {
-      document.title = startupConfig.appTitle;
-      localStorage.setItem(LocalStorageKeys.APP_TITLE, startupConfig.appTitle);
-    }
-  }, [startupConfig]);
+  // /** Set the app title */
+  // useEffect(() => {
+  //   if (startupConfig?.appTitle) {
+  //     document.title = startupConfig.appTitle;
+  //     localStorage.setItem(LocalStorageKeys.APP_TITLE, startupConfig.appTitle);
+  //   }
+  // }, [startupConfig]);
 
   /** Set the default spec's preset as default */
   useEffect(() => {
