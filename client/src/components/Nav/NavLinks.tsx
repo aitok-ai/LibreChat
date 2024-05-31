@@ -1,10 +1,8 @@
-import { useLocation } from 'react-router-dom';
-import { Fragment, useState, memo } from 'react';
 import { FileText } from 'lucide-react';
+import { useRecoilState } from 'recoil';
+import { Fragment, useState, memo } from 'react';
 import { Menu, Transition } from '@headlessui/react';
-import { useRecoilValue, useRecoilState } from 'recoil';
 import { useGetUserBalance, useGetStartupConfig } from 'librechat-data-provider/react-query';
-import type { TConversation } from 'librechat-data-provider';
 import FilesView from '~/components/Chat/Input/Files/FilesView';
 import { useAuthContext } from '~/hooks/AuthContext';
 import useAvatar from '~/hooks/Messages/useAvatar';
@@ -20,7 +18,6 @@ import store from '~/store';
 
 function NavLinks() {
   const localize = useLocalize();
-  const location = useLocation();
   const { user, isAuthenticated } = useAuthContext();
   const { data: startupConfig } = useGetStartupConfig();
   const balanceQuery = useGetUserBalance({
@@ -30,21 +27,12 @@ function NavLinks() {
   const [showProfile, setShowProfile] = useState(false);
   const [showFiles, setShowFiles] = useRecoilState(store.showFiles);
 
-  const activeConvo = useRecoilValue(store.conversationByIndex(0));
-  const globalConvo = useRecoilValue(store.conversation) ?? ({} as TConversation);
-
   const avatarSrc = useAvatar(user);
-
-  let conversation: TConversation | null | undefined;
-  if (location.state?.from?.pathname.includes('/chat')) {
-    conversation = globalConvo;
-  } else {
-    conversation = activeConvo;
-  }
 
   if (!user) {
     return null;
   }
+
   return (
     <>
       <Menu as="div" className="group relative">
