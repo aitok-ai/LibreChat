@@ -32,7 +32,7 @@ const DropDownMenu: FC<DropDownMenuProps> = ({
           )}
           id="edit-menu-button"
           data-testid="edit-menu-button"
-          title={localize('com_ui_more_options')}
+          //   title={localize('com_ui_more_options')}
         >
           <TooltipProvider delayDuration={500}>
             <Tooltip>

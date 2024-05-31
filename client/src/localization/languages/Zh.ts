@@ -225,6 +225,7 @@ export default {
   com_ui_upload_delay: '上传 "{0}" 时比预期花了更长时间。 文件正在进行检索索引，请稍候。',
   com_ui_privacy_policy: '隐私政策',
   com_ui_terms_of_service: '服务政策',
+  com_ui_use_micrphone: '语音输入',
   com_auth_error_login: '无法登录，请确认提供的账户密码正确，并重新尝试。',
   com_auth_error_login_rl: '尝试登录次数过多，请稍后再试。',
   com_auth_error_login_ban: '根据我们的服务规则，您的帐号被暂时禁用。',
