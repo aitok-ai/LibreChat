@@ -1,5 +1,5 @@
-const Keyv = require('keyv');
 const crypto = require('crypto');
+const Keyv = require('keyv');
 const {
   EModelEndpoint,
   resolveHeaders,
@@ -9,11 +9,11 @@ const {
 const { CohereClient } = require('cohere-ai');
 const { encoding_for_model: encodingForModel, get_encoding: getEncoding } = require('tiktoken');
 const { fetchEventSource } = require('@waylaidwanderer/fetch-event-source');
-const { createCoherePayload } = require('./llm');
 const { Agent, ProxyAgent } = require('undici');
-const BaseClient = require('./BaseClient');
 const { logger } = require('~/config');
 const { extractBaseURL, constructAzureURL, genAzureChatCompletion } = require('~/utils');
+const BaseClient = require('./BaseClient');
+const { createCoherePayload } = require('./llm');
 
 const CHATGPT_MODEL = 'gpt-3.5-turbo';
 const tokenizersCache = {};
@@ -259,8 +259,8 @@ class ChatGPTClient extends BaseClient {
     }
 
     if (this.useOpenRouter) {
-      opts.headers['HTTP-Referer'] = 'https://librechat.ai';
-      opts.headers['X-Title'] = 'LibreChat';
+      opts.headers['HTTP-Referer'] = 'https://iaitok.com';
+      opts.headers['X-Title'] = 'iAITok';
     }
 
     if (this.options.proxy) {
