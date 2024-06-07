@@ -1,8 +1,20 @@
-const { updateUserPluginsService } = require('../services/UserService');
-const { updateUserPluginAuth, deleteUserPluginAuth } = require('../services/PluginService');
-const { getUserMessageQuotaUsagePastDays } = require('../middleware/messageQuota');
-const User = require('../../models/User');
+// const { updateUserPluginsService } = require('../services/UserService');
+// const { updateUserPluginAuth, deleteUserPluginAuth } = require('../services/PluginService');
+// const User = require('../../models/User');
+const {
+  User,
+  Session,
+  Balance,
+  deleteFiles,
+  deleteConvos,
+  deletePresets,
+  deleteMessages,
+} = require('~/models');
+const { updateUserPluginAuth, deleteUserPluginAuth } = require('~/server/services/PluginService');
+const { updateUserPluginsService, deleteUserKey } = require('~/server/services/UserService');
+const { Transaction } = require('~/models/Transaction');
 const { logger } = require('~/config');
+const { getUserMessageQuotaUsagePastDays } = require('../middleware/messageQuota');
 
 const getUserController = async (req, res) => {
   try {
@@ -190,6 +202,27 @@ const followUserController = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+const deleteUserController = async (req, res) => {
+  const { user } = req;
+
+  try {
+    await deleteMessages({ user: user.id }); // delete user messages
+    await Session.deleteMany({ user: user.id }); // delete user sessions
+    await Transaction.deleteMany({ user: user.id }); // delete user transactions
+    await deleteUserKey({ userId: user.id, all: true }); // delete user keys
+    await Balance.deleteMany({ user: user._id }); // delete user balances
+    await deletePresets(user.id); // delete user presets
+    await deleteConvos(user.id); // delete user convos
+    await deleteUserPluginAuth(user.id, null, true); // delete user plugin auth
+    await User.deleteOne({ _id: user.id }); // delete user
+    await deleteFiles(null, user.id); // delete user files
+    logger.info(`User deleted account. Email: ${user.email} ID: ${user.id}`);
+    res.status(200).send({ message: 'User deleted' });
+  } catch (err) {
+    logger.error('[deleteUserController]', err);
+    res.status(500).send({ message: err.message });
+  }
+};
 
 module.exports = {
   getUserController,
@@ -197,4 +230,5 @@ module.exports = {
   followUserController,
   postBiographyController,
   usernameController,
+  deleteUserController,
 };

@@ -21,6 +21,7 @@ const moderateText = require('./moderateText');
 const noIndex = require('./noIndex');
 const importLimiters = require('./importLimiters');
 const messageQuota = require('./messageQuota');
+const canDeleteAccount = require('./canDeleteAccount');
 
 module.exports = {
   ...uploadLimiters,
@@ -46,4 +47,5 @@ module.exports = {
   ...importLimiters,
   checkDomainAllowed,
   messageQuota,
+  canDeleteAccount,
 };
