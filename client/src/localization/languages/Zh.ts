@@ -275,6 +275,8 @@ export default {
   com_auth_here: '这里',
   com_auth_to_reset_your_password: '重置密码。',
   com_auth_reset_password_link_sent: '重置密码链接已发送至邮箱',
+  com_auth_reset_password_if_email_exists:
+    '已发送一封电子邮件到{0}，其中包含有关如何重置密码的说明。如果您没有很快看到这封电子邮件，请检查您的垃圾邮件或垃圾邮件文件夹。',
   com_auth_reset_password_email_sent:
     '已发送一封电子邮件到{0}，其中包含有关如何重置密码的说明。如果您没有很快看到这封电子邮件，请检查您的垃圾邮件或垃圾邮件文件夹。',
   com_auth_error_reset_password: '重置密码出现错误，未找到对应的邮箱地址，请重新输入。',
@@ -538,6 +540,14 @@ export default {
   com_nav_help_faq: '帮助',
   com_nav_settings: '设置',
   com_nav_search_placeholder: '搜索对话及对话内容',
+  com_nav_delete_account: '删除账户',
+  com_nav_delete_account_confirm: '确认删除账户 - 你确定吗？',
+  com_nav_delete_account_button: '永久删除我的账户',
+  com_nav_delete_account_email_placeholder: '请填写你的账户邮箱',
+  com_nav_delete_account_confirm_placeholder: '要继续，请在以下输入框中输入 "DELETE"',
+  com_nav_delete_warning: '警告：这将永久删除你的账户。',
+  com_nav_delete_data_info: '将删除所有您的数据。',
+  com_nav_delete_help_center: '如需更多信息，请访问我们的帮助中心。',
   com_nav_conversation_mode: '对话模式',
   com_nav_auto_send_text: '自动发送文本（3秒后）',
   com_nav_auto_transcribe_audio: '自动转录音频',
