@@ -9,9 +9,12 @@ const {
   deleteConvos,
   deletePresets,
   deleteMessages,
+  deleteUserById,
 } = require('~/models');
 const { updateUserPluginAuth, deleteUserPluginAuth } = require('~/server/services/PluginService');
 const { updateUserPluginsService, deleteUserKey } = require('~/server/services/UserService');
+const { verifyEmail, resendVerificationEmail } = require('~/server/services/AuthService');
+const { deleteAllSharedLinks } = require('~/models/Share');
 const { Transaction } = require('~/models/Transaction');
 const { logger } = require('~/config');
 const { getUserMessageQuotaUsagePastDays } = require('../middleware/messageQuota');
@@ -25,7 +28,7 @@ const getUserController = async (req, res) => {
 
       // Extend req.user with the new field
       const response = {
-        ...req.user.toJSON(),
+        ...req.user,
         monthlyQuotaConsumed: monthlyQuotaConsumed,
       };
       res.status(200).send(response);
@@ -155,7 +158,7 @@ const updateUserPluginsController = async (req, res) => {
     res.status(200).send();
   } catch (err) {
     logger.error('[updateUserPluginsController]', err);
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
@@ -214,21 +217,53 @@ const deleteUserController = async (req, res) => {
     await deletePresets(user.id); // delete user presets
     await deleteConvos(user.id); // delete user convos
     await deleteUserPluginAuth(user.id, null, true); // delete user plugin auth
-    await User.deleteOne({ _id: user.id }); // delete user
+    await deleteUserById(user.id); // delete user
     await deleteFiles(null, user.id); // delete user files
+    await deleteAllSharedLinks(user.id); // delete user shared links
+    /* TODO: queue job for cleaning actions and assistants of non-existant users */
     logger.info(`User deleted account. Email: ${user.email} ID: ${user.id}`);
     res.status(200).send({ message: 'User deleted' });
   } catch (err) {
     logger.error('[deleteUserController]', err);
-    res.status(500).send({ message: err.message });
+    return res.status(500).json({ message: 'Something went wrong.' });
+  }
+};
+
+const verifyEmailController = async (req, res) => {
+  try {
+    const verifyEmailService = await verifyEmail(req);
+    if (verifyEmailService instanceof Error) {
+      return res.status(400).json(verifyEmailService);
+    } else {
+      return res.status(200).json(verifyEmailService);
+    }
+  } catch (e) {
+    logger.error('[verifyEmailController]', e);
+    return res.status(500).json({ message: 'Something went wrong.' });
+  }
+};
+
+const resendVerificationController = async (req, res) => {
+  try {
+    const result = await resendVerificationEmail(req);
+    if (result instanceof Error) {
+      return res.status(400).json(result);
+    } else {
+      return res.status(200).json(result);
+    }
+  } catch (e) {
+    logger.error('[verifyEmailController]', e);
+    return res.status(500).json({ message: 'Something went wrong.' });
   }
 };
 
 module.exports = {
   getUserController,
-  updateUserPluginsController,
   followUserController,
   postBiographyController,
   usernameController,
   deleteUserController,
+  verifyEmailController,
+  updateUserPluginsController,
+  resendVerificationController,
 };

@@ -326,6 +326,7 @@ export type TAuthContext = {
   error: string | undefined;
   login: (data: TLoginUser) => void;
   logout: () => void;
+  setError: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
 export type TUserContext = {

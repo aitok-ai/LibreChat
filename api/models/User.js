@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const signPayload = require('../server/services/signPayload');
-const userSchema = require('./schema/userSchema.js');
+// const userSchema = require('./schema/userSchema.js');
+const userSchema = require('~/models/schema/userSchema');
 const { SESSION_EXPIRY } = process.env ?? {};
 const expires = eval(SESSION_EXPIRY) ?? 1000 * 60 * 15;
 
