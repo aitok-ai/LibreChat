@@ -200,16 +200,15 @@ export default {
   com_ui_confirm_action: '确认执行',
   com_ui_chats: '聊天',
   com_ui_delete: '删除',
-  com_ui_share_link_to_chat: 'Share link to chat',
-  com_ui_share_error: 'There was an error sharing the chat link',
-  com_ui_share_create_message: 'Your name and any messages you add after sharing stay private.',
+  com_ui_share_link_to_chat: '分享聊天链接',
+  com_ui_share_error: '分享聊天链接时出现错误',
+  com_ui_share_create_message: '分享后你的名字和你添加的任何消息都保持私密。',
   com_ui_share_created_message:
-    'A public link to your chat has been created. Manage previously shared chats at any time via Settings.',
-  com_ui_share_update_message:
-    'Your name, custom instructions, and any messages you add after sharing stay private.',
+    '你的聊天的公共链接已经创建。你可以随时通过设置管理之前分享的聊天。',
+  com_ui_share_update_message: '分享后你的名字、自定义指令和你添加的任何消息都保持私密。',
   com_ui_share_updated_message:
-    'A public link to your chat has been updated. Manage previously shared chats at any time via Settings.',
-  com_ui_shared_link_not_found: 'Shared link not found',
+    '你的聊天的公共链接已经更新。你可以随时通过设置管理之前分享的聊天。',
+  com_ui_shared_link_not_found: '未找到分享的链接',
   com_ui_delete_conversation: '删除对话？',
   com_ui_delete_conversation_confirm: '这将删除对话：',
   com_ui_delete_assistant_confirm: '确定要删除此助手吗？该操作无法撤销。',
@@ -520,6 +519,7 @@ export default {
   com_nav_theme_dark: '暗色主题',
   com_nav_theme_light: '亮色主题',
   com_nav_user_name_display: '在消息中显示用户名',
+  com_nav_save_drafts: '保存草稿本地',
   com_nav_show_code: '使用代码解释器时始终显示代码',
   com_nav_clear_all_chats: '清空所有对话',
   com_nav_confirm_clear: '确认清空',
@@ -2236,6 +2236,10 @@ export const comparisons = {
   com_nav_user_name_display: {
     english: 'Display username in messages',
     translated: '在消息中显示用户名',
+  },
+  com_nav_save_drafts: {
+    english: 'Save drafts locally',
+    translated: '保存草稿本地',
   },
   com_nav_show_code: {
     english: 'Always show code when using code interpreter',

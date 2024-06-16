@@ -97,7 +97,7 @@ const startServer = async () => {
   app.use('/api/share', routes.share);
 
   app.use((req, res) => {
-    res.status(404).sendFile(path.join(app.locals.paths.dist, 'index.html'));
+    res.sendFile(path.join(app.locals.paths.dist, 'index.html'));
   });
 
   app.listen(port, host, () => {

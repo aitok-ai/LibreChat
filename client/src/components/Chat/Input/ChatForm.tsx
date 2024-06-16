@@ -1,8 +1,7 @@
 import { useForm } from 'react-hook-form';
 // import TextareaAutosize from 'react-textarea-autosize';
-import { memo, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
-// import { memo, useCallback, useRef, useMemo } from 'react';
+import { memo, useCallback, useRef, useMemo, useState, useEffect } from 'react';
 import {
   supportsFiles,
   mergeFileConfig,
@@ -10,6 +9,7 @@ import {
   fileConfig as defaultFileConfig,
 } from 'librechat-data-provider';
 import { useChatContext, useAssistantsMapContext } from '~/Providers';
+import { useAutoSave } from '~/hooks/Input/useAutoSave';
 import { useRequiresKey, useTextarea } from '~/hooks';
 import { TextareaAutosize } from '~/components/ui';
 import { useGetFileConfig } from '~/data-provider';
@@ -59,6 +59,14 @@ const ChatForm = ({ index = 0 }) => {
     handleStopGenerating,
   } = useChatContext();
 
+  const { clearDraft } = useAutoSave({
+    conversationId: useMemo(() => conversation?.conversationId, [conversation]),
+    textAreaRef,
+    setValue: methods.setValue,
+    files,
+    setFiles,
+  });
+
   const assistantMap = useAssistantsMapContext();
 
   const submitMessage = useCallback(
@@ -68,10 +76,8 @@ const ChatForm = ({ index = 0 }) => {
       }
       ask({ text: data.text });
       methods.reset();
-      // if (textAreaRef.current) {
-      //   textAreaRef.current.value = '';
-      // }
       setText('');
+      clearDraft();
     },
     [ask, methods, setText],
   );

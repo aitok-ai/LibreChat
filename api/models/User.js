@@ -69,6 +69,7 @@ module.exports.hashPassword = async (password) => {
 
   return hashedPassword;
 };
+// const userSchema = require('~/models/schema/userSchema');
 
 const User = mongoose.model('User', userSchema);
 

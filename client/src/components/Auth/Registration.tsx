@@ -46,9 +46,6 @@ const Registration: React.FC = () => {
       }
     },
   });
-  //if (userId) {
-  //  registerUser.refBy = userId;
-  //}
   useEffect(() => {
     if (startupConfig?.registrationEnabled === false) {
       navigate('/login');

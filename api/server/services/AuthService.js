@@ -2,12 +2,13 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { errorsToString } = require('librechat-data-provider');
 const {
+  findUser,
   countUsers,
   createUser,
-  findUser,
   updateUser,
-  generateToken,
   getUserById,
+  generateToken,
+  deleteUserById,
 } = require('~/models/userMethods');
 const { sendEmail, checkEmailConfig } = require('~/server/utils');
 const { registerSchema } = require('~/strategies/validators');
@@ -62,6 +63,19 @@ const sendVerificationEmail = async (user) => {
   let verifyToken = crypto.randomBytes(32).toString('hex');
   const hash = bcrypt.hashSync(verifyToken, 10);
 
+  const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${user.email}`;
+  await sendEmail({
+    email: user.email,
+    subject: 'Verify your email',
+    payload: {
+      appName: process.env.APP_TITLE || 'LibreChat',
+      name: user.name,
+      verificationLink: verificationLink,
+      year: new Date().getFullYear(),
+    },
+    template: 'verifyEmail.handlebars',
+  });
+
   await new Token({
     userId: user._id,
     email: user.email,
@@ -69,21 +83,7 @@ const sendVerificationEmail = async (user) => {
     createdAt: Date.now(),
   }).save();
 
-  const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${user.email}`;
   logger.info(`[sendVerificationEmail] Verification link issued. [Email: ${user.email}]`);
-
-  sendEmail(
-    user.email,
-    'Verify your email',
-    {
-      appName: process.env.APP_TITLE || 'LibreChat',
-      name: user.name,
-      verificationLink: verificationLink,
-      year: new Date().getFullYear(),
-    },
-    'verifyEmail.handlebars',
-  );
-  return;
 };
 
 /**
@@ -137,6 +137,7 @@ const registerUser = async (user) => {
 
   const { email, password, name, username, refBy } = user;
 
+  let newUserId;
   try {
     const existingUser = await findUser({ email }, 'email _id');
 
@@ -183,7 +184,7 @@ const registerUser = async (user) => {
         username: referrer.username,
       };
     }
-    const newUserId = await createUser(newUserData, false);
+    newUserId = await createUser(newUserData, false);
     if (emailEnabled) {
       await sendVerificationEmail({
         _id: newUserId,
@@ -219,6 +220,12 @@ const registerUser = async (user) => {
     // return { status: 200, user: newUser };
   } catch (err) {
     logger.error('[registerUser] Error in registering user:', err);
+    if (newUserId) {
+      const result = await deleteUserById(newUserId);
+      logger.warn(
+        `[registerUser] [Email: ${email}] [Temporary User deleted: ${JSON.stringify(result)}]`,
+      );
+    }
     return { status: 500, message: 'Something went wrong' };
   }
 };
@@ -258,17 +265,17 @@ const requestPasswordReset = async (req) => {
   const link = `${domains.client}/reset-password?token=${resetToken}&userId=${user._id}`;
 
   if (emailEnabled) {
-    sendEmail(
-      user.email,
-      'Password Reset Request',
-      {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password Reset Request',
+      payload: {
         appName: process.env.APP_TITLE || 'LibreChat',
         name: user.name,
         link: link,
         year: new Date().getFullYear(),
       },
-      'requestPasswordReset.handlebars',
-    );
+      template: 'requestPasswordReset.handlebars',
+    });
     logger.info(
       `[requestPasswordReset] Link emailed. [Email: ${email}] [ID: ${user._id}] [IP: ${req.ip}]`,
     );
@@ -309,16 +316,16 @@ const resetPassword = async (userId, token, password) => {
   const user = await updateUser(userId, { password: hash });
 
   if (checkEmailConfig()) {
-    sendEmail(
-      user.email,
-      'Password Reset Successfully',
-      {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password Reset Successfully',
+      payload: {
         appName: process.env.APP_TITLE || 'LibreChat',
         name: user.name,
         year: new Date().getFullYear(),
       },
-      'passwordReset.handlebars',
-    );
+      template: 'passwordReset.handlebars',
+    });
   }
 
   await passwordResetToken.deleteOne();
@@ -329,7 +336,7 @@ const resetPassword = async (userId, token, password) => {
 /**
  * Set Auth Tokens
  *
- * @param {String} userId
+ * @param {String | ObjectId} userId
  * @param {Object} res
  * @param {String} sessionId
  * @returns
@@ -337,7 +344,6 @@ const resetPassword = async (userId, token, password) => {
 const setAuthTokens = async (userId, res, sessionId = null) => {
   try {
     const user = await getUserById(userId);
-    user.id = user._id.toString();
     const token = await generateToken(user);
 
     let session;
@@ -389,6 +395,20 @@ const resendVerificationEmail = async (req) => {
     let verifyToken = crypto.randomBytes(32).toString('hex');
     const hash = bcrypt.hashSync(verifyToken, 10);
 
+    const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${user.email}`;
+
+    await sendEmail({
+      email: user.email,
+      subject: 'Verify your email',
+      payload: {
+        appName: process.env.APP_TITLE || 'LibreChat',
+        name: user.name,
+        verificationLink: verificationLink,
+        year: new Date().getFullYear(),
+      },
+      template: 'verifyEmail.handlebars',
+    });
+
     await new Token({
       userId: user._id,
       email: user.email,
@@ -396,20 +416,7 @@ const resendVerificationEmail = async (req) => {
       createdAt: Date.now(),
     }).save();
 
-    const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${user.email}`;
     logger.info(`[resendVerificationEmail] Verification link issued. [Email: ${user.email}]`);
-
-    sendEmail(
-      user.email,
-      'Verify your email',
-      {
-        appName: process.env.APP_TITLE || 'LibreChat',
-        name: user.name,
-        verificationLink: verificationLink,
-        year: new Date().getFullYear(),
-      },
-      'verifyEmail.handlebars',
-    );
 
     return {
       status: 200,
