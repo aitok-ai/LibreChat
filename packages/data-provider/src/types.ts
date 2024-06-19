@@ -306,6 +306,9 @@ export type TStartupConfig = {
   customFooter?: string;
   proMemberPaymentURL: string;
   modelSpecs?: TSpecsConfig;
+  sharedLinksEnabled: boolean;
+  publicSharedLinksEnabled: boolean;
+  analyticsGtmId?: string;
 };
 
 export type TRefreshTokenResponse = {

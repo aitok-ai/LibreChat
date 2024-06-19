@@ -90,7 +90,11 @@ export default function HoverButtons({
     return null;
   }
 
-  const { isCreatedByUser } = message;
+  const { isCreatedByUser, error } = message;
+
+  if (error) {
+    return null;
+  }
 
   const onEdit = () => {
     if (isEditing) {
