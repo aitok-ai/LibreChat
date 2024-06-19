@@ -63,7 +63,7 @@ const sendVerificationEmail = async (user) => {
   let verifyToken = crypto.randomBytes(32).toString('hex');
   const hash = bcrypt.hashSync(verifyToken, 10);
 
-  const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${user.email}`;
+  const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
   await sendEmail({
     email: user.email,
     subject: 'Verify your email',
@@ -92,7 +92,7 @@ const sendVerificationEmail = async (user) => {
  */
 const verifyEmail = async (req) => {
   const { email, token } = req.body;
-  let emailVerificationData = await Token.findOne({ email });
+  let emailVerificationData = await Token.findOne({ email: decodeURIComponent(email) });
 
   if (!emailVerificationData) {
     logger.warn(`[verifyEmail] [No email verification data found] [Email: ${email}]`);
@@ -395,7 +395,7 @@ const resendVerificationEmail = async (req) => {
     let verifyToken = crypto.randomBytes(32).toString('hex');
     const hash = bcrypt.hashSync(verifyToken, 10);
 
-    const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${user.email}`;
+    const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
 
     await sendEmail({
       email: user.email,
