@@ -59,3 +59,4 @@ export { default as PlayIcon } from './PlayIcon';
 export { default as PauseIcon } from './PauseIcon';
 export { default as StopIcon } from './StopIcon';
 export { default as SpeechIcon } from './SpeechIcon';
+export { default as SaveIcon } from './SaveIcon';

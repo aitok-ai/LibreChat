@@ -1,16 +1,16 @@
-import { useForm } from 'react-hook-form';
+// import { useForm } from 'react-hook-form';
 // import TextareaAutosize from 'react-textarea-autosize';
+import { memo, useRef, useMemo, useEffect } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { memo, useCallback, useRef, useMemo, useState, useEffect } from 'react';
 import {
   supportsFiles,
   mergeFileConfig,
   isAssistantsEndpoint,
   fileConfig as defaultFileConfig,
 } from 'librechat-data-provider';
-import { useChatContext, useAssistantsMapContext } from '~/Providers';
+import { useChatContext, useAssistantsMapContext, useChatFormContext } from '~/Providers';
+import { useRequiresKey, useTextarea, useSubmitMessage } from '~/hooks';
 import { useAutoSave } from '~/hooks/Input/useAutoSave';
-import { useRequiresKey, useTextarea } from '~/hooks';
 import { TextareaAutosize } from '~/components/ui';
 import { useGetFileConfig } from '~/data-provider';
 import { cn, removeFocusRings } from '~/utils';
@@ -37,9 +37,9 @@ const ChatForm = ({ index = 0 }) => {
   );
   const { requiresKey } = useRequiresKey();
 
-  const methods = useForm<{ text: string }>({
-    defaultValues: { text: text || '' }, // 使用Recoil获取到的text状态进行初始化
-  });
+  //const methods = useForm<{ text: string }>({
+  //  defaultValues: { text: text || '' }, // 使用Recoil获取到的text状态进行初始化
+  //});
 
   const { handlePaste, handleKeyDown, handleKeyUp, handleCompositionStart, handleCompositionEnd } =
     useTextarea({
@@ -49,7 +49,6 @@ const ChatForm = ({ index = 0 }) => {
     });
 
   const {
-    ask,
     files,
     setFiles,
     conversation,
@@ -58,29 +57,17 @@ const ChatForm = ({ index = 0 }) => {
     setFilesLoading,
     handleStopGenerating,
   } = useChatContext();
+  const methods = useChatFormContext();
 
   const { clearDraft } = useAutoSave({
     conversationId: useMemo(() => conversation?.conversationId, [conversation]),
     textAreaRef,
-    setValue: methods.setValue,
     files,
     setFiles,
   });
 
   const assistantMap = useAssistantsMapContext();
-
-  const submitMessage = useCallback(
-    (data?: { text: string }) => {
-      if (!data) {
-        return console.warn('No data provided to submitMessage');
-      }
-      ask({ text: data.text });
-      methods.reset();
-      setText('');
-      clearDraft();
-    },
-    [ask, methods, setText],
-  );
+  const { submitMessage } = useSubmitMessage({ clearDraft });
 
   useEffect(() => {
     methods.setValue('text', text);
@@ -116,7 +103,11 @@ const ChatForm = ({ index = 0 }) => {
 
   return (
     <form
-      onSubmit={methods.handleSubmit((data) => submitMessage(data))}
+      onSubmit={methods.handleSubmit((data) => {
+        submitMessage(data);
+        methods.setValue('text', ''); // 清空输入框,这行代码会设置输入框的值为空
+        setText('');
+      })}
       className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl"
     >
       <div className="relative flex h-full flex-1 items-stretch md:flex-col">

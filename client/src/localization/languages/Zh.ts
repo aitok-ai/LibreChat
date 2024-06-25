@@ -149,7 +149,6 @@ export default {
   com_ui_submit: '提交',
   com_ui_upload_success: '上传文件成功',
   com_ui_upload_error: '上传文件错误',
-  com_ui_upload_invalid: '无效的上传文件，请上传不超过2M大小的图片',
   com_ui_cancel: '取消',
   com_ui_save: '保存',
   com_ui_save_submit: '保存并提交',
@@ -212,6 +211,8 @@ export default {
   com_ui_create_link: '创建链接',
   com_ui_delete_conversation: '删除对话？',
   com_ui_delete_conversation_confirm: '这将删除对话：',
+  com_ui_update_link: '更新链接',
+  com_ui_delete_confirm: '这将删除',
   com_ui_delete_assistant_confirm: '确定要删除此助手吗？该操作无法撤销。',
   com_ui_rename: '重命名',
   com_ui_archive: '归档',
@@ -1233,7 +1234,7 @@ export const comparisons = {
     english: 'Delete chat?',
     translated: '删除对话？',
   },
-  com_ui_delete_conversation_confirm: {
+  com_ui_delete_confirm: {
     english: 'This will delete',
     translated: '这将删除',
   },

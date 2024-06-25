@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const { errorsToString } = require('librechat-data-provider');
+const { SystemRoles, errorsToString } = require('librechat-data-provider');
 const {
   findUser,
   countUsers,
@@ -63,7 +63,9 @@ const sendVerificationEmail = async (user) => {
   let verifyToken = crypto.randomBytes(32).toString('hex');
   const hash = bcrypt.hashSync(verifyToken, 10);
 
-  const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
+  const verificationLink = `${
+    domains.client
+  }/verify?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
   await sendEmail({
     email: user.email,
     subject: 'Verify your email',
@@ -170,7 +172,7 @@ const registerUser = async (user) => {
       username,
       name,
       avatar: null,
-      role: isFirstRegisteredUser ? 'ADMIN' : 'USER',
+      role: isFirstRegisteredUser ? SystemRoles.ADMIN : SystemRoles.USER,
       refBy: refBy,
       following: {},
       password: bcrypt.hashSync(password, salt),
@@ -395,7 +397,9 @@ const resendVerificationEmail = async (req) => {
     let verifyToken = crypto.randomBytes(32).toString('hex');
     const hash = bcrypt.hashSync(verifyToken, 10);
 
-    const verificationLink = `${domains.client}/verify?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
+    const verificationLink = `${
+      domains.client
+    }/verify?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
 
     await sendEmail({
       email: user.email,

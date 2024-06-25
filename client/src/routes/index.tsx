@@ -15,6 +15,7 @@ import Recommendations from '~/components/ui/Recommendations';
 import { useEffect } from 'react';
 import StartupLayout from './Layouts/Startup';
 import LoginLayout from './Layouts/Login';
+import dashboardRoutes from './Dashboard';
 import ShareRoute from './ShareRoute';
 import ChatRoute from './ChatRoute';
 import Search from './Search';
@@ -73,6 +74,7 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      dashboardRoutes,
       {
         path: 'chat/share/:conversationId?',
         element: <SharedConvo />,

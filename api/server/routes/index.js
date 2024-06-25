@@ -21,6 +21,8 @@ const files = require('./files');
 const webhooks = require('./webhooks');
 const staticRoute = require('./static');
 const share = require('./share');
+const categories = require('./categories');
+const roles = require('./roles');
 
 module.exports = {
   search,
@@ -46,4 +48,6 @@ module.exports = {
   webhooks,
   staticRoute,
   share,
+  categories,
+  roles,
 };
