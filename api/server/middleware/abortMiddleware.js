@@ -121,7 +121,7 @@ const handleAbortError = async (res, req, error, data) => {
 
   const errorText = error?.message?.includes('"type"')
     ? error.message
-    : 'An error occurred while processing your request. Please contact the Admin.';
+    : 'An error occurred while processing your request. Please contact the Admin. Also can refresh the webpage.';
 
   const respondWithError = async (partialText) => {
     let options = {
