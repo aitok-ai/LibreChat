@@ -16,6 +16,7 @@ import { Spinner } from '../svg';
 import { useNavigate } from 'react-router-dom';
 // import { alternateName } from '~/utils';
 import { alternateName } from 'librechat-data-provider';
+import MessagesView from '../Share/MessagesView';
 
 export default function Recommendations() {
   const [tabValue, setTabValue] = useState<string>(
@@ -338,7 +339,7 @@ export default function Recommendations() {
       if (cache[cacheIdx]) {
         const { user, messages } = cache[cacheIdx];
         console.log(messages);
-        setMsgTree(buildTree(messages ?? null) || null);
+        setMsgTree(buildTree({ messages } ?? null) || null);
         setConvoUser(user);
       } else {
         fetchConvoMessagesAndUser(
@@ -561,19 +562,24 @@ export default function Recommendations() {
                 ) : (
                   <>
                     {convoData && convoData?.length > 0 && msgTree && convoUser ? (
-                      <OldMultiMessage
-                        key={convoData[convoIdx].conversationId} // avoid internal state mixture
-                        messageId={convoData[convoIdx].conversationId}
-                        conversation={convoData[convoIdx]}
+                      <MessagesView
                         messagesTree={msgTree}
-                        scrollToBottom={null || undefined}
-                        currentEditId={-1}
-                        setCurrentEditId={null}
-                        isSearchView={true}
-                        name={convoUser?.name}
-                        userId={convoUser?.id}
+                        conversationId={convoData[convoIdx].conversationId ?? ''}
                       />
                     ) : (
+                      //   <MessagesView messagesTree={messagesTree} Header={<Header />} />
+                      //   <OldMultiMessage
+                      //     key={convoData[convoIdx].conversationId} // avoid internal state mixture
+                      //     messageId={convoData[convoIdx].conversationId}
+                      //     conversation={convoData[convoIdx]}
+                      //     messagesTree={msgTree}
+                      //     scrollToBottom={null || undefined}
+                      //     currentEditId={-1}
+                      //     setCurrentEditId={null}
+                      //     isSearchView={true}
+                      //     name={convoUser?.name}
+                      //     userId={convoUser?.id}
+                      //   />
                       <div className="flex h-[25vh] w-full flex-row items-end justify-end">
                         <Spinner />
                       </div>

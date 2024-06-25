@@ -36,6 +36,8 @@ export default {
   com_ui_create_link: 'Utwórz link',
   com_ui_share_link_to_chat: 'Udostępnij link w czacie',
   com_ui_share_error: 'Wystąpił błąd podczas udostępniania linku do czatu',
+  com_ui_share_retrieve_error: 'Wystąpił błąd podczas usuwania udostępnionego linku.',
+  com_ui_share_delete_error: 'Wystąpił błąd podczas usuwania udostępnionego linku.',
   com_ui_share_create_message:
     'Twoje imię i jakiekolwiek wiadomości dodane po udostępnieniu pozostaną prywatne.',
   com_ui_share_created_message:
@@ -359,6 +361,14 @@ export const comparisons = {
   com_ui_share_link_to_chat: {
     english: 'Share link to chat',
     translated: 'Udostępnij link w czacie',
+  },
+  com_ui_share_retrieve_error: {
+    english: 'There was an error deleting the shared link.',
+    translated: 'Wystąpił błąd podczas usuwania udostępnionego linku.',
+  },
+  com_ui_share_delete_error: {
+    english: 'There was an error deleting the shared link.',
+    translated: 'Wystąpił błąd podczas usuwania udostępnionego linku.',
   },
   com_ui_share_error: {
     english: 'There was an error sharing the chat link',

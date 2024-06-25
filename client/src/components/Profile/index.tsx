@@ -583,8 +583,8 @@ function ProfileContent() {
                     </div>
                   ) : (
                     <div className="pl-1">
-                      {bio.length > 100 ? `${bio.slice(0, 100)}...` : bio}
-                      {bio.length > 100 && (
+                      {bio?.length > 100 ? `${bio.slice(0, 100)}...` : bio}
+                      {bio?.length > 100 && (
                         <button
                           className="ml-2 text-green-500 hover:text-green-300"
                           onClick={toggleExpand}
@@ -652,7 +652,7 @@ function ProfileContent() {
           {/*We reverse the array to dsiplay the most recent follwers and followings at the top. */}
           {tabValue === 'followers' && (
             <div>
-              {Object.entries(profileUser ? profileUser.followers : {})
+              {Object.entries(profileUser?.followers || {})
                 .reverse()
                 .map(([id, info]) => (
                   <ListItem key={id} id={id} info={info} />
@@ -661,7 +661,7 @@ function ProfileContent() {
           )}
           {tabValue === 'following' && (
             <div>
-              {Object.entries(profileUser ? profileUser.following : {})
+              {Object.entries(profileUser?.following || {})
                 .reverse()
                 .map(([id, info]) => (
                   <ListItem key={id} id={id} info={info} />

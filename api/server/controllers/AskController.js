@@ -86,7 +86,8 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
       promptTokens,
     });
 
-    const { abortController, onStart } = createAbortController(req, res, getAbortData);
+    // const { abortController, onStart } = createAbortController(req, res, getAbortData);
+    const { abortController, onStart } = createAbortController(req, res, getAbortData, getReqData);
     // try {
     // const { client } = await initializeClient({ req, res, endpointOption });
 
@@ -185,7 +186,9 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
       await saveMessage({ ...response, user });
     }
 
-    await saveMessage(userMessage);
+    if (!client.skipSaveUserMessage) {
+      await saveMessage(userMessage);
+    }
 
     if (addTitle && parentMessageId === Constants.NO_PARENT && newConvo) {
       addTitle(req, {
@@ -195,7 +198,10 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
       });
     }
   } catch (error) {
-    const partialText = getText && getText();
+    var partialText = getText && getText();
+    if (partialText == '') {
+      partialText = error.message;
+    }
     handleAbortError(res, req, error, {
       partialText,
       conversationId,
