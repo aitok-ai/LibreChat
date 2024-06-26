@@ -56,7 +56,10 @@ export default function MessageAudio({ index, message, isLast }: THoverButtons) 
         //  'data-[state=open]:active data-[state=open]:bg-gray-200 data-[state=open]:text-gray-700 data-[state=open]:dark:bg-gray-700 data-[state=open]:dark:text-gray-200',
         //  !isLast ? 'data-[state=open]:opacity-100 md:opacity-0 md:group-hover:opacity-100' : '',
         //)}
-        className="hover-button rounded-md p-1 pl-0 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible"
+        className={cn(
+          'hover-button rounded-md p-1 pl-0 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible',
+          !isLast ? 'data-[state=open]:opacity-100 md:opacity-0 md:group-hover:opacity-100' : '',
+        )}
         // onMouseDownCapture={() => {
         //   if (audioRef.current) {
         //     audioRef.current.muted = false;
