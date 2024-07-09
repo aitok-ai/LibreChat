@@ -122,9 +122,10 @@ const verifyEmail = async (req) => {
 /**
  * Register a new user.
  * @param {MongoUser} user <email, password, name, username>
+ * @param {Partial<MongoUser>} [additionalData={}]
  * @returns {Promise<{status: number, message: string, user?: MongoUser}>}
  */
-const registerUser = async (user) => {
+const registerUser = async (user, additionalData = {}) => {
   const { error } = registerSchema.safeParse(user);
   if (error) {
     const errorMessage = errorsToString(error.errors);
@@ -176,6 +177,7 @@ const registerUser = async (user) => {
       refBy: refBy,
       following: {},
       password: bcrypt.hashSync(password, salt),
+      ...additionalData,
     };
 
     const emailEnabled = checkEmailConfig();
@@ -186,8 +188,11 @@ const registerUser = async (user) => {
         username: referrer.username,
       };
     }
-    newUserId = await createUser(newUserData, false);
-    if (emailEnabled) {
+    // newUserId = await createUser(newUserData, false);
+    // if (emailEnabled) {
+    const newUser = await createUser(newUserData, false, true);
+    newUserId = newUser._id;
+    if (emailEnabled && !newUser.emailVerified) {
       await sendVerificationEmail({
         _id: newUserId,
         email,

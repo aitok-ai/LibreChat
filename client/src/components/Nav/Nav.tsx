@@ -1,5 +1,5 @@
 // import { useSearchQuery, useGetConversationsQuery } from 'librechat-data-provider/react-query';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 // import type { TConversation, TSearchResults } from 'librechat-data-provider';
 // import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 // import { useParams } from 'react-router-dom';
@@ -61,6 +61,10 @@ const Nav = ({ navVisible, setNavVisible }) => {
 
   useEffect(() => {
     if (isSmallScreen) {
+      const savedNavVisible = localStorage.getItem('navVisible');
+      if (savedNavVisible === null) {
+        toggleNavVisible();
+      }
       setNavWidth('320px');
     } else {
       setNavWidth('260px');
@@ -184,6 +188,7 @@ const Nav = ({ navVisible, setNavVisible }) => {
     <TooltipProvider delayDuration={250}>
       <Tooltip>
         <div
+          data-testid="nav"
           className={
             'nav active max-w-[320px] flex-shrink-0 overflow-x-hidden bg-gray-50 dark:bg-gray-850 md:max-w-[260px]'
           }
