@@ -162,7 +162,7 @@ const Nav = ({ navVisible, setNavVisible }) => {
   const openAskMeAnythingHandler = openWidgetHandler('ama');
   const openLeaderboardHandler = () => navigate('/leaderboard');
   const openHomepageHandler = () => navigate('/home');
-  const openProfileHandler = () => navigate(`/profile/${user.id}`);
+  const openProfileHandler = () => navigate(`/profile/${user?.id}`);
 
   useEffect(() => {
     if (user) {

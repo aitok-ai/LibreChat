@@ -19,7 +19,7 @@ const {
   genAzureChatCompletion,
 } = require('~/utils');
 const { encodeAndFormat } = require('~/server/services/Files/images/encode');
-const { updateTokenWebsocket } = require('~/server/services/Files/Audio');
+// const { updateTokenWebsocket } = require('~/server/services/Files/Audio');
 const { isEnabled, sleep } = require('~/server/utils');
 const spendTokens = require('~/models/spendTokens');
 const { logger } = require('~/config');
@@ -31,6 +31,8 @@ const {
   titleInstruction,
   createContextHandlers,
 } = require('./prompts');
+// const { encodeAndFormat } = require('~/server/services/Files/images/encode');
+// const { isEnabled, sleep } = require('~/server/utils');
 const { handleOpenAIErrors } = require('./tools/util');
 const { createLLM, RunManager } = require('./llm');
 const ChatGPTClient = require('./ChatGPTClient');
@@ -595,7 +597,6 @@ class OpenAIClient extends BaseClient {
         payload,
         (progressMessage) => {
           if (progressMessage === '[DONE]') {
-            updateTokenWebsocket('[DONE]');
             return;
           }
 

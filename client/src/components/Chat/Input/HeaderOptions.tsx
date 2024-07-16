@@ -125,7 +125,7 @@ export default function HeaderOptions({
                 open={saveAsDialogShow}
                 onOpenChange={setSaveAsDialogShow}
                 preset={
-                  tPresetUpdateSchema.parse({
+                  tPresetUpdateSchema?.parse({
                     ...conversation,
                   }) as TPreset
                 }
