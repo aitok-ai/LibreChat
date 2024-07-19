@@ -502,3 +502,17 @@ export const useLikeConversationMutation = (id: string) => {
     },
   });
 };
+export const useGetCustomConfigSpeechQuery = (
+  config?: UseQueryOptions<t.TCustomConfigSpeechResponse>,
+): QueryObserverResult<t.TCustomConfigSpeechResponse> => {
+  return useQuery<t.TCustomConfigSpeechResponse>(
+    [QueryKeys.customConfigSpeech],
+    () => dataService.getCustomConfigSpeech(),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      ...config,
+    },
+  );
+};

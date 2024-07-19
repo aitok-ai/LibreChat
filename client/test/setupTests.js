@@ -21,3 +21,6 @@ import 'jest-canvas-mock';
 // allows code transformation of AgGridReact
 import { TextEncoder, TextDecoder } from 'util';
 Object.assign(global, { TextDecoder, TextEncoder });
+beforeEach(() => {
+  jest.clearAllMocks();
+});

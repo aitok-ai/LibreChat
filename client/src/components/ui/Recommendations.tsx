@@ -339,7 +339,7 @@ export default function Recommendations() {
       if (cache[cacheIdx]) {
         const { user, messages } = cache[cacheIdx];
         console.log(messages);
-        setMsgTree(buildTree({ messages } ?? null) || null);
+        setMsgTree(buildTree({ messages }) || null);
         setConvoUser(user);
       } else {
         fetchConvoMessagesAndUser(
