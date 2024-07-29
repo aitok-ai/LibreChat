@@ -190,7 +190,7 @@ router.post('/update', async (req, res) => {
   const update = req.body.arg;
   // console.log('in update', update);
   try {
-    const dbResponse = await saveConvo(req.user.id, update);
+    const dbResponse = await saveConvo(req, update, { context: 'POST /api/convos/update' });
     res.status(201).json(dbResponse);
   } catch (error) {
     logger.error('Error updating conversation', error);
