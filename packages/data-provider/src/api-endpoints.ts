@@ -35,8 +35,10 @@ export const abortRequest = (endpoint: string) => `/api/ask/${endpoint}/abort`;
 
 export const conversationsRoot = '/api/convos';
 
-export const conversations = (pageNumber: string, isArchived?: boolean) =>
-  `${conversationsRoot}?pageNumber=${pageNumber}${isArchived ? '&isArchived=true' : ''}`;
+export const conversations = (pageNumber: string, isArchived?: boolean, tags?: string[]) =>
+  `${conversationsRoot}?pageNumber=${pageNumber}${isArchived ? '&isArchived=true' : ''}${tags
+    ?.map((tag) => `&tags=${tag}`)
+    .join('')}`;
 
 export const conversationById = (id: string) => `${conversationsRoot}/${id}`;
 
@@ -218,3 +220,14 @@ export const roles = () => '/api/roles';
 export const getRole = (roleName: string) => `${roles()}/${roleName.toLowerCase()}`;
 export const updatePromptPermissions = (roleName: string) =>
   `${roles()}/${roleName.toLowerCase()}/prompts`;
+
+/* Conversation Tags */
+export const conversationTags = (tag?: string) => `/api/tags${tag ? `/${tag}` : ''}`;
+
+export const conversationTagsList = (pageNumber: string, sort?: string, order?: string) =>
+  `${conversationTags()}/list?pageNumber=${pageNumber}${sort ? `&sort=${sort}` : ''}${
+    order ? `&order=${order}` : ''
+  }`;
+
+export const addTagToConversation = (conversationId: string) =>
+  `${conversationsRoot}/tags/${conversationId}`;

@@ -1,10 +1,9 @@
-// import { useSearchQuery, useGetConversationsQuery } from 'librechat-data-provider/react-query';
-import { useRecoilState, useRecoilValue } from 'recoil';
-// import type { TConversation, TSearchResults } from 'librechat-data-provider';
-// import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
-// import { useParams } from 'react-router-dom';
-// import { useRecoilValue, useSetRecoilState } from 'recoil';
+// import { useRecoilState, useRecoilValue } from 'recoil';
+// import { useCallback, useEffect, useState, useMemo, memo } from 'react';
 import { useCallback, useEffect, useState, useMemo, memo } from 'react';
+// import { useParams } from 'react-router-dom';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import type { ConversationListResponse } from 'librechat-data-provider';
 import {
   useMediaQuery,
   useAuthContext,
@@ -16,6 +15,7 @@ import {
 import { useConversationsInfiniteQuery } from '~/data-provider';
 import { TooltipProvider, Tooltip } from '~/components/ui';
 import { Conversations } from '~/components/Conversations';
+import BookmarkNav from './Bookmarks/BookmarkNav';
 import { useSearchContext } from '~/Providers';
 import { Spinner } from '~/components/svg';
 import SearchBar from './SearchBar';
@@ -23,7 +23,6 @@ import NavToggle from './NavToggle';
 import NavLinks from './NavLinks';
 import NewChat from './NewChat';
 import { cn } from '~/utils';
-import { ConversationListResponse } from 'librechat-data-provider';
 import store from '~/store';
 import NavLink from './NavLink';
 import CheckMark from '../svg/CheckMark';
@@ -78,10 +77,21 @@ const Nav = ({ navVisible, setNavVisible }) => {
   const { refreshConversations } = useConversations();
   const { pageNumber, searchQuery, setPageNumber, searchQueryRes } = useSearchContext();
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useConversationsInfiniteQuery(
-    { pageNumber: pageNumber.toString(), isArchived: false },
-    { enabled: isAuthenticated },
-  );
+  const [tags, setTags] = useState<string[]>([]);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useConversationsInfiniteQuery(
+      {
+        pageNumber: pageNumber.toString(),
+        isArchived: false,
+        tags: tags.length === 0 ? undefined : tags,
+      },
+      { enabled: isAuthenticated },
+    );
+  useEffect(() => {
+    // When a tag is selected, refetch the list of conversations related to that tag
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tags]);
 
   const [refLink, setRefLink] = useState('');
   const [copied, setCopied] = useState(false);
@@ -294,6 +304,7 @@ const Nav = ({ navVisible, setNavVisible }) => {
                         clickHandler={user ? copyLinkHandler : navigateToRegister}
                       />
                     )}
+                    <BookmarkNav tags={tags} setTags={setTags} />
                     <NavLinks />
                   </nav>
                 </div>
@@ -308,7 +319,7 @@ const Nav = ({ navVisible, setNavVisible }) => {
           navVisible={navVisible}
           className="fixed left-0 top-1/2 z-40 hidden md:flex"
         />
-        <div className={`nav-mask${navVisible ? ' active' : ''}`} onClick={toggleNavVisible} />
+        <div className={`nav-mask${navVisible ? 'active' : ''}`} onClick={toggleNavVisible} />
       </Tooltip>
     </TooltipProvider>
   );

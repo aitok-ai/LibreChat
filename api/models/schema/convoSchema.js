@@ -58,6 +58,11 @@ const convoSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    tags: {
+      type: [String],
+      default: [],
+      meiliIndex: true,
+    },
   },
   { timestamps: true },
 );
