@@ -43,12 +43,31 @@ function ChatView({ index = 0 }: { index?: number }) {
     defaultValues: { text: '' },
   });
 
+  let content: JSX.Element | null | undefined;
+  if (isLoading && conversationId !== 'new') {
+    content = (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner className="opacity-0" />
+      </div>
+    );
+  } else if (messagesTree && messagesTree.length !== 0) {
+    // content = <MessagesView messagesTree={messagesTree} Header={<Header />} />;
+    content = (
+      <>
+        <MessageHeaderButtons conversationId={conversationId} index={index} />
+        <MessagesView messagesTree={messagesTree} Header={<Header />} />
+      </>
+    );
+  } else {
+    content = <Landing Header={<Header />} />;
+  }
+
   return (
     <ChatFormProvider {...methods}>
       <ChatContext.Provider value={chatHelpers}>
         <AddedChatContext.Provider value={addedChatHelpers}>
           <Presentation useSidePanel={true}>
-            {isLoading && conversationId !== 'new' ? (
+            {/* {isLoading && conversationId !== 'new' ? (
               <div className="flex h-screen items-center justify-center">
                 <Spinner className="opacity-0" />
               </div>
@@ -59,7 +78,8 @@ function ChatView({ index = 0 }: { index?: number }) {
               </>
             ) : (
               <Landing Header={<Header />} />
-            )}
+            )} */}
+            {content}
             <div className="relative ml-[-16px] flex flex-row py-2 md:mb-[-16px] md:py-4 lg:mb-[+24px]">
               <span className="flex w-full flex-row items-center justify-center gap-0 md:order-none md:m-auto md:gap-2">
                 <ChatWidget />
