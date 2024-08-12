@@ -604,3 +604,7 @@ export function addTagToConversation(
 export function rebuildConversationTags(): Promise<t.TConversationTagsResponse> {
   return request.post(endpoints.conversationTags('rebuild'));
 }
+
+export function healthCheck(): Promise<string> {
+  return request.get(endpoints.health());
+}
