@@ -4,14 +4,17 @@ import store from '~/store';
 
 export default function SetLanguage() {
   const [lang] = useRecoilState(store.lang);
-
-  const languageCode =
-    lang ||
-    (navigator.languages.length > 1
-      ? navigator.languages[0].startsWith('zh')
-        ? 'zh-CN'
-        : navigator.languages[0].substring(0, 2)
-      : 'zh-CN');
+  var lang_local = '';
+  if (navigator.languages.length > 1) {
+    if (navigator.languages[0].startsWith('zh')) {
+      lang_local = 'zh-CN';
+    } else {
+      lang_local = navigator.languages[0].substring(0, 2);
+    }
+  } else {
+    lang_local = 'zh-CN';
+  }
+  const languageCode = lang || lang_local;
 
   useEffect(() => {
     if (languageCode) {

@@ -106,7 +106,7 @@ export default function HoverButtons({
 
   return (
     <div className="visible mt-0 flex justify-center gap-1 self-end text-gray-500 lg:justify-start">
-      <button
+      {/* <button
         // className="hover-button active rounded-md p-1 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible"
         className={cn(
           'hover-button active rounded-md p-1 hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible ',
@@ -139,8 +139,15 @@ export default function HoverButtons({
         >
           <StopIcon />
         </button>
-      ) : null}
-      {TextToSpeech && <MessageAudio index={index} message={message} isLast={isLast} />}
+      ) : null} */}
+      {TextToSpeech && (
+        <MessageAudio
+          index={index}
+          messageId={message.messageId}
+          content={message.content ?? message.text}
+          isLast={isLast}
+        />
+      )}
       {isEditableEndpoint && (
         <button
           className={cn(
@@ -188,7 +195,14 @@ export default function HoverButtons({
           />
         </button>
       ) : null}
-      {continueSupported ? (
+      {/* <Fork
+        isLast={isLast}
+        messageId={message.messageId}
+        conversationId={conversation.conversationId}
+        forkingSupported={forkingSupported}
+        latestMessage={latestMessage}
+      /> */}
+      {continueSupported === true ? (
         <button
           className={cn(
             'hover-button active rounded-md p-1 hover:bg-gray-100 hover:text-gray-500 focus:opacity-100 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible',
