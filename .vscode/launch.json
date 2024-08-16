@@ -39,6 +39,17 @@
       "name": "Debug Client (Vite)",
       "url": "http://localhost:3090",
       "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch LibreChat (debug)",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/api/server/index.js",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "console": "integratedTerminal"
     }
   ]
 }

@@ -1,26 +1,24 @@
 import { useRecoilValue } from 'recoil';
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
-import { useToastContext } from '~/Providers';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import type { VoiceOption } from '~/common';
+import { useToastContext } from '~/Providers/ToastContext';
 import useLocalize from '~/hooks/useLocalize';
 import store from '~/store';
-
-interface Voice {
-  value: string;
-  label: string;
-}
 
 interface UseTextToSpeechEdgeReturn {
   generateSpeechEdge: (text: string) => void;
   cancelSpeechEdge: () => void;
-  isSpeaking: boolean;
-  voices: Voice[];
+  voices: VoiceOption[];
 }
 
-function useTextToSpeechEdge(): UseTextToSpeechEdgeReturn {
+function useTextToSpeechEdge({
+  setIsSpeaking,
+}: {
+  setIsSpeaking: React.Dispatch<React.SetStateAction<boolean>>;
+}): UseTextToSpeechEdgeReturn {
   const localize = useLocalize();
-  const [voices, setVoices] = useState<Voice[]>([]);
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [voices, setVoices] = useState<VoiceOption[]>([]);
   const voiceName = useRecoilValue(store.voice);
   const ttsRef = useRef<MsEdgeTTS | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -29,7 +27,10 @@ function useTextToSpeechEdge(): UseTextToSpeechEdgeReturn {
   const pendingBuffers = useRef<Uint8Array[]>([]);
   const { showToast } = useToastContext();
 
-  const isBrowserSupported = useMemo(() => MediaSource.isTypeSupported('audio/mpeg'), []);
+  const isBrowserSupported = useMemo(
+    () => typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported('audio/mpeg'),
+    [],
+  );
 
   const fetchVoices = useCallback(() => {
     if (!ttsRef.current) {
@@ -58,7 +59,7 @@ function useTextToSpeechEdge(): UseTextToSpeechEdgeReturn {
     if (!ttsRef.current) {
       ttsRef.current = new MsEdgeTTS();
     }
-    const availableVoice: Voice | undefined = voices.find((v) => v.value === voiceName);
+    const availableVoice: VoiceOption | undefined = voices.find((v) => v.value === voiceName);
 
     if (availableVoice) {
       ttsRef.current
@@ -146,7 +147,7 @@ function useTextToSpeechEdge(): UseTextToSpeechEdgeReturn {
           setIsSpeaking(true);
           pendingBuffers.current = [];
 
-          const readable = await ttsRef.current.toStream(text);
+          const readable = ttsRef.current.toStream(text);
 
           readable.on('data', (chunk: Buffer) => {
             pendingBuffers.current.push(new Uint8Array(chunk));
@@ -176,7 +177,7 @@ function useTextToSpeechEdge(): UseTextToSpeechEdgeReturn {
 
       generate();
     },
-    [appendNextBuffer, showToast, localize],
+    [setIsSpeaking, appendNextBuffer, showToast, localize],
   );
 
   const cancelSpeechEdge = useCallback(() => {
@@ -197,24 +198,24 @@ function useTextToSpeechEdge(): UseTextToSpeechEdgeReturn {
         status: 'error',
       });
     }
-  }, [showToast, localize]);
+  }, [setIsSpeaking, showToast, localize]);
 
   useEffect(() => {
-    if (!MediaSource.isTypeSupported('audio/mpeg')) {
+    if (!isBrowserSupported) {
       return;
     }
     fetchVoices();
-  }, [fetchVoices]);
+  }, [fetchVoices, isBrowserSupported]);
 
   useEffect(() => {
-    if (!MediaSource.isTypeSupported('audio/mpeg')) {
+    if (!isBrowserSupported) {
       return;
     }
     initializeTTS();
-  }, [voiceName, initializeTTS]);
+  }, [voiceName, initializeTTS, isBrowserSupported]);
 
   useEffect(() => {
-    if (!MediaSource.isTypeSupported('audio/mpeg')) {
+    if (!isBrowserSupported) {
       return;
     }
     initializeMediaSource();
@@ -223,18 +224,17 @@ function useTextToSpeechEdge(): UseTextToSpeechEdgeReturn {
         URL.revokeObjectURL(audioElementRef.current?.src ?? '');
       }
     };
-  }, [initializeMediaSource]);
+  }, [initializeMediaSource, isBrowserSupported]);
 
   if (!isBrowserSupported) {
     return {
       generateSpeechEdge: () => ({}),
       cancelSpeechEdge: () => ({}),
-      isSpeaking: false,
       voices: [],
     };
   }
 
-  return { generateSpeechEdge, cancelSpeechEdge, isSpeaking, voices };
+  return { generateSpeechEdge, cancelSpeechEdge, voices };
 }
 
 export default useTextToSpeechEdge;

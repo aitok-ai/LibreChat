@@ -1,104 +1,23 @@
-import { useEffect } from 'react';
+// client/src/components/Chat/Messages/MessageAudio.tsx
+import { memo } from 'react';
 import { useRecoilValue } from 'recoil';
-import type { TMessageContentParts } from 'librechat-data-provider';
-import { VolumeIcon, VolumeMuteIcon, Spinner } from '~/components/svg';
-import { useLocalize, useTextToSpeech } from '~/hooks';
+import type { TMessageAudio } from '~/common';
+import { BrowserTTS, EdgeTTS, ExternalTTS } from '~/components/Audio/TTS';
+import { TTSEndpoints } from '~/common';
 import store from '~/store';
 import { cn } from '~/utils';
 
-type THoverButtons = {
-  messageId?: string;
-  content?: TMessageContentParts[] | string;
-  isLast: boolean;
-  index: number;
-};
+function MessageAudio(props: TMessageAudio) {
+  const engineTTS = useRecoilValue<string>(store.engineTTS);
 
-export default function MessageAudio({ isLast, index, messageId, content }: THoverButtons) {
-  const localize = useLocalize();
-  const playbackRate = useRecoilValue(store.playbackRate);
-
-  const { toggleSpeech, isSpeaking, isLoading, audioRef } = useTextToSpeech({
-    isLast,
-    index,
-    messageId,
-    content,
-  });
-
-  const renderIcon = (size: string) => {
-    if (isLoading === true) {
-      return <Spinner size={size} />;
-    }
-
-    if (isSpeaking === true) {
-      return <VolumeMuteIcon size={size} />;
-    }
-
-    return <VolumeIcon size={size} />;
+  const TTSComponents = {
+    [TTSEndpoints.edge]: EdgeTTS,
+    [TTSEndpoints.browser]: BrowserTTS,
+    [TTSEndpoints.external]: ExternalTTS,
   };
 
-  useEffect(() => {
-    const messageAudio = document.getElementById(`audio-${messageId}`) as HTMLAudioElement | null;
-    if (!messageAudio) {
-      return;
-    }
-    if (playbackRate != null && playbackRate > 0 && messageAudio.playbackRate !== playbackRate) {
-      messageAudio.playbackRate = playbackRate;
-    }
-  }, [audioRef, isSpeaking, playbackRate, messageId]);
-
-  return (
-    <>
-      <button
-        // className="hover-button rounded-md p-1 pl-0 text-gray-400 hover:text-gray-950 dark:text-gray-400/70 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible"
-        //</>className={cn(
-        //  'hover-button active rounded-md p-1 hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible ',
-        //  'data-[state=open]:active data-[state=open]:bg-gray-200 data-[state=open]:text-gray-700 data-[state=open]:dark:bg-gray-700 data-[state=open]:dark:text-gray-200',
-        //  !isLast ? 'data-[state=open]:opacity-100 md:opacity-0 md:group-hover:opacity-100' : '',
-        //)}
-        className={cn(
-          'hover-button rounded-md p-1 pl-0 text-gray-500 hover:bg-gray-100 hover:text-gray-500 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible',
-          !isLast ? 'data-[state=open]:opacity-100 md:opacity-0 md:group-hover:opacity-100' : '',
-        )}
-        // className="hover-button rounded-md p-1 pl-0 text-gray-500 hover:bg-gray-100 hover:text-gray-500 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible"
-        // onMouseDownCapture={() => {
-        //   if (audioRef.current) {
-        //     audioRef.current.muted = false;
-        //   }
-        //   handleMouseDown();
-        // }}
-        // onMouseUpCapture={() => {
-        //   if (audioRef.current) {
-        //     audioRef.current.muted = false;
-        //   }
-        //   handleMouseUp();
-        // }}
-        onClickCapture={() => {
-          if (audioRef.current) {
-            audioRef.current.muted = false;
-          }
-          toggleSpeech();
-        }}
-        type="button"
-        title={isSpeaking === true ? localize('com_ui_stop') : localize('com_ui_read_aloud')}
-      >
-        {renderIcon('19')}
-      </button>
-      <audio
-        ref={audioRef}
-        controls
-        controlsList="nodownload nofullscreen noremoteplayback"
-        style={{
-          position: 'absolute',
-          overflow: 'hidden',
-          display: 'none',
-          height: '0px',
-          width: '0px',
-        }}
-        src={audioRef.current?.src ?? undefined}
-        id={`audio-${messageId}`}
-        muted
-        autoPlay
-      />
-    </>
-  );
+  const SelectedTTS = TTSComponents[engineTTS];
+  return <SelectedTTS {...props} />;
 }
+
+export default memo(MessageAudio);
