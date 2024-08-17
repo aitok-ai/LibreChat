@@ -47,7 +47,7 @@ function NavLinks() {
             >
               <div className="-ml-0.9 -mt-0.8 h-8 w-8 flex-shrink-0">
                 <div className="relative flex">
-                  {!user?.avatar && !user?.username ? (
+                  {!user.avatar && !user.username ? (
                     <div
                       style={{
                         backgroundColor: 'rgb(121, 137, 255)',
@@ -60,7 +60,7 @@ function NavLinks() {
                       <UserIcon />
                     </div>
                   ) : (
-                    <img className="rounded-full" src={user?.avatar || avatarSrc} alt="avatar" />
+                    <img className="rounded-full" src={user.avatar || avatarSrc} alt="avatar" />
                   )}
                 </div>
               </div>
@@ -68,13 +68,13 @@ function NavLinks() {
                 className="mt-2 grow overflow-hidden text-ellipsis whitespace-nowrap text-left text-black dark:text-gray-100"
                 style={{ marginTop: '0', marginLeft: '0' }}
               >
-                {user?.name || user?.username || localize('com_nav_user')}
+                {user.name || user.username || localize('com_nav_user')}
               </div>
             </MenuButton>
 
             <Transition
               as={Fragment}
-              enter="transition ease-out duration-110 transform"
+              enter="transition ease-out duration-100 transform"
               enterFrom="translate-y-2 opacity-0"
               enterTo="translate-y-0 opacity-100"
               leave="transition ease-in duration-100 transform"
@@ -83,7 +83,7 @@ function NavLinks() {
             >
               <MenuItems className="absolute bottom-full left-0 z-[100] mb-1 mt-1 w-full translate-y-0 overflow-hidden rounded-lg border border-gray-300 bg-white p-1.5 opacity-100 shadow-lg outline-none dark:border-gray-600 dark:bg-gray-700">
                 <div className="text-token-text-secondary ml-3 mr-2 py-2 text-sm" role="none">
-                  {user?.email || localize('com_nav_user')}
+                  {user.email || localize('com_nav_user')}
                 </div>
                 <div className="my-1.5 h-px bg-black/10 dark:bg-white/10" role="none" />
                 {startupConfig?.checkBalance &&

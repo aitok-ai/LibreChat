@@ -32,3 +32,4 @@ export { default as MultiSelectPop } from './MultiSelectPop';
 export { default as SelectDropDownPop } from './SelectDropDownPop';
 export { default as MultiSelectDropDown } from './MultiSelectDropDown';
 export { default as Profile } from '../Profile';
+export { default as DropdownPopup } from './DropdownPopup';

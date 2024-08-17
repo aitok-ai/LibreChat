@@ -11,6 +11,7 @@ import {
   useLocalStorage,
   useNavScrolling,
   useConversations,
+  useLocalize,
 } from '~/hooks';
 import { useConversationsInfiniteQuery } from '~/data-provider';
 import { TooltipProvider, Tooltip } from '~/components/ui';
@@ -35,14 +36,19 @@ import HomeIcon from '../svg/HomeIcon';
 import LightBulbIcon from '../svg/LightBulbIcon';
 import ComputerIcon from '../svg/ComputerIcon';
 import ProfileIcon from '../svg/UserIcon';
-import { useLocalize } from '~/hooks';
 
-const Nav = ({ navVisible, setNavVisible }) => {
+const Nav = ({
+  navVisible,
+  setNavVisible,
+}: {
+  navVisible: boolean;
+  setNavVisible: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const localize = useLocalize();
   const { conversationId } = useParams();
   const { isAuthenticated } = useAuthContext();
   // const containerRef = useRef<HTMLDivElement | null>(null);
   // const scrollPositionRef = useRef<number | null>(null);
-  const localize = useLocalize();
 
   const [navWidth, setNavWidth] = useState('260px');
   const [isHovering, setIsHovering] = useState(false);
@@ -111,15 +117,16 @@ const Nav = ({ navVisible, setNavVisible }) => {
 
   const { containerRef, moveToTop } = useNavScrolling<ConversationListResponse>({
     setShowLoading,
-    hasNextPage: searchQuery ? searchQueryRes.hasNextPage : hasNextPage,
-    fetchNextPage: searchQuery ? searchQueryRes.fetchNextPage : fetchNextPage,
-    isFetchingNextPage: searchQuery ? searchQueryRes.isFetchingNextPage : isFetchingNextPage,
+    hasNextPage: searchQuery ? searchQueryRes?.hasNextPage : hasNextPage,
+    fetchNextPage: searchQuery ? searchQueryRes?.fetchNextPage : fetchNextPage,
+    isFetchingNextPage: searchQuery
+      ? searchQueryRes?.isFetchingNextPage ?? false
+      : isFetchingNextPage,
   });
 
   const conversations = useMemo(
     () =>
-      (searchQuery ? searchQueryRes.data : data)?.pages.flatMap((page) => page.conversations) ||
-      [],
+      (searchQuery ? searchQueryRes.data : data)?.pages.flatMap((page) => page.conversations) || [],
     [data, searchQuery, searchQueryRes.data],
   );
 
@@ -223,7 +230,7 @@ const Nav = ({ navVisible, setNavVisible }) => {
                 >
                   <nav
                     id="chat-history-nav"
-                    aria-label="chat-history-nav"
+                    aria-label={localize('com_ui_chat_history')}
                     className="flex h-full w-full flex-col px-3 pb-3.5"
                   >
                     <div
@@ -235,24 +242,37 @@ const Nav = ({ navVisible, setNavVisible }) => {
                       onMouseLeave={handleMouseLeave}
                       ref={containerRef}
                     >
-                      <NewChat
-                        toggleNav={itemToggleNav}
-                        subHeaders={
-                          <>
-                            {isSearchEnabled && <SearchBar clearSearch={clearSearch} />}
-                            <BookmarkNav tags={tags} setTags={setTags} />
-                          </>
-                        }
-                      />
+                      {isSmallScreen == true ? (
+                        <div className="pt-3.5">
+                          {isSearchEnabled === true && (
+                            <SearchBar clearSearch={clearSearch} isSmallScreen={isSmallScreen} />
+                          )}
+                          <BookmarkNav tags={tags} setTags={setTags} />
+                        </div>
+                      ) : (
+                        <NewChat
+                          toggleNav={itemToggleNav}
+                          subHeaders={
+                            <>
+                              {isSearchEnabled === true && (
+                                <SearchBar
+                                  clearSearch={clearSearch}
+                                  isSmallScreen={isSmallScreen}
+                                />
+                              )}
+                              <BookmarkNav tags={tags} setTags={setTags} />
+                            </>
+                          }
+                        />
+                      )}
+
                       <Conversations
                         conversations={conversations}
                         moveToTop={moveToTop}
                         toggleNav={itemToggleNav}
                       />
                       {(isFetchingNextPage || showLoading) && (
-                        <Spinner
-                          className={cn('m-1 mx-auto mb-4 h-4 w-4 text-black dark:text-white')}
-                        />
+                        <Spinner className={cn('m-1 mx-auto mb-4 h-4 w-4 text-text-primary')} />
                       )}
                     </div>
                     {user && (
