@@ -17,11 +17,11 @@ import { useConversationsInfiniteQuery } from '~/data-provider';
 import { TooltipProvider, Tooltip } from '~/components/ui';
 import { Conversations } from '~/components/Conversations';
 import BookmarkNav from './Bookmarks/BookmarkNav';
+import AccountSettings from './AccountSettings';
 import { useSearchContext } from '~/Providers';
 import { Spinner } from '~/components/svg';
 import SearchBar from './SearchBar';
 import NavToggle from './NavToggle';
-import NavLinks from './NavLinks';
 import NewChat from './NewChat';
 import { cn } from '~/utils';
 import store from '~/store';
@@ -334,7 +334,8 @@ const Nav = ({
                       />
                     )}
                     <BookmarkNav tags={tags} setTags={setTags} />
-                    <NavLinks />
+                    {/* <NavLinks /> */}
+                    <AccountSettings />
                   </nav>
                 </div>
               </div>

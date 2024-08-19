@@ -18,10 +18,10 @@ const {
   getModelMaxTokens,
   genAzureChatCompletion,
 } = require('~/utils');
-const { encodeAndFormat } = require('~/server/services/Files/images/encode');
+// const { encodeAndFormat } = require('~/server/services/Files/images/encode');
 // const { updateTokenWebsocket } = require('~/server/services/Files/Audio');
-const { isEnabled, sleep } = require('~/server/utils');
-const spendTokens = require('~/models/spendTokens');
+// const { isEnabled, sleep } = require('~/server/utils');
+// const spendTokens = require('~/models/spendTokens');
 const { logger } = require('~/config');
 const { OllamaClient } = require('./OllamaClient');
 const {
@@ -31,8 +31,9 @@ const {
   titleInstruction,
   createContextHandlers,
 } = require('./prompts');
-// const { encodeAndFormat } = require('~/server/services/Files/images/encode');
-// const { isEnabled, sleep } = require('~/server/utils');
+const { encodeAndFormat } = require('~/server/services/Files/images/encode');
+const { spendTokens } = require('~/models/spendTokens');
+const { isEnabled, sleep } = require('~/server/utils');
 const { handleOpenAIErrors } = require('./tools/util');
 const { createLLM, RunManager } = require('./llm');
 const ChatGPTClient = require('./ChatGPTClient');

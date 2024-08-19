@@ -617,6 +617,7 @@ export default {
     'Make sure to click \'Create and Continue\' to give at least the \'Vertex AI User\' role. Lastly, create a JSON key to import here.',
   com_nav_welcome_message:
     '[New!] Support GPT-4-1106、GPT-4-Vision, Improved UI and Prompt Presets',
+  com_nav_account_settings: 'Account Settings',
   com_nav_font_size: 'Message Font Size',
   com_nav_font_size_xs: 'Extra Small',
   com_nav_font_size_sm: 'Small',
