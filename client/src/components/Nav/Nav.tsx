@@ -3,15 +3,19 @@ import { useCallback, useEffect, useState, useMemo, memo } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 // import { useRecoilValue } from 'recoil';
 // import { useParams } from 'react-router-dom';
+// import { useRecoilValue } from 'recoil';
+// import { useParams } from 'react-router-dom';
+import { PermissionTypes, Permissions } from 'librechat-data-provider';
 import type { ConversationListResponse } from 'librechat-data-provider';
 import {
+  useLocalize,
+  useHasAccess,
   useMediaQuery,
   useAuthContext,
   useConversation,
   useLocalStorage,
   useNavScrolling,
   useConversations,
-  useLocalize,
 } from '~/hooks';
 import { useConversationsInfiniteQuery } from '~/data-provider';
 import { TooltipProvider, Tooltip } from '~/components/ui';
@@ -55,6 +59,11 @@ const Nav = ({
   const isSmallScreen = useMediaQuery('(max-width: 768px)');
   const [newUser, setNewUser] = useLocalStorage('newUser', true);
   const [isToggleHovering, setIsToggleHovering] = useState(false);
+
+  const hasAccessToBookmarks = useHasAccess({
+    permissionType: PermissionTypes.BOOKMARKS,
+    permission: Permissions.USE,
+  });
 
   const handleMouseEnter = useCallback(() => {
     setIsHovering(true);
@@ -207,7 +216,7 @@ const Nav = ({
         <div
           data-testid="nav"
           className={
-            'nav active max-w-[320px] flex-shrink-0 overflow-x-hidden bg-gray-50 dark:bg-gray-850 md:max-w-[260px]'
+            'nav active max-w-[320px] flex-shrink-0 overflow-x-hidden bg-surface-primary-alt md:max-w-[260px]'
           }
           style={{
             width: navVisible ? navWidth : '0px',
@@ -247,7 +256,9 @@ const Nav = ({
                           {isSearchEnabled === true && (
                             <SearchBar clearSearch={clearSearch} isSmallScreen={isSmallScreen} />
                           )}
-                          <BookmarkNav tags={tags} setTags={setTags} />
+                          {hasAccessToBookmarks === true && (
+                            <BookmarkNav tags={tags} setTags={setTags} />
+                          )}
                         </div>
                       ) : (
                         <NewChat
@@ -260,7 +271,9 @@ const Nav = ({
                                   isSmallScreen={isSmallScreen}
                                 />
                               )}
-                              <BookmarkNav tags={tags} setTags={setTags} />
+                              {hasAccessToBookmarks === true && (
+                                <BookmarkNav tags={tags} setTags={setTags} />
+                              )}
                             </>
                           }
                         />

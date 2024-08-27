@@ -121,7 +121,7 @@ export default function NewChat({
               </div>
             </a>
           </div>
-          {subHeaders ? subHeaders : null}
+          {subHeaders != null ? subHeaders : null}
         </div>
       </Tooltip>
     </TooltipProvider>
