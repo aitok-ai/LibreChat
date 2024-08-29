@@ -1,3 +1,4 @@
+import * as artifacts from './artifacts';
 import conversation from './conversation';
 import conversations from './conversations';
 import families from './families';
@@ -15,6 +16,7 @@ import tabValue from './tabValue';
 import widget from './widget';
 
 export default {
+  ...artifacts,
   ...families,
   ...conversation,
   ...conversations,

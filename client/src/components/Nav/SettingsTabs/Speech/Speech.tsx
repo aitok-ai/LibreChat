@@ -128,7 +128,7 @@ function Speech() {
   );
 
   useEffect(() => {
-    if (data) {
+    if (data && data.message !== 'not_found') {
       Object.entries(data).forEach(([key, value]) => {
         updateSetting(key, value);
       });
