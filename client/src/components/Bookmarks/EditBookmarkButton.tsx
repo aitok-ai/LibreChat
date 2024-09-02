@@ -25,7 +25,7 @@ const EditBookmarkButton: FC<{
       />
       <button
         type="button"
-        className="transition-color flex size-7 items-center justify-center rounded-lg duration-200 hover:bg-surface-hover"
+        className="flex size-7 items-center justify-center rounded-lg transition-colors duration-200 hover:bg-surface-hover"
         tabIndex={tabIndex}
         onFocus={onFocus}
         onBlur={onBlur}

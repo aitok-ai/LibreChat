@@ -282,6 +282,10 @@ export default {
   com_ui_bookmarks_update_error: '更新书签时出错',
   com_ui_bookmarks_delete_error: '删除书签时出错',
   com_ui_bookmarks_add_to_conversation: '添加到当前对话',
+  com_ui_accept: '我接受',
+  com_ui_decline: '我不接受',
+  com_ui_terms_and_conditions: '条款和条件',
+  com_ui_no_terms_content: '没有条款和条件内容显示',
   com_auth_error_login: '无法登录，请确认提供的账户密码正确，并重新尝试。',
   com_auth_error_login_rl: '尝试登录次数过多，请稍后再试。',
   com_auth_error_login_ban: '根据我们的服务规则，您的帐号被暂时禁用。',
@@ -516,7 +520,7 @@ export default {
   com_nav_plugin_store: '插件商店',
   com_nav_plugin_install: '安装',
   com_nav_plugin_uninstall: '卸载',
-  com_nav_tool_add: '添加',
+  com_ui_add: '添加',
   com_nav_tool_remove: '移除',
   com_nav_tool_dialog: '助手工具',
   com_nav_tool_dialog_description: '必须保存助手才能保留工具选择。',
@@ -2241,7 +2245,7 @@ export const comparisons = {
     english: 'Uninstall',
     translated: '卸载',
   },
-  com_nav_tool_add: {
+  com_ui_add: {
     english: 'Add',
     translated: '添加',
   },

@@ -308,6 +308,9 @@ export type TInterfaceConfig = {
   termsOfService?: {
     externalUrl?: string;
     openNewTab?: boolean;
+    modalAcceptance?: boolean;
+    modalTitle?: string;
+    modalContent?: string;
   };
   endpointsMenu: boolean;
   modelSelect: boolean;
@@ -505,3 +508,11 @@ export type TGetRandomPromptsRequest = {
 };
 
 export type TCustomConfigSpeechResponse = { [key: string]: string };
+
+export type TUserTermsResponse = {
+  termsAccepted: boolean;
+};
+
+export type TAcceptTermsResponse = {
+  success: boolean;
+};

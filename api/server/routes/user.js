@@ -9,11 +9,16 @@ const {
   followUserController,
   postBiographyController,
   usernameController,
+  getTermsStatusController,
+  acceptTermsController,
 } = require('~/server/controllers/UserController');
 
 const router = express.Router();
 
 router.get('/:userId?', requireJwtAuth, getUserController);
+router.get('/', requireJwtAuth, getUserController);
+router.get('/terms', requireJwtAuth, getTermsStatusController);
+router.post('/terms/accept', requireJwtAuth, acceptTermsController);
 router.post('/plugins', requireJwtAuth, updateUserPluginsController);
 router.post('/follow', requireJwtAuth, followUserController);
 router.post('/:userId?', requireJwtAuth, postBiographyController);

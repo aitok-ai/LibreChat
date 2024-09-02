@@ -177,6 +177,10 @@ export default {
   com_ui_bookmarks_update_error: 'Houve um erro ao atualizar o favorito',
   com_ui_bookmarks_delete_error: 'Houve um erro ao excluir o favorito',
   com_ui_bookmarks_add_to_conversation: 'Adicionar à conversa atual',
+  com_ui_accept: 'Eu aceito',
+  com_ui_decline: 'Eu não aceito',
+  com_ui_terms_and_conditions: 'Termos e Condições',
+  com_ui_no_terms_content: 'Nenhum conteúdo de termos e condições para exibir',
   com_auth_error_login:
     'Não foi possível fazer login com as informações fornecidas. Por favor, verifique suas credenciais e tente novamente.',
   com_auth_error_login_rl:
@@ -419,7 +423,7 @@ export default {
   com_nav_plugin_store: 'Loja de plugins',
   com_nav_plugin_install: 'Instalar',
   com_nav_plugin_uninstall: 'Desinstalar',
-  com_nav_tool_add: 'Adicionar',
+  com_ui_add: 'Adicionar',
   com_nav_tool_remove: 'Remover',
   com_nav_tool_dialog: 'Ferramentas do Assistente',
   com_nav_tool_dialog_description:
@@ -2021,7 +2025,7 @@ export const comparisons = {
     english: 'Uninstall',
     translated: 'Desinstalar',
   },
-  com_nav_tool_add: {
+  com_ui_add: {
     english: 'Add',
     translated: 'Adicionar',
   },

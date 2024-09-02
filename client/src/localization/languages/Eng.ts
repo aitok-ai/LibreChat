@@ -43,6 +43,7 @@ export default {
   com_ui_leaderboard: 'Leaderboard',
   com_ui_convo_public_reminder:
     'New conversations default to the public. You can select a conversation from the left menu, and then set the conversation as private.',
+  com_nav_convo_menu_options: 'Conversation Menu Options',
   com_ui_artifacts: 'Artifacts',
   com_ui_artifacts_toggle: 'Toggle Artifacts UI',
   com_nav_info_code_artifacts:
@@ -54,7 +55,8 @@ export default {
   com_nav_info_custom_prompt_mode:
     'When enabled, the default artifacts system prompt will not be included. All artifact-generating instructions must be provided manually in this mode.',
   com_ui_artifact_click: 'Click to open',
-  com_a11y_start: 'The AI is replying.',
+  com_a11y_start: 'The AI has started their reply.',
+  com_a11y_ai_composing: 'The AI is still composing.',
   com_a11y_end: 'The AI has finished their reply.',
   com_error_moderation:
     'It appears that the content submitted has been flagged by our moderation system for not aligning with our community guidelines. We\'re unable to proceed with this specific topic. If you have any other questions or topics you\'d like to explore, please edit your message, or create a new conversation.',
@@ -63,6 +65,8 @@ export default {
   com_error_invalid_user_key: 'Invalid key provided. Please provide a valid key and try again.',
   com_error_expired_user_key:
     'Provided key for {0} expired at {1}. Please provide a new key and try again.',
+  com_error_input_length:
+    'The latest message token count is too long, exceeding the token limit ({0} respectively). Please shorten your message, adjust the max context size from the conversation parameters, or fork the conversation to continue.',
   com_files_no_results: 'No results.',
   com_files_filter: 'Filter files...',
   com_files_number_selected: '{0} of {1} file(s) selected',
@@ -114,6 +118,8 @@ export default {
   com_assistants_update_error: 'There was an error updating your assistant.',
   com_assistants_create_success: 'Successfully created',
   com_assistants_create_error: 'There was an error creating your assistant.',
+  com_assistants_conversation_starters: 'Conversation Starters',
+  com_assistants_conversation_starters_placeholder: 'Enter a conversation starter',
   com_ui_date_today: 'Today',
   com_ui_date_yesterday: 'Yesterday',
   com_ui_date_previous_7_days: 'Previous 7 days',
@@ -258,7 +264,8 @@ export default {
   com_ui_fork_visible: 'Visible messages only',
   com_ui_fork_from_message: 'Select a fork option',
   com_ui_mention: 'Mention an endpoint, assistant, or preset to quickly switch to it',
-  com_ui_add: 'Add a model or preset for an additional response',
+  com_ui_add_model_preset: 'Add a model or preset for an additional response',
+  com_assistants_max_starters_reached: 'Max number of conversation starters reached',
   com_ui_regenerate: 'Regenerate',
   com_ui_continue: 'Continue',
   com_ui_edit: 'Edit',
@@ -659,7 +666,7 @@ export default {
   com_nav_plugin_store: 'Plugin store',
   com_nav_plugin_install: 'Install',
   com_nav_plugin_uninstall: 'Uninstall',
-  com_nav_tool_add: 'Add',
+  com_ui_add: 'Add',
   com_nav_tool_remove: 'Remove',
   com_nav_tool_dialog: 'Assistant Tools',
   com_ui_misc: 'Misc.',
@@ -871,4 +878,8 @@ export default {
   com_msg_playback_stop: 'Stop',
   com_nav_lang_hebrew: 'עברית',
   com_nav_lang_finnish: 'Suomi',
+  com_ui_accept: 'I accept',
+  com_ui_decline: 'I do not accept',
+  com_ui_terms_and_conditions: 'Terms and Conditions',
+  com_ui_no_terms_content: 'No terms and conditions content to display',
 };

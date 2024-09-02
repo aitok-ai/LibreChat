@@ -13,7 +13,7 @@ export default function AssistantAction({
 
   return (
     <div>
-      <div
+      <button
         onClick={onClick}
         className="flex w-full rounded-lg text-sm hover:cursor-pointer"
         onMouseEnter={() => setIsHovering(true)}
@@ -33,7 +33,7 @@ export default function AssistantAction({
             <GearIcon className="icon-sm" />
           </button>
         )}
-      </div>
+      </button>
     </div>
   );
 }

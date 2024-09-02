@@ -625,7 +625,7 @@ export const useUploadFileMutation = (
 
               const update = {};
               if (!tool_resource) {
-                update['file_ids'] = [...assistant.file_ids, data.file_id];
+                update['file_ids'] = [...(assistant.file_ids ?? []), data.file_id];
               }
               if (tool_resource === EToolResources.code_interpreter) {
                 const prevResources = assistant.tool_resources ?? {};
@@ -887,6 +887,24 @@ export const useUpdateAssistantMutation = (
           return options?.onSuccess?.(updatedAssistant, variables, context);
         }
 
+        queryClient.setQueryData<t.AssistantDocument[]>(
+          [QueryKeys.assistantDocs, variables.data.endpoint],
+          (prev) => {
+            if (!prev) {
+              return prev;
+            }
+            prev.map((doc) => {
+              if (doc.assistant_id === variables.assistant_id) {
+                return {
+                  ...doc,
+                  conversation_starters: updatedAssistant.conversation_starters,
+                };
+              }
+              return doc;
+            });
+          },
+        );
+
         queryClient.setQueryData<t.AssistantListResponse>(
           [QueryKeys.assistants, variables.data.endpoint, defaultOrderQuery],
           {
@@ -1073,7 +1091,7 @@ export const useDeleteAction = (
               if (assistant.id === variables.assistant_id) {
                 return {
                   ...assistant,
-                  tools: assistant.tools.filter(
+                  tools: (assistant.tools ?? []).filter(
                     (tool) => !tool.function?.name.includes(domain ?? ''),
                   ),
                 };
@@ -1111,5 +1129,21 @@ export const useResendVerificationEmail = (
     mutationFn: (variables: t.TResendVerificationEmail) =>
       dataService.resendVerificationEmail(variables),
     ...(options || {}),
+  });
+};
+
+export const useAcceptTermsMutation = (
+  options?: t.AcceptTermsMutationOptions,
+): UseMutationResult<t.TAcceptTermsResponse, unknown, void, unknown> => {
+  const queryClient = useQueryClient();
+  return useMutation(() => dataService.acceptTerms(), {
+    onSuccess: (data, variables, context) => {
+      queryClient.setQueryData<t.TUserTermsResponse>([QueryKeys.userTerms], {
+        termsAccepted: true,
+      });
+      options?.onSuccess?.(data, variables, context);
+    },
+    onError: options?.onError,
+    onMutate: options?.onMutate,
   });
 };

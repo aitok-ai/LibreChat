@@ -202,7 +202,7 @@ export default {
   com_ui_fork_visible: 'Vain näkyvät viestit',
   com_ui_fork_from_message: 'Valitse haarautustapa',
   com_ui_mention: 'Mainitse päätepiste, Avustaja tai asetus vaihtaaksesi siihen pikana',
-  com_ui_add: 'Lisää malli tai esiasetus lisävastausta varten',
+  com_ui_add_model_preset: 'Lisää malli tai esiasetus lisävastausta varten',
   com_ui_regenerate: 'Luo uudestaan',
   com_ui_continue: 'Jatka',
   com_ui_edit: 'Muokkaa',
@@ -306,6 +306,10 @@ export default {
   com_ui_bookmarks_update_error: 'Virhe kirjanmerkin päivittämisessä',
   com_ui_bookmarks_delete_error: 'Virhe kirjanmerkin poistamisessa',
   com_ui_bookmarks_add_to_conversation: 'Lisää nykyiseen keskusteluun',
+  com_ui_accept: 'Hyväksyn',
+  com_ui_decline: 'En hyväksy',
+  com_ui_terms_and_conditions: 'Käyttöehdot',
+  com_ui_no_terms_content: 'Ei käyttöehtoja näytettäväksi',
   com_auth_error_login:
     'Kirjautuminen annetuilla tiedoilla ei onnistunut. Tarkista kirjautumistiedot, ja yritä uudestaan.',
   com_auth_error_login_rl:
@@ -571,7 +575,7 @@ export default {
   com_nav_plugin_store: 'Lisäosakauppa',
   com_nav_plugin_install: 'Asenna',
   com_nav_plugin_uninstall: 'Poista',
-  com_nav_tool_add: 'Lisää',
+  com_ui_add: 'Lisää',
   com_nav_tool_remove: 'Poista',
   com_nav_tool_dialog: 'Avustajatyökalut',
   com_ui_misc: 'Muu',

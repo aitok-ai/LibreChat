@@ -60,7 +60,8 @@
     "b:test:client": "cd client && bun run b:test",
     "b:test:api": "cd api && bun run b:test",
     "b:balance": "bun config/add-balance.js",
-    "b:list-balances": "bun config/list-balances.js"
+    "b:list-balances": "bun config/list-balances.js",
+    "reset-terms": "node config/reset-terms.js"
   },
   "repository": {
     "type": "git",
@@ -107,6 +108,7 @@
   },
   "dependencies": {
     "ag-grid-community": "^31.2.0",
+    "caniuse-lite": "",
     "esbuild": "^0.20.1",
     "express-rate-limit": "^7.2.0",
     "js-tiktoken": "^1.0.10",

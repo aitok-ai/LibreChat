@@ -286,14 +286,18 @@ export function getAssistantDocs({
   endpoint,
   version,
 }: {
-  endpoint: s.AssistantsEndpoint;
+  endpoint: s.AssistantsEndpoint | string;
   version: number | string;
 }): Promise<a.AssistantDocument[]> {
+  if (!s.isAssistantsEndpoint(endpoint)) {
+    return Promise.resolve([]);
+  }
   return request.get(
     endpoints.assistants({
       path: 'documents',
       version,
-      endpoint,
+      options: { endpoint },
+      endpoint: endpoint as s.AssistantsEndpoint,
     }),
   );
 }
@@ -607,4 +611,12 @@ export function rebuildConversationTags(): Promise<t.TConversationTagsResponse> 
 
 export function healthCheck(): Promise<string> {
   return request.get(endpoints.health());
+}
+
+export function getUserTerms(): Promise<t.TUserTermsResponse> {
+  return request.get(endpoints.userTerms());
+}
+
+export function acceptTerms(): Promise<t.TAcceptTermsResponse> {
+  return request.post(endpoints.acceptUserTerms());
 }
