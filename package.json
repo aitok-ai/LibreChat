@@ -108,7 +108,7 @@
   },
   "dependencies": {
     "ag-grid-community": "^31.2.0",
-    "caniuse-lite": "",
+    "caniuse-lite": "^1.0.30001655",
     "esbuild": "^0.20.1",
     "express-rate-limit": "^7.2.0",
     "js-tiktoken": "^1.0.10",

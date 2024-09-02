@@ -3,7 +3,12 @@ import { Search, X } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle, Description } from '@headlessui/react';
 import { useFormContext } from 'react-hook-form';
 import { useUpdateUserPluginsMutation } from 'librechat-data-provider/react-query';
-import type { AssistantsEndpoint, TError, TPluginAction } from 'librechat-data-provider';
+import type {
+  AssistantsEndpoint,
+  EModelEndpoint,
+  TError,
+  TPluginAction,
+} from 'librechat-data-provider';
 import type { TPluginStoreDialogProps } from '~/common/types';
 import { PluginPagination, PluginAuthForm } from '~/components/Plugins/Store';
 import { useLocalize, usePluginDialogHelpers } from '~/hooks';
@@ -12,9 +17,13 @@ import ToolItem from './ToolItem';
 
 function ToolSelectDialog({
   isOpen,
-  setIsOpen,
   endpoint,
-}: TPluginStoreDialogProps & { assistant_id?: string; endpoint: AssistantsEndpoint }) {
+  setIsOpen,
+  toolsFormKey,
+}: TPluginStoreDialogProps & {
+  toolsFormKey: string;
+  endpoint: AssistantsEndpoint | EModelEndpoint.agents;
+}) {
   const localize = useLocalize();
   const { getValues, setValue } = useFormContext();
   const { data: tools = [] } = useAvailableToolsQuery(endpoint);
@@ -46,7 +55,7 @@ function ToolSelectDialog({
   const handleInstallError = (error: TError) => {
     setError(true);
     if (error.response?.data?.message) {
-      setErrorMessage(error.response?.data?.message);
+      setErrorMessage(error.response.data.message);
     }
     setTimeout(() => {
       setError(false);
@@ -56,9 +65,9 @@ function ToolSelectDialog({
 
   const handleInstall = (pluginAction: TPluginAction) => {
     const addFunction = () => {
-      const fns = getValues('functions').slice();
+      const fns = getValues(toolsFormKey).slice();
       fns.push(pluginAction.pluginKey);
-      setValue('functions', fns);
+      setValue(toolsFormKey, fns);
     };
 
     if (!pluginAction.auth) {
@@ -84,8 +93,8 @@ function ToolSelectDialog({
           handleInstallError(error as TError);
         },
         onSuccess: () => {
-          const fns = getValues('functions').filter((fn) => fn !== tool);
-          setValue('functions', fns);
+          const fns = getValues(toolsFormKey).filter((fn: string) => fn !== tool);
+          setValue(toolsFormKey, fns);
         },
       },
     );
@@ -93,7 +102,7 @@ function ToolSelectDialog({
 
   const onAddTool = (pluginKey: string) => {
     setShowPluginAuthForm(false);
-    const getAvailablePluginFromKey = tools?.find((p) => p.pluginKey === pluginKey);
+    const getAvailablePluginFromKey = tools.find((p) => p.pluginKey === pluginKey);
     setSelectedPlugin(getAvailablePluginFromKey);
 
     const { authConfig, authenticated } = getAvailablePluginFromKey ?? {};
@@ -105,7 +114,7 @@ function ToolSelectDialog({
     }
   };
 
-  const filteredTools = tools?.filter((tool) =>
+  const filteredTools = tools.filter((tool) =>
     tool.name.toLowerCase().includes(searchValue.toLowerCase()),
   );
 
@@ -213,7 +222,7 @@ function ToolSelectDialog({
                       <ToolItem
                         key={index}
                         tool={tool}
-                        isInstalled={getValues('functions').includes(tool.pluginKey)}
+                        isInstalled={getValues(toolsFormKey).includes(tool.pluginKey)}
                         onAddTool={() => onAddTool(tool.pluginKey)}
                         onRemoveTool={() => onRemoveTool(tool.pluginKey)}
                       />

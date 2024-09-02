@@ -1,24 +1,25 @@
+/* eslint-disable no-nested-ternary */
 import React from 'react';
 import {
-  Listbox,
-  ListboxButton,
   Label,
-  ListboxOptions,
-  ListboxOption,
+  Listbox,
   Transition,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
 } from '@headlessui/react';
-import type { Option, OptionWithIcon } from '~/common';
-import CheckMark from '../svg/CheckMark';
+import type { Option, OptionWithIcon, DropdownValueSetter } from '~/common';
+import CheckMark from '~/components/svg/CheckMark';
+import { useMultiSearch } from './MultiSearch';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils/';
-import { useMultiSearch } from './MultiSearch';
 
 type SelectDropDownProps = {
   id?: string;
   title?: string;
-  value: string | null | Option | OptionWithIcon;
   disabled?: boolean;
-  setValue: (value: string) => void;
+  value: string | null | Option | OptionWithIcon;
+  setValue: DropdownValueSetter | ((value: string) => void);
   tabIndex?: number;
   availableValues: string[] | Option[] | OptionWithIcon[];
   emptyTitle?: boolean;
@@ -32,6 +33,7 @@ type SelectDropDownProps = {
   optionsClass?: string;
   subContainerClassName?: string;
   className?: string;
+  placeholder?: string;
   searchClassName?: string;
   searchPlaceholder?: string;
   showOptionIcon?: boolean;
@@ -48,6 +50,7 @@ function SelectDropDown({
   showLabel = true,
   emptyTitle = false,
   iconSide = 'right',
+  placeholder,
   containerClassName,
   optionsListClass,
   optionsClass,
@@ -79,7 +82,7 @@ function SelectDropDown({
   const [filteredValues, searchRender] = useMultiSearch<string[] | Option[]>({
     availableOptions: availableValues,
     placeholder: searchPlaceholder,
-    getTextKeyOverride: (option) => ((option as Option)?.label || '').toUpperCase(),
+    getTextKeyOverride: (option) => ((option as Option).label || '').toUpperCase(),
     className: searchClassName,
   });
   const hasSearchRender = Boolean(searchRender);
@@ -94,7 +97,7 @@ function SelectDropDown({
               <ListboxButton
                 data-testid="select-dropdown-button"
                 className={cn(
-                  'relative flex w-full cursor-default flex-col rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left dark:border-gray-600 dark:bg-gray-700 sm:text-sm',
+                  'relative flex w-full cursor-default flex-col rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left disabled:bg-white dark:border-gray-600 dark:bg-gray-700 sm:text-sm',
                   className ?? '',
                 )}
               >
@@ -119,12 +122,20 @@ function SelectDropDown({
                     {!showLabel && !emptyTitle && (
                       <span className="text-xs text-gray-700 dark:text-gray-500">{title}:</span>
                     )}
-                    {showOptionIcon && value && (value as OptionWithIcon)?.icon && (
+                    {showOptionIcon && value && (value as OptionWithIcon).icon && (
                       <span className="icon-md flex items-center">
                         {(value as OptionWithIcon).icon}
                       </span>
                     )}
-                    {typeof value !== 'string' && value ? value?.label ?? '' : value ?? ''}
+                    {value ? (
+                      typeof value !== 'string' ? (
+                        value.label ?? ''
+                      ) : (
+                        value
+                      )
+                    ) : (
+                      <span className="text-gray-500 dark:text-gray-400">{placeholder}</span>
+                    )}
                   </span>
                 </span>
                 <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -164,7 +175,7 @@ function SelectDropDown({
                       key={'listbox-render-option'}
                       value={null}
                       className={cn(
-                        'group relative flex h-[42px] cursor-pointer select-none items-center overflow-hidden border-b border-black/10 pl-3 pr-9 text-gray-800 last:border-0 hover:bg-gray-20 dark:border-white/20 dark:text-white dark:hover:bg-gray-700',
+                        'group relative flex h-[42px] cursor-pointer select-none items-center overflow-hidden pl-3 pr-9 text-gray-800 hover:bg-gray-20 dark:text-white dark:hover:bg-gray-700',
                         optionsClass ?? '',
                       )}
                     >
@@ -177,10 +188,11 @@ function SelectDropDown({
                       return null;
                     }
 
-                    const currentLabel = typeof option === 'string' ? option : option?.label ?? '';
-                    const currentValue = typeof option === 'string' ? option : option?.value ?? '';
+                    const currentLabel =
+                      typeof option === 'string' ? option : option.label ?? option.value ?? '';
+                    const currentValue = typeof option === 'string' ? option : option.value ?? '';
                     const currentIcon =
-                      typeof option === 'string' ? null : (option?.icon as React.ReactNode) ?? null;
+                      typeof option === 'string' ? null : (option.icon as React.ReactNode) ?? null;
                     let activeValue: string | number | null | Option = value;
                     if (typeof activeValue !== 'string') {
                       activeValue = activeValue?.value ?? '';
@@ -189,10 +201,10 @@ function SelectDropDown({
                     return (
                       <ListboxOption
                         key={i}
-                        value={currentValue}
+                        value={option}
                         className={({ active }) =>
                           cn(
-                            'group relative flex h-[42px] cursor-pointer select-none items-center overflow-hidden border-b border-black/10 pl-3 pr-9 text-gray-800 last:border-0 hover:bg-gray-20 dark:border-white/20 dark:text-white dark:hover:bg-gray-700',
+                            'group relative flex h-[42px] cursor-pointer select-none items-center overflow-hidden pl-3 pr-9 text-gray-800 hover:bg-gray-20 dark:text-white dark:hover:bg-gray-600',
                             active ? 'bg-surface-tertiary' : '',
                             optionsClass ?? '',
                           )
