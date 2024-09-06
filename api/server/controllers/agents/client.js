@@ -10,6 +10,7 @@
 const { Callback } = require('@librechat/agents');
 const {
   EModelEndpoint,
+  bedrockOutputParser,
   providerEndpointMap,
   removeNullishValues,
 } = require('librechat-data-provider');
@@ -29,9 +30,19 @@ const BaseClient = require('~/app/clients/BaseClient');
 const { createRun } = require('./run');
 const { logger } = require('~/config');
 
+/** @typedef {import('@librechat/agents').MessageContentComplex} MessageContentComplex */
+
+// const providerSchemas = {
+// [EModelEndpoint.bedrock]: true,
+// };
+
+const providerParsers = {
+  [EModelEndpoint.bedrock]: bedrockOutputParser,
+};
+
 class AgentClient extends BaseClient {
   constructor(options = {}) {
-    super(options);
+    super(null, options);
 
     /** @type {'discard' | 'summarize'} */
     this.contextStrategy = 'discard';
@@ -43,7 +54,16 @@ class AgentClient extends BaseClient {
 
     this.modelOptions = modelOptions;
     this.maxContextTokens = maxContextTokens;
-    this.options = Object.assign({ endpoint: EModelEndpoint.agents }, clientOptions);
+    /** @type {MessageContentComplex[]} */
+    this.contentParts = options.contentParts;
+    this.options = Object.assign({ endpoint: options.endpoint }, clientOptions);
+  }
+
+  /**
+   * Returns the aggregated content parts for the current run.
+   * @returns {MessageContentComplex[]} */
+  getContentParts() {
+    return this.contentParts;
   }
 
   setOptions(options) {
@@ -112,9 +132,27 @@ class AgentClient extends BaseClient {
   }
 
   getSaveOptions() {
+    const parseOptions = providerParsers[this.options.endpoint];
+    let runOptions =
+      this.options.endpoint === EModelEndpoint.agents
+        ? {
+          model: undefined,
+          // TODO:
+          // would need to be override settings; otherwise, model needs to be undefined
+          // model: this.override.model,
+          // instructions: this.override.instructions,
+          // additional_instructions: this.override.additional_instructions,
+        }
+        : {};
+
+    if (parseOptions) {
+      runOptions = parseOptions(this.modelOptions);
+    }
+
     return removeNullishValues(
       Object.assign(
         {
+          endpoint: this.options.endpoint,
           agent_id: this.options.agent.id,
           modelLabel: this.options.modelLabel,
           maxContextTokens: this.options.maxContextTokens,
@@ -122,15 +160,8 @@ class AgentClient extends BaseClient {
           imageDetail: this.options.imageDetail,
           spec: this.options.spec,
         },
-        this.modelOptions,
-        {
-          model: undefined,
-          // TODO:
-          // would need to be override settings; otherwise, model needs to be undefined
-          // model: this.override.model,
-          // instructions: this.override.instructions,
-          // additional_instructions: this.override.additional_instructions,
-        },
+        // TODO: PARSE OPTIONS BY PROVIDER, MAY CONTAIN SENSITIVE DATA
+        runOptions,
       ),
     );
   }
@@ -270,11 +301,12 @@ class AgentClient extends BaseClient {
   /** @type {sendCompletion} */
   async sendCompletion(payload, opts = {}) {
     this.modelOptions.user = this.user;
-    return await this.chatCompletion({
+    await this.chatCompletion({
       payload,
       onProgress: opts.onProgress,
       abortController: opts.abortController,
     });
+    return this.contentParts;
   }
 
   // async recordTokenUsage({ promptTokens, completionTokens, context = 'message' }) {
@@ -415,6 +447,7 @@ class AgentClient extends BaseClient {
           thread_id: this.conversationId,
         },
         run_id: this.responseMessageId,
+        signal: abortController.signal,
         streamMode: 'values',
         version: 'v2',
       };
@@ -424,7 +457,7 @@ class AgentClient extends BaseClient {
       }
 
       const messages = formatAgentMessages(payload);
-      const runMessages = await run.processStream({ messages }, config, {
+      await run.processStream({ messages }, config, {
         [Callback.TOOL_ERROR]: (graph, error, toolId) => {
           logger.error(
             '[api/server/controllers/agents/client.js #chatCompletion] Tool Error',
@@ -433,14 +466,20 @@ class AgentClient extends BaseClient {
           );
         },
       });
-      // console.dir(runMessages, { depth: null });
-      return runMessages;
+      logger.debug(this.contentParts, { depth: null });
     } catch (err) {
-      logger.error(
-        '[api/server/controllers/agents/client.js #chatCompletion] Unhandled error type',
+      if (!abortController.signal.aborted) {
+        logger.error(
+          '[api/server/controllers/agents/client.js #sendCompletion] Unhandled error type',
+          err,
+        );
+        throw err;
+      }
+
+      logger.warn(
+        '[api/server/controllers/agents/client.js #sendCompletion] Operation aborted',
         err,
       );
-      throw err;
     }
   }
 

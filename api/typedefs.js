@@ -27,6 +27,12 @@
  */
 
 /**
+ * @exports BedrockClientOptions
+ * @typedef {import('@librechat/agents').BedrockConverseClientOptions} BedrockClientOptions
+ * @memberof typedefs
+ */
+
+/**
  * @exports StreamEventData
  * @typedef {import('@librechat/agents').StreamEventData} StreamEventData
  * @memberof typedefs
@@ -890,6 +896,12 @@
 /**
  * @exports OpenAISpecClient
  * @typedef {import('./app/clients/OpenAIClient')} OpenAISpecClient
+ * @memberof typedefs
+ */
+
+/**
+ * @exports TAgentClient
+ * @typedef {import('./server/controllers/agents/client')} TAgentClient
  * @memberof typedefs
  */
 

@@ -500,6 +500,7 @@ export const configSchema = z.object({
       [EModelEndpoint.assistants]: assistantEndpointSchema.optional(),
       [EModelEndpoint.agents]: agentsEndpointSChema.optional(),
       [EModelEndpoint.custom]: z.array(endpointSchema.partial()).optional(),
+      [EModelEndpoint.bedrock]: baseEndpointSchema.optional(),
     })
     .strict()
     .refine((data) => Object.keys(data).length > 0, {
@@ -552,6 +553,7 @@ export const defaultEndpoints: EModelEndpoint[] = [
   EModelEndpoint.google,
   EModelEndpoint.anthropic,
   EModelEndpoint.custom,
+  EModelEndpoint.bedrock,
 ];
 
 export const alternateName = {
@@ -566,6 +568,7 @@ export const alternateName = {
   [EModelEndpoint.google]: 'Google',
   [EModelEndpoint.anthropic]: 'Anthropic',
   [EModelEndpoint.custom]: 'Custom',
+  [EModelEndpoint.bedrock]: 'AWS Bedrock',
 };
 
 const sharedOpenAIModels = [
@@ -588,6 +591,64 @@ const sharedOpenAIModels = [
   'gpt-3.5-turbo-0613',
 ];
 
+const sharedAnthropicModels = [
+  'claude-3-5-sonnet-20240620',
+  'claude-3-opus-20240229',
+  'claude-3-sonnet-20240229',
+  'claude-3-haiku-20240307',
+  'claude-2.1',
+  'claude-2',
+  'claude-1.2',
+  'claude-1',
+  'claude-1-100k',
+  'claude-instant-1',
+  'claude-instant-1-100k',
+];
+
+export const bedrockModels = [
+  'ai21.jamba-instruct-v1:0',
+  'ai21.j2-mid-v1',
+  'ai21.j2-ultra-v1',
+  'amazon.titan-text-express-v1',
+  'amazon.titan-text-lite-v1',
+  'amazon.titan-text-premier-v1:0',
+  'amazon.titan-embed-text-v1',
+  'amazon.titan-embed-text-v2:0',
+  'amazon.titan-embed-image-v1',
+  'amazon.titan-image-generator-v1',
+  'amazon.titan-image-generator-v2:0',
+  'anthropic.claude-v2',
+  'anthropic.claude-v2:1',
+  'anthropic.claude-3-sonnet-20240229-v1:0',
+  'anthropic.claude-3-5-sonnet-20240620-v1:0',
+  'anthropic.claude-3-haiku-20240307-v1:0',
+  'anthropic.claude-3-opus-20240229-v1:0',
+  'anthropic.claude-instant-v1',
+  'cohere.command-text-v14',
+  'cohere.command-light-text-v14',
+  'cohere.command-r-v1:0',
+  'cohere.command-r-plus-v1:0',
+  'cohere.embed-english-v3',
+  'cohere.embed-multilingual-v3',
+  'meta.llama2-13b-chat-v1',
+  'meta.llama2-70b-chat-v1',
+  'meta.llama3-8b-instruct-v1:0',
+  'meta.llama3-70b-instruct-v1:0',
+  'meta.llama3-1-8b-instruct-v1:0',
+  'meta.llama3-1-70b-instruct-v1:0',
+  'meta.llama3-1-405b-instruct-v1:0',
+  'mistral.mistral-7b-instruct-v0:2',
+  'mistral.mixtral-8x7b-instruct-v0:1',
+  'mistral.mistral-large-2402-v1:0',
+  'mistral.mistral-large-2407-v1:0',
+  'mistral.mistral-small-2402-v1:0',
+  'stability.stable-diffusion-xl-v0',
+  'stability.stable-diffusion-xl-v1',
+  'stability.sd3-large-v1:0',
+  'stability.stable-image-ultra-v1:0',
+  'stability.stable-image-core-v1:0',
+];
+
 export const defaultModels = {
   [EModelEndpoint.azureAssistants]: sharedOpenAIModels,
   [EModelEndpoint.assistants]: ['chatgpt-4o-latest', ...sharedOpenAIModels],
@@ -606,19 +667,7 @@ export const defaultModels = {
     'code-bison',
     'code-bison-32k',
   ],
-  [EModelEndpoint.anthropic]: [
-    'claude-3-5-sonnet-20240620',
-    'claude-3-opus-20240229',
-    'claude-3-sonnet-20240229',
-    'claude-3-haiku-20240307',
-    'claude-2.1',
-    'claude-2',
-    'claude-1.2',
-    'claude-1',
-    'claude-1-100k',
-    'claude-instant-1',
-    'claude-instant-1-100k',
-  ],
+  [EModelEndpoint.anthropic]: sharedAnthropicModels,
   [EModelEndpoint.openAI]: [
     'chatgpt-4o-latest',
     ...sharedOpenAIModels,
@@ -626,6 +675,7 @@ export const defaultModels = {
     'gpt-3.5-turbo-instruct-0914',
     'gpt-3.5-turbo-instruct',
   ],
+  [EModelEndpoint.bedrock]: bedrockModels,
 };
 
 const fitlerAssistantModels = (str: string) => {
@@ -645,6 +695,7 @@ export const initialModelsConfig: TModelsConfig = {
   [EModelEndpoint.chatGPTBrowser]: ['text-davinci-002-render-sha'],
   [EModelEndpoint.google]: defaultModels[EModelEndpoint.google],
   [EModelEndpoint.anthropic]: defaultModels[EModelEndpoint.anthropic],
+  [EModelEndpoint.bedrock]: defaultModels[EModelEndpoint.bedrock],
 };
 
 export const EndpointURLs: { [key in EModelEndpoint]: string } = {
@@ -658,7 +709,8 @@ export const EndpointURLs: { [key in EModelEndpoint]: string } = {
   [EModelEndpoint.chatGPTBrowser]: `/api/ask/${EModelEndpoint.chatGPTBrowser}`,
   [EModelEndpoint.azureAssistants]: '/api/assistants/v1/chat',
   [EModelEndpoint.assistants]: '/api/assistants/v2/chat',
-  [EModelEndpoint.agents]: '/api/agents/chat',
+  [EModelEndpoint.agents]: `/api/${EModelEndpoint.agents}/chat`,
+  [EModelEndpoint.bedrock]: `/api/${EModelEndpoint.bedrock}/chat`,
 };
 
 export const modularEndpoints = new Set<EModelEndpoint | string>([
@@ -668,6 +720,13 @@ export const modularEndpoints = new Set<EModelEndpoint | string>([
   EModelEndpoint.openAI,
   EModelEndpoint.azureOpenAI,
   EModelEndpoint.custom,
+  EModelEndpoint.agents,
+  EModelEndpoint.bedrock,
+]);
+
+export const paramEndpoints = new Set<EModelEndpoint | string>([
+  EModelEndpoint.agents,
+  EModelEndpoint.bedrock,
 ]);
 
 export const supportsBalanceCheck = {
@@ -679,6 +738,7 @@ export const supportsBalanceCheck = {
   [EModelEndpoint.agents]: true,
   [EModelEndpoint.azureAssistants]: true,
   [EModelEndpoint.azureOpenAI]: true,
+  [EModelEndpoint.bedrock]: true,
 };
 
 export const visionModels = [
@@ -1026,6 +1086,8 @@ export enum Constants {
   SAVED_TAG = 'Saved',
   /** Max number of Conversation starters for Agents/Assistants */
   MAX_CONVO_STARTERS = 4,
+  /** Global/instance Project Name */
+  GLOBAL_PROJECT_NAME = 'instance',
 }
 
 export enum LocalStorageKeys {
@@ -1105,6 +1167,7 @@ export enum SystemCategories {
 
 export const providerEndpointMap = {
   [EModelEndpoint.openAI]: EModelEndpoint.openAI,
+  [EModelEndpoint.bedrock]: EModelEndpoint.bedrock,
   [EModelEndpoint.azureOpenAI]: EModelEndpoint.openAI,
   [EModelEndpoint.anthropic]: EModelEndpoint.anthropic,
 };
