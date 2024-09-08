@@ -193,8 +193,9 @@ export default {
   com_ui_variables: 'Variablen',
   com_ui_variables_info:
     'Verwende doppelte geschweifte Klammern in Ihrem Text, um Variablen zu erstellen, z.B. {{Beispielvariable}}, die du später beim Verwenden des Prompts ausfüllen kannst.',
-  com_ui_special_variables:
-    'Spezielle Variablen: Verwende {{current_date}} für das aktuelle Datum und {{current_user}} für deinen angegebenen Kontonamen.',
+  com_ui_special_variables: 'Spezielle Variablen:',
+  com_ui_special_variables_info:
+    'Verwende `{{current_date}}` für das aktuelle Datum und `{{current_user}}` für deinen angegebenen Kontonamen.',
   com_ui_showing: 'Anzeige von',
   com_ui_of: 'von',
   com_ui_entries: 'Einträgen',
@@ -264,7 +265,7 @@ export default {
   com_ui_all_proper: 'Alle',
   com_ui_clear: 'Löschen',
   com_ui_revoke: 'Widerrufen',
-  com_ui_revoke_info: 'Alle vom Benutzer angegebenen API-Keys widerrufen',
+  com_ui_revoke_info: 'Benutzer-API-Keys widerrufen',
   com_ui_import_conversation: 'Importieren',
   com_ui_nothing_found: 'Nichts gefunden',
   com_ui_go_to_conversation: 'Zur Konversation gehen',
@@ -452,7 +453,7 @@ export default {
   com_endpoint_bing_system_message_placeholder:
     'WARNUNG: Missbrauch dieser Funktion kann zu einer SPERRE für die Nutzung von Bing führen! Klicke auf \'Systemnachricht\' für vollständige Anweisungen und die Standardnachricht, wenn ausgelassen, was die \'Sydney\'-Voreinstellung ist, die als sicher gilt.',
   com_endpoint_system_message: 'Systemnachricht',
-  com_endpoint_message: 'Nachricht',
+  com_endpoint_message: 'Nachricht an',
   com_endpoint_message_not_appendable: 'Bearbeite deine Nachricht oder generiere neu.',
   com_endpoint_default_blank: 'Standard: leer',
   com_endpoint_default_false: 'Standard: falsch',
@@ -629,7 +630,7 @@ export default {
   com_nav_welcome_assistant: 'Bitte wähle einen Assistenten aus',
   com_nav_welcome_message: 'Wie kann ich dir heute helfen?',
   com_nav_auto_scroll: 'Automatisch zur neuesten Nachricht scrollen, wenn der Chat geöffnet wird',
-  com_nav_hide_panel: 'Rechtes Seitenpanel ausblenden',
+  com_nav_hide_panel: 'Rechte Seitenleiste verstecken',
   com_nav_modular_chat: 'Ermöglicht das Wechseln der Endpunkte mitten im Gespräch',
   com_nav_latex_parsing: 'LaTeX in Nachrichten parsen (kann die Leistung beeinflussen)',
   com_nav_text_to_speech: 'Text zu Sprache',
@@ -655,7 +656,7 @@ export default {
   com_ui_select_file: 'Datei auswählen',
   com_ui_drag_drop_file: 'Datei hier hinziehen und ablegen',
   com_ui_upload_image: 'Ein Bild hochladen',
-  com_ui_select_a_category: 'Keine Kategorie ausgewählt',
+  com_ui_select_a_category: 'Kategorie wählen',
   com_nav_tool_dialog_description:
     'Assistent muss gespeichert werden, um Werkzeugauswahlen zu speichern.',
   com_show_agent_settings: 'Agenteneinstellungen anzeigen',
@@ -831,6 +832,12 @@ export default {
   com_nav_lang_dutch: 'Niederländisch',
   com_nav_lang_indonesia: 'Indonesisch',
   com_nav_lang_hebrew: 'Hebräisch',
+  com_ui_clear_all: 'Auswahl löschen',
+  com_ui_dropdown_variables: 'Dropdown-Variablen:',
+  com_ui_dropdown_variables_info:
+    'Erstellen Sie benutzerdefinierte Dropdown-Menüs für Ihre Eingabeaufforderungen: `{{variable_name:option1|option2|option3}}`',
+  com_nav_at_command_description:
+    'Schaltet den Befehl "@" zum Wechseln von Endpunkten, Modellen, Voreinstellungen usw. um.',
 };
 
 export const comparisons = {
