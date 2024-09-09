@@ -1,14 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { OptionTypes } from 'librechat-data-provider';
 import type { DynamicSettingProps } from 'librechat-data-provider';
-import { Label, HoverCard, HoverCardTrigger, SelectDropDown } from '~/components/ui';
+import { Label, HoverCard, HoverCardTrigger } from '~/components/ui';
+import ControlCombobox from '~/components/ui/ControlCombobox';
 import { useLocalize, useParameterEffects } from '~/hooks';
 import { useChatContext } from '~/Providers';
 import OptionHover from './OptionHover';
 import { ESide } from '~/common';
 import { cn } from '~/utils';
 
-function DynamicDropdown({
+function DynamicCombobox({
   label = '',
   settingKey,
   defaultValue,
@@ -16,38 +17,51 @@ function DynamicDropdown({
   columnSpan,
   setOption,
   optionType,
-  options,
-  // type: _type,
-  readonly = false,
+  options: _options,
+  items: _items,
   showLabel = true,
   showDefault = false,
   labelCode = false,
   descriptionCode = false,
-  placeholder = '',
-  placeholderCode = false,
+  searchPlaceholderCode = false,
+  selectPlaceholderCode = false,
   conversation,
-}: DynamicSettingProps) {
+  isCollapsed = false,
+  SelectIcon = null,
+  selectPlaceholder = '',
+  searchPlaceholder = '',
+}: DynamicSettingProps & { isCollapsed?: boolean; SelectIcon?: React.ReactNode }) {
   const localize = useLocalize();
   const { preset } = useChatContext();
   const [inputValue, setInputValue] = useState<string | null>(null);
 
   const selectedValue = useMemo(() => {
     if (optionType === OptionTypes.Custom) {
-      // TODO: custom logic, add to payload but not to conversation
       return inputValue;
     }
-
     return conversation?.[settingKey] ?? defaultValue;
   }, [conversation, defaultValue, optionType, settingKey, inputValue]);
 
-  const handleChange = (value: string) => {
-    if (optionType === OptionTypes.Custom) {
-      // TODO: custom logic, add to payload but not to conversation
-      setInputValue(value);
-      return;
+  const items = useMemo(() => {
+    if (_items != null) {
+      return _items;
     }
-    setOption(settingKey)(value);
-  };
+    return (_options ?? []).map((option) => ({
+      label: option,
+      value: option,
+    }));
+  }, [_options, _items]);
+
+  const handleChange = useCallback(
+    (value: string) => {
+      if (optionType === OptionTypes.Custom) {
+        setInputValue(value);
+      } else {
+        setOption(settingKey)(value);
+      }
+    },
+    [optionType, setOption, settingKey],
+  );
 
   useParameterEffects({
     preset,
@@ -59,7 +73,8 @@ function DynamicDropdown({
     preventDelayedUpdate: true,
   });
 
-  if (!options || options.length === 0) {
+  const options = items ?? _options ?? [];
+  if (options.length === 0) {
     return null;
   }
 
@@ -75,7 +90,7 @@ function DynamicDropdown({
           {showLabel === true && (
             <div className="flex w-full justify-between">
               <Label
-                htmlFor={`${settingKey}-dynamic-dropdown`}
+                htmlFor={`${settingKey}-dynamic-combobox`}
                 className="text-left text-sm font-medium"
               >
                 {labelCode ? localize(label) ?? label : label || settingKey}
@@ -87,16 +102,20 @@ function DynamicDropdown({
               </Label>
             </div>
           )}
-          <SelectDropDown
-            showLabel={false}
-            emptyTitle={true}
-            disabled={readonly}
-            value={selectedValue}
+          <ControlCombobox
+            displayValue={selectedValue}
+            selectPlaceholder={
+              selectPlaceholderCode === true ? localize(selectPlaceholder) : selectPlaceholder
+            }
+            searchPlaceholder={
+              searchPlaceholderCode === true ? localize(searchPlaceholder) : searchPlaceholder
+            }
+            isCollapsed={isCollapsed}
+            ariaLabel={settingKey}
+            selectedValue={selectedValue ?? ''}
             setValue={handleChange}
-            availableValues={options}
-            containerClassName="w-full"
-            id={`${settingKey}-dynamic-dropdown`}
-            placeholder={placeholderCode ? localize(placeholder) ?? placeholder : placeholder}
+            items={items}
+            SelectIcon={SelectIcon}
           />
         </HoverCardTrigger>
         {description && (
@@ -110,4 +129,4 @@ function DynamicDropdown({
   );
 }
 
-export default DynamicDropdown;
+export default DynamicCombobox;
