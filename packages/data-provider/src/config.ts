@@ -144,6 +144,7 @@ export const baseEndpointSchema = z.object({
   streamRate: z.number().optional(),
   baseURL: z.string().optional(),
   titlePrompt: z.string().optional(),
+  titleModel: z.string().optional(),
 });
 
 export type TBaseEndpoint = z.infer<typeof baseEndpointSchema>;
@@ -186,7 +187,6 @@ export const assistantEndpointSchema = baseEndpointSchema.merge(
       .optional(),
     titleConvo: z.boolean().optional(),
     titleMethod: z.union([z.literal('completion'), z.literal('functions')]).optional(),
-    titleModel: z.string().optional(),
     headers: z.record(z.any()).optional(),
   }),
 );
@@ -225,7 +225,6 @@ export const agentsEndpointSChema = baseEndpointSchema.merge(
       .optional(),
     titleConvo: z.boolean().optional(),
     titleMethod: z.union([z.literal('completion'), z.literal('functions')]).optional(),
-    titleModel: z.string().optional(),
     headers: z.record(z.any()).optional(),
   }),
 );
@@ -248,7 +247,6 @@ export const endpointSchema = baseEndpointSchema.merge(
     }),
     titleConvo: z.boolean().optional(),
     titleMethod: z.union([z.literal('completion'), z.literal('functions')]).optional(),
-    titleModel: z.string().optional(),
     summarize: z.boolean().optional(),
     summaryModel: z.string().optional(),
     forcePrompt: z.boolean().optional(),
@@ -462,6 +460,7 @@ export const configSchema = z.object({
       modelSelect: z.boolean().optional(),
       parameters: z.boolean().optional(),
       sidePanel: z.boolean().optional(),
+      multiConvo: z.boolean().optional(),
       bookmarks: z.boolean().optional(),
       presets: z.boolean().optional(),
       prompts: z.boolean().optional(),
@@ -472,6 +471,7 @@ export const configSchema = z.object({
       parameters: true,
       sidePanel: true,
       presets: true,
+      multiConvo: true,
       bookmarks: true,
       prompts: true,
     }),
@@ -943,11 +943,14 @@ export enum ErrorTypes {
    * Moderation error
    */
   MODERATION = 'moderation',
-
   /**
    * Prompt exceeds max length
    */
   INPUT_LENGTH = 'INPUT_LENGTH',
+  /**
+   * Invalid request error, API rejected request
+   */
+  INVALID_REQUEST = 'invalid_request_error',
 }
 
 /**

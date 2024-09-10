@@ -9,6 +9,7 @@
 // } = require('librechat-data-provider');
 const { Callback, createMetadataAggregator } = require('@librechat/agents');
 const {
+  Constants,
   EModelEndpoint,
   bedrockOutputParser,
   providerEndpointMap,
@@ -26,6 +27,7 @@ const {
 } = require('~/app/clients/prompts');
 const { encodeAndFormat } = require('~/server/services/Files/images/encode');
 const Tokenizer = require('~/server/services/Tokenizer');
+const { spendTokens } = require('~/models/spendTokens');
 const BaseClient = require('~/app/clients/BaseClient');
 // const { sleep } = require('~/server/utils');
 const { createRun } = require('./run');
@@ -54,12 +56,20 @@ class AgentClient extends BaseClient {
     /** @type {AgentRun} */
     this.run;
 
-    const { maxContextTokens, modelOptions = {}, ...clientOptions } = options;
+    const {
+      maxContextTokens,
+      modelOptions = {},
+      contentParts,
+      collectedUsage,
+      ...clientOptions
+    } = options;
 
     this.modelOptions = modelOptions;
     this.maxContextTokens = maxContextTokens;
     /** @type {MessageContentComplex[]} */
-    this.contentParts = options.contentParts;
+    this.contentParts = contentParts;
+    /** @type {Array<UsageMetadata>} */
+    this.collectedUsage = collectedUsage;
     this.options = Object.assign({ endpoint: options.endpoint }, clientOptions);
   }
 
@@ -323,18 +333,26 @@ class AgentClient extends BaseClient {
     return this.contentParts;
   }
 
-  // async recordTokenUsage({ promptTokens, completionTokens, context = 'message' }) {
-  //   await spendTokens(
-  //     {
-  //       context,
-  //       model: this.modelOptions.model,
-  //       conversationId: this.conversationId,
-  //       user: this.user ?? this.options.req.user?.id,
-  //       endpointTokenConfig: this.options.endpointTokenConfig,
-  //     },
-  //     { promptTokens, completionTokens },
-  //   );
-  // }
+  /**
+   * @param {Object} params
+   * @param {string} [params.model]
+   * @param {string} [params.context='message']
+   * @param {UsageMetadata[]} [params.collectedUsage=this.collectedUsage]
+   */
+  async recordCollectedUsage({ model, context = 'message', collectedUsage = this.collectedUsage }) {
+    for (const usage of collectedUsage) {
+      await spendTokens(
+        {
+          context,
+          model: model ?? this.modelOptions.model,
+          conversationId: this.conversationId,
+          user: this.user ?? this.options.req.user?.id,
+          endpointTokenConfig: this.options.endpointTokenConfig,
+        },
+        { promptTokens: usage.input_tokens, completionTokens: usage.output_tokens },
+      );
+    }
+  }
 
   async chatCompletion({ payload, abortController = null }) {
     try {
@@ -481,7 +499,12 @@ class AgentClient extends BaseClient {
           );
         },
       });
-      logger.debug(this.contentParts, { depth: null });
+      this.recordCollectedUsage({ context: 'message' }).catch((err) => {
+        logger.error(
+          '[api/server/controllers/agents/client.js #chatCompletion] Error recording collected usage',
+          err,
+        );
+      });
     } catch (err) {
       if (!abortController.signal.aborted) {
         logger.error(
@@ -508,11 +531,21 @@ class AgentClient extends BaseClient {
     if (!this.run) {
       throw new Error('Run not initialized');
     }
-    const { handleLLMEnd, collected: _collected } = createMetadataAggregator();
+    const { handleLLMEnd, collected: collectedMetadata } = createMetadataAggregator();
+    const clientOptions = {};
+    const providerConfig = this.options.req.app.locals[this.options.agent.provider];
+    if (
+      providerConfig &&
+      providerConfig.titleModel &&
+      providerConfig.titleModel !== Constants.CURRENT_MODEL
+    ) {
+      clientOptions.model = providerConfig.titleModel;
+    }
     try {
       const titleResult = await this.run.generateTitle({
         inputText: text,
         contentParts: this.contentParts,
+        clientOptions,
         chainOptions: {
           callbacks: [
             {
@@ -520,6 +553,34 @@ class AgentClient extends BaseClient {
             },
           ],
         },
+      });
+
+      const collectedUsage = collectedMetadata.map((item) => {
+        let input_tokens, output_tokens;
+
+        if (item.usage) {
+          input_tokens = item.usage.input_tokens || item.usage.inputTokens;
+          output_tokens = item.usage.output_tokens || item.usage.outputTokens;
+        } else if (item.tokenUsage) {
+          input_tokens = item.tokenUsage.promptTokens;
+          output_tokens = item.tokenUsage.completionTokens;
+        }
+
+        return {
+          input_tokens: input_tokens,
+          output_tokens: output_tokens,
+        };
+      });
+
+      this.recordCollectedUsage({
+        model: clientOptions.model,
+        context: 'title',
+        collectedUsage,
+      }).catch((err) => {
+        logger.error(
+          '[api/server/controllers/agents/client.js #titleConvo] Error recording collected usage',
+          err,
+        );
       });
 
       return titleResult.title;
