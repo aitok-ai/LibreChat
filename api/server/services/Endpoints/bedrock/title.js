@@ -4,7 +4,7 @@ const { isEnabled } = require('~/server/utils');
 const { saveConvo } = require('~/models');
 
 const addTitle = async (req, { text, response, client }) => {
-  const { TITLE_CONVO = 'true' } = process.env ?? {};
+  const { TITLE_CONVO = true } = process.env ?? {};
   if (!isEnabled(TITLE_CONVO)) {
     return;
   }
@@ -13,8 +13,8 @@ const addTitle = async (req, { text, response, client }) => {
     return;
   }
 
-  // If the request was aborted and is not azure, don't generate the title.
-  if (!client.azure && client.abortController.signal.aborted) {
+  // If the request was aborted, don't generate the title.
+  if (client.abortController.signal.aborted) {
     return;
   }
 
@@ -33,7 +33,7 @@ const addTitle = async (req, { text, response, client }) => {
       conversationId: response.conversationId,
       title,
     },
-    { context: 'api/server/services/Endpoints/openAI/addTitle.js' },
+    { context: 'api/server/services/Endpoints/bedrock/title.js' },
   );
 };
 

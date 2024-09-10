@@ -7,13 +7,13 @@ const openAIModels = {
   'gpt-4-32k': 32758, // -10 from max
   'gpt-4-32k-0314': 32758, // -10 from max
   'gpt-4-32k-0613': 32758, // -10 from max
-  'gpt-4-1106': 127990, // -10 from max
-  'gpt-4-0125': 127990, // -10 from max
-  'gpt-4o': 127990, // -10 from max
-  'gpt-4o-mini': 127990, // -10 from max
-  'gpt-4o-2024-08-06': 127990, // -10 from max
-  'gpt-4-turbo': 127990, // -10 from max
-  'gpt-4-vision': 127990, // -10 from max
+  'gpt-4-1106': 127500, // -500 from max
+  'gpt-4-0125': 127500, // -500 from max
+  'gpt-4o': 127500, // -500 from max
+  'gpt-4o-mini': 127500, // -500 from max
+  'gpt-4o-2024-08-06': 127500, // -500 from max
+  'gpt-4-turbo': 127500, // -500 from max
+  'gpt-4-vision': 127500, // -500 from max
   'gpt-3.5-turbo': 16375, // -10 from max
   'gpt-3.5-turbo-0613': 4092, // -5 from max
   'gpt-3.5-turbo-0301': 4092, // -5 from max
@@ -21,9 +21,11 @@ const openAIModels = {
   'gpt-3.5-turbo-16k-0613': 16375, // -10 from max
   'gpt-3.5-turbo-1106': 16375, // -10 from max
   'gpt-3.5-turbo-0125': 16375, // -10 from max
+};
+
+const mistralModels = {
   'mistral-': 31990, // -10 from max
-  llama3: 8187, // -5 from max
-  'llama-3': 8187, // -5 from max
+  'mistral-large-2407': 127500,
 };
 
 const cohereModels = {
@@ -63,7 +65,39 @@ const anthropicModels = {
   'claude-3.5-sonnet': 200000,
 };
 
-const aggregateModels = { ...openAIModels, ...googleModels, ...anthropicModels, ...cohereModels };
+const metaModels = {
+  llama2: 4000,
+  'llama-2': 4000,
+  'llama-3': 8000,
+  llama3: 8000,
+  'llama3.1': 127500,
+  'llama3-1': 127500,
+  'llama-3.1': 127500,
+  'llama-3-1': 127500,
+};
+
+const ai21Models = {
+  'j2-mid': 8182, // -10 from max
+  'j2-ultra': 8182, // -10 from max
+  'jamba-instruct': 255500, // -500 from max
+};
+
+const amazonModels = {
+  'titan-text-lite': 4000,
+  'titan-text-express': 8000,
+  'titan-text-premier': 31500, // -500 from max
+};
+
+const bedrockModels = {
+  ...anthropicModels,
+  ...mistralModels,
+  ...cohereModels,
+  ...metaModels,
+  ...ai21Models,
+  ...amazonModels,
+};
+
+const aggregateModels = { ...openAIModels, ...googleModels, ...bedrockModels };
 
 const maxTokensMap = {
   [EModelEndpoint.azureOpenAI]: openAIModels,
@@ -72,7 +106,7 @@ const maxTokensMap = {
   [EModelEndpoint.custom]: aggregateModels,
   [EModelEndpoint.google]: googleModels,
   [EModelEndpoint.anthropic]: anthropicModels,
-  [EModelEndpoint.bedrock]: aggregateModels,
+  [EModelEndpoint.bedrock]: bedrockModels,
 };
 
 /**
