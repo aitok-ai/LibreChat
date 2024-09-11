@@ -136,6 +136,13 @@ export type TUpdateMessageRequest = {
   text: string;
 };
 
+export type TUpdateMessageContent = {
+  conversationId: string;
+  messageId: string;
+  index: number;
+  text: string;
+};
+
 export type TUpdateUserKeyRequest = {
   name: string;
   value: string;
