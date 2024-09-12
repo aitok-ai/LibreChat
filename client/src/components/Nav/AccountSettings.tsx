@@ -126,7 +126,9 @@ function AccountSettings() {
                       className={focus ? 'bg-surface-hover' : ''}
                       svg={() => <GearIcon className="icon-md" />}
                       text={localize('com_nav_settings')}
-                      clickHandler={() => setShowSettings(true)}
+                      clickHandler={() => {
+                        setTimeout(() => setShowSettings(true), 50);
+                      }}
                     />
                   )}
                 </MenuItem>
