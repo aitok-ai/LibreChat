@@ -918,7 +918,9 @@ ${convo}
    */
   getStreamUsage() {
     if (
+      this.usage &&
       typeof this.usage === 'object' &&
+      'completion_tokens_details' in this.usage &&
       typeof this.usage.completion_tokens_details === 'object'
     ) {
       const outputTokens = Math.abs(
@@ -1098,7 +1100,12 @@ ${convo}
       { promptTokens, completionTokens },
     );
 
-    if (typeof usage === 'object' && typeof usage.reasoning_tokens === 'number') {
+    if (
+      usage &&
+      typeof usage === 'object' &&
+      'reasoning_tokens' in usage &&
+      typeof usage.reasoning_tokens === 'number'
+    ) {
       await spendTokens(
         {
           context: 'reasoning',
