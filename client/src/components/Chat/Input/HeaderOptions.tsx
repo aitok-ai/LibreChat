@@ -2,7 +2,7 @@ import { useRecoilState } from 'recoil';
 import { Settings2 } from 'lucide-react';
 import { Root, Anchor } from '@radix-ui/react-popover';
 import { useState, useEffect, useMemo } from 'react';
-import { tPresetUpdateSchema, EModelEndpoint, paramEndpoints } from 'librechat-data-provider';
+import { tPresetUpdateSchema, EModelEndpoint, isParamEndpoint } from 'librechat-data-provider';
 import type { TPreset, TInterfaceConfig } from 'librechat-data-provider';
 import { EndpointSettings, SaveAsPresetDialog, AlternativeSettings } from '~/components/Endpoints';
 import { PluginStoreDialog, TooltipAnchor } from '~/components';
@@ -29,7 +29,7 @@ export default function HeaderOptions({
     useChatContext();
   const { setOption } = useSetIndexOptions();
 
-  const { endpoint, conversationId, jailbreak = false } = conversation ?? {};
+  const { endpoint, endpointType, conversationId, jailbreak = false } = conversation ?? {};
 
   const altConditions: { [key: string]: boolean } = {
     bingAI: !!(latestMessage && jailbreak && endpoint === 'bingAI'),
@@ -71,6 +71,8 @@ export default function HeaderOptions({
   const triggerAdvancedMode = altConditions[endpoint]
     ? altSettings[endpoint]
     : () => setShowPopover((prev) => !prev);
+
+  const paramEndpoint = isParamEndpoint(endpoint, endpointType);
   return (
     <Root
       open={showPopover}
@@ -90,7 +92,7 @@ export default function HeaderOptions({
               )}
               {!noSettings[endpoint] &&
                 interfaceConfig?.parameters === true &&
-                !paramEndpoints.has(endpoint) && (
+                paramEndpoint === false && (
                 <TooltipAnchor
                   id="parameters-button"
                   aria-label={localize('com_ui_model_parameters')}
@@ -105,7 +107,7 @@ export default function HeaderOptions({
                 </TooltipAnchor>
               )}
             </div>
-            {interfaceConfig?.parameters === true && !paramEndpoints.has(endpoint) && (
+            {interfaceConfig?.parameters === true && paramEndpoint === false && (
               <OptionsPopover
                 visible={showPopover}
                 saveAsPreset={saveAsPreset}
