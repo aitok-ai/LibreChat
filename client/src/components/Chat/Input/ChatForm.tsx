@@ -1,5 +1,3 @@
-// import { useForm } from 'react-hook-form';
-// import TextareaAutosize from 'react-textarea-autosize';
 import { memo, useRef, useMemo, useEffect } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
@@ -46,6 +44,7 @@ const ChatForm = ({ index = 0 }) => {
   const TextToSpeech = useRecoilValue(store.textToSpeech);
   const automaticPlayback = useRecoilValue(store.automaticPlayback);
 
+  const isSearching = useRecoilValue(store.isSearching);
   const [showStopButton, setShowStopButton] = useRecoilState(store.showStopButtonByIndex(index));
   const [text, setText] = useRecoilState(store.textByIndex(index)); // 从Recoil获取到text状态
   const [showPlusPopover, setShowPlusPopover] = useRecoilState(store.showPlusPopoverFamily(index));
@@ -141,6 +140,12 @@ const ChatForm = ({ index = 0 }) => {
     },
   });
 
+  useEffect(() => {
+    if (!isSearching && textAreaRef.current && !disableInputs) {
+      textAreaRef.current.focus();
+    }
+  }, [isSearching, disableInputs]);
+
   return (
     <form
       onSubmit={methods.handleSubmit((data) => {
@@ -194,9 +199,6 @@ const ChatForm = ({ index = 0 }) => {
                 //   },
                 // })}
                 {...registerProps}
-                // TODO: remove autofocus due to a11y issues
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus
                 ref={(e) => {
                   ref(e);
                   textAreaRef.current = e;

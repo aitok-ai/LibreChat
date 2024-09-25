@@ -3,16 +3,18 @@ import { Switch } from '~/components/ui';
 import { useLocalize } from '~/hooks';
 import store from '~/store';
 
-export default function AutoScrollSwitch({
+export default function UserMsgMarkdownSwitch({
   onCheckedChange,
 }: {
   onCheckedChange?: (value: boolean) => void;
 }) {
-  const [autoScroll, setAutoScroll] = useRecoilState<boolean>(store.autoScroll);
   const localize = useLocalize();
+  const [enableUserMsgMarkdown, setEnableUserMsgMarkdown] = useRecoilState<boolean>(
+    store.enableUserMsgMarkdown,
+  );
 
   const handleCheckedChange = (value: boolean) => {
-    setAutoScroll(value);
+    setEnableUserMsgMarkdown(value);
     if (onCheckedChange) {
       onCheckedChange(value);
     }
@@ -20,14 +22,13 @@ export default function AutoScrollSwitch({
 
   return (
     <div className="flex items-center justify-between">
-      <div> {localize('com_nav_auto_scroll')} </div>
+      <div> {localize('com_nav_user_msg_markdown')} </div>
       <Switch
-        id="autoScroll"
-        checked={autoScroll}
-        aria-label="Auto-Scroll to latest message on chat open"
+        id="enableUserMsgMarkdown"
+        checked={enableUserMsgMarkdown}
         onCheckedChange={handleCheckedChange}
         className="ml-4 mt-2 ring-ring-primary"
-        data-testid="autoScroll"
+        data-testid="enableUserMsgMarkdown"
       />
     </div>
   );

@@ -320,7 +320,7 @@ export type TInterfaceConfig = {
     openNewTab?: boolean;
     modalAcceptance?: boolean;
     modalTitle?: string;
-    modalContent?: string | string[];
+    modalContent?: string;
   };
   endpointsMenu: boolean;
   modelSelect: boolean;

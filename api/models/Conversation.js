@@ -35,6 +35,35 @@ const getConvo = async (user, conversationId) => {
   }
 };
 
+const deleteNullOrEmptyConversations = async () => {
+  try {
+    const filter = {
+      $or: [
+        { conversationId: null },
+        { conversationId: '' },
+        { conversationId: { $exists: false } },
+      ],
+    };
+
+    const result = await Conversation.deleteMany(filter);
+
+    // Delete associated messages
+    const messageDeleteResult = await deleteMessages(filter);
+
+    logger.info(
+      `[deleteNullOrEmptyConversations] Deleted ${result.deletedCount} conversations and ${messageDeleteResult.deletedCount} messages`,
+    );
+
+    return {
+      conversations: result,
+      messages: messageDeleteResult,
+    };
+  } catch (error) {
+    logger.error('[deleteNullOrEmptyConversations] Error deleting conversations', error);
+    throw new Error('Error deleting conversations with null or empty conversationId');
+  }
+};
+
 module.exports = {
   Conversation,
   getSharedConvo: async (conversationId) => {
@@ -46,6 +75,7 @@ module.exports = {
     }
   },
   searchConversation,
+  deleteNullOrEmptyConversations,
   /**
    * Saves a conversation to the database.
    * @param {Object} req - The request object.

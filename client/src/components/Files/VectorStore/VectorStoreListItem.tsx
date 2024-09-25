@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TVectorStore } from '~/common';
-import { DotsIcon, TrashIcon, TrashIcon } from '~/components/svg';
+import { DotsIcon, TrashIcon } from '~/components/svg';
 import { Button } from '~/components/ui';
 
 type VectorStoreListItemProps = {
@@ -15,7 +15,7 @@ export default function VectorStoreListItem({
 }: VectorStoreListItemProps) {
   const navigate = useNavigate();
   return (
-    <div
+    <button
       onClick={() => {
         navigate('vs_id_abcdef');
       }}
@@ -27,7 +27,7 @@ export default function VectorStoreListItem({
       </div>
       <div className="w-2/6 text-gray-500">
         <p>
-          {vectorStore.file_counts.total} Files ({vectorStore.bytes / 1000}KB)
+          {vectorStore.file_counts?.total} Files ({vectorStore.bytes ?? 0 / 1000}KB)
         </p>
         <p className="text-sm">{vectorStore.created_at.toString()}</p>
       </div>
@@ -42,6 +42,6 @@ export default function VectorStoreListItem({
           <TrashIcon className="m-0 p-0" />
         </Button>
       </div>
-    </div>
+    </button>
   );
 }
