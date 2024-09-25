@@ -3,6 +3,7 @@ const generateArtifactsPrompt = require('~/app/clients/prompts/artifacts');
 
 const buildOptions = (endpoint, parsedBody) => {
   const {
+    modelLabel,
     chatGptLabel,
     promptPrefix,
     agentOptions,
@@ -19,6 +20,7 @@ const buildOptions = (endpoint, parsedBody) => {
     tools: tools
       .map((tool) => tool?.pluginKey ?? tool)
       .filter((toolName) => typeof toolName === 'string'),
+    modelLabel,
     chatGptLabel,
     promptPrefix,
     agentOptions,

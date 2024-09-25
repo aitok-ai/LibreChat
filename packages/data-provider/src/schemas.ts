@@ -935,6 +935,7 @@ export const agentsSchema = tConversationSchema
 export const openAISchema = tConversationSchema
   .pick({
     model: true,
+    modelLabel: true,
     chatGptLabel: true,
     promptPrefix: true,
     temperature: true,
@@ -1022,6 +1023,7 @@ export const compactChatGPTSchema = tConversationSchema
 export const compactPluginsSchema = tConversationSchema
   .pick({
     model: true,
+    modelLabel: true,
     chatGptLabel: true,
     promptPrefix: true,
     temperature: true,
@@ -1037,6 +1039,9 @@ export const compactPluginsSchema = tConversationSchema
   })
   .transform((obj) => {
     const newObj: Partial<TConversation> = { ...obj };
+    if (newObj.modelLabel === null) {
+      delete newObj.modelLabel;
+    }
     if (newObj.chatGptLabel === null) {
       delete newObj.chatGptLabel;
     }
