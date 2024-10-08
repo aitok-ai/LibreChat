@@ -1,5 +1,5 @@
 import { atom, selector, atomFamily } from 'recoil';
-import { TConversation, TMessagesAtom, TMessage } from 'librechat-data-provider';
+import { TConversation, TMessagesAtom, TMessage, TAttachment } from 'librechat-data-provider';
 import { buildTree } from '~/utils';
 
 const conversation = atom<TConversation | null>({
@@ -20,6 +20,11 @@ const messagesTree = selector({
   get: ({ get }) => {
     return buildTree({ messages: get(messages) });
   },
+});
+
+const messageAttachmentsMap = atom<Record<string, TAttachment[] | undefined>>({
+  key: 'messageAttachmentsMap',
+  default: {},
 });
 
 const latestMessage = atom<TMessage | null>({
@@ -43,5 +48,6 @@ export default {
   messagesTree,
   latestMessage,
   isSharedPage,
+  messageAttachmentsMap,
   messagesSiblingIdxFamily,
 };

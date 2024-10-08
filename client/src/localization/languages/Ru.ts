@@ -455,7 +455,7 @@ export default {
   com_assistants_capabilities: 'Возможности',
   com_assistants_image_vision: 'Анализ изображений',
   com_assistants_search_name: 'Поиск ассистентов по имени',
-  com_assistants_tools: 'Инструменты',
+  com_ui_tools: 'Инструменты',
   com_assistants_actions: 'Действия',
   com_assistants_add_tools: 'Добавить инструменты',
   com_assistants_add_actions: 'Добавить действия',
@@ -2242,7 +2242,7 @@ export const comparisons = {
     english: 'Search assistants by name',
     translated: 'Поиск ассистентов по имени',
   },
-  com_assistants_tools: {
+  com_ui_tools: {
     english: 'Tools',
     translated: 'Инструменты',
   },

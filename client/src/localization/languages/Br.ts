@@ -56,7 +56,7 @@ export default {
     'Os arquivos abaixo são apenas para o Interpretador de Código:',
   com_assistants_retrieval: 'Recuperação',
   com_assistants_search_name: 'Pesquisar assistentes por nome',
-  com_assistants_tools: 'Ferramentas',
+  com_ui_tools: 'Ferramentas',
   com_assistants_actions: 'Ações',
   com_assistants_add_tools: 'Adicionar Ferramentas',
   com_assistants_add_actions: 'Adicionar Ações',
@@ -874,7 +874,7 @@ export const comparisons = {
     english: 'Search assistants by name',
     translated: 'Pesquisar assistentes por nome',
   },
-  com_assistants_tools: {
+  com_ui_tools: {
     english: 'Tools',
     translated: 'Ferramentas',
   },

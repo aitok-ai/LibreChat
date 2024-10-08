@@ -52,7 +52,7 @@ export default {
   com_assistants_code_interpreter_files: '次のファイルはコードインタプリタでのみ使用できます。',
   com_assistants_retrieval: '検索',
   com_assistants_search_name: 'アシスタントの名前で検索',
-  com_assistants_tools: 'ツール',
+  com_ui_tools: 'ツール',
   com_assistants_actions: 'アクション',
   com_assistants_add_tools: 'ツールを追加',
   com_assistants_add_actions: 'アクションを追加',
@@ -908,7 +908,7 @@ export const comparisons = {
     english: 'Search assistants by name',
     translated: 'Assistantの名前で検索',
   },
-  com_assistants_tools: {
+  com_ui_tools: {
     english: 'Tools',
     translated: 'Tools',
   },
