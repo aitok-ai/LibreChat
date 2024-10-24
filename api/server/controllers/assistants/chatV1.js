@@ -373,11 +373,14 @@ const chatV1 = async (req, res) => {
       visionMessage.content = createVisionPrompt(plural);
       visionMessage = formatMessage({ message: visionMessage, endpoint: EModelEndpoint.openAI });
 
-      visionPromise = openai.chat.completions.create({
-        model: 'gpt-4-vision-preview',
-        messages: [visionMessage],
-        max_tokens: 4000,
-      });
+      visionPromise = openai.chat.completions
+        .create({
+          messages: [visionMessage],
+          max_tokens: 4000,
+        })
+        .catch((error) => {
+          logger.error('[/assistants/chat/] Error creating vision prompt', error);
+        });
 
       const pluralized = plural ? 's' : '';
       body.additional_instructions = `${
