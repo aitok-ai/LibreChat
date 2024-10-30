@@ -160,6 +160,7 @@ export type TUpdateConversationResponse = TConversation;
 export type TDeleteConversationRequest = {
   conversationId?: string;
   thread_id?: string;
+  endpoint?: string;
   source?: string;
 };
 
