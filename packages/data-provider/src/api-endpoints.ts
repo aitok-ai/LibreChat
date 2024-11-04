@@ -155,10 +155,10 @@ export const assistants = ({
   return url;
 };
 
-export const agents = ({ path, options }: { path?: string; options?: object }) => {
+export const agents = ({ path = '', options }: { path?: string; options?: object }) => {
   let url = '/api/agents';
 
-  if (path) {
+  if (path && path !== '') {
     url += `/${path}`;
   }
 

@@ -12,7 +12,7 @@ import { cn } from '~/utils';
 export default function AssistantTool({
   tool,
   allTools,
-  assistant_id,
+  assistant_id = '',
 }: {
   tool: string;
   allTools: TPlugin[];
@@ -28,7 +28,7 @@ export default function AssistantTool({
   const removeTool = (tool: string) => {
     if (tool) {
       updateUserPlugins.mutate(
-        { pluginKey: tool, action: 'uninstall', auth: null, isAssistantTool: true },
+        { pluginKey: tool, action: 'uninstall', auth: null, isEntityTool: true },
         {
           onError: (error: unknown) => {
             showToast({ message: `Error while deleting the tool: ${error}`, status: 'error' });
