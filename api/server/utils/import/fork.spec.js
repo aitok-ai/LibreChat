@@ -105,6 +105,7 @@ describe('forkConversation', () => {
       expect.arrayContaining(
         expectedMessagesTexts.map((text) => expect.objectContaining({ text })),
       ),
+      true,
     );
   });
 
@@ -123,6 +124,7 @@ describe('forkConversation', () => {
       expect.arrayContaining(
         expectedMessagesTexts.map((text) => expect.objectContaining({ text })),
       ),
+      true,
     );
   });
 
@@ -142,6 +144,7 @@ describe('forkConversation', () => {
       expect.arrayContaining(
         expectedMessagesTexts.map((text) => expect.objectContaining({ text })),
       ),
+      true,
     );
   });
 
@@ -161,6 +164,7 @@ describe('forkConversation', () => {
       expect.arrayContaining(
         expectedMessagesTexts.map((text) => expect.objectContaining({ text })),
       ),
+      true,
     );
   });
 
