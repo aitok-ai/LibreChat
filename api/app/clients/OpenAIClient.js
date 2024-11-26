@@ -842,6 +842,12 @@ class OpenAIClient extends BaseClient {
       this.options.dropParams = azureConfig.groupMap[groupName].dropParams;
       this.options.forcePrompt = azureConfig.groupMap[groupName].forcePrompt;
       this.azure = !serverless && azureOptions;
+      if (serverless === true) {
+        this.options.defaultQuery = azureOptions.azureOpenAIApiVersion
+          ? { 'api-version': azureOptions.azureOpenAIApiVersion }
+          : undefined;
+        this.options.headers['api-key'] = this.apiKey;
+      }
     }
 
     const titleChatCompletion = async () => {
@@ -1173,6 +1179,10 @@ ${convo}
         opts.defaultHeaders = { ...opts.defaultHeaders, ...this.options.headers };
       }
 
+      if (this.options.defaultQuery) {
+        opts.defaultQuery = this.options.defaultQuery;
+      }
+
       if (this.options.proxy) {
         opts.httpAgent = new HttpsProxyAgent(this.options.proxy);
       }
@@ -1211,6 +1221,12 @@ ${convo}
         this.azure = !serverless && azureOptions;
         this.azureEndpoint =
           !serverless && genAzureChatCompletion(this.azure, modelOptions.model, this);
+        if (serverless === true) {
+          this.options.defaultQuery = azureOptions.azureOpenAIApiVersion
+            ? { 'api-version': azureOptions.azureOpenAIApiVersion }
+            : undefined;
+          this.options.headers['api-key'] = this.apiKey;
+        }
       }
 
       if (this.azure || this.options.azure) {
