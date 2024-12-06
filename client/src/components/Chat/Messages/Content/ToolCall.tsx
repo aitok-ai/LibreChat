@@ -1,10 +1,12 @@
 /* eslint-disable no-nested-ternary */
 import { useMemo } from 'react';
-import { actionDelimiter, actionDomainSeparator, Constants } from 'librechat-data-provider';
 import * as Popover from '@radix-ui/react-popover';
+import { actionDelimiter, actionDomainSeparator, Constants } from 'librechat-data-provider';
+import type { TAttachment } from 'librechat-data-provider';
 import useLocalize from '~/hooks/useLocalize';
 import ProgressCircle from './ProgressCircle';
 import InProgressCall from './InProgressCall';
+import Attachment from './Parts/Attachment';
 import CancelledIcon from './CancelledIcon';
 import ProgressText from './ProgressText';
 import FinishedIcon from './FinishedIcon';
@@ -19,12 +21,14 @@ export default function ToolCall({
   name,
   args: _args = '',
   output,
+  attachments,
 }: {
   initialProgress: number;
   isSubmitting: boolean;
   name: string;
   args: string | Record<string, unknown>;
   output?: string | null;
+  attachments?: TAttachment[];
 }) {
   const localize = useLocalize();
   const progress = useProgress(initialProgress);
@@ -107,6 +111,9 @@ export default function ToolCall({
           />
         )}
       </div>
+      {attachments?.map((attachment, index) => (
+        <Attachment attachment={attachment} key={index} />
+      ))}
     </Popover.Root>
   );
 }
