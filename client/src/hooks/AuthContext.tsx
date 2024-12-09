@@ -54,7 +54,7 @@ const AuthContextProvider = ({
       setTokenHeader(token);
       setIsAuthenticated(isAuthenticated);
       // localStorage.setItem('isSharedPage', 'false');
-      if (redirect) {
+      if (redirect != null && redirect) {
         navigate(redirect, { replace: true });
       }
     },
@@ -84,7 +84,7 @@ const AuthContextProvider = ({
   });
 
   const logout = useCallback(() => logoutUser.mutate(undefined), [logoutUser]);
-  const userQuery = useGetUserQuery({ enabled: !!token });
+  const userQuery = useGetUserQuery({ enabled: !!(token ?? '') });
   const refreshToken = useRefreshTokenMutation();
 
   const login = (data: TLoginUser) => {
@@ -103,18 +103,18 @@ const AuthContextProvider = ({
   };
 
   const silentRefresh = useCallback(() => {
-    if (authConfig?.test) {
+    if (authConfig?.test === true) {
       console.log('Test mode. Skipping silent refresh.');
       return;
     }
     refreshToken.mutate(undefined, {
-      onSuccess: (data: TLoginResponse) => {
-        const { user, token } = data;
+      onSuccess: (data: TLoginResponse | undefined) => {
+        const { user, token = '' } = data ?? {};
         if (token) {
           setUserContext({ token, isAuthenticated: true, user });
         } else {
           console.log('Token is not present. User is not authenticated.');
-          if (authConfig?.test) {
+          if (authConfig?.test === true) {
             return;
           }
           const isSharedPage = localStorage.getItem('isSharedPage');
@@ -127,7 +127,7 @@ const AuthContextProvider = ({
       },
       onError: (error) => {
         console.log('refreshToken mutation error:', error);
-        if (authConfig?.test) {
+        if (authConfig?.test === true) {
           return;
         }
         navigate('/login');
@@ -142,10 +142,10 @@ const AuthContextProvider = ({
       doSetError((userQuery.error as Error).message);
       navigate('/login', { replace: true });
     }
-    if (error && isAuthenticated) {
+    if (error != null && error && isAuthenticated) {
       doSetError(undefined);
     }
-    if (!token || !isAuthenticated) {
+    if (token == null || !token || !isAuthenticated) {
       silentRefresh();
     }
   }, [
@@ -155,7 +155,9 @@ const AuthContextProvider = ({
     userQuery.isError,
     userQuery.error,
     error,
+    setUser,
     navigate,
+    silentRefresh,
     setUserContext,
   ]);
 

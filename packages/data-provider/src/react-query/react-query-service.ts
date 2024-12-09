@@ -348,7 +348,7 @@ export const useRegisterUserMutation = (
 };
 
 export const useRefreshTokenMutation = (): UseMutationResult<
-  t.TRefreshTokenResponse,
+  t.TRefreshTokenResponse | undefined,
   unknown,
   unknown,
   unknown
