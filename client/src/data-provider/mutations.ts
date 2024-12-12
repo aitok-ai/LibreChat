@@ -261,6 +261,8 @@ export const useCreateSharedLinkMutation = (
         return;
       }
 
+      const isPublic = vars.isPublic === true;
+
       queryClient.setQueryData<t.SharedLinkListData>([QueryKeys.sharedLinks], (sharedLink) => {
         if (!sharedLink) {
           return sharedLink;
@@ -268,24 +270,22 @@ export const useCreateSharedLinkMutation = (
         const pageSize = sharedLink.pages[0].pageSize as number;
         return normalizeData(
           // If the shared link is public, add it to the shared links cache list
-          vars.isPublic
-            ? addSharedLink(sharedLink, _data)
-            : deleteSharedLink(sharedLink, _data.shareId),
+          isPublic ? addSharedLink(sharedLink, _data) : deleteSharedLink(sharedLink, _data.shareId),
           InfiniteCollections.SHARED_LINKS,
           pageSize,
         );
       });
 
       queryClient.setQueryData([QueryKeys.sharedLinks, _data.shareId], _data);
-      if (!vars.isPublic) {
+      if (!isPublic) {
         const current = queryClient.getQueryData<t.ConversationData>([QueryKeys.sharedLinks]);
         refetch({
-          refetchPage: (page, index) => index === (current?.pages.length || 1) - 1,
+          refetchPage: (page, index) => index === ((current?.pages.length ?? 0) || 1) - 1,
         });
       }
       onSuccess?.(_data, vars, context);
     },
-    ...(_options || {}),
+    ..._options,
   });
 };
 
@@ -301,6 +301,8 @@ export const useUpdateSharedLinkMutation = (
         return;
       }
 
+      const isPublic = vars.isPublic === true;
+
       queryClient.setQueryData<t.SharedLinkListData>([QueryKeys.sharedLinks], (sharedLink) => {
         if (!sharedLink) {
           return sharedLink;
@@ -308,7 +310,7 @@ export const useUpdateSharedLinkMutation = (
 
         return normalizeData(
           // If the shared link is public, add it to the shared links cache list.
-          vars.isPublic
+          isPublic
             ? // Even if the SharedLink data exists in the database, it is not registered in the cache when isPublic is false.
           // Therefore, when isPublic is true, use addSharedLink instead of updateSharedLink.
             addSharedLink(sharedLink, _data)
@@ -319,16 +321,16 @@ export const useUpdateSharedLinkMutation = (
       });
 
       queryClient.setQueryData([QueryKeys.sharedLinks, _data.shareId], _data);
-      if (!vars.isPublic) {
+      if (!isPublic) {
         const current = queryClient.getQueryData<t.ConversationData>([QueryKeys.sharedLinks]);
         refetch({
-          refetchPage: (page, index) => index === (current?.pages.length || 1) - 1,
+          refetchPage: (page, index) => index === ((current?.pages.length ?? 0) || 1) - 1,
         });
       }
 
       onSuccess?.(_data, vars, context);
     },
-    ...(_options || {}),
+    ..._options,
   });
 };
 
@@ -469,7 +471,11 @@ export const useDeleteTagInConversations = () => {
     for (let pageIndex = 0; pageIndex < newData.pages.length; pageIndex++) {
       const page = newData.pages[pageIndex];
       page.conversations = page.conversations.map((conversation) => {
-        if (conversation.conversationId && conversation.tags?.includes(deletedTag)) {
+        if (
+          conversation.conversationId != null &&
+          conversation.conversationId &&
+          conversation.tags?.includes(deletedTag) === true
+        ) {
           conversationIdsWithTag.push(conversation.conversationId);
           conversation.tags = conversation.tags.filter((t) => t !== deletedTag);
         }
@@ -836,11 +842,12 @@ export const useUpdateAssistantMutation = (
             if (!prev) {
               return prev;
             }
-            prev.map((doc) => {
+            return prev.map((doc) => {
               if (doc.assistant_id === variables.assistant_id) {
                 return {
                   ...doc,
                   conversation_starters: updatedAssistant.conversation_starters,
+                  append_current_datetime: variables.data.append_current_datetime,
                 };
               }
               return doc;
@@ -979,7 +986,9 @@ export const useUpdateAction = (
             }
             return action;
           })
-          .concat(variables.action_id ? [] : [updateActionResponse[2]]);
+          .concat(
+            variables.action_id != null && variables.action_id ? [] : [updateActionResponse[2]],
+          );
       });
 
       return options?.onSuccess?.(updateActionResponse, variables, context);
@@ -1035,7 +1044,7 @@ export const useDeleteAction = (
                 return {
                   ...assistant,
                   tools: (assistant.tools ?? []).filter(
-                    (tool) => !tool.function?.name.includes(domain ?? ''),
+                    (tool) => !(tool.function?.name.includes(domain ?? '') ?? false),
                   ),
                 };
               }
@@ -1233,7 +1242,11 @@ export const useUpdateAgentAction = (
             }
             return action;
           })
-          .concat(variables.action_id ? [] : [updateAgentActionResponse[1]]);
+          .concat(
+            variables.action_id != null && variables.action_id
+              ? []
+              : [updateAgentActionResponse[1]],
+          );
       });
 
       return options?.onSuccess?.(updateAgentActionResponse, variables, context);
