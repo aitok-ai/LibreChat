@@ -70,6 +70,7 @@ export default {
     'Resubmitting the AI message is not supported for this endpoint.',
   com_error_invalid_request_error:
     'The AI service rejected the request due to an error. This could be caused by an invalid API key or an improperly formatted request.',
+  com_error_invalid_action_error: 'Request denied: The specified action domain is not allowed.',
   com_error_no_system_messages:
     'The selected AI service or model does not support system messages. Try using prompts instead of custom instructions.',
   com_error_invalid_user_key: 'Invalid key provided. Please provide a valid key and try again.',
@@ -159,7 +160,7 @@ export default {
   com_agents_enable_file_search: 'Enable File Search',
   com_agents_file_search_info:
     'When enabled, the agent will be informed of the exact filenames listed below, allowing it to retrieve relevant context from these files.',
-  com_agents_code_interpreter_title: 'Code Interpreter',
+  com_agents_code_interpreter_title: 'Code Interpreter API',
   com_agents_by_librechat: 'by LibreChat',
   com_agents_code_interpreter:
     'When enabled, allows your agent to leverage the LibreChat Code Interpreter API to run generated code, including file processing, securely. Requires a valid API key.',
