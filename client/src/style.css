@@ -39,6 +39,7 @@
   --font-size-xl: 1.25rem;
 }
 html {
+  --presentation: var(--white);
   --text-primary: var(--gray-800);
   --text-secondary: var(--gray-600);
   --text-secondary-alt: var(--gray-500);
@@ -92,6 +93,7 @@ html {
   --switch-unchecked: 0 0% 58%;
 }
 .dark {
+  --presentation: var(--gray-800);
   --text-primary: var(--gray-100);
   --text-secondary: var(--gray-300);
   --text-secondary-alt: var(--gray-400);
@@ -2411,7 +2413,7 @@ button.scroll-convo {
 }
 
 .popover-ui:where(.dark, .dark *) {
-  background-color: hsl(var(--background));
+  background-color: hsl(var(--secondary));
   color: var(--text-secondary);
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.25), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
@@ -2432,7 +2434,7 @@ button.scroll-convo {
 }
 
 .select-item[data-active-item] {
-  background-color: hsl(var(--accent));
+  background-color: var(--surface-hover);
   color: var(--text-primary);
 }
 

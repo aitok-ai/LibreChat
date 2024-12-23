@@ -228,6 +228,7 @@ const loadTools = async ({
 
   const toolContextMap = {};
   const remainingTools = [];
+  const appTools = options.req?.app?.locals?.availableTools ?? {};
 
   for (const tool of tools) {
     if (tool === Tools.execute_code) {
@@ -256,10 +257,10 @@ const loadTools = async ({
         if (toolContext) {
           toolContextMap[tool] = toolContext;
         }
-        return createFileSearchTool({ req: options.req, files });
+        return createFileSearchTool({ req: options.req, files, entity_id: agent?.id });
       };
       continue;
-    } else if (mcpToolPattern.test(tool)) {
+    } else if (tool && appTools[tool] && mcpToolPattern.test(tool)) {
       requestedTools[tool] = async () =>
         createMCPTool({
           req: options.req,
