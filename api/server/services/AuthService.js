@@ -10,11 +10,10 @@ const {
   generateToken,
   deleteUserById,
 } = require('~/models/userMethods');
-const { createToken, findToken, deleteTokens, Session } = require('~/models');
+const { createToken, findToken, deleteTokens, Session, findSession } = require('~/models');
 const { isEnabled, checkEmailConfig, sendEmail } = require('~/server/utils');
 const { isEmailDomainAllowed } = require('~/server/services/domains');
 const { registerSchema } = require('~/strategies/validators');
-const { hashToken } = require('~/server/utils/crypto');
 const { logger } = require('~/config');
 const User = require('~/models/User');
 
@@ -35,10 +34,8 @@ const genericVerificationMessage = 'Please check your email to verify your email
  */
 const logoutUser = async (userId, refreshToken) => {
   try {
-    const hash = await hashToken(refreshToken);
+    const session = await findSession({ userId: userId, refreshToken: refreshToken });
 
-    // Find the session with the matching user and refreshTokenHash
-    const session = await Session.findOne({ user: userId, refreshTokenHash: hash });
     if (session) {
       try {
         await Session.deleteOne({ _id: session._id });
@@ -367,7 +364,7 @@ const setAuthTokens = async (userId, res, sessionId = null) => {
     let session;
     let refreshTokenExpires;
     if (sessionId) {
-      session = await Session.findById(sessionId);
+      session = await findSession({ sessionId: sessionId }, { lean: false });
       refreshTokenExpires = session.expiration.getTime();
     } else {
       session = new Session({ user: userId });
