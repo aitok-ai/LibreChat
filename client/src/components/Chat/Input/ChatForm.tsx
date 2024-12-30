@@ -42,6 +42,7 @@ const ChatForm = ({ index = 0 }) => {
   const SpeechToText = useRecoilValue(store.speechToText);
   const TextToSpeech = useRecoilValue(store.textToSpeech);
   const automaticPlayback = useRecoilValue(store.automaticPlayback);
+  const maximizeChatSpace = useRecoilValue(store.maximizeChatSpace);
 
   const isSearching = useRecoilValue(store.isSearching);
   const [showStopButton, setShowStopButton] = useRecoilState(store.showStopButtonByIndex(index));
@@ -157,12 +158,11 @@ const ChatForm = ({ index = 0 }) => {
 
   return (
     <form
-      onSubmit={methods.handleSubmit((data) => {
-        submitMessage(data);
-        methods.setValue('text', ''); // 清空输入框,这行代码会设置输入框的值为空
-        setText('');
-      })}
-      className="stretch mx-2 flex flex-row gap-3 last:mb-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl"
+      onSubmit={methods.handleSubmit((data) => submitMessage(data))}
+      className={cn(
+        'mx-auto flex flex-row gap-3 pl-2 transition-all duration-200 last:mb-2',
+        maximizeChatSpace ? 'w-full max-w-full' : 'md:max-w-2xl xl:max-w-3xl',
+      )}
     >
       <div className="relative flex h-full flex-1 items-stretch md:flex-col">
         <div className="flex w-full items-center">

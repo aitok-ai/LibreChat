@@ -100,7 +100,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
             setRowSelection({});
           }}
           disabled={!table.getFilteredSelectedRowModel().rows.length || isDeleting}
-          className={cn('min-w-[40px]', isSmallScreen && 'px-2 py-1')}
+          className={cn('min-w-[40px] transition-all duration-200', isSmallScreen && 'px-2 py-1')}
         >
           {isDeleting ? (
             <Spinner className="size-3.5 sm:size-4" />
@@ -113,7 +113,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
           placeholder={localize('com_files_filter')}
           value={(table.getColumn('filename')?.getFilterValue() as string | undefined) ?? ''}
           onChange={(event) => table.getColumn('filename')?.setFilterValue(event.target.value)}
-          className="min-w-[200px] flex-1 text-sm"
+          className="flex-1 text-sm"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
