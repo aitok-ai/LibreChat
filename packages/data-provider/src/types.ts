@@ -203,10 +203,11 @@ export type TConversationTagRequest = Partial<
 
 export type TConversationTagResponse = TConversationTag;
 
-// type for tagging conversation
 export type TTagConversationRequest = {
   tags: string[];
+  tag: string;
 };
+
 export type TTagConversationResponse = string[];
 
 export type TDuplicateConvoRequest = {
