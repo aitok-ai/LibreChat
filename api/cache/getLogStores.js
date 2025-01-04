@@ -5,7 +5,7 @@ const { math, isEnabled } = require('~/server/utils');
 const keyvRedis = require('./keyvRedis');
 const keyvMongo = require('./keyvMongo');
 
-const { BAN_DURATION, USE_REDIS, DEBUG_MEMORY_CACHE } = process.env ?? {};
+const { BAN_DURATION, USE_REDIS, DEBUG_MEMORY_CACHE, CI } = process.env ?? {};
 
 const duration = math(BAN_DURATION, 7200000);
 const isRedisEnabled = isEnabled(USE_REDIS);
@@ -193,7 +193,7 @@ async function clearAllExpiredFromCache() {
   }
 }
 
-if (!isRedisEnabled) {
+if (!isRedisEnabled && !isEnabled(CI)) {
   /** @type {Set<NodeJS.Timeout>} */
   const cleanupIntervals = new Set();
 
