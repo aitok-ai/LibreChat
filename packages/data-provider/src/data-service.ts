@@ -185,10 +185,6 @@ export const getRecommendations = (type: string): Promise<t.TConversation[]> => 
   return request.get(endpoints.recommendations(type));
 };
 
-export const duplicateConversation = (payload: object) => {
-  return request.post(endpoints.duplicateConversation(), { arg: payload });
-};
-
 export const getLeaderboard = () => {
   return request.get(endpoints.leaderboard());
 };

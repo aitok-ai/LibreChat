@@ -101,10 +101,6 @@ export const recommendations = (type: string) => {
   return `/api/convos/${type}`;
 };
 
-export const duplicateConversation = () => {
-  return '/api/convos/duplicate';
-};
-
 export const leaderboard = () => {
   return '/api/leaderboard';
 };
