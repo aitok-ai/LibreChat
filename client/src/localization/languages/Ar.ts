@@ -907,4 +907,10 @@ export default {
   com_ui_enter_openapi_schema: 'أدخل مخطط OpenAPI هنا',
   com_ui_delete_shared_link: 'حذف الرابط المشترك؟',
   com_nav_welcome_agent: 'الرجاء اختيار مساعد',
+  com_ui_bookmarks_edit: 'تعديل الإشارة المرجعية',
+  com_ui_page: 'صفحة',
+  com_ui_bookmarks_add: 'إضافة إشارات مرجعية',
+  com_endpoint_ai: 'الذكاء الاصطناعي',
+  com_endpoint_message_new: 'الرسالة {0} أو اكتب "@" للتبديل إلى الذكاء الاصطناعي',
+  com_nav_maximize_chat_space: 'تكبير مساحة الدردشة',
 };
