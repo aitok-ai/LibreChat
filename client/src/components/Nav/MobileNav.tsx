@@ -2,6 +2,9 @@ import { useGetUserByIdQuery } from 'librechat-data-provider/react-query';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
+import { useQueryClient } from '@tanstack/react-query';
+import { QueryKeys, Constants } from 'librechat-data-provider';
+import type { TMessage } from 'librechat-data-provider';
 import type { Dispatch, SetStateAction } from 'react';
 import { useLocalize, useNewConvo } from '~/hooks';
 import store from '~/store';
@@ -16,6 +19,7 @@ export default function MobileNav({
   // const conversation = useRecoilValue(store.conversation);
   // const { newConversation } = useConversation();
   const localize = useLocalize();
+  const queryClient = useQueryClient();
   const { newConversation } = useNewConvo(0);
   const conversation = useRecoilValue(store.conversationByIndex(0));
   const { title = 'New Chat' } = conversation || {};
@@ -100,13 +104,19 @@ export default function MobileNav({
         </svg>
       </button>
       <h1 className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-normal">
-        {title || localize('com_ui_new_chat')}
+        {title ?? localize('com_ui_new_chat')}
       </h1>
       <button
         type="button"
         aria-label={localize('com_ui_new_chat')}
         className="m-1 inline-flex size-10 items-center justify-center rounded-full hover:bg-surface-hover"
-        onClick={() => newConversation()}
+        onClick={() => {
+          queryClient.setQueryData<TMessage[]>(
+            [QueryKeys.messages, conversation?.conversationId ?? Constants.NEW_CONVO],
+            [],
+          );
+          newConversation();
+        }}
       >
         <svg
           width="24"

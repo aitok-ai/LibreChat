@@ -43,6 +43,7 @@ export default {
   com_ui_leaderboard: 'Leaderboard',
   com_ui_convo_public_reminder:
     'New conversations default to the public. You can select a conversation from the left menu, and then set the conversation as private.',
+  com_ui_collapse_chat: 'Collapse Chat',
   com_ui_enter_api_key: 'Enter API Key',
   com_ui_librechat_code_api_title: 'Run AI Code',
   com_ui_librechat_code_api_subtitle: 'Secure. Multi-language. Input/Output Files.',
