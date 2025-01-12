@@ -83,9 +83,13 @@ export default function HoverButtons({
   } = useGenerationsByLatest({
     isEditing,
     isSubmitting,
-    message,
+    error: message.error,
     endpoint: endpoint ?? '',
-    latestMessage,
+    messageId: message.messageId,
+    searchResult: message.searchResult,
+    finish_reason: message.finish_reason,
+    isCreatedByUser: message.isCreatedByUser,
+    latestMessageId: latestMessage?.messageId,
   });
   if (!conversation) {
     return null;
@@ -220,7 +224,7 @@ export default function HoverButtons({
         messageId={message.messageId}
         conversationId={conversation.conversationId}
         forkingSupported={forkingSupported}
-        latestMessage={latestMessage}
+        latestMessageId={latestMessage?.messageId}
       />
       {continueSupported === true ? (
         <button
