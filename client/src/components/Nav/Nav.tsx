@@ -88,7 +88,6 @@ const Nav = ({
   const [showLoading, setShowLoading] = useState(false);
   const isSearchEnabled = useRecoilValue(store.isSearchEnabled);
 
-  const { refreshConversations } = useConversations();
   const { pageNumber, searchQuery, setPageNumber, searchQueryRes } = useSearchContext();
 
   const [tags, setTags] = useState<string[]>([]);
@@ -137,14 +136,6 @@ const Nav = ({
       (searchQuery ? searchQueryRes.data : data)?.pages.flatMap((page) => page.conversations) || [],
     [data, searchQuery, searchQueryRes.data],
   );
-
-  const clearSearch = () => {
-    setPageNumber(1);
-    refreshConversations();
-    if (conversationId == 'search') {
-      newConversation();
-    }
-  };
 
   const toggleNavVisible = () => {
     setNavVisible((prev: boolean) => {
@@ -255,7 +246,10 @@ const Nav = ({
                       subHeaders={
                         <>
                           {isSearchEnabled === true && (
-                            <SearchBar clearSearch={clearSearch} isSmallScreen={isSmallScreen} />
+                            <SearchBar
+                              setPageNumber={setPageNumber}
+                              isSmallScreen={isSmallScreen}
+                            />
                           )}
                           {hasAccessToBookmarks === true && (
                             <>

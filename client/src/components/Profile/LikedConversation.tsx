@@ -24,7 +24,7 @@ function LikedConversations() {
 
     return (
       <div className="group relative my-2 flex cursor-pointer flex-row items-center">
-        <div
+        <button
           className="flex h-full w-full flex-row items-center gap-2 rounded-lg px-2 py-2 text-base hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
           onClick={() => {
             if (convo.user === user?.id) {
@@ -37,7 +37,7 @@ function LikedConversations() {
         >
           <ConvoIcon />
           <div className="w-56 truncate">{convo.title}</div>
-        </div>
+        </button>
         <button
           className="visible absolute right-1 z-10 rounded-md p-1 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
           onClick={() => {

@@ -16,6 +16,7 @@ import tabValue from './tabValue';
 import widget from './widget';
 
 import banner from './banner';
+import misc from './misc';
 export default {
   ...artifacts,
   ...families,
@@ -34,4 +35,5 @@ export default {
   ...tabValue,
   ...widget,
   ...banner,
+  ...misc,
 };

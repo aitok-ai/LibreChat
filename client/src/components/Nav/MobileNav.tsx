@@ -20,7 +20,7 @@ export default function MobileNav({
   // const { newConversation } = useConversation();
   const localize = useLocalize();
   const queryClient = useQueryClient();
-  const { newConversation } = useNewConvo(0);
+  const { newConversation } = useNewConvo();
   const conversation = useRecoilValue(store.conversationByIndex(0));
   const { title = 'New Chat' } = conversation || {};
   // const { title = 'New Chat' } = conversation || {};
