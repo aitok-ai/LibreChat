@@ -38,6 +38,7 @@ export const paramEndpoints = new Set<EModelEndpoint | string>([
   EModelEndpoint.azureOpenAI,
   EModelEndpoint.anthropic,
   EModelEndpoint.custom,
+  EModelEndpoint.google,
 ]);
 
 export enum BedrockProviders {
@@ -790,6 +791,25 @@ export const googleSchema = tConversationSchema
     spec: undefined,
     maxContextTokens: undefined,
   }));
+
+/**
+   * TODO: Map the following fields:
+  - presence_penalty -> presencePenalty
+  - frequency_penalty -> frequencyPenalty
+  - stop -> stopSequences
+   */
+export const googleGenConfigSchema = z
+  .object({
+    maxOutputTokens: coerceNumber.optional(),
+    temperature: coerceNumber.optional(),
+    topP: coerceNumber.optional(),
+    topK: coerceNumber.optional(),
+    presencePenalty: coerceNumber.optional(),
+    frequencyPenalty: coerceNumber.optional(),
+    stopSequences: z.array(z.string()).optional(),
+  })
+  .strip()
+  .optional();
 
 export const bingAISchema = tConversationSchema
   .pick({

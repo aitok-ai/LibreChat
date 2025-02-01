@@ -13,9 +13,10 @@ const {
 const { extractBaseURL, constructAzureURL, genAzureChatCompletion } = require('~/utils');
 const { createContextHandlers } = require('./prompts');
 const { createCoherePayload } = require('./llm');
-const { Agent, ProxyAgent } = require('undici');
-const { logger } = require('~/config');
+// const { Agent, ProxyAgent } = require('undici');
 const BaseClient = require('./BaseClient');
+const { logger } = require('~/config');
+// const BaseClient = require('./BaseClient');
 
 const CHATGPT_MODEL = 'gpt-3.5-turbo';
 const tokenizersCache = {};
@@ -186,10 +187,6 @@ class ChatGPTClient extends BaseClient {
       headers: {
         'Content-Type': 'application/json',
       },
-      dispatcher: new Agent({
-        bodyTimeout: 0,
-        headersTimeout: 0,
-      }),
     };
 
     if (this.isVisionModel) {
@@ -273,10 +270,6 @@ class ChatGPTClient extends BaseClient {
     if (this.useOpenRouter) {
       opts.headers['HTTP-Referer'] = 'https://iaitok.com';
       opts.headers['X-Title'] = 'iAITok';
-    }
-
-    if (this.options.proxy) {
-      opts.dispatcher = new ProxyAgent(this.options.proxy);
     }
 
     /* hacky fixes for Mistral AI API:
