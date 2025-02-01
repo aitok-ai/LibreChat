@@ -1,13 +1,17 @@
-const throttle = require('lodash/throttle');
+// const throttle = require('lodash/throttle');
 const { saveMessage, getMessagesCount } = require('~/models');
 // const { getResponseSender, Constants, EModelEndpoint } = require('librechat-data-provider');
 // const { createAbortController, handleAbortError } = require('~/server/middleware');
 // const { sendMessage, createOnProgress } = require('~/server/utils');
 // const { saveMessage } = require('~/models');
-const { getResponseSender, Constants, CacheKeys, Time } = require('librechat-data-provider');
+// const { getResponseSender, Constants, CacheKeys, Time } = require('librechat-data-provider');
+// const { createAbortController, handleAbortError } = require('~/server/middleware');
+// const { sendMessage, createOnProgress } = require('~/server/utils');
+// const { getLogStores } = require('~/cache');
+// const { saveMessage } = require('~/models');
+const { getResponseSender, Constants } = require('librechat-data-provider');
 const { createAbortController, handleAbortError } = require('~/server/middleware');
 const { sendMessage, createOnProgress } = require('~/server/utils');
-const { getLogStores } = require('~/cache');
 // const { saveMessage } = require('~/models');
 const { logger } = require('~/config');
 const trieSensitive = require('../../utils/trieSensitive');
@@ -66,11 +70,11 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
     // const { client } = await initializeClient({ req, res, endpointOption });
 
     const { client } = await initializeClient({ req, res, endpointOption });
-    const messageCache = getLogStores(CacheKeys.MESSAGES);
+    /*const messageCache = getLogStores(CacheKeys.MESSAGES);
     const { onProgress: progressCallback, getPartialText } = createOnProgress({
       onProgress: throttle(
         ({ text: partialText }) => {
-          /*
+          //
               const unfinished = endpointOption.endpoint === EModelEndpoint.google ? false : true;
           messageCache.set(responseMessageId, {
             messageId: responseMessageId,
@@ -84,16 +88,17 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
             user,
             senderId: req.user.id,
           }, Time.FIVE_MINUTES);
-          */
+          //
 
           messageCache.set(responseMessageId, partialText, Time.FIVE_MINUTES);
         },
         3000,
         { trailing: false },
       ),
-    });
+    });*/
+    const { onProgress: progressCallback, getPartialText } = createOnProgress();
 
-    getText = getPartialText;
+    getText = client.getStreamText != null ? client.getStreamText.bind(client) : getPartialText;
 
     const getAbortData = () => ({
       sender,
@@ -101,7 +106,7 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
       userMessagePromise,
       messageId: responseMessageId,
       parentMessageId: overrideParentMessageId ?? userMessageId,
-      text: getPartialText(),
+      text: getText(),
       userMessage,
       promptTokens,
     });

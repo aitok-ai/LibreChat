@@ -28,6 +28,8 @@
     "upgrade": "node config/upgrade.js",
     "create-user": "node config/create-user.js",
     "invite-user": "node config/invite-user.js",
+    "list-users": "node config/list-users.js",
+    "reset-password": "node config/reset-password.js",
     "ban-user": "node config/ban-user.js",
     "delete-user": "node config/delete-user.js",
     "update-banner": "node config/update-banner.js",
@@ -76,7 +78,7 @@
   "bugs": {
     "url": "https://github.com/danny-avila/LibreChat/issues"
   },
-  "homepage": "https://iaitok.com/",
+  "homepage": "https://librechat.ai/",
   "devDependencies": {
     "@axe-core/playwright": "^4.9.1",
     "@playwright/test": "^1.38.1",
@@ -127,14 +129,5 @@
       "admin/",
       "packages/"
     ]
-  },
-  "dependencies": {
-    "ag-grid-community": "^31.2.0",
-    "caniuse-lite": "^1.0.30001655",
-    "esbuild": "^0.20.1",
-    "express-rate-limit": "^7.2.0",
-    "js-tiktoken": "^1.0.10",
-    "langchain": "^0.1.24",
-    "sharp": "^0.32.6"
   }
 }

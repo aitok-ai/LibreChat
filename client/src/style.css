@@ -2054,7 +2054,7 @@ button.scroll-convo {
   list-style-position: outside;
   margin-top: 1em;
   margin-bottom: 1em;
-  padding-left: 3em;
+  padding-left: 1em;
 }
 
 .prose li,
