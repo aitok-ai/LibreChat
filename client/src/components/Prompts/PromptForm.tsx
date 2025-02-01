@@ -256,9 +256,9 @@ const PromptForm = () => {
               {hasShareAccess && <SharePrompt group={group} disabled={isLoadingGroup} />}
               {editorMode === PromptsEditorMode.ADVANCED && (
                 <Button
-                  size={'sm'}
-                  className="h-10 border border-transparent bg-green-500 transition-all hover:bg-green-600 dark:bg-green-500 dark:hover:bg-green-600"
-                  variant={'default'}
+                  variant="default"
+                  size="sm"
+                  className="h-10 w-10 border border-transparent bg-green-500 p-0.5 transition-all hover:bg-green-600 dark:bg-green-500 dark:hover:bg-green-600"
                   onClick={() => {
                     const { _id: promptVersionId = '', prompt } = selectedPrompt ?? ({} as TPrompt);
                     makeProductionMutation.mutate(
@@ -283,7 +283,7 @@ const PromptForm = () => {
                     makeProductionMutation.isLoading
                   }
                 >
-                  <Rocket className="cursor-pointer text-white" />
+                  <Rocket className="size-5 cursor-pointer text-white" />
                 </Button>
               )}
               <DeleteConfirm

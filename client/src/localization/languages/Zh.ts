@@ -349,6 +349,7 @@ export default {
   com_ui_agent_delete_error: '删除代理时出现错误',
   com_ui_agents: '代理',
   com_ui_delete_agent_confirm: '您确定要删除此代理吗？',
+  com_ui_enter_var: '输入 {0}',
   com_ui_prompt_update_error: '更新提示词时出现错误',
   com_ui_command_placeholder: '可选：输入提示词的命令，否则将使用名称',
   com_ui_command_usage_placeholder: '通过命令或名称选择提示词',
@@ -975,6 +976,7 @@ export default {
   com_endpoint_ai: '人工智能',
   com_ui_page: '页面',
   com_nav_maximize_chat_space: '最大化聊天窗口',
-  com_endpoint_message_new: '发送消息 {0} 或输入"@"切换AI',
   com_ui_collapse_chat: '收起聊天',
+  com_endpoint_message_new: '消息 {0}',
+  com_ui_speech_while_submitting: '正在生成回复时无法提交语音',
 };
