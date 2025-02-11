@@ -8,7 +8,7 @@ import type { TMessage } from 'librechat-data-provider';
 import type { Dispatch, SetStateAction } from 'react';
 import { useLocalize, useNewConvo } from '~/hooks';
 import store from '~/store';
-import { useConversation } from '~/hooks';
+// import { useConversation } from '~/hooks';
 import { useAuthContext } from '~/hooks/AuthContext';
 
 export default function MobileNav({
@@ -25,7 +25,7 @@ export default function MobileNav({
   const { title = 'New Chat' } = conversation || {};
   // const { title = 'New Chat' } = conversation || {};
   const [title_1, setTitle] = useState('New Chat');
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { user } = useAuthContext();
   const { userId = '' } = useParams();
   const [profileUser, setProfileUser] = useState({ username: '' });

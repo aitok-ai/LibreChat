@@ -13,10 +13,11 @@ import {
   useHasAccess,
   useMediaQuery,
   useAuthContext,
-  useConversation,
+  //   useConversation,
   useLocalStorage,
   useNavScrolling,
   useConversations,
+  useNewConvo,
 } from '~/hooks';
 import { useConversationsInfiniteQuery } from '~/data-provider';
 import { Conversations } from '~/components/Conversations';
@@ -85,7 +86,8 @@ const Nav = ({
     }
   }, [isSmallScreen]);
 
-  const { newConversation } = useConversation();
+  //const { newConversation } = useConversation();
+  const { newConversation } = useNewConvo();
   const [showLoading, setShowLoading] = useState(false);
   const isSearchEnabled = useRecoilValue(store.isSearchEnabled);
 
@@ -134,8 +136,9 @@ const Nav = ({
 
   const conversations = useMemo(
     () =>
-      (searchQuery ? searchQueryRes.data : data)?.pages.flatMap((page) => page.conversations) || [],
-    [data, searchQuery, searchQueryRes.data],
+      (searchQuery ? searchQueryRes?.data : data)?.pages.flatMap((page) => page.conversations) ||
+      [],
+    [data, searchQuery, searchQueryRes?.data],
   );
 
   const toggleNavVisible = () => {

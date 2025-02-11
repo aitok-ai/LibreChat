@@ -1,7 +1,8 @@
 import { v4 } from 'uuid';
 import { parseConvo, getResponseSender } from 'librechat-data-provider';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { useGetEndpointsQuery } from 'librechat-data-provider/react-query';
+// import { useGetEndpointsQuery } from 'librechat-data-provider/react-query';
+import { useGetEndpointsQuery } from '~/data-provider';
 import type { TMessage, TSubmission, TEndpointOption } from 'librechat-data-provider';
 import type { TAskFunction } from '~/common';
 import useUserKey from './Input/useUserKey';
@@ -39,7 +40,7 @@ const useMessageHandler = () => {
       return;
     }
 
-    conversationId = conversationId ?? currentConversation?.conversationId;
+    conversationId = conversationId ?? currentConversation.conversationId;
     if (conversationId == 'search') {
       console.error('cannot send any message under search view!');
       return;

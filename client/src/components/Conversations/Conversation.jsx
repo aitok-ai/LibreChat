@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 import { useUpdateConversationMutation } from '~/data-provider';
-import { useConversations, useConversation } from '~/hooks';
+// import { useConversations, useConversation,useNewConvo } from '~/hooks';
+import { useNewConvo } from '~/hooks';
 import { MinimalIcon } from '~/components/Endpoints';
 import { NotificationSeverity } from '~/common';
 import { useToastContext } from '~/Providers';
@@ -17,8 +18,10 @@ export default function Conversation({ conversation, retainView }) {
   const { conversationId: convoId } = useParams();
   const setSubmission = useSetRecoilState(store.submission);
 
-  const { refreshConversations } = useConversations();
-  const { switchToConversation } = useConversation();
+  //const { refreshConversations } = useConversations();
+  //const { switchToConversation } = useConversation();
+  const { refreshConversations } = useNewConvo();
+  const { switchToConversation } = useNewConvo();
 
   const updateConvoMutation = useUpdateConversationMutation(currentConversation?.conversationId);
 
@@ -150,7 +153,7 @@ export default function Conversation({ conversation, retainView }) {
   }
 
   return (
-    <a data-testid="convo-item" onClick={() => clickHandler()} {...aProps}>
+    <button data-testid="convo-item" onClick={() => clickHandler()} {...aProps}>
       {icon}
       <div className="relative max-h-5 flex-1 overflow-hidden text-ellipsis break-all">
         {renaming === true ? (
@@ -186,6 +189,6 @@ export default function Conversation({ conversation, retainView }) {
       ) : (
         <div className="absolute inset-y-0 right-0 z-10 w-8 rounded-r-md bg-gradient-to-l from-gray-50 group-hover:from-gray-50 dark:from-gray-900 dark:group-hover:from-gray-800" />
       )}
-    </a>
+    </button>
   );
 }

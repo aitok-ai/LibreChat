@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '../ui/Tabs';
 import { cn } from '~/utils';
@@ -6,9 +9,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { TUser } from 'librechat-data-provider';
 import {
   useFollowUserMutation,
-  useGetStartupConfig,
+  //useGetStartupConfig,
   useGetUserByIdQuery,
 } from 'librechat-data-provider/react-query';
+import { useGetStartupConfig } from '~/data-provider';
 import { useAuthContext } from '~/hooks/AuthContext';
 import LikedConversations from './LikedConversation';
 import PublicConversations from './PublicConversations';
@@ -64,6 +68,13 @@ function ProfileContent() {
           onClick={() => {
             navigate(`/profile/${id}`);
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              navigate(`/profile/${id}`);
+            }
+          }}
+          tabIndex={0}
+          role="button"
         >
           <UserIcon />
           <div className="w-56 truncate">{info.username}</div>
@@ -231,13 +242,13 @@ function ProfileContent() {
   useEffect(() => {
     if (getUserByIdQuery.isSuccess) {
       setProfileUser(getUserByIdQuery.data);
-      setNewUsername(getUserByIdQuery.data?.username);
+      setNewUsername(getUserByIdQuery.data.username);
       // Set biography from fetched data or use initial value
       // Set biography from fetched data or use initial value
-      if (getUserByIdQuery.data?.biography === '') {
+      if (getUserByIdQuery.data.biography === '') {
         setBio(initialBio);
       } else {
-        setBio(getUserByIdQuery.data?.biography);
+        setBio(getUserByIdQuery.data.biography);
       }
 
       if (getUserByIdQuery.data.followers) {
@@ -255,7 +266,7 @@ function ProfileContent() {
       }
 
       if (getUserByIdQuery.data.proMemberExpiredAt) {
-        setProMemberExpiredAt(new Date(getUserByIdQuery.data?.proMemberExpiredAt));
+        setProMemberExpiredAt(new Date(getUserByIdQuery.data.proMemberExpiredAt));
       } else {
         setProMemberExpiredAt(new Date());
       }
@@ -302,6 +313,7 @@ function ProfileContent() {
   const handleUsernameClick = () => {
     setIsEditing(true);
   };
+  let membershipContent;
 
   return (
     <>
@@ -583,8 +595,8 @@ function ProfileContent() {
                     </div>
                   ) : (
                     <div className="pl-1">
-                      {bio?.length > 100 ? `${bio.slice(0, 100)}...` : bio}
-                      {bio?.length > 100 && (
+                      {bio.length > 100 ? `${bio.slice(0, 100)}...` : bio}
+                      {bio.length > 100 && (
                         <button
                           className="ml-2 text-green-500 hover:text-green-300"
                           onClick={toggleExpand}

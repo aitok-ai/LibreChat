@@ -9,7 +9,8 @@ import MultiMessage from './MultiMessage';
 import HoverButtons from './HoverButtons';
 import SiblingSwitch from '../Chat/Messages/SiblingSwitch';
 import { Icon } from '~/components/Endpoints';
-import { useMessageHandler, useConversation } from '~/hooks';
+// import { useMessageHandler, useConversation, useNewConvo } from '~/hooks';
+import { useMessageHandler, useNewConvo } from '~/hooks';
 import type { TMessageProps } from '~/common';
 import { cn } from '~/utils';
 import store from '~/store';
@@ -35,7 +36,8 @@ export default function Message(props: TMessageProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(true);
   const { isSubmitting, ask, regenerate, handleContinue } = useMessageHandler();
-  const { switchToConversation } = useConversation();
+  //const { switchToConversation } = useConversation();
+  const { switchToConversation } = useNewConvo();
   const { conversationId } = useParams();
   //   const isSearching = useRecoilValue(store.isSearching);
   const { token } = useAuthContext();
@@ -117,13 +119,13 @@ export default function Message(props: TMessageProps) {
   const icon = Icon({
     ...conversation,
     ...message,
-    model: message?.model ?? conversation?.model,
+    model: message.model ?? conversation?.model,
     size: 36,
   });
 
-  if (message?.bg && searchResult) {
-    messageProps.className = message?.bg?.split('hover')[0];
-    messageProps.titleclass = message?.bg?.split(messageProps.className)[1] + ' cursor-pointer';
+  if (message.bg && searchResult) {
+    messageProps.className = message.bg.split('hover')[0];
+    messageProps.titleclass = message.bg.split(messageProps.className)[1] + ' cursor-pointer';
   }
 
   const regenerateMessage = () => {
@@ -211,7 +213,7 @@ export default function Message(props: TMessageProps) {
       return;
     }
     const response = await getConversationQuery.refetch({
-      queryKey: [message?.conversationId],
+      queryKey: [message.conversationId],
     });
 
     console.log('getConversationQuery response.data:', response.data);
@@ -246,12 +248,12 @@ export default function Message(props: TMessageProps) {
                 subclasses="switch-result pl-2 pb-2"
                 onClick={clickSearchResult}
               >
-                <strong>{`${message?.title} | ${message?.sender}`}</strong>
+                <strong>{`${message.title} | ${message.sender}`}</strong>
               </SubRow>
             )}
             <div className="flex flex-grow flex-col gap-3">
               {/* Legacy Plugins */}
-              {message?.plugin && <Plugin plugin={message?.plugin} />}
+              {message.plugin && <Plugin plugin={message.plugin} />}
               <MessageContent
                 ask={ask}
                 edit={edit}

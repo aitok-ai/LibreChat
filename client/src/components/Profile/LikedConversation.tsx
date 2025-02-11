@@ -5,13 +5,15 @@ import { Spinner } from '../svg';
 import { useNavigate, useParams } from 'react-router-dom';
 import ConvoIcon from '../svg/ConvoIcon';
 import { useAuthContext } from '~/hooks/AuthContext';
-import { useLocalize, useConversation } from '~/hooks';
+//import { useLocalize, useConversation, useNewConvo } from '~/hooks';
+import { useLocalize, useNewConvo } from '~/hooks';
 
 function LikedConversations() {
   const localize = useLocalize();
   const { user } = useAuthContext();
   const { userId = '' } = useParams();
-  const { switchToConversation } = useConversation();
+  //const { switchToConversation } = useConversation();
+  const { switchToConversation } = useNewConvo();
   const navigate = useNavigate();
   const getLikedConversationsQuery = useGetLikedConversationQuery(userId);
 
