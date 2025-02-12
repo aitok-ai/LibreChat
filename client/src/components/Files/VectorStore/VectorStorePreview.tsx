@@ -99,7 +99,7 @@ export default function VectorStorePreview() {
   const params = useParams();
 
   return (
-    <div className="m-3 ml-1 mr-7 bg-white p-2 sm:p-4 md:p-6  lg:p-10">
+    <div className="m-3 ml-1 mr-7 bg-white p-2 sm:p-4 md:p-6 lg:p-10">
       <div className="flex flex-col justify-between md:flex-row">
         <div className="flex flex-col">
           <b className="hidden text-base md:text-lg lg:block lg:text-xl">VECTOR STORE</b>
@@ -178,7 +178,7 @@ export default function VectorStorePreview() {
             <Clock3 className="text-base text-gray-500 md:text-lg lg:text-xl" />
             &nbsp;Created At
           </span>
-          <span className="w-1/2 text-gray-500 md:w-3/5">{vectorStore.createdAt?.toString()}</span>
+          <span className="w-1/2 text-gray-500 md:w-3/5">{vectorStore.createdAt.toString()}</span>
         </div>
       </div>
 

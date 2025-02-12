@@ -19,8 +19,8 @@ export default function ImageVision() {
             {...field}
             checked={field.value}
             onCheckedChange={field.onChange}
-            className="relative float-left  mr-2 inline-flex h-4 w-4 cursor-pointer"
-            value={field?.value?.toString()}
+            className="relative float-left mr-2 inline-flex h-4 w-4 cursor-pointer"
+            value={field.value.toString()}
           />
         )}
       />

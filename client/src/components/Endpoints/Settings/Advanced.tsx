@@ -109,7 +109,7 @@ export default function Settings({
             placeholder={localize('com_endpoint_openai_prompt_prefix_placeholder')}
             className={cn(
               defaultTextProps,
-              'flex max-h-[138px] min-h-[100px] w-full resize-none px-3 py-2 ',
+              'flex max-h-[138px] min-h-[100px] w-full resize-none px-3 py-2',
             )}
           />
         </div>
@@ -121,7 +121,7 @@ export default function Settings({
               <Label htmlFor="temp-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_temperature')}{' '}
                 <small className="opacity-40">
-                  ({localize('com_endpoint_default_with_num', '1')})
+                  ({localize('com_endpoint_default_with_num', { 0: '1' })})
                 </small>
               </Label>
               <InputNumber

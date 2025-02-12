@@ -1,5 +1,4 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+
 import { useFormContext, Controller } from 'react-hook-form';
 import { Capabilities } from 'librechat-data-provider';
 import type { AgentForm } from '~/common';
@@ -21,8 +20,8 @@ export default function ImageVision() {
             {...field}
             checked={field.value}
             onCheckedChange={field.onChange}
-            className="relative float-left  mr-2 inline-flex h-4 w-4 cursor-pointer"
-            value={field.value.toString()}
+            className="relative float-left mr-2 inline-flex h-4 w-4 cursor-pointer"
+            value={field.value?.toString()}
           />
         )}
       />

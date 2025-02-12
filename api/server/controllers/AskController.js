@@ -236,6 +236,8 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
       sender,
       messageId: responseMessageId,
       parentMessageId: userMessageId ?? parentMessageId,
+    }).catch((err) => {
+      logger.error('[AskController] Error in `handleAbortError`', err);
     });
   }
 };

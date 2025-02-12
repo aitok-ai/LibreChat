@@ -165,7 +165,7 @@ export default function Settings({
               )}
               className={cn(
                 defaultTextProps,
-                'flex max-h-[138px] min-h-[100px] w-full resize-none px-3 py-2 ',
+                'flex max-h-[138px] min-h-[100px] w-full resize-none px-3 py-2',
               )}
             />
           </div>
@@ -226,7 +226,7 @@ export default function Settings({
               <Label htmlFor="temp-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_temperature')}{' '}
                 <small className="opacity-40">
-                  ({localize('com_endpoint_default_with_num', '0.8')})
+                  ({localize('com_endpoint_default_with_num', { 0: '0.8' })})
                 </small>
               </Label>
               <InputNumber
@@ -266,7 +266,7 @@ export default function Settings({
               <Label htmlFor="top-p-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_top_p')}{' '}
                 <small className="opacity-40">
-                  ({localize('com_endpoint_default_with_num', '1')})
+                  ({localize('com_endpoint_default_with_num', { 0: '1' })})
                 </small>
               </Label>
               <InputNumber
@@ -307,7 +307,7 @@ export default function Settings({
               <Label htmlFor="freq-penalty-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_frequency_penalty')}{' '}
                 <small className="opacity-40">
-                  ({localize('com_endpoint_default_with_num', '0')})
+                  ({localize('com_endpoint_default_with_num', { 0: '0' })})
                 </small>
               </Label>
               <InputNumber
@@ -348,7 +348,7 @@ export default function Settings({
               <Label htmlFor="pres-penalty-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_presence_penalty')}{' '}
                 <small className="opacity-40">
-                  ({localize('com_endpoint_default_with_num', '0')})
+                  ({localize('com_endpoint_default_with_num', { 0: '0' })})
                 </small>
               </Label>
               <InputNumber

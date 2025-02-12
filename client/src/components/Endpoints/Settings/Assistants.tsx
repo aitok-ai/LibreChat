@@ -32,7 +32,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
   );
 
   const assistants = useMemo(() => {
-    const currentAssistants = (currentList ?? []).map(({ id, name }) => ({
+    const currentAssistants = currentList.map(({ id, name }) => ({
       label: name,
       value: id,
     }));
@@ -52,8 +52,8 @@ export default function Settings({ conversation, setOption, models, readonly }: 
   });
 
   const activeAssistant = useMemo(() => {
-    if (assistant_id) {
-      return assistantListMap[endpoint ?? '']?.[assistant_id];
+    if (assistant_id != null && assistant_id) {
+      return assistantListMap[endpoint ?? '']?.[assistant_id] as Assistant | null;
     }
 
     return null;
@@ -70,18 +70,20 @@ export default function Settings({ conversation, setOption, models, readonly }: 
   }, [models, activeAssistant, localize]);
 
   const [assistantValue, setAssistantValue] = useState<Option>(
-    activeAssistant ? { label: activeAssistant.name, value: activeAssistant.id } : defaultOption,
+    activeAssistant != null
+      ? { label: activeAssistant.name ?? '', value: activeAssistant.id }
+      : defaultOption,
   );
 
   useEffect(() => {
-    if (assistantValue && assistantValue.value === '') {
+    if (assistantValue.value === '') {
       setOption('presetOverride')({
         assistant_id: assistantValue.value,
       } as Partial<TPreset>);
     }
 
     // Reason: `setOption` causes a re-render on every update
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [assistantValue]);
 
   if (!conversation) {
@@ -95,7 +97,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
       return;
     }
 
-    const assistant = assistantListMap[endpoint ?? '']?.[value];
+    const assistant = assistantListMap[endpoint ?? '']?.[value] as Assistant | null;
     if (!assistant) {
       setAssistantValue(defaultOption);
       return;
@@ -103,7 +105,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
 
     setAssistantValue({
       label: assistant.name ?? '',
-      value: assistant.id ?? '',
+      value: assistant.id || '',
     });
     setOption('assistant_id')(assistant.id);
     if (assistant.model) {
@@ -159,7 +161,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
             placeholder={localize('com_endpoint_prompt_prefix_assistants_placeholder')}
             className={cn(
               defaultTextProps,
-              'flex max-h-[240px] min-h-[80px] w-full resize-none px-3 py-2 ',
+              'flex max-h-[240px] min-h-[80px] w-full resize-none px-3 py-2',
             )}
           />
         </div>
@@ -176,7 +178,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
             placeholder={localize('com_endpoint_instructions_assistants_placeholder')}
             className={cn(
               defaultTextProps,
-              'flex max-h-[240px] min-h-[80px] w-full resize-none px-3 py-2 ',
+              'flex max-h-[240px] min-h-[80px] w-full resize-none px-3 py-2',
             )}
           />
         </div>

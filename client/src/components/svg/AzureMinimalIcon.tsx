@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 import { cn } from '~/utils/';
 
 export default function AzureMinimalIcon({

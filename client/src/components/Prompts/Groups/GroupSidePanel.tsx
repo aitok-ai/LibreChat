@@ -30,7 +30,7 @@ export default function GroupSidePanel({
     <div
       className={cn(
         'mr-2 flex h-auto w-auto min-w-72 flex-col gap-2 lg:w-1/4 xl:w-1/4',
-        isDetailView && isSmallerScreen ? 'hidden' : '',
+        isDetailView === true && isSmallerScreen ? 'hidden' : '',
         className,
       )}
     >

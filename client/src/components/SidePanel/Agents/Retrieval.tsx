@@ -1,5 +1,4 @@
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
+
 import { useEffect, useMemo } from 'react';
 import { Capabilities } from 'librechat-data-provider';
 import { useFormContext, Controller, useWatch } from 'react-hook-form';
@@ -45,7 +44,7 @@ export default function Retrieval({ retrievalModels }: { retrievalModels: Set<st
                 disabled={isDisabled}
                 onCheckedChange={field.onChange}
                 className="relative float-left mr-2 inline-flex h-4 w-4 cursor-pointer"
-                value={field.value.toString()}
+                value={field.value?.toString()}
               />
             )}
           />

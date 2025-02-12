@@ -29,7 +29,7 @@ export default function FileSearchCheckbox() {
                 {...field}
                 checked={field.value}
                 onCheckedChange={field.onChange}
-                className="relative float-left  mr-2 inline-flex h-4 w-4 cursor-pointer"
+                className="relative float-left mr-2 inline-flex h-4 w-4 cursor-pointer"
                 value={field.value.toString()}
               />
             )}
@@ -38,7 +38,6 @@ export default function FileSearchCheckbox() {
             type="button"
             className="flex items-center space-x-2"
             onClick={() =>
-              // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
               setValue(AgentCapabilities.file_search, !getValues(AgentCapabilities.file_search), {
                 shouldDirty: true,
               })
