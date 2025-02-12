@@ -30,7 +30,7 @@ function ChatView({ index = 0 }: { index?: number }) {
     select: useCallback(
       (data: TMessage[]) => {
         const dataTree = buildTree({ messages: data, fileMap });
-        return dataTree?.length === 0 ? null : dataTree ?? null;
+        return dataTree?.length === 0 ? null : (dataTree ?? null);
       },
       [fileMap],
     ),
@@ -70,19 +70,7 @@ function ChatView({ index = 0 }: { index?: number }) {
     <ChatFormProvider {...methods}>
       <ChatContext.Provider value={chatHelpers}>
         <AddedChatContext.Provider value={addedChatHelpers}>
-          <Presentation useSidePanel={true}>
-            {/* {isLoading && conversationId !== 'new' ? (
-              <div className="flex h-screen items-center justify-center">
-                <Spinner className="opacity-0" />
-              </div>
-            ) : messagesTree && messagesTree.length !== 0 ? (
-              <>
-                <MessageHeaderButtons conversationId={conversationId} index={index} />
-                <MessagesView messagesTree={messagesTree} Header={<Header />} />
-              </>
-            ) : (
-              <Landing Header={<Header />} />
-            )} */}
+          <Presentation>
             {content}
             <div className="relative ml-[-16px] flex flex-row py-2 md:mb-[-16px] md:py-4 lg:mb-[+24px]">
               <span className="flex w-full flex-row items-center justify-center gap-0 md:order-none md:m-auto md:gap-2">

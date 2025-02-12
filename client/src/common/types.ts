@@ -89,6 +89,7 @@ export type IconMapProps = {
   iconURL?: string;
   context?: 'landing' | 'menu-item' | 'nav' | 'message';
   endpoint?: string | null;
+  endpointType?: string;
   assistantName?: string;
   agentName?: string;
   avatar?: string;
