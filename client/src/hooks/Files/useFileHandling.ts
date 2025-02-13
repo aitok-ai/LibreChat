@@ -69,6 +69,7 @@ const useFileHandling = (params?: UseFileHandling) => {
 
   const displayToast = useCallback(() => {
     if (errors.length > 1) {
+      // TODO: this should not be a dynamic localize input!!
       const errorList = Array.from(new Set(errors))
         .map((e, i) => `${i > 0 ? '• ' : ''}${localize(e) || e}\n`)
         .join('');
@@ -78,6 +79,7 @@ const useFileHandling = (params?: UseFileHandling) => {
         duration: 5000,
       });
     } else if (errors.length === 1) {
+      // TODO: this should not be a dynamic localize input!!
       const message = localize(errors[0]) || errors[0];
       showToast({
         message,
@@ -145,7 +147,7 @@ const useFileHandling = (params?: UseFileHandling) => {
         const errorMessage =
           error?.code === 'ERR_CANCELED'
             ? 'com_error_files_upload_canceled'
-            : error?.response?.data?.message ?? 'com_error_files_upload';
+            : (error?.response?.data?.message ?? 'com_error_files_upload');
         setError(errorMessage);
       },
     },

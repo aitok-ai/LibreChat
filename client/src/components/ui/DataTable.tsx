@@ -27,6 +27,7 @@ import {
 import { TrashIcon, Spinner } from '~/components/svg';
 import { useLocalize, useMediaQuery } from '~/hooks';
 import { cn } from '~/utils';
+import { LocalizeFunction } from '~/common';
 
 type TableColumn<TData, TValue> = ColumnDef<TData, TValue> & {
   meta?: {
@@ -102,14 +103,7 @@ const TableRowComponent = <TData, TValue>({
   return (
     <TableRow
       data-state={row.getIsSelected() ? 'selected' : undefined}
-      className={`
-        motion-safe:animate-fadeIn border-b
-        border-border-light transition-all duration-300
-        ease-out
-        hover:bg-surface-secondary
-        ${isSearching ? 'opacity-50' : 'opacity-100'}
-        ${isSearching ? 'scale-98' : 'scale-100'}
-      `}
+      className={`motion-safe:animate-fadeIn border-b border-border-light transition-all duration-300 ease-out hover:bg-surface-secondary ${isSearching ? 'opacity-50' : 'opacity-100'} ${isSearching ? 'scale-98' : 'scale-100'} `}
       style={{
         animationDelay: `${index * 20}ms`,
         transform: `translateY(${isSearching ? '4px' : '0'})`,
@@ -131,12 +125,7 @@ const TableRowComponent = <TData, TValue>({
         return (
           <TableCell
             key={cell.id}
-            className={`
-              w-0 max-w-0 px-2 py-1 align-middle text-xs
-              transition-all duration-300 sm:px-4
-              sm:py-2 sm:text-sm
-              ${isSearching ? 'blur-[0.3px]' : 'blur-0'}
-            `}
+            className={`w-0 max-w-0 px-2 py-1 align-middle text-xs transition-all duration-300 sm:px-4 sm:py-2 sm:text-sm ${isSearching ? 'blur-[0.3px]' : 'blur-0'} `}
             style={getColumnStyle(
               cell.column.columnDef as TableColumn<TData, TValue>,
               isSmallScreen,
@@ -177,7 +166,7 @@ const DeleteButton = memo(
     isDeleting: boolean;
     disabled: boolean;
     isSmallScreen: boolean;
-    localize: (key: string) => string;
+    localize: LocalizeFunction;
   }) => {
     if (!onDelete) {
       return null;
