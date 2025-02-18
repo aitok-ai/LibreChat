@@ -23,7 +23,10 @@ const { logger } = require('~/config');
 const { getUserMessageQuotaUsagePastDays } = require('../middleware/messageQuota');
 
 const getUserController = async (req, res) => {
-  try {
+  const userData = req.user.toObject != null ? req.user.toObject() : { ...req.user };
+  delete userData.totpSecret;
+  res.status(200).send(userData);
+  /*try {
     const { userId } = req.params;
     if (userId === undefined || userId === req.user.id) {
       // information about the current user
@@ -50,7 +53,7 @@ const getUserController = async (req, res) => {
   } catch (error) {
     console.log(error);
     return { message: 'Error getting user' };
-  }
+  }*/
 };
 
 // update biography

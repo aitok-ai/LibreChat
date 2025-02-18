@@ -70,7 +70,12 @@ const AuthContextProvider = ({
 
   const loginUser = useLoginUserMutation({
     onSuccess: (data: t.TLoginResponse) => {
-      const { user, token } = data;
+      const { user, token, twoFAPending, tempToken } = data;
+      if (twoFAPending) {
+        // Redirect to the two-factor authentication route.
+        navigate(`/login/2fa?tempToken=${tempToken}`, { replace: true });
+        return;
+      }
       setError(undefined);
       setUserContext({ token, isAuthenticated: true, user, redirect: '/c/new' });
     },
@@ -200,7 +205,7 @@ const AuthContextProvider = ({
       },
       isAuthenticated,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [user, error, isAuthenticated, token, userRole, adminRole],
   );
 
