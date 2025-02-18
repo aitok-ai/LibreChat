@@ -6,6 +6,7 @@ const {
   ImageDetail,
   EModelEndpoint,
   resolveHeaders,
+  KnownEndpoints,
   openAISettings,
   ImageDetailCost,
   CohereConstants,
@@ -121,11 +122,7 @@ class OpenAIClient extends BaseClient {
 
     const { reverseProxyUrl: reverseProxy } = this.options;
 
-    if (
-      !this.useOpenRouter &&
-      reverseProxy &&
-      reverseProxy.includes('https://openrouter.ai/api/v1')
-    ) {
+    if (!this.useOpenRouter && reverseProxy && reverseProxy.includes(KnownEndpoints.openrouter)) {
       this.useOpenRouter = true;
     }
 

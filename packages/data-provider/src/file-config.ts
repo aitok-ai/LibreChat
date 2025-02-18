@@ -149,6 +149,9 @@ export const codeTypeMapping: { [key: string]: string } = {
   ts: 'application/typescript',
   tar: 'application/x-tar',
   zip: 'application/zip',
+  yml: 'application/x-yaml',
+  yaml: 'application/x-yaml',
+  log: 'text/plain',
 };
 
 export const retrievalMimeTypes = [
@@ -227,7 +230,7 @@ export const convertStringsToRegex = (patterns: string[]): RegExp[] =>
       const regex = new RegExp(pattern);
       acc.push(regex);
     } catch (error) {
-      console.error(`Invalid regex pattern "${pattern}" skipped.`);
+      console.error(`Invalid regex pattern "${pattern}" skipped.`, error);
     }
     return acc;
   }, []);
