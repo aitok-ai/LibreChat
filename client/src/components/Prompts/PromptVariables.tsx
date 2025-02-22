@@ -71,7 +71,7 @@ const PromptVariables = ({
               </span>
             </div>
             <div>
-              <span className="text-text-text-primary text-sm font-medium">
+              <span className="text-sm font-medium text-text-primary">
                 {localize('com_ui_dropdown_variables')}
               </span>
               <span className="text-sm text-text-secondary">
