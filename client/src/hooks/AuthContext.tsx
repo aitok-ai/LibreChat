@@ -8,7 +8,7 @@ import {
   createContext,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { setTokenHeader, SystemRoles } from 'librechat-data-provider';
 import type * as t from 'librechat-data-provider';
 import {
@@ -222,4 +222,4 @@ const useAuthContext = () => {
   return context;
 };
 
-export { AuthContextProvider, useAuthContext };
+export { AuthContextProvider, useAuthContext, AuthContext };

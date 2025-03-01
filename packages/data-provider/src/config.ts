@@ -649,6 +649,8 @@ const sharedOpenAIModels = [
 ];
 
 const sharedAnthropicModels = [
+  'claude-3-7-sonnet-latest',
+  'claude-3-7-sonnet-20250219',
   'claude-3-5-haiku-20241022',
   'claude-3-5-sonnet-20241022',
   'claude-3-5-sonnet-20240620',
@@ -708,7 +710,7 @@ export const defaultModels = {
     // Gemini 2.0 Models
     'gemini-2.0-flash-001',
     'gemini-2.0-flash-exp',
-    'gemini-2.0-flash-lite-preview-02-05',
+    'gemini-2.0-flash-lite',
     'gemini-2.0-pro-exp-02-05',
     // Gemini 1.5 Models
     'gemini-1.5-flash-001',
