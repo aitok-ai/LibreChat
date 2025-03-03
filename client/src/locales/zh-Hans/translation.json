@@ -767,6 +767,8 @@
   "com_ui_follow": "关注",
   "com_ui_followers": "粉丝",
   "com_ui_following": "关注",
+  "com_ui_show_less": "显示更少",
+  "com_ui_show_more": "显示更多",
   "com_ui_following_no_convo": "您关注的用户没有公开的对话。",
   "com_ui_free_member": "免费用户",
   "com_ui_homepage": "我的主页",

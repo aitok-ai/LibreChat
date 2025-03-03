@@ -1,6 +1,4 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable no-nested-ternary */
+
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '../ui/Tabs';
 import { cn } from '~/utils';
@@ -342,7 +340,7 @@ function ProfileContent() {
       </button>
       <div className="flex h-full flex-col justify-center md:mx-36">
         <div className="mt-6 flex flex-col flex-wrap items-start md:my-4 md:flex-row md:gap-6">
-          <div className="row flex flex items-center">
+          <div className="row flex items-center">
             <div
               title="User Icon"
               className="relative mx-4 my-1 flex items-center justify-center md:my-3 md:ml-12"
@@ -590,7 +588,7 @@ function ProfileContent() {
                         className="ml-2 text-green-500 hover:text-green-300"
                         onClick={toggleExpand}
                       >
-                        Show Less
+                        {localize('com_ui_show_less')}
                       </button>
                     </div>
                   ) : (
@@ -601,7 +599,7 @@ function ProfileContent() {
                           className="ml-2 text-green-500 hover:text-green-300"
                           onClick={toggleExpand}
                         >
-                          {expanded ? 'Show Less' : 'Show More'}
+                          {expanded ? localize('com_ui_show_less') : localize('com_ui_show_more')}
                         </button>
                       )}
                     </div>
@@ -636,21 +634,30 @@ function ProfileContent() {
             onValueChange={(value: string) => setTabValue(value)}
             className={defaultClasses}
           >
-            <TabsList className="rounded-lg bg-blue-500 dark:bg-blue-500">
+            <TabsList className="flex rounded-lg border-2 border-blue-700 bg-blue-600 shadow-md dark:bg-blue-600">
               {/* {userId === user?.id && (
                 <TabsTrigger value="likes" className="px-4 py-2 text-white dark:text-white">
                   {localize('com_ui_my_likes')}
                 </TabsTrigger>
               )} */}
               {userId != user?.id && (
-                <TabsTrigger value="conversations" className="px-4 py-2 text-white dark:text-white">
+                <TabsTrigger
+                  value="conversations"
+                  className="border-r-2 border-blue-700 px-4 py-2 text-white transition-colors duration-200 last:border-r-0 hover:bg-blue-500 dark:text-white dark:hover:bg-blue-500"
+                >
                   {localize('com_ui_conversations')}
                 </TabsTrigger>
               )}
-              <TabsTrigger value="followers" className="px-4 py-2 text-white dark:text-white">
+              <TabsTrigger
+                value="followers"
+                className="border-r-2 border-blue-700 px-4 py-2 text-white transition-colors duration-200 last:border-r-0 hover:bg-blue-500 dark:text-white dark:hover:bg-blue-500"
+              >
                 {localize('com_ui_followers')}
               </TabsTrigger>
-              <TabsTrigger value="following" className="px-4 py-2 text-white dark:text-white">
+              <TabsTrigger
+                value="following"
+                className="border-r-2 border-blue-700 px-4 py-2 text-white transition-colors duration-200 last:border-r-0 hover:bg-blue-500 dark:text-white dark:hover:bg-blue-500"
+              >
                 {localize('com_ui_following')}
               </TabsTrigger>
             </TabsList>

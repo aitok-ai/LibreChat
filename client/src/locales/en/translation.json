@@ -847,6 +847,8 @@
   "com_ui_follow": "Follow",
   "com_ui_followers": "Followers",
   "com_ui_following": "Following",
+  "com_ui_show_less": "Show less",
+  "com_ui_show_more": "Show more",
   "com_ui_following_no_convo": "The users you are following don't have any public conversations.",
   "com_ui_free_member": "Free Member",
   "com_ui_homepage": "My Profile",
