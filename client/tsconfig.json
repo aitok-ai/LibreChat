@@ -37,10 +37,5 @@
     "test/setupTests.js",
     "env.d.ts",
     "../config/translations/**/*.ts"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
   ]
 }

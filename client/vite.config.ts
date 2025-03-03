@@ -37,10 +37,12 @@ export default defineConfig({
       },
       useCredentials: true,
       workbox: {
-        globPatterns: ['assets/**/*.{png,jpg,svg,ico}', '**/*.{js,css,html,ico,woff2}'],
+        globPatterns: ['**/*'],
+        globIgnores: ['images/**/*'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/oauth/],
       },
+      includeAssets: ['**/*'],
       manifest: {
         name: 'LibreChat',
         short_name: 'LibreChat',
