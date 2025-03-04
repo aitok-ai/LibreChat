@@ -38,6 +38,7 @@ const initializeClient = async ({ req, res, endpointOption, overrideModel, optio
 
   if (googleConfig) {
     clientOptions.streamRate = googleConfig.streamRate;
+    clientOptions.titleModel = googleConfig.titleModel;
   }
 
   if (allConfig) {
