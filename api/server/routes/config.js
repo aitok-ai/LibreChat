@@ -81,6 +81,7 @@ router.get('/', async function (req, res) {
       publicSharedLinksEnabled,
       analyticsGtmId: process.env.ANALYTICS_GTM_ID,
       instanceProjectId: instanceProject._id.toString(),
+      bundlerURL: process.env.SANDPACK_BUNDLER_URL,
     };
 
     if (ldap) {
