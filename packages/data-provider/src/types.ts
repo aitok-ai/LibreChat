@@ -118,6 +118,7 @@ export type TUser = {
   referrals: string[];
   numOfReferrals: number;
   plugins?: string[];
+  twoFactorEnabled?: boolean;
   backupCodes?: TBackupCode[];
   createdAt: string;
   updatedAt: string;
