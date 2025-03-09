@@ -2,11 +2,13 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 // @ts-ignore
 export interface IMessage extends Document {
+  likesMsg: boolean;
   messageId: string;
   conversationId: string;
   user: string;
   model?: string;
   endpoint?: string;
+  senderId?: string;
   conversationSignature?: string;
   clientId?: string;
   invocationId?: number;
@@ -39,6 +41,10 @@ export interface IMessage extends Document {
 
 const messageSchema: Schema<IMessage> = new Schema(
   {
+    likesMsg: {
+      type: Boolean,
+      default: false,
+    },
     messageId: {
       type: String,
       unique: true,
@@ -63,6 +69,9 @@ const messageSchema: Schema<IMessage> = new Schema(
       default: null,
     },
     endpoint: {
+      type: String,
+    },
+    senderId: {
       type: String,
     },
     conversationSignature: {

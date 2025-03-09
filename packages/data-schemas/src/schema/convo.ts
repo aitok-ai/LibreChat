@@ -34,6 +34,10 @@ export interface IConversation extends Document {
   resendFiles?: boolean;
   imageDetail?: string;
   agent_id?: string;
+  likes?: number;
+  likedBy?: object;
+  isPrivate?: boolean;
+  viewCount?: number;
   assistant_id?: string;
   instructions?: string;
   stop?: string[];
@@ -79,6 +83,23 @@ const convoSchema: Schema<IConversation> = new Schema(
     agent_id: {
       type: String,
     },
+    likes: {
+      type: Number,
+      default: 0,
+    },
+    likedBy: {
+      type: Object,
+      default: {},
+    },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
+    viewCount: {
+      type: Number,
+      default: 0,
+    },
+
     tags: {
       type: [String],
       default: [],

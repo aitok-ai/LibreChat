@@ -28,6 +28,12 @@ export interface IUser extends Document {
   refreshToken?: Array<{
     refreshToken: string;
   }>;
+  refBy?: string;
+  referrals?: unknown[];
+  numOfReferrals?: number;
+  followers?: object;
+  following?: object;
+  biography?: string;
   expiresAt?: Date;
   termsAccepted?: boolean;
   createdAt?: Date;
@@ -147,6 +153,34 @@ const User = new Schema<IUser>(
     },
     refreshToken: {
       type: [SessionSchema],
+    },
+    refBy: {
+      type: String,
+      default: '',
+    },
+    referrals: {
+      type: Array,
+      default: [],
+    },
+    numOfReferrals: {
+      type: Number,
+      default: 0,
+    },
+    followers: {
+      type: Object,
+      default: {},
+    },
+    following: {
+      type: Object,
+      default: {},
+    },
+    biography: {
+      type: String,
+      default: '',
+    },
+    proMemberExpiredAt: {
+      type: Date,
+      default: new Date(),
     },
     expiresAt: {
       type: Date,

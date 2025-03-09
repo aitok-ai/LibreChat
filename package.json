@@ -146,6 +146,7 @@
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.3",
     "input-otp": "^1.4.2",
+    "module-alias": "^2.2.3",
     "vite-plugin-compression": "^0.5.1"
   }
 }
