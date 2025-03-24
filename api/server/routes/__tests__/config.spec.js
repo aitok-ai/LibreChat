@@ -18,6 +18,7 @@ afterEach(() => {
   delete process.env.OPENID_ISSUER;
   delete process.env.OPENID_SESSION_SECRET;
   delete process.env.OPENID_BUTTON_LABEL;
+  delete process.env.OPENID_AUTO_REDIRECT;
   delete process.env.OPENID_AUTH_URL;
   delete process.env.GITHUB_CLIENT_ID;
   delete process.env.GITHUB_CLIENT_SECRET;
@@ -36,7 +37,6 @@ afterEach(() => {
 
 //TODO: This works/passes locally but http request tests fail with 404 in CI. Need to figure out why.
 
-// eslint-disable-next-line jest/no-disabled-tests
 describe.skip('GET /', () => {
   it('should return 200 and the correct body', async () => {
     process.env.APP_TITLE = 'Test Title';
