@@ -104,7 +104,7 @@ const ChatForm = ({ index = 0 }) => {
   } = useAddedChatContext();
   const showStopAdded = useRecoilValue(store.showStopButtonByIndex(addedIndex));
 
-  const { clearDraft } = useAutoSave({
+  useAutoSave({
     conversationId: useMemo(() => conversation?.conversationId, [conversation]),
     textAreaRef,
     files,
@@ -112,7 +112,7 @@ const ChatForm = ({ index = 0 }) => {
   });
 
   const assistantMap = useAssistantsMapContext();
-  const { submitMessage, submitPrompt } = useSubmitMessage({ clearDraft });
+  const { submitMessage, submitPrompt } = useSubmitMessage();
 
   useEffect(() => {
     methods.setValue('text', text);

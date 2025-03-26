@@ -18,7 +18,7 @@ function AccountSettings() {
   const { user, isAuthenticated, logout } = useAuthContext();
   const { data: startupConfig } = useGetStartupConfig();
   const balanceQuery = useGetUserBalance({
-    enabled: !!isAuthenticated && startupConfig?.checkBalance,
+    enabled: !!isAuthenticated && startupConfig?.balance?.enabled,
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -81,7 +81,7 @@ function AccountSettings() {
           {user.email ?? localize('com_nav_user')}
         </div>
         <DropdownMenuSeparator />
-        {startupConfig?.checkBalance === true &&
+        {startupConfig?.balance?.enabled === true &&
           balanceQuery.data != null &&
           !isNaN(parseFloat(balanceQuery.data)) && (
           <>
