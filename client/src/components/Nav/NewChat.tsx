@@ -9,10 +9,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { QueryKeys, Constants } from 'librechat-data-provider';
 import type { TConversation, TMessage } from 'librechat-data-provider';
 import { getEndpointField, getIconEndpoint, getIconKey } from '~/utils';
-import { icons } from '~/components/Chat/Menus/Endpoints/Icons';
 import ConvoIconURL from '~/components/Endpoints/ConvoIconURL';
 import { useGetEndpointsQuery } from '~/data-provider';
 import { useLocalize, useNewConvo } from '~/hooks';
+import { icons } from '~/hooks/Endpoint/Icons';
 import { NewChatIcon } from '~/components/svg';
 import { cn } from '~/utils';
 import store from '~/store';
@@ -81,7 +81,7 @@ export default function NewChat({
   const { newConversation: newConvo } = useNewConvo(index);
   const navigate = useNavigate();
   const localize = useLocalize();
-  const [widget, setWidget] = useRecoilState(store.widget); // eslint-disable-line
+  const [widget, setWidget] = useRecoilState(store.widget);
   const { user } = useAuthContext();
   const { userId } = useParams();
 
