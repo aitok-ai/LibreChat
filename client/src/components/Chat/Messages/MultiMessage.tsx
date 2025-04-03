@@ -61,7 +61,6 @@ export default function MultiMessage({
       />
     );
   } else if (message.content) {
-    console.log('message.id with content', message.messageId);
     return (
       <MessageContent
         key={message.messageId}

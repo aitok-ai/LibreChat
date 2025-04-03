@@ -218,7 +218,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
           <div
             onClick={handleContainerClick}
             className={cn(
-              'relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border border-border-light bg-surface-chat text-text-primary transition-all duration-200 sm:rounded-3xl',
+              'relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border border-border-light bg-surface-chat pb-4 text-text-primary transition-all duration-200 sm:rounded-3xl sm:pb-0',
               isTextAreaFocused ? 'shadow-lg' : 'shadow-md',
             )}
           >
@@ -279,7 +279,12 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
               <div className={`${isRTL ? 'mr-2' : 'ml-2'}`}>
                 <AttachFileChat disableInputs={disableInputs} />
               </div>
-              <BadgeRow onChange={(newBadges) => setBadges(newBadges)} />
+              <BadgeRow
+                onChange={(newBadges) => setBadges(newBadges)}
+                isInChat={
+                  Array.isArray(conversation?.messages) && conversation.messages.length >= 1
+                }
+              />
               <div className="mx-auto flex" />
               {SpeechToText && (
                 <AudioRecorder

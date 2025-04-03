@@ -1007,6 +1007,10 @@ export enum CacheKeys {
    * Key for in-progress flow states.
    */
   FLOWS = 'flows',
+  /**
+   * Key for s3 check intervals per user
+   */
+  S3_EXPIRY_INTERVAL = 'S3_EXPIRY_INTERVAL',
 }
 
 /**

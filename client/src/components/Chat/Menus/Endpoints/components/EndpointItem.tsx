@@ -89,7 +89,13 @@ export function EndpointItem({ endpoint }: EndpointItemProps) {
 
   if (endpoint.hasModels) {
     const filteredModels = searchValue
-      ? filterModels(endpoint, endpoint.models || [], searchValue, agentsMap, assistantsMap)
+      ? filterModels(
+        endpoint,
+        (endpoint.models || []).map((model) => model.name),
+        searchValue,
+        agentsMap,
+        assistantsMap,
+      )
       : null;
     const placeholder =
       isAgentsEndpoint(endpoint.value) || isAssistantsEndpoint(endpoint.value)
@@ -116,17 +122,15 @@ export function EndpointItem({ endpoint }: EndpointItemProps) {
           </div>
         }
       >
-        {(endpoint.value === EModelEndpoint.assistants ||
-          endpoint.value === EModelEndpoint.azureAssistants) &&
-        endpoint.models === undefined ? (
-            <div className="flex items-center justify-center p-2">
-              <Spinner />
-            </div>
-          ) : filteredModels ? (
-            renderEndpointModels(endpoint, endpoint.models || [], selectedModel, filteredModels)
-          ) : (
-            endpoint.models && renderEndpointModels(endpoint, endpoint.models, selectedModel)
-          )}
+        {isAssistantsEndpoint(endpoint.value) && endpoint.models === undefined ? (
+          <div className="flex items-center justify-center p-2">
+            <Spinner />
+          </div>
+        ) : filteredModels ? (
+          renderEndpointModels(endpoint, endpoint.models || [], selectedModel, filteredModels)
+        ) : (
+          endpoint.models && renderEndpointModels(endpoint, endpoint.models, selectedModel)
+        )}
       </Menu>
     );
   } else {

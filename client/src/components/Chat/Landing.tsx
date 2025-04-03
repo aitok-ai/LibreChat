@@ -1,6 +1,6 @@
-import { useMemo, useCallback, useState, useEffect } from 'react';
+import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+import { easings } from '@react-spring/web';
 import { EModelEndpoint } from 'librechat-data-provider';
-import type * as t from 'librechat-data-provider';
 import { useChatContext, useAgentsMapContext, useAssistantsMapContext } from '~/Providers';
 import { useGetEndpointsQuery, useGetStartupConfig } from '~/data-provider';
 import { BirthdayIcon, TooltipAnchor, SplitText } from '~/components';
@@ -20,6 +20,11 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
   const { data: endpointsConfig } = useGetEndpointsQuery();
   const { user } = useAuthContext();
   const localize = useLocalize();
+
+  const [textHasMultipleLines, setTextHasMultipleLines] = useState(false);
+  const [lineCount, setLineCount] = useState(1);
+  const [contentHeight, setContentHeight] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const endpointType = useMemo(() => {
     let ep = conversation?.endpoint ?? '';
@@ -52,7 +57,12 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
 
   const getGreeting = useCallback(() => {
     if (typeof startupConfig?.interface?.customWelcome === 'string') {
-      return startupConfig.interface.customWelcome;
+      const customWelcome = startupConfig.interface.customWelcome;
+      // Replace {{user.name}} with actual user name if available
+      if (user?.name && customWelcome.includes('{{user.name}}')) {
+        return customWelcome.replace(/{{user.name}}/g, user.name);
+      }
+      return customWelcome;
     }
 
     const now = new Date();
@@ -80,15 +90,48 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
     else {
       return localize('com_ui_good_evening');
     }
-  }, [localize, startupConfig?.interface?.customWelcome]);
+  }, [localize, startupConfig?.interface?.customWelcome, user?.name]);
+
+  const handleLineCountChange = useCallback((count: number) => {
+    setTextHasMultipleLines(count > 1);
+    setLineCount(count);
+  }, []);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.offsetHeight);
+    }
+  }, [lineCount, description]);
+
+  const getDynamicMargin = useMemo(() => {
+    let margin = 'mb-0';
+
+    if (lineCount > 2 || (description && description.length > 100)) {
+      margin = 'mb-10';
+    } else if (lineCount > 1 || (description && description.length > 0)) {
+      margin = 'mb-6';
+    } else if (textHasMultipleLines) {
+      margin = 'mb-4';
+    }
+
+    if (contentHeight > 200) {
+      margin = 'mb-16';
+    } else if (contentHeight > 150) {
+      margin = 'mb-12';
+    }
+
+    return margin;
+  }, [lineCount, description, textHasMultipleLines, contentHeight]);
 
   return (
     <div
-      className={`flex h-full transform-gpu flex-col items-center justify-center pb-16 transition-all duration-200 ${centerFormOnLanding ? 'max-h-full sm:max-h-0' : 'max-h-full'}`}
+      className={`flex h-full transform-gpu flex-col items-center justify-center pb-16 transition-all duration-200 ${centerFormOnLanding ? 'max-h-full sm:max-h-0' : 'max-h-full'} ${getDynamicMargin}`}
     >
-      <div className="flex flex-col items-center gap-0 p-2">
-        <div className="flex flex-col items-center justify-center gap-4 md:flex-row">
-          <div className="relative size-10 justify-center">
+      <div ref={contentRef} className="flex flex-col items-center gap-0 p-2">
+        <div
+          className={`flex ${textHasMultipleLines ? 'flex-col' : 'flex-col md:flex-row'} items-center justify-center gap-4`}
+        >
+          <div className={`relative size-10 justify-center ${textHasMultipleLines ? 'mb-2' : ''}`}>
             <ConvoIcon
               agentsMap={agentsMap}
               assistantMap={assistantMap}
@@ -118,36 +161,36 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
                 textAlign="center"
                 animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
                 animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
-                easing="easeOutCubic"
+                easing={easings.easeOutCubic}
                 threshold={0}
                 rootMargin="0px"
+                onLineCountChange={handleLineCountChange}
               />
             </div>
           ) : (
             <SplitText
-              key={`split-text-${getGreeting()}${user?.username || ''}`}
-              text={getGreeting() + (user?.username ? ', ' + user.username : '')}
-              className="text-4xl font-medium text-text-primary"
+              key={`split-text-${getGreeting()}${user?.name ? '-user' : ''}`}
+              text={
+                typeof startupConfig?.interface?.customWelcome === 'string'
+                  ? getGreeting()
+                  : getGreeting() + (user?.name ? ', ' + user.name : '')
+              }
+              className="text-2xl font-medium text-text-primary sm:text-4xl"
               delay={50}
               textAlign="center"
               animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
               animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
-              easing="easeOutCubic"
+              easing={easings.easeOutCubic}
               threshold={0}
               rootMargin="0px"
+              onLineCountChange={handleLineCountChange}
             />
           )}
         </div>
-        {(isAgent || isAssistant) && description ? (
+        {(isAgent || isAssistant) && description && (
           <div className="animate-fadeIn mt-2 max-w-md text-center text-sm font-normal text-text-primary">
             {description}
           </div>
-        ) : (
-          typeof startupConfig?.interface?.customWelcome === 'string' && (
-            <div className="animate-fadeIn mt-2 max-w-md text-center text-sm font-normal text-text-primary">
-              {startupConfig?.interface?.customWelcome}
-            </div>
-          )
         )}
       </div>
     </div>
