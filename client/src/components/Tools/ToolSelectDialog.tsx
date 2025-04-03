@@ -105,7 +105,7 @@ function ToolSelectDialog({
 
   const onAddTool = (pluginKey: string) => {
     setShowPluginAuthForm(false);
-    const getAvailablePluginFromKey = tools.find((p) => p.pluginKey === pluginKey);
+    const getAvailablePluginFromKey = tools?.find((p) => p.pluginKey === pluginKey);
     setSelectedPlugin(getAvailablePluginFromKey);
 
     const { authConfig, authenticated = false } = getAvailablePluginFromKey ?? {};
@@ -117,7 +117,7 @@ function ToolSelectDialog({
     }
   };
 
-  const filteredTools = tools.filter((tool) =>
+  const filteredTools = tools?.filter((tool) =>
     tool.name.toLowerCase().includes(searchValue.toLowerCase()),
   );
 
