@@ -9,11 +9,17 @@ import React, {
 } from 'react';
 import { useRecoilValue, useRecoilCallback } from 'recoil';
 import type { LucideIcon } from 'lucide-react';
+import type { BadgeItem } from '~/common';
 import { useChatBadges } from '~/hooks';
 import { Badge } from '~/components/ui';
-import { BadgeItem } from '~/common';
 import store from '~/store';
+import { atom } from 'recoil'; // Import atom if not already imported
 
+// Define a default atom to use when badge.atom is undefined
+const defaultBadgeAtom = atom({
+  key: 'defaultBadgeAtom',
+  default: false,
+});
 interface BadgeRowProps {
   onChange: (badges: Pick<BadgeItem, 'id'>[]) => void;
   onToggle?: (badgeId: string, currentActive: boolean) => void;
@@ -33,7 +39,8 @@ interface BadgeWrapperProps {
 const BadgeWrapper = React.memo(
   forwardRef<HTMLDivElement, BadgeWrapperProps>(
     ({ badge, isEditing, isInChat, onToggle, onDelete, onMouseDown, badgeRefs }, ref) => {
-      const isActive = badge.atom ? useRecoilValue(badge.atom) : false;
+      const flag = useRecoilValue(badge.atom ?? defaultBadgeAtom);
+      const isActive = !!flag;
 
       return (
         <div

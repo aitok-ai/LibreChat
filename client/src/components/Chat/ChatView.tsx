@@ -54,8 +54,10 @@ function ChatView({ index = 0 }: { index?: number }) {
 
   if (isLoading && conversationId !== 'new') {
     content = (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner className="text-text-primary" />
+      <div className="relative flex-1 overflow-hidden overflow-y-auto">
+        <div className="relative flex h-full items-center justify-center">
+          <Spinner className="text-text-primary" />
+        </div>
       </div>
     );
   } else if (!isLandingPage) {
@@ -78,19 +80,21 @@ function ChatView({ index = 0 }: { index?: number }) {
               {!isLoading && <Header />}
 
               {isLandingPage ? (
-                <div className="flex flex-1 flex-col items-center justify-end sm:justify-center">
-                  {content}
-                  <div className="relative ml-[-16px] flex flex-row py-2 md:mb-[-16px] md:py-4 lg:mb-[+24px]">
-                    <span className="flex w-full flex-row items-center justify-center gap-0 md:order-none md:m-auto md:gap-2">
-                      <ChatWidget />
-                    </span>
+                <>
+                  <div className="flex flex-1 flex-col items-center justify-end sm:justify-center">
+                    {content}
+                    <div className="relative ml-[-16px] flex flex-row py-2 md:mb-[-16px] md:py-4 lg:mb-[+24px]">
+                      <span className="flex w-full flex-row items-center justify-center gap-0 md:order-none md:m-auto md:gap-2">
+                        <ChatWidget />
+                      </span>
+                    </div>
+                    <div className="w-full max-w-3xl transition-all duration-200 xl:max-w-4xl">
+                      <ChatForm index={index} />
+                      <ConversationStarters />
+                    </div>
                   </div>
-                  <div className="w-full max-w-3xl transition-all duration-200 xl:max-w-4xl">
-                    <ChatForm index={index} />
-                    <ConversationStarters />
-                    <Footer />
-                  </div>
-                </div>
+                  <Footer />
+                </>
               ) : (
                 <div className="flex h-full flex-col overflow-y-auto">
                   {content}
