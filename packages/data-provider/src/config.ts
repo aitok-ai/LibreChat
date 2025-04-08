@@ -1247,6 +1247,8 @@ export enum Constants {
   GLOBAL_PROJECT_NAME = 'instance',
   /** Delimiter for MCP tools */
   mcp_delimiter = '_mcp_',
+  /** Placeholder Agent ID for Ephemeral Agents */
+  EPHEMERAL_AGENT_ID = 'ephemeral',
 }
 
 export enum LocalStorageKeys {
@@ -1282,6 +1284,8 @@ export enum LocalStorageKeys {
   ENABLE_USER_MSG_MARKDOWN = 'enableUserMsgMarkdown',
   /** Key for displaying analysis tool code input */
   SHOW_ANALYSIS_CODE = 'showAnalysisCode',
+  /** Last selected MCP values per conversation ID */
+  LAST_MCP_ = 'LAST_MCP_',
 }
 
 export enum ForkOptions {

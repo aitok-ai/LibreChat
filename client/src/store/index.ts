@@ -18,6 +18,7 @@ import widget from './widget';
 import banner from './banner';
 import misc from './misc';
 import isTemporary from './temporary';
+export * from './agents';
 
 export default {
   ...artifacts,

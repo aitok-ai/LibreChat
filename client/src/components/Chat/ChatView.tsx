@@ -49,7 +49,7 @@ function ChatView({ index = 0 }: { index?: number }) {
     defaultValues: { text: '' },
   });
 
-  let content: JSX.Element | null | undefined;
+  let content, content_message_header: JSX.Element | null | undefined;
   const isLandingPage = !messagesTree || messagesTree.length === 0;
 
   if (isLoading && conversationId !== 'new') {
@@ -63,10 +63,11 @@ function ChatView({ index = 0 }: { index?: number }) {
   } else if (!isLandingPage) {
     content = (
       <>
-        <MessageHeaderButtons conversationId={conversationId} index={index} />
+        {/* <MessageHeaderButtons conversationId={conversationId} index={index} /> */}
         <MessagesView messagesTree={messagesTree} />
       </>
     );
+    content_message_header = <MessageHeaderButtons conversationId={conversationId} index={index} />;
   } else {
     content = <Landing centerFormOnLanding={centerFormOnLanding} />;
   }
@@ -76,6 +77,7 @@ function ChatView({ index = 0 }: { index?: number }) {
       <ChatContext.Provider value={chatHelpers}>
         <AddedChatContext.Provider value={addedChatHelpers}>
           <Presentation>
+            {content_message_header}
             <div className="flex h-full w-full flex-col">
               {!isLoading && <Header />}
 
