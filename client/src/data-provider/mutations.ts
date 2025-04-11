@@ -18,6 +18,7 @@ import {
   updateConvoFields,
   updateConversation,
   deleteConversation,
+  clearConversationStorage,
 } from '~/utils';
 // import { normalizeData } from '~/utils/collection';
 // import store from '~/store';
@@ -565,6 +566,7 @@ export const useDeleteConversationMutation = (
         const current = queryClient.getQueryData<t.ConversationData>([QueryKeys.allConversations]);
         refetch({ refetchPage: (page, index) => index === (current?.pages.length ?? 1) - 1 });
         onSuccess?.(_data, vars, context);
+        clearConversationStorage(conversationId);
       },
       ..._options,
     },
@@ -900,7 +902,7 @@ export const useUploadAssistantAvatarMutation = (
   unknown // context
 > => {
   return useMutation([MutationKeys.assistantAvatarUpload], {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     mutationFn: ({ postCreation, ...variables }: t.AssistantAvatarVariables) =>
       dataService.uploadAssistantAvatar(variables),
     ...(options || {}),
