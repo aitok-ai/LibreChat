@@ -1,5 +1,5 @@
+const { Keyv } = require('keyv');
 const crypto = require('crypto');
-const Keyv = require('keyv');
 const { CohereClient } = require('cohere-ai');
 const { fetchEventSource } = require('@waylaidwanderer/fetch-event-source');
 const { encoding_for_model: encodingForModel, get_encoding: getEncoding } = require('tiktoken');
@@ -341,7 +341,6 @@ class ChatGPTClient extends BaseClient {
     opts.body = JSON.stringify(modelOptions);
 
     if (modelOptions.stream) {
-      // eslint-disable-next-line no-async-promise-executor
       return new Promise(async (resolve, reject) => {
         try {
           let done = false;

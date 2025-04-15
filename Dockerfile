@@ -3,7 +3,15 @@
 # Base node image
 FROM node:20-alpine AS node
 
-RUN apk --no-cache add curl
+# Install jemalloc
+RUN apk add --no-cache jemalloc
+
+# Set environment variable to use jemalloc
+ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
+
+# Add `uv` for extended MCP support
+COPY --from=ghcr.io/astral-sh/uv:0.6.13 /uv /uvx /bin/
+RUN uv --version
 
 RUN mkdir -p /app && chown node:node /app
 WORKDIR /app
@@ -34,8 +42,8 @@ ENV HOST=0.0.0.0
 CMD ["npm", "run", "backend"]
 
 # Optional: for client with nginx routing
-FROM nginx:stable-alpine AS nginx-client
-WORKDIR /usr/share/nginx/html
-COPY --from=node /app/client/dist /usr/share/nginx/html
-COPY client/nginx.conf /etc/nginx/conf.d/default.conf
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+# FROM nginx:stable-alpine AS nginx-client
+# WORKDIR /usr/share/nginx/html
+# COPY --from=node /app/client/dist /usr/share/nginx/html
+# COPY client/nginx.conf /etc/nginx/conf.d/default.conf
+# ENTRYPOINT ["nginx", "-g", "daemon off;"]
