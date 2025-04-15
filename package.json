@@ -41,7 +41,7 @@
     "build:mcp": "cd packages/mcp && npm run build",
     "build:data-schemas": "cd packages/data-schemas && npm run build",
     "frontend": "npm run build:data-provider && npm run build:mcp && npm run build:data-schemas && cd client && npm run build",
-    "frontend:ci": "npm run build:data-provider && cd client && npm run build:ci",
+    "frontend:ci": "npm run build:data-provider && npm run build:mcp && npm run build:data-schemas && cd client && npm run build:ci",
     "frontend:dev": "cd client && npm run dev",
     "e2e": "playwright test --config=e2e/playwright.config.local.ts",
     "e2e:headed": "playwright test --config=e2e/playwright.config.local.ts --headed",
