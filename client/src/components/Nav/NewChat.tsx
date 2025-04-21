@@ -1,7 +1,8 @@
-import React from 'react';
+// import React from 'react';
 import { useRecoilState } from 'recoil';
-import { useAuthContext } from '~/hooks/AuthContext';
+// import { useAuthContext } from '~/hooks/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
+import React, { useMemo, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { useRecoilValue } from 'recoil';
 // import { useNavigate } from 'react-router-dom';
@@ -17,9 +18,24 @@ import { NewChatIcon } from '~/components/svg';
 import { cn } from '~/utils';
 import store from '~/store';
 
-const NewChatButtonIcon = ({ conversation }: { conversation: TConversation | null }) => {
-  const searchQuery = useRecoilValue(store.searchQuery);
+const NewChatButtonIcon = React.memo(({ conversation }: { conversation: TConversation | null }) => {
   const { data: endpointsConfig } = useGetEndpointsQuery();
+  const search = useRecoilValue(store.search);
+  const searchQuery = search.debouncedQuery;
+
+  const computedIcon = useMemo(() => {
+    if (searchQuery) {
+      return null;
+    }
+    let { endpoint = '' } = conversation ?? {};
+    const iconURL = conversation?.iconURL ?? '';
+    endpoint = getIconEndpoint({ endpointsConfig, iconURL, endpoint });
+    const endpointType = getEndpointField(endpointsConfig, endpoint, 'type');
+    const endpointIconURL = getEndpointField(endpointsConfig, endpoint, 'iconURL');
+    const iconKey = getIconKey({ endpoint, endpointsConfig, endpointType, endpointIconURL });
+    const Icon = icons[iconKey];
+    return { iconURL, endpoint, endpointType, endpointIconURL, Icon };
+  }, [searchQuery, conversation, endpointsConfig]);
 
   if (searchQuery) {
     return (
@@ -29,14 +45,11 @@ const NewChatButtonIcon = ({ conversation }: { conversation: TConversation | nul
     );
   }
 
-  let { endpoint = '' } = conversation ?? {};
-  const iconURL = conversation?.iconURL ?? '';
-  endpoint = getIconEndpoint({ endpointsConfig, iconURL, endpoint });
+  if (!computedIcon) {
+    return null;
+  }
 
-  const endpointType = getEndpointField(endpointsConfig, endpoint, 'type');
-  const endpointIconURL = getEndpointField(endpointsConfig, endpoint, 'iconURL');
-  const iconKey = getIconKey({ endpoint, endpointsConfig, endpointType, endpointIconURL });
-  const Icon = icons[iconKey];
+  const { iconURL, endpoint, endpointIconURL, Icon } = computedIcon;
 
   return (
     <div className="h-7 w-7 flex-shrink-0">
@@ -49,13 +62,12 @@ const NewChatButtonIcon = ({ conversation }: { conversation: TConversation | nul
         />
       ) : (
         <div className="shadow-stroke relative flex h-full items-center justify-center rounded-full bg-white text-black">
-          {endpoint && Icon != null && (
+          {endpoint && Icon && (
             <Icon
               size={41}
               context="nav"
               className="h-2/3 w-2/3"
               endpoint={endpoint}
-              endpointType={endpointType}
               iconURL={endpointIconURL}
             />
           )}
@@ -63,7 +75,7 @@ const NewChatButtonIcon = ({ conversation }: { conversation: TConversation | nul
       )}
     </div>
   );
-};
+});
 
 export default function NewChat({
   index = 0,
@@ -82,24 +94,23 @@ export default function NewChat({
   const navigate = useNavigate();
   const localize = useLocalize();
   const [widget, setWidget] = useRecoilState(store.widget);
-  const { user } = useAuthContext();
-  const { userId } = useParams();
-
   const { conversation } = store.useCreateConversationAtom(index);
 
-  const clickHandler = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    if (event.button === 0 && !(event.ctrlKey || event.metaKey)) {
-      event.preventDefault();
-      setWidget('');
-      queryClient.setQueryData<TMessage[]>(
-        [QueryKeys.messages, conversation?.conversationId ?? Constants.NEW_CONVO],
-        [],
-      );
-      newConvo();
-      navigate('/c/new');
-      toggleNav();
-    }
-  };
+  const clickHandler = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (event.button === 0 && !(event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        queryClient.setQueryData<TMessage[]>(
+          [QueryKeys.messages, conversation?.conversationId ?? Constants.NEW_CONVO],
+          [],
+        );
+        newConvo();
+        navigate('/c/new');
+        toggleNav();
+      }
+    },
+    [queryClient, conversation, newConvo, navigate, toggleNav],
+  );
 
   return (
     <div className="sticky left-0 right-0 top-0 z-50 bg-surface-primary-alt pt-3.5">

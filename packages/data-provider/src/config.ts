@@ -857,6 +857,8 @@ export const visionModels = [
   'gpt-4o',
   'gpt-4-turbo',
   'gpt-4-vision',
+  'o4-mini',
+  'o3',
   'o1',
   'gpt-4.1',
   'gpt-4.5',
@@ -1012,6 +1014,10 @@ export enum CacheKeys {
    * Key for in-progress flow states.
    */
   FLOWS = 'flows',
+  /**
+   * Key for pending chat requests (concurrency check)
+   */
+  PENDING_REQ = 'pending_req',
   /**
    * Key for s3 check intervals per user
    */
@@ -1229,6 +1235,8 @@ export enum Constants {
   NO_PARENT = '00000000-0000-0000-0000-000000000000',
   /** Standard value for the initial conversationId before a request is sent */
   NEW_CONVO = 'new',
+  /** Standard value for the temporary conversationId after a request is sent and before the server responds */
+  PENDING_CONVO = 'PENDING',
   /** Standard value for the conversationId used for search queries */
   SEARCH = 'search',
   /** Fixed, encoded domain length for Azure OpenAI Assistants Function name parsing. */

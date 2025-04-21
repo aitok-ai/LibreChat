@@ -659,6 +659,8 @@ export const tPresetSchema = tConversationSchema
 export const tConvoUpdateSchema = tConversationSchema.merge(
   z.object({
     endpoint: extendedModelEndpointSchema.nullable(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
   }),
 );
 
