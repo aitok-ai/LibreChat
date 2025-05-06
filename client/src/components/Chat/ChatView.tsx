@@ -66,7 +66,6 @@ function ChatView({ index = 0 }: { index?: number }) {
   } else if (!isLandingPage) {
     content = (
       <>
-        {/* <MessageHeaderButtons conversationId={conversationId} index={index} /> */}
         <MessagesView messagesTree={messagesTree} />
       </>
     );
@@ -81,35 +80,33 @@ function ChatView({ index = 0 }: { index?: number }) {
         <AddedChatContext.Provider value={addedChatHelpers}>
           <Presentation>
             {content_message_header}
-            <div className="flex h-full w-full flex-col">
+            <div className="flex h-screen flex-col">
               {!isLoading && <Header />}
-              <>
+              <div className="flex flex-1 flex-col overflow-hidden">
                 <div
                   className={cn(
-                    'flex flex-col',
-                    isLandingPage
-                      ? 'flex-1 items-center justify-end sm:justify-center'
-                      : 'h-full overflow-y-auto',
+                    'flex flex-1 flex-col overflow-y-auto',
+                    isLandingPage ? 'items-center justify-center' : '',
                   )}
                 >
                   {content}
-                  <div className="relative ml-[-16px] flex flex-row py-2 md:mb-[-16px] md:py-4 lg:mb-[+24px]">
-                    <span className="flex w-full flex-row items-center justify-center gap-0 md:order-none md:m-auto md:gap-2">
-                      <ChatWidget />
-                    </span>
+                </div>
+                <div className="relative flex w-full flex-col items-center">
+                  <div className="relative w-full">
+                    <ChatWidget />
                   </div>
                   <div
                     className={cn(
-                      'w-full',
+                      'w-full p-2',
                       isLandingPage && 'max-w-3xl transition-all duration-200 xl:max-w-4xl',
                     )}
                   >
                     <ChatForm index={index} />
-                    {isLandingPage ? <ConversationStarters /> : <Footer />}
+                    {isLandingPage && <ConversationStarters />}
                   </div>
                 </div>
-                {isLandingPage && <Footer />}
-              </>
+              </div>
+              <Footer />
             </div>
           </Presentation>
         </AddedChatContext.Provider>
