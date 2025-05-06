@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+
 import { ArrowUpDown, Database } from 'lucide-react';
 import { FileSources, FileContext } from 'librechat-data-provider';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -67,7 +69,7 @@ export const columns: ColumnDef<TFile>[] = [
     },
     cell: ({ row }) => {
       const file = row.original;
-      if (file.type.startsWith('image')) {
+      if (file.type?.startsWith('image')) {
         return (
           <div className="flex gap-2">
             <ImagePreview
