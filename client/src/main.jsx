@@ -7,6 +7,7 @@ import ReactGA from 'react-ga';
 import './style.css';
 import './mobile.css';
 import { ApiErrorBoundaryProvider } from './hooks/ApiErrorBoundaryContext';
+import 'katex/dist/katex.min.css';
 
 const container = document.getElementById('root');
 const root = createRoot(container);
