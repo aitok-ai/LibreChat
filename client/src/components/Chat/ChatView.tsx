@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useMemo, useCallback } from 'react';
 import { useRecoilValue } from 'recoil';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
@@ -20,6 +20,16 @@ import Footer from './Footer';
 import store from '~/store';
 import ChatWidget from '../Input/ChatWidgetMenu';
 import MessageHeaderButtons from '../Messages/MessageHeaderButtons';
+
+function LoadingSpinner() {
+  return (
+    <div className="relative flex-1 overflow-hidden overflow-y-auto">
+      <div className="relative flex h-full items-center justify-center">
+        <Spinner className="text-text-primary" />
+      </div>
+    </div>
+  );
+}
 
 function ChatView({ index = 0 }: { index?: number }) {
   const { conversationId } = useParams();
@@ -54,15 +64,12 @@ function ChatView({ index = 0 }: { index?: number }) {
   const isLandingPage =
     (!messagesTree || messagesTree.length === 0) &&
     (conversationId === Constants.NEW_CONVO || !conversationId);
+  const isNavigating = (!messagesTree || messagesTree.length === 0) && conversationId != null;
 
   if (isLoading && conversationId !== Constants.NEW_CONVO) {
-    content = (
-      <div className="relative flex-1 overflow-hidden overflow-y-auto">
-        <div className="relative flex h-full items-center justify-center">
-          <Spinner className="text-text-primary" />
-        </div>
-      </div>
-    );
+    content = <LoadingSpinner />;
+  } else if ((isLoading || isNavigating) && !isLandingPage) {
+    content = <LoadingSpinner />;
   } else if (!isLandingPage) {
     content = (
       <>
