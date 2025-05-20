@@ -1,9 +1,10 @@
 import { useForm } from 'react-hook-form';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import type { TLoginUser, TStartupConfig } from 'librechat-data-provider';
 import type { TAuthContext } from '~/common';
 import { useResendVerificationEmail, useGetStartupConfig } from '~/data-provider';
-import { useLocalize } from '~/hooks';
+import { ThemeContext, useLocalize } from '~/hooks';
 
 type TLoginFormProps = {
   onSubmit: (data: TLoginUser) => void;
@@ -14,6 +15,8 @@ type TLoginFormProps = {
 
 const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, setError }) => {
   const localize = useLocalize();
+  const { theme } = useContext(ThemeContext);
+
   const {
     register,
     getValues,
@@ -21,9 +24,12 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
     formState: { errors },
   } = useForm<TLoginUser>();
   const [showResendLink, setShowResendLink] = useState<boolean>(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const { data: config } = useGetStartupConfig();
   const useUsernameLogin = config?.ldap?.username;
+  const validTheme = theme === 'dark' ? 'dark' : 'light';
+  const requireCaptcha = Boolean(startupConfig.turnstile?.siteKey);
 
   useEffect(() => {
     if (error && error.includes('422') && !showResendLink) {
@@ -143,12 +149,29 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
             {localize('com_auth_password_forgot')}
           </a>
         )}
+
+        {requireCaptcha && (
+          <div className="my-4 flex justify-center">
+            <Turnstile
+              siteKey={startupConfig.turnstile!.siteKey}
+              options={{
+                ...startupConfig.turnstile!.options,
+                theme: validTheme,
+              }}
+              onSuccess={setTurnstileToken}
+              onError={() => setTurnstileToken(null)}
+              onExpire={() => setTurnstileToken(null)}
+            />
+          </div>
+        )}
+
         <div className="mt-6">
           <button
             aria-label={localize('com_auth_continue')}
             data-testid="login-button"
             type="submit"
-            className="w-full rounded-2xl bg-green-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+            disabled={requireCaptcha && !turnstileToken}
+            className="w-full rounded-2xl bg-green-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50 disabled:hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
           >
             {localize('com_auth_continue')}
           </button>

@@ -46,6 +46,12 @@ jest.mock('./ToolService', () => ({
     },
   }),
 }));
+jest.mock('./start/turnstile', () => ({
+  loadTurnstileConfig: jest.fn(() => ({
+    siteKey: 'default-site-key',
+    options: {},
+  })),
+}));
 
 const azureGroups = [
   {
@@ -86,6 +92,10 @@ const azureGroups = [
 
 describe('AppService', () => {
   let app;
+  const mockedTurnstileConfig = {
+    siteKey: 'default-site-key',
+    options: {},
+  };
 
   beforeEach(() => {
     app = { locals: {} };
@@ -107,6 +117,7 @@ describe('AppService', () => {
         sidePanel: true,
         presets: true,
       }),
+      turnstileConfig: mockedTurnstileConfig,
       modelSpecs: undefined,
       availableTools: {
         ExampleTool: {
@@ -526,7 +537,7 @@ describe('AppService updating app.locals and issuing warnings', () => {
     const { logger } = require('~/config');
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining(
-        'The \'assistants\' endpoint has both \'supportedIds\' and \'excludedIds\' defined.',
+        "The 'assistants' endpoint has both 'supportedIds' and 'excludedIds' defined.",
       ),
     );
   });
@@ -548,7 +559,7 @@ describe('AppService updating app.locals and issuing warnings', () => {
     const { logger } = require('~/config');
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining(
-        'The \'assistants\' endpoint has both \'privateAssistants\' and \'supportedIds\' or \'excludedIds\' defined.',
+        "The 'assistants' endpoint has both 'privateAssistants' and 'supportedIds' or 'excludedIds' defined.",
       ),
     );
   });
