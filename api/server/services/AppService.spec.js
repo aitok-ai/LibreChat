@@ -141,6 +141,14 @@ describe('AppService', () => {
       balance: { enabled: true },
       filteredTools: undefined,
       includedTools: undefined,
+      webSearch: {
+        cohereApiKey: '${COHERE_API_KEY}',
+        firecrawlApiKey: '${FIRECRAWL_API_KEY}',
+        firecrawlApiUrl: '${FIRECRAWL_API_URL}',
+        jinaApiKey: '${JINA_API_KEY}',
+        safeSearch: 1,
+        serperApiKey: '${SERPER_API_KEY}',
+      },
     });
   });
 

@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useRef } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { useLocalize } from '~/hooks';
@@ -106,7 +105,7 @@ export function AvatarMenu({
       >
         <div
           role="menuitem"
-          className="group m-1.5 flex cursor-pointer gap-2 rounded p-2.5 text-sm hover:bg-gray-100 focus:ring-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 dark:hover:bg-gray-800 dark:hover:bg-white/5"
+          className="group m-1.5 flex cursor-pointer gap-2 rounded-lg p-2.5 text-sm hover:bg-gray-100 focus:ring-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 dark:hover:bg-gray-800 dark:hover:bg-white/5"
           tabIndex={-1}
           data-orientation="vertical"
           onClick={onItemClick}
