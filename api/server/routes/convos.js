@@ -12,7 +12,7 @@ const {
 } = require('../../models/Conversation');
 const { duplicateMessages } = require('../../models/Message');
 const crypto = require('crypto');
-const Conversation = require('../../models/schema/convoSchema');
+const Conversation = require('~/db/models');
 const { CacheKeys, EModelEndpoint } = require('librechat-data-provider');
 const { getConvosByCursor, deleteConvos, getConvo, saveConvo } = require('~/models/Conversation');
 const { forkConversation, duplicateConversation } = require('~/server/utils/import/fork');
