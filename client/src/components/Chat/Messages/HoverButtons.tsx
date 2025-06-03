@@ -1,25 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { useRecoilState } from 'recoil';
-import type { TConversation, TMessage } from 'librechat-data-provider';
-// import { Clipboard, CheckMark, EditIcon, RegenerateIcon, ContinueIcon } from '~/components/svg';
-// import { useGenerationsByLatest, useLocalize } from '~/hooks';
-import {
-  Clipboard,
-  CheckMark,
-  EditIcon,
-  RegenerateIcon,
-  ContinueIcon,
-  PlayIcon,
-  PauseIcon,
-  StopIcon,
-} from '~/components/svg';
-import { useGenerationsByLatest, useGenerations, useLocalize } from '~/hooks';
-// import { Clipboard, CheckMark, EditIcon, RegenerateIcon, ContinueIcon } from '~/components/svg';
-// import { useGenerationsByLatest, useLocalize } from '~/hooks';
-// import { EditIcon, Clipboard, CheckMark, ContinueIcon, RegenerateIcon } from '~/components/svg';
-// import { useGenerationsByLatest, useLocalize } from '~/hooks';
+import type { TConversation, TMessage, TFeedback } from 'librechat-data-provider';
+import { EditIcon, Clipboard, CheckMark, ContinueIcon, RegenerateIcon } from '~/components';
+import { useGenerationsByLatest, useLocalize } from '~/hooks';
 import { Fork } from '~/components/Conversations';
 import MessageAudio from './MessageAudio';
+import Feedback from './Feedback';
 import { cn } from '~/utils';
 import store from '~/store';
 
@@ -48,10 +34,97 @@ type THoverButtons = {
   ) => void;
   isLast: boolean;
   index: number;
+  handleFeedback: ({ feedback }: { feedback: TFeedback | undefined }) => void;
 };
 
-export default function HoverButtons({
-  showStopButton,
+type HoverButtonProps = {
+  onClick: (e?: React.MouseEvent<HTMLButtonElement>) => void;
+  title: string;
+  icon: React.ReactNode;
+  isActive?: boolean;
+  isVisible?: boolean;
+  isDisabled?: boolean;
+  isLast?: boolean;
+  className?: string;
+  buttonStyle?: string;
+};
+
+const extractMessageContent = (message: TMessage): string => {
+  if (typeof message.content === 'string') {
+    return message.content;
+  }
+
+  if (Array.isArray(message.content)) {
+    return message.content
+      .map((part) => {
+        if (typeof part === 'string') {
+          return part;
+        }
+        if ('text' in part) {
+          return part.text || '';
+        }
+        if ('think' in part) {
+          const think = part.think;
+          if (typeof think === 'string') {
+            return think;
+          }
+          return think && 'text' in think ? think.text || '' : '';
+        }
+        return '';
+      })
+      .join('');
+  }
+
+  return message.text || '';
+};
+
+const HoverButton = memo(
+  ({
+    onClick,
+    title,
+    icon,
+    isActive = false,
+    isVisible = true,
+    isDisabled = false,
+    isLast = false,
+    className = '',
+  }: HoverButtonProps) => {
+    const buttonStyle = cn(
+      'hover-button rounded-lg p-1.5',
+
+      'hover:bg-gray-100 hover:text-gray-500',
+
+      'dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200',
+      'disabled:dark:hover:text-gray-400',
+
+      'md:group-hover:visible md:group-focus-within:visible md:group-[.final-completion]:visible',
+      !isLast && 'md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100',
+      !isVisible && 'opacity-0',
+
+      'focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white focus-visible:outline-none',
+
+      isActive && isVisible && 'active text-gray-700 dark:text-gray-200 bg-gray-100 bg-gray-700',
+
+      className,
+    );
+
+    return (
+      <button
+        className={buttonStyle}
+        onClick={onClick}
+        type="button"
+        title={title}
+        disabled={isDisabled}
+      >
+        {icon}
+      </button>
+    );
+  },
+);
+
+HoverButton.displayName = 'HoverButton';
+
+const HoverButtons = ({
   index,
   isEditing,
   enterEdit,
@@ -65,22 +138,22 @@ export default function HoverButtons({
   stopPlaybackMessage,
   playbackMessage,
   isLast,
-}: THoverButtons) {
+  handleFeedback,
+}: THoverButtons) => {
   const localize = useLocalize();
-  const { endpoint: _endpoint, endpointType } = conversation ?? {};
-  const endpoint = endpointType ?? _endpoint;
   const [isCopied, setIsCopied] = useState(false);
   const [playbackStatus, setPlaybackStatus] = useState({ isPaused: false, isStopped: true });
   //   const [TextToSpeech] = useRecoilState<boolean>(store.TextToSpeech);
   const [TextToSpeech] = useRecoilState<boolean>(store.textToSpeech);
 
-  const {
-    hideEditButton,
-    regenerateEnabled,
-    continueSupported,
-    forkingSupported,
-    isEditableEndpoint,
-  } = useGenerationsByLatest({
+  const endpoint = useMemo(() => {
+    if (!conversation) {
+      return '';
+    }
+    return conversation.endpointType ?? conversation.endpoint;
+  }, [conversation]);
+
+  const generationCapabilities = useGenerationsByLatest({
     isEditing,
     isSubmitting,
     error: message.error,
@@ -91,38 +164,32 @@ export default function HoverButtons({
     isCreatedByUser: message.isCreatedByUser,
     latestMessageId: latestMessage?.messageId,
   });
+
+  const {
+    hideEditButton,
+    regenerateEnabled,
+    continueSupported,
+    forkingSupported,
+    isEditableEndpoint,
+  } = generationCapabilities;
+
   if (!conversation) {
     return null;
   }
 
   const { isCreatedByUser, error } = message;
 
-  const renderRegenerate = () => {
-    if (!regenerateEnabled) {
-      return null;
-    }
-    return (
-      <button
-        className={cn(
-          'hover-button active rounded-md p-1 hover:bg-gray-100 hover:text-gray-500 focus:opacity-100 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible md:group-[.final-completion]:visible',
-          !isLast ? 'md:opacity-0 md:group-hover:opacity-100' : '',
-        )}
-        onClick={regenerate}
-        type="button"
-        title={localize('com_ui_regenerate')}
-      >
-        <RegenerateIcon
-          className="hover:text-gray-500 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400"
-          size="19"
-        />
-      </button>
-    );
-  };
-
   if (error === true) {
     return (
-      <div className="visible mt-0 flex justify-center gap-1 self-end text-gray-500 lg:justify-start">
-        {renderRegenerate()}
+      <div className="visible flex justify-center self-end lg:justify-start">
+        {regenerateEnabled && (
+          <HoverButton
+            onClick={regenerate}
+            title={localize('com_ui_regenerate')}
+            icon={<RegenerateIcon size="19" />}
+            isLast={isLast}
+          />
+        )}
       </div>
     );
   }
@@ -134,125 +201,91 @@ export default function HoverButtons({
     enterEdit();
   };
 
+  const handleCopy = () => copyToClipboard(setIsCopied);
+
   return (
-    <div className="visible mt-0 flex justify-center gap-1 self-end text-gray-500 lg:justify-start">
-      {/* <button
-        // className="hover-button active rounded-md p-1 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible"
-        className={cn(
-          'hover-button active rounded-md p-1 hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible ',
-          'data-[state=open]:active data-[state=open]:bg-gray-200 data-[state=open]:text-gray-700 data-[state=open]:dark:bg-gray-700 data-[state=open]:dark:text-gray-200',
-          !isLast ? 'data-[state=open]:opacity-100 md:opacity-0 md:group-hover:opacity-100' : '',
-        )}
-        onClick={() => playbackMessage(playbackStatus, setPlaybackStatus)}
-        type="button"
-        title={
-          playbackStatus.isPaused || playbackStatus.isStopped
-            ? localize('com_msg_playback')
-            : localize('com_msg_playback_pause')
-        }
-      >
-        {(playbackStatus.isStopped && !playbackStatus.isPaused) ||
-        (!playbackStatus.isStopped && playbackStatus.isPaused) ||
-        (playbackStatus.isStopped && !playbackStatus.isPaused) ? (
-            <PlayIcon />
-          ) : (
-            <PauseIcon />
-          )}
-      </button>
-      {showStopButton ? (
-        <button
-          className="hover-button active rounded-md p-1 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible"
-          onClick={() => stopPlaybackMessage(playbackStatus, setPlaybackStatus)}
-          type="button"
-          disabled={playbackStatus.isStopped}
-          title={localize('com_msg_playback_stop')}
-        >
-          <StopIcon />
-        </button>
-      ) : null} */}
+    <div className="group visible flex justify-center gap-0.5 self-end focus-within:outline-none lg:justify-start">
+      {/* Text to Speech */}
       {TextToSpeech && (
         <MessageAudio
           index={index}
-          messageId={message.messageId}
-          content={message.content ?? message.text}
           isLast={isLast}
-          //className="hover-button rounded-md p-1 pl-0 text-gray-500 hover:bg-gray-100 hover:text-gray-500 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible"
-          /*className={cn(
-            'hover-button rounded-md p-1 pl-0 text-gray-500 hover:bg-gray-100 hover:text-gray-500 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible',
-            isCreatedByUser ? '' : 'active',
-            hideEditButton ? 'opacity-0' : '',
-            isEditing ? 'active text-gray-700 dark:text-gray-200' : '',
-            !isLast ? 'md:opacity-0 md:group-hover:opacity-100' : '',
-          )}*/
-          className={cn(
-            'ml-0 flex items-center gap-1.5 rounded-md p-1 text-xs hover:bg-gray-100 hover:text-gray-500 focus:opacity-100 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible',
-            isCreatedByUser ? '' : 'active',
-            hideEditButton ? 'opacity-0' : '',
-            isEditing ? 'active text-gray-700 dark:text-gray-200' : '',
-            !isLast ? 'md:opacity-0 md:group-hover:opacity-100' : '',
+          messageId={message.messageId}
+          content={extractMessageContent(message)}
+          renderButton={(props) => (
+            <HoverButton
+              onClick={props.onClick}
+              title={props.title}
+              icon={props.icon}
+              isActive={props.isActive}
+              isLast={isLast}
+            />
           )}
         />
       )}
-      {isEditableEndpoint && (
-        <button
-          id={`edit-${message.messageId}`}
-          className={cn(
-            'hover-button rounded-md p-1 hover:bg-gray-100 hover:text-gray-500 focus:opacity-100 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible',
-            isCreatedByUser ? '' : 'active',
-            hideEditButton ? 'opacity-0' : '',
-            isEditing ? 'active text-gray-700 dark:text-gray-200' : '',
-            !isLast ? 'md:opacity-0 md:group-hover:opacity-100' : '',
-          )}
-          onClick={onEdit}
-          type="button"
-          title={localize('com_ui_edit')}
-          disabled={hideEditButton}
-        >
-          <EditIcon size="19" />
-        </button>
-      )}
-      <button
-        className={cn(
-          'ml-0 flex items-center gap-1.5 rounded-md p-1 text-xs hover:bg-gray-100 hover:text-gray-500 focus:opacity-100 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:group-hover:visible md:group-[.final-completion]:visible',
-          isSubmitting && isCreatedByUser ? 'md:opacity-0 md:group-hover:opacity-100' : '',
-          !isLast ? 'md:opacity-0 md:group-hover:opacity-100' : '',
-        )}
-        onClick={() => copyToClipboard(setIsCopied)}
-        type="button"
+
+      {/* Copy Button */}
+      <HoverButton
+        onClick={handleCopy}
         title={
           isCopied ? localize('com_ui_copied_to_clipboard') : localize('com_ui_copy_to_clipboard')
         }
-      >
-        {isCopied ? <CheckMark className="h-[18px] w-[18px]" /> : <Clipboard size="19" />}
-      </button>
-      {renderRegenerate()}
-      <Fork
+        icon={isCopied ? <CheckMark className="h-[18px] w-[18px]" /> : <Clipboard size="19" />}
         isLast={isLast}
+        className={`ml-0 flex items-center gap-1.5 text-xs ${isSubmitting && isCreatedByUser ? 'md:opacity-0 md:group-hover:opacity-100' : ''}`}
+      />
+
+      {/* Edit Button */}
+      {isEditableEndpoint && (
+        <HoverButton
+          onClick={onEdit}
+          title={localize('com_ui_edit')}
+          icon={<EditIcon size="19" />}
+          isActive={isEditing}
+          isVisible={!hideEditButton}
+          isDisabled={hideEditButton}
+          isLast={isLast}
+          className={isCreatedByUser ? '' : 'active'}
+        />
+      )}
+
+      {/* Fork Button */}
+      <Fork
         messageId={message.messageId}
         conversationId={conversation.conversationId}
         forkingSupported={forkingSupported}
         latestMessageId={latestMessage?.messageId}
-      />
-      {continueSupported === true ? (
-        <button
-          className={cn(
-            'hover-button active rounded-md p-1 hover:bg-gray-100 hover:text-gray-500 focus:opacity-100 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400 md:invisible md:group-hover:visible',
-            !isLast ? 'md:opacity-0 md:group-hover:opacity-100' : '',
-          )}
-          onClick={handleContinue}
-          type="button"
-          title={localize('com_ui_continue')}
-        >
-          <ContinueIcon className="h-4 w-4 hover:text-gray-500 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400" />
-        </button>
-      ) : null}
-      {/* <Fork
         isLast={isLast}
-        messageId={message.messageId}
-        conversationId={conversation.conversationId}
-        forkingSupported={forkingSupported}
-        latestMessage={latestMessage}
-      /> */}
+      />
+
+      {/* Feedback Buttons */}
+      {!isCreatedByUser && (
+        <Feedback handleFeedback={handleFeedback} feedback={message.feedback} isLast={isLast} />
+      )}
+
+      {/* Regenerate Button */}
+      {regenerateEnabled && (
+        <HoverButton
+          onClick={regenerate}
+          title={localize('com_ui_regenerate')}
+          icon={<RegenerateIcon size="19" />}
+          isLast={isLast}
+          className="active"
+        />
+      )}
+
+      {/* Continue Button */}
+      {continueSupported && (
+        <HoverButton
+          onClick={(e) => e && handleContinue(e)}
+          title={localize('com_ui_continue')}
+          icon={<ContinueIcon className="w-19 h-19 -rotate-180" />}
+          isLast={isLast}
+          className="active"
+        />
+      )}
     </div>
   );
-}
+};
+
+export default memo(HoverButtons);

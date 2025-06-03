@@ -1,45 +1,6 @@
-import { Schema, Document } from 'mongoose';
+import { Schema } from 'mongoose';
 import { SystemRoles } from 'librechat-data-provider';
-
-export interface IUser extends Document {
-  name?: string;
-  username?: string;
-  email: string;
-  emailVerified: boolean;
-  password?: string;
-  avatar?: string;
-  provider: string;
-  role?: string;
-  googleId?: string;
-  facebookId?: string;
-  openidId?: string;
-  samlId?: string;
-  ldapId?: string;
-  githubId?: string;
-  discordId?: string;
-  appleId?: string;
-  plugins?: unknown[];
-  twoFactorEnabled?: boolean;
-  totpSecret?: string;
-  backupCodes?: Array<{
-    codeHash: string;
-    used: boolean;
-    usedAt?: Date | null;
-  }>;
-  refreshToken?: Array<{
-    refreshToken: string;
-  }>;
-  refBy?: string;
-  referrals?: unknown[];
-  numOfReferrals?: number;
-  followers?: object;
-  following?: object;
-  biography?: string;
-  expiresAt?: Date;
-  termsAccepted?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { IUser } from '~/types';
 
 // Session sub-schema
 const SessionSchema = new Schema(
@@ -62,7 +23,7 @@ const BackupCodeSchema = new Schema(
   { _id: false },
 );
 
-const User = new Schema<IUser>(
+const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -200,4 +161,4 @@ const User = new Schema<IUser>(
   { timestamps: true },
 );
 
-export default User;
+export default userSchema;

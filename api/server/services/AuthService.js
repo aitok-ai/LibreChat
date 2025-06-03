@@ -3,27 +3,26 @@ const { webcrypto } = require('node:crypto');
 const { SystemRoles, errorsToString } = require('librechat-data-provider');
 const {
   findUser,
-  countUsers,
   createUser,
   updateUser,
-  getUserById,
-  generateToken,
-  deleteUserById,
-} = require('~/models/userMethods');
-const {
-  createToken,
   findToken,
-  deleteTokens,
+  countUsers,
+  getUserById,
   findSession,
+  createToken,
+  deleteTokens,
   deleteSession,
   createSession,
+  generateToken,
+  deleteUserById,
   generateRefreshToken,
 } = require('~/models');
 const { isEnabled, checkEmailConfig, sendEmail } = require('~/server/utils');
 const { isEmailDomainAllowed } = require('~/server/services/domains');
+const { getBalanceConfig } = require('~/server/services/Config');
 const { registerSchema } = require('~/strategies/validators');
 const { logger } = require('~/config');
-const User = require('~/models/User');
+const User = require('~/db/models');
 
 const domains = {
   client: process.env.DOMAIN_CLIENT,
@@ -147,6 +146,7 @@ const verifyEmail = async (req) => {
   }
 
   const updatedUser = await updateUser(emailVerificationData.userId, { emailVerified: true });
+
   if (!updatedUser) {
     logger.warn(`[verifyEmail] [User update failed] [Email: ${decodedEmail}]`);
     return new Error('Failed to update user verification status');
@@ -156,6 +156,7 @@ const verifyEmail = async (req) => {
   logger.info(`[verifyEmail] Email verification successful [Email: ${decodedEmail}]`);
   return { message: 'Email verification was successful', status: 'success' };
 };
+
 /**
  * Register a new user.
  * @param {MongoUser} user <email, password, name, username>
@@ -229,7 +230,9 @@ const registerUser = async (user, additionalData = {}) => {
     // if (emailEnabled) {
     // const newUser = await createUser(newUserData, false, true);
     const disableTTL = isEnabled(process.env.ALLOW_UNVERIFIED_EMAIL_LOGIN);
-    const newUser = await createUser(newUserData, disableTTL, true);
+    const balanceConfig = await getBalanceConfig();
+
+    const newUser = await createUser(newUserData, balanceConfig, disableTTL, true);
     newUserId = newUser._id;
     if (emailEnabled && !newUser.emailVerified) {
       await sendVerificationEmail({
@@ -424,6 +427,7 @@ const setAuthTokens = async (userId, res, sessionId = null) => {
     throw error;
   }
 };
+
 /**
  * @function setOpenIDAuthTokens
  * Set OpenID Authentication Tokens
