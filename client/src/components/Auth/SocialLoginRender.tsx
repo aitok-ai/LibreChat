@@ -5,6 +5,7 @@ import {
   GithubIcon,
   DiscordIcon,
   AppleIcon,
+  SamlIcon,
 } from '~/components';
 
 import SocialButton from './SocialButton';
@@ -97,6 +98,23 @@ function SocialLoginRender({
         id="openid"
       />
     ),
+    saml: startupConfig.samlLoginEnabled && (
+      <SocialButton
+        key="saml"
+        enabled={startupConfig.samlLoginEnabled}
+        serverDomain={startupConfig.serverDomain}
+        oauthPath="saml"
+        Icon={() =>
+          startupConfig.samlImageUrl ? (
+            <img src={startupConfig.samlImageUrl} alt="SAML Logo" className="h-5 w-5" />
+          ) : (
+            <SamlIcon />
+          )
+        }
+        label={startupConfig.samlLabel ? startupConfig.samlLabel : localize('com_auth_saml_login')}
+        id="saml"
+      />
+    ),
   };
 
   return (
@@ -106,7 +124,7 @@ function SocialLoginRender({
           <>
             <div className="relative mt-6 flex w-full items-center justify-center border border-t border-gray-300 uppercase dark:border-gray-600">
               <div className="absolute bg-white px-3 text-xs text-black dark:bg-gray-900 dark:text-white">
-                Or
+                {localize('com_auth_or')}
               </div>
             </div>
             <div className="mt-8" />
