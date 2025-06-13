@@ -2,6 +2,7 @@ const { Keyv } = require('keyv');
 const crypto = require('crypto');
 const { CohereClient } = require('cohere-ai');
 const { fetchEventSource } = require('@waylaidwanderer/fetch-event-source');
+const { constructAzureURL, genAzureChatCompletion } = require('@librechat/api');
 const { encoding_for_model: encodingForModel, get_encoding: getEncoding } = require('tiktoken');
 const {
   ImageDetail,
@@ -10,10 +11,9 @@ const {
   CohereConstants,
   mapModelToAzureConfig,
 } = require('librechat-data-provider');
-const { extractBaseURL, constructAzureURL, genAzureChatCompletion } = require('~/utils');
 const { createContextHandlers } = require('./prompts');
 const { createCoherePayload } = require('./llm');
-// const { Agent, ProxyAgent } = require('undici');
+const { extractBaseURL } = require('~/utils');
 const BaseClient = require('./BaseClient');
 const { logger } = require('~/config');
 // const BaseClient = require('./BaseClient');

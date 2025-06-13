@@ -30,6 +30,12 @@ const BookmarkTableRow: React.FC<BookmarkTableRowProps> = ({ row, moveRow, posit
     mutation.mutate(
       { ...row, position: item.index },
       {
+        onSuccess: () => {
+          showToast({
+            message: localize('com_ui_bookmarks_update_success'),
+            severity: NotificationSeverity.SUCCESS,
+          });
+        },
         onError: () => {
           showToast({
             message: localize('com_ui_bookmarks_update_error'),

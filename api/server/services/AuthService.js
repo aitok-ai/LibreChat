@@ -22,7 +22,7 @@ const { isEmailDomainAllowed } = require('~/server/services/domains');
 const { getBalanceConfig } = require('~/server/services/Config');
 const { registerSchema } = require('~/strategies/validators');
 const { logger } = require('~/config');
-const User = require('~/db/models');
+const { User } = require('~/db/models');
 
 const domains = {
   client: process.env.DOMAIN_CLIENT,
@@ -219,6 +219,7 @@ const registerUser = async (user, additionalData = {}) => {
     };
 
     const emailEnabled = checkEmailConfig();
+    // const User = mongoose.models.User;
     const referrer = await User.findById(refBy);
     if (referrer) {
       newUserData.following[`${referrer._id}`] = {

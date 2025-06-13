@@ -25,7 +25,7 @@ const { sendMessage, createOnProgress } = require('~/server/utils');
 // const { saveMessage } = require('~/models');
 const { logger } = require('~/config');
 const trieSensitive = require('../../utils/trieSensitive');
-const User = require('~/db/models');
+const { User } = require('~/db/models');
 
 const AskController = async (req, res, next, initializeClient, addTitle) => {
   let {

@@ -4,6 +4,7 @@ const tokenizer = require('./tokenizer');
 const endpoints = require('./endpoints');
 const staticRoute = require('./static');
 const messages = require('./messages');
+const memories = require('./memories');
 const presets = require('./presets');
 const prompts = require('./prompts');
 const balance = require('./balance');
@@ -56,6 +57,7 @@ module.exports = {
   presets,
   balance,
   messages,
+  memories,
   endpoints,
   tokenizer,
   categories,

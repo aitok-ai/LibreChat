@@ -36,6 +36,9 @@ export interface IUser extends Document {
   biography?: string;
   expiresAt?: Date;
   termsAccepted?: boolean;
+  personalization?: {
+    memories?: boolean;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }

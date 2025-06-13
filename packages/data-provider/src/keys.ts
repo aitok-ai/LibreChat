@@ -51,6 +51,8 @@ export enum QueryKeys {
   health = 'health',
   userTerms = 'userTerms',
   banner = 'banner',
+  /* Memories */
+  memories = 'memories',
 }
 
 export enum MutationKeys {
@@ -75,4 +77,5 @@ export enum MutationKeys {
   updateRole = 'updateRole',
   enableTwoFactor = 'enableTwoFactor',
   verifyTwoFactor = 'verifyTwoFactor',
+  updateMemoryPreferences = 'updateMemoryPreferences',
 }
