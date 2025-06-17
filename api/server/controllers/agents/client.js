@@ -330,7 +330,7 @@ class AgentClient extends BaseClient {
 
     if (mcpServers.length > 0) {
       try {
-        const mcpInstructions = await getMCPManager().formatInstructionsForContext(mcpServers);
+        const mcpInstructions = getMCPManager().formatInstructionsForContext(mcpServers);
         if (mcpInstructions) {
           systemContent = [systemContent, mcpInstructions].filter(Boolean).join('\n\n');
           logger.debug('[AgentClient] Injected MCP instructions for servers:', mcpServers);
@@ -671,6 +671,7 @@ class AgentClient extends BaseClient {
           last_agent_index: this.agentConfigs?.size ?? 0,
           user_id: this.user ?? this.options.req.user?.id,
           hide_sequential_outputs: this.options.agent.hide_sequential_outputs,
+          user: this.options.req.user,
         },
         recursionLimit: agentsEConfig?.recursionLimit,
         signal: abortController.signal,
