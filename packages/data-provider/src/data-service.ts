@@ -2,6 +2,7 @@ import type { AxiosResponse } from 'axios';
 import type * as t from './types';
 import * as endpoints from './api-endpoints';
 import * as a from './types/assistants';
+import * as ag from './types/agents';
 import * as m from './types/mutations';
 import * as q from './types/queries';
 import * as f from './types/files';
@@ -154,7 +155,11 @@ export const updateUserPlugins = (payload: t.TUpdateUserPlugins) => {
 
 /* Config */
 
-export const getStartupConfig = (): Promise<config.TStartupConfig> => {
+export const getStartupConfig = (): Promise<
+  config.TStartupConfig & {
+    mcpCustomUserVars?: Record<string, { title: string; description: string }>;
+  }
+> => {
   return request.get(endpoints.config());
 };
 
@@ -378,7 +383,7 @@ export const updateAction = (data: m.UpdateActionVariables): Promise<m.UpdateAct
   );
 };
 
-export function getActions(): Promise<a.Action[]> {
+export function getActions(): Promise<ag.Action[]> {
   return request.get(
     endpoints.agents({
       path: 'actions',
@@ -434,7 +439,7 @@ export const updateAgent = ({
 
 export const duplicateAgent = ({
   agent_id,
-}: m.DuplicateAgentBody): Promise<{ agent: a.Agent; actions: a.Action[] }> => {
+}: m.DuplicateAgentBody): Promise<{ agent: a.Agent; actions: ag.Action[] }> => {
   return request.post(
     endpoints.agents({
       path: `${agent_id}/duplicate`,
