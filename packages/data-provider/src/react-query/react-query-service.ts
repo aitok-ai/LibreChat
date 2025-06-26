@@ -12,35 +12,6 @@ import { QueryKeys } from '../keys';
 import * as s from '../schemas';
 import * as t from '../types';
 
-export const useAbortRequestWithMessage = (): UseMutationResult<
-  void,
-  Error,
-  { endpoint: string; abortKey: string; message: string }
-> => {
-  const queryClient = useQueryClient();
-  return useMutation(
-    ({ endpoint, abortKey, message }) =>
-      dataService.abortRequestWithMessage(endpoint, abortKey, message),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries([QueryKeys.balance]);
-      },
-    },
-  );
-};
-
-export const useGetUserQuery = (
-  config?: UseQueryOptions<t.TUser>,
-): QueryObserverResult<t.TUser> => {
-  return useQuery<t.TUser>([QueryKeys.user], () => dataService.getUser(), {
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    refetchOnMount: false,
-    retry: false,
-    ...config,
-  });
-};
-
 export const useGetUserByIdQuery = (id: string): QueryObserverResult<t.TUser> => {
   return useQuery([QueryKeys.userById, id], () => dataService.getUserById(id), {
     refetchOnWindowFocus: false,
@@ -48,23 +19,6 @@ export const useGetUserByIdQuery = (id: string): QueryObserverResult<t.TUser> =>
     refetchOnMount: false,
     retry: false,
   });
-};
-
-// export const useGetMessagesByConvoId = (
-export const useGetMessagesByConvoId = <TData = s.TMessage[]>(
-  id: string,
-  config?: UseQueryOptions<s.TMessage[], unknown, TData>,
-): QueryObserverResult<TData> => {
-  return useQuery<s.TMessage[], unknown, TData>(
-    [QueryKeys.messages, id],
-    () => dataService.getMessagesByConvoId(id),
-    {
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false,
-      ...config,
-    },
-  );
 };
 
 export const useGetSharedMessages = (
