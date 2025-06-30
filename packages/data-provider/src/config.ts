@@ -616,6 +616,7 @@ export enum OCRStrategy {
   MISTRAL_OCR = 'mistral_ocr',
   CUSTOM_OCR = 'custom_ocr',
   AZURE_MISTRAL_OCR = 'azure_mistral_ocr',
+  VERTEXAI_MISTRAL_OCR = 'vertexai_mistral_ocr',
 }
 
 export enum SearchCategories {
