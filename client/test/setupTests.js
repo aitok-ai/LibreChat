@@ -19,8 +19,11 @@ import 'jest-canvas-mock';
 
 // Polyfills text encoder and text decoder to jsdom
 // allows code transformation of AgGridReact
-import { TextEncoder, TextDecoder } from 'util';
-Object.assign(global, { TextDecoder, TextEncoder });
+// import { TextEncoder, TextDecoder } from 'util';
+// Object.assign(global, { TextDecoder, TextEncoder });
+// Mock ResizeObserver
+import './resizeObserver.mock';
+
 beforeEach(() => {
   jest.clearAllMocks();
 });
