@@ -198,6 +198,8 @@
   "com_endpoint_deprecated": "Deprecated",
   "com_endpoint_deprecated_info": "This endpoint is deprecated and may be removed in future versions, please use the agent endpoint instead",
   "com_endpoint_deprecated_info_a11y": "The plugin endpoint is deprecated and may be removed in future versions, please use the agent endpoint instead",
+  "com_endpoint_disable_streaming": "Disable streaming responses and receive the complete response at once. Useful for models like o3 that require organization verification for streaming",
+  "com_endpoint_disable_streaming_label": "Disable Streaming",
   "com_endpoint_examples": " Presets",
   "com_endpoint_export": "Export",
   "com_endpoint_export_share": "Export/Share",
