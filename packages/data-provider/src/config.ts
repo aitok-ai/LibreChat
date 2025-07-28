@@ -185,6 +185,12 @@ export const baseEndpointSchema = z.object({
   baseURL: z.string().optional(),
   titlePrompt: z.string().optional(),
   titleModel: z.string().optional(),
+  titleConvo: z.boolean().optional(),
+  titleMethod: z
+    .union([z.literal('completion'), z.literal('functions'), z.literal('structured')])
+    .optional(),
+  titleEndpoint: z.string().optional(),
+  titlePromptTemplate: z.string().optional(),
 });
 
 export type TBaseEndpoint = z.infer<typeof baseEndpointSchema>;
@@ -225,8 +231,6 @@ export const assistantEndpointSchema = baseEndpointSchema.merge(
         userIdQuery: z.boolean().optional(),
       })
       .optional(),
-    titleConvo: z.boolean().optional(),
-    titleMethod: z.union([z.literal('completion'), z.literal('functions')]).optional(),
     headers: z.record(z.any()).optional(),
   }),
 );
@@ -279,8 +283,6 @@ export const endpointSchema = baseEndpointSchema.merge(
       fetch: z.boolean().optional(),
       userIdQuery: z.boolean().optional(),
     }),
-    titleConvo: z.boolean().optional(),
-    titleMethod: z.union([z.literal('completion'), z.literal('functions')]).optional(),
     summarize: z.boolean().optional(),
     summaryModel: z.string().optional(),
     forcePrompt: z.boolean().optional(),
@@ -315,6 +317,8 @@ export const azureEndpointSchema = z
         titleConvo: true,
         titleMethod: true,
         titleModel: true,
+        titlePrompt: true,
+        titlePromptTemplate: true,
         summarize: true,
         summaryModel: true,
         customOrder: true,
@@ -513,6 +517,7 @@ export const intefaceSchema = z
     temporaryChatRetention: z.number().min(1).max(8760).optional(),
     runCode: z.boolean().optional(),
     webSearch: z.boolean().optional(),
+    fileSearch: z.boolean().optional(),
   })
   .default({
     endpointsMenu: true,
@@ -528,6 +533,7 @@ export const intefaceSchema = z
     temporaryChat: true,
     runCode: true,
     webSearch: true,
+    fileSearch: true,
   });
 
 export type TInterfaceConfig = z.infer<typeof intefaceSchema>;
@@ -1453,7 +1459,7 @@ export enum TTSProviders {
 /** Enum for app-wide constants */
 export enum Constants {
   /** Key for the app's version. */
-  VERSION = 'v0.7.9-rc1',
+  VERSION = 'v0.7.9',
   /** Key for the Custom Config's version (librechat.yaml). */
   CONFIG_VERSION = '1.2.8',
   /** Standard value for the first message's `parentMessageId` value, to indicate no parent exists. */
