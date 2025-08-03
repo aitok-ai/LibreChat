@@ -1,11 +1,11 @@
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { useCallback, memo, ReactNode } from 'react';
+import { Spinner } from '@librechat/client';
 import { ChevronDownIcon, LucideProps } from 'lucide-react';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import type { TResPlugin, TInput } from 'librechat-data-provider';
 import { useGetEndpointsQuery } from '~/data-provider';
 import { useShareContext } from '~/Providers';
 import { cn, formatJSON } from '~/utils';
-import { Spinner } from '~/components';
 import CodeBlock from './CodeBlock';
 
 type PluginIconProps = LucideProps & {
@@ -66,7 +66,7 @@ const Plugin: React.FC<PluginProps> = ({ plugin }) => {
     if (!plugin.loading && latestPlugin === 'self reflection') {
       return 'Finished';
     } else if (latestPlugin === 'self reflection') {
-      return 'I\'m  thinking...';
+      return "I'm  thinking...";
     } else {
       return (
         <>

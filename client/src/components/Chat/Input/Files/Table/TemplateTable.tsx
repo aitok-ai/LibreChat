@@ -1,4 +1,4 @@
-import { DotsIcon, TrashIcon } from '~/components/svg';
+import { DotsIcon, TrashIcon } from '@librechat/client';
 
 export default function Template() {
   return (
@@ -7,13 +7,13 @@ export default function Template() {
         <thead>
           <tr>
             <th className="sticky top-0 rounded-t border-b border-black/10 bg-white px-4 py-2 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-900 dark:text-gray-100">
-              Name
+              {'Name'}
             </th>
             <th className="sticky top-0 rounded-t border-b border-black/10 bg-white px-4 py-2 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-900 dark:text-gray-100">
-              Date
+              {'Date'}
             </th>
             <th className="sticky top-0 rounded-t border-b border-black/10 bg-white px-4 py-2 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-900 dark:text-gray-100">
-              Size
+              {'Size'}
             </th>
             <th className="sticky top-0 rounded-t border-b border-black/10 bg-white px-4 py-2 text-right font-medium text-gray-700 dark:border-white/10 dark:bg-gray-900 dark:text-gray-100">
               <button
@@ -33,14 +33,16 @@ export default function Template() {
           <tr className="">
             <td className="border-b border-black/10 text-left text-gray-600 dark:border-white/10 dark:text-gray-300 [tr:last-child_&]:border-b-0">
               <div className="px-4 py-2 [tr[data-disabled=true]_&]:opacity-50">
-                File Transfer: Node to FastAPI
+                {'File Transfer: Node to FastAPI'}
               </div>
             </td>
             <td className="border-b border-black/10 text-left text-gray-600 dark:border-white/10 dark:text-gray-300 [tr:last-child_&]:border-b-0">
-              <div className="px-4 py-2 [tr[data-disabled=true]_&]:opacity-50">June 11, 2023</div>
+              <div className="px-4 py-2 [tr[data-disabled=true]_&]:opacity-50">
+                {'June 11, 2023'}
+              </div>
             </td>
             <td className="border-b border-black/10 text-left text-gray-600 dark:border-white/10 dark:text-gray-300 [tr:last-child_&]:border-b-0">
-              <div className="px-4 py-2 [tr[data-disabled=true]_&]:opacity-50">11 mb</div>
+              <div className="px-4 py-2 [tr[data-disabled=true]_&]:opacity-50">{'11 mb'}</div>
             </td>
             <td className="border-b border-black/10 text-left text-gray-600 dark:border-white/10 dark:text-gray-300 [tr:last-child_&]:border-b-0">
               <div className="px-4 py-2 [tr[data-disabled=true]_&]:opacity-50">

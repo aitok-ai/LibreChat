@@ -1,7 +1,7 @@
 import { Save } from 'lucide-react';
 import { EModelEndpoint } from 'librechat-data-provider';
-import { Button } from '~/components/ui';
-import { CheckMark, CrossIcon } from '~/components/svg';
+import { Button } from '@librechat/client';
+import { CheckMark, CrossIcon } from '@librechat/client';
 // import PopoverButtons from './PopoverButtons';
 import type { ReactNode } from 'react';
 import { cn, removeFocusOutlines } from '~/utils';
@@ -46,7 +46,7 @@ export default function EndpointOptionsPopover({
       <div
         className={cn(
           'endpointOptionsPopover-container absolute bottom-[-10px] z-0 flex w-full flex-col items-center md:px-4',
-          visible ? ' show' : '',
+          visible ? 'show' : '',
         )}
       >
         <div

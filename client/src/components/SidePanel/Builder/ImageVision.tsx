@@ -1,7 +1,7 @@
-import { useFormContext, Controller } from 'react-hook-form';
+import { Checkbox } from '@librechat/client';
 import { Capabilities } from 'librechat-data-provider';
+import { useFormContext, Controller } from 'react-hook-form';
 import type { AssistantForm } from '~/common';
-import { Checkbox, QuestionMark } from '~/components/ui';
 import { useLocalize } from '~/hooks';
 
 export default function ImageVision() {

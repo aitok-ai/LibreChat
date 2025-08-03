@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Label } from '~/components/ui/Label';
-import SelectDropDown from '../../../ui/SelectDropDown';
+import { SelectDropDown } from '@librechat/client';
 import EssayTemplate from './EssayTemplate';
 import { cn } from '~/utils';
 import { useRecoilState } from 'recoil';
-import { MessagesSquared } from '~/components/svg';
+import { MessagesSquared } from '@librechat/client';
 import EndpointOptionsPopover from '~/components/Endpoints/EndpointOptionsPopover';
 
 import store from '~/store';

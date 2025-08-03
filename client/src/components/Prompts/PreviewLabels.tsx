@@ -1,14 +1,15 @@
 import { useState } from 'react';
+import { Input } from '@librechat/client';
 import { Cross1Icon } from '@radix-ui/react-icons';
 import type { TPrompt } from 'librechat-data-provider';
 import { useUpdatePromptLabels } from '~/data-provider';
-import { Input } from '~/components/ui';
+import { useLocalize } from '~/hooks';
 
 const PromptForm = ({ selectedPrompt }: { selectedPrompt?: TPrompt }) => {
   const [labelInput, setLabelInput] = useState<string>('');
   const [labels, setLabels] = useState<string[]>([]);
   const updatePromptLabelsMutation = useUpdatePromptLabels();
-
+  const localize = useLocalize();
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLabelInput(e.target.value);
   };
@@ -36,7 +37,9 @@ const PromptForm = ({ selectedPrompt }: { selectedPrompt?: TPrompt }) => {
         onChange={handleInputChange}
         onKeyPress={handleKeyPress}
       />
-      <h3 className="rounded-t-lg border border-gray-300 px-4 text-base font-semibold">Labels</h3>
+      <h3 className="rounded-t-lg border border-gray-300 px-4 text-base font-semibold">
+        {localize('com_ui_labels')}
+      </h3>
       <div className="mb-4 flex w-full flex-row flex-wrap rounded-b-lg border border-gray-300 p-4">
         {labels.length ? (
           labels.map((label, index) => (
@@ -59,7 +62,7 @@ const PromptForm = ({ selectedPrompt }: { selectedPrompt?: TPrompt }) => {
             </label>
           ))
         ) : (
-          <label className="rounded-full border px-2">No Labels</label>
+          <label className="rounded-full border px-2">{localize('com_ui_no_labels')}</label>
         )}
       </div>
     </>

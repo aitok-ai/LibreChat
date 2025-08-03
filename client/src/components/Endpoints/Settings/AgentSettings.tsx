@@ -1,4 +1,3 @@
-import type { TModelSelectProps } from '~/common';
 import {
   Switch,
   Label,
@@ -7,7 +6,8 @@ import {
   InputNumber,
   SelectDropDown,
   HoverCardTrigger,
-} from '~/components';
+} from '@librechat/client';
+import type { TModelSelectProps } from '~/common';
 import { cn, optionText, defaultTextProps, removeFocusRings } from '~/utils';
 import OptionHover from './OptionHover';
 import { useLocalize } from '~/hooks';
@@ -53,7 +53,10 @@ export default function Settings({ conversation, setOption, models, readonly }: 
             <div className="flex justify-between">
               <Label htmlFor="temp-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_temperature')}{' '}
-                <small className="opacity-40">({localize('com_endpoint_default')}: 0)</small>
+                <small className="opacity-40">
+                  ({localize('com_endpoint_default')}
+                  {': 0'})
+                </small>
               </Label>
               <InputNumber
                 id="temp-int"

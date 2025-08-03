@@ -1,9 +1,10 @@
-import SelectDropDown from '../../../ui/SelectDropDown';
-import { Label } from '~/components/ui/Label';
+import { SelectDropDown } from '@librechat/client';
+import { Label } from '@librechat/client';
 import TextareaAutosize from 'react-textarea-autosize';
 import * as Switch from '@radix-ui/react-switch';
 import { useState } from 'react';
 import { cn } from '~/utils/';
+import { useLocalize } from '~/hooks';
 
 type Cache = {
   subType: string;
@@ -45,6 +46,7 @@ function getParagraphFields({ paragraphCount, paraTopic, setParaTopic }) {
 }
 
 export default function EssayTemplate({ type }: { type: string }) {
+  const localize = useLocalize();
   const defaultTextProps =
     'rounded-md border border-gray-200 focus:border-slate-400 focus:bg-gray-50 bg-transparent text-sm shadow-[0_0_10px_rgba(0,0,0,0.05)] outline-none placeholder:text-gray-400 focus:outline-none focus:ring-gray-400 focus:ring-opacity-20 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-500 dark:bg-gray-700 focus:dark:bg-gray-600 dark:text-gray-50 dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] dark:focus:border-gray-400 dark:focus:outline-none dark:focus:ring-0 dark:focus:ring-gray-400 dark:focus:ring-offset-0';
   const selectDropDownStyle = cn(
@@ -131,7 +133,7 @@ export default function EssayTemplate({ type }: { type: string }) {
   const WordCountInput = (
     <div className="grid w-full items-center gap-2">
       <Label htmlFor="context" className="text-left text-sm font-medium">
-        字数 <small className="opacity-40">(不能小于100，不能大于800)</small>
+        {'字数'} <small className="opacity-40">{'(不能小于100，不能大于800)'}</small>
       </Label>
       <input
         id="wordCount"
@@ -149,7 +151,7 @@ export default function EssayTemplate({ type }: { type: string }) {
     <div className="grid w-full items-center gap-2">
       <div className="flex flex-row gap-6">
         <Label htmlFor="context" className="text-left text-sm font-medium">
-          主题
+          {localize('com_nav_theme')}
         </Label>
         <div className="flex flex-row items-center gap-2">
           <Switch.Root
@@ -185,7 +187,7 @@ export default function EssayTemplate({ type }: { type: string }) {
   const EssayParagraphInputs = (
     <div className="grid w-full items-center gap-1">
       <Label htmlFor="context" className="text-left text-sm font-medium">
-        主题
+        {localize('com_nav_theme')}
       </Label>
       <TextareaAutosize
         id="essay-topic"
@@ -221,7 +223,8 @@ export default function EssayTemplate({ type }: { type: string }) {
   const ParagraphCountInput = (
     <div className="grid w-full items-center gap-2">
       <Label htmlFor="context" className="text-left text-sm font-medium">
-        段落 <small className="opacity-40">(不能小于1，不能大于5)</small>
+        {'段落数量'}
+        <small className="opacity-40">{'(不能小于1，不能大于5)'}</small>
       </Label>
       <input
         id="paragraphCount"
@@ -241,8 +244,8 @@ export default function EssayTemplate({ type }: { type: string }) {
   const ReferenceText = (
     <div className="grid w-full items-center gap-2">
       <Label htmlFor="context" className="text-left text-sm font-medium">
-        文本引用{' '}
-        <small className="opacity-40">(如若引用文本，须填写文本类型以及其名字与作者)</small>
+        {'文本引用'}{' '}
+        <small className="opacity-40">{'(如若引用文本，须填写文本类型以及其名字与作者)'}</small>
       </Label>
       <input
         id="refTitleInput"

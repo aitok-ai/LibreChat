@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState, useMemo, memo, lazy, Suspense, useRef } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import { useMediaQuery } from '@librechat/client';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
 import type { ConversationListResponse } from 'librechat-data-provider';
 import type { InfiniteQueryObserverResult } from '@tanstack/react-query';
 import {
   useLocalize,
   useHasAccess,
-  useMediaQuery,
   useAuthContext,
   useLocalStorage,
   useNavScrolling,
@@ -20,15 +20,15 @@ import NewChat from './NewChat';
 import { cn } from '~/utils';
 import store from '~/store';
 import NavLink from './NavLink';
-import CheckMark from '../svg/CheckMark';
-import Clipboard from '../svg/Clipboard';
+import { CheckMark } from '@librechat/client';
+import { Clipboard } from '@librechat/client';
 import LeaderboardIcon from '../svg/LeaderboardIcon';
 import NotebookIcon from '../svg/NotebookIcon';
 import { useNavigate, useParams } from 'react-router-dom';
 import HomeIcon from '../svg/HomeIcon';
-import LightBulbIcon from '../svg/LightBulbIcon';
-import ComputerIcon from '../svg/ComputerIcon';
-import ProfileIcon from '../svg/UserIcon';
+import { LightBulbIcon } from '@librechat/client';
+import { ComputerIcon } from '@librechat/client';
+import { UserIcon } from '@librechat/client';
 
 const BookmarkNav = lazy(() => import('./Bookmarks/BookmarkNav'));
 const AccountSettings = lazy(() => import('./AccountSettings'));
@@ -289,7 +289,7 @@ const Nav = memo(
                     {user && (
                       <NavLink
                         className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-sm text-black transition-colors duration-200 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                        svg={() => <ProfileIcon />}
+                        svg={() => <UserIcon />}
                         text={localize('com_ui_profile')}
                         clickHandler={openProfileHandler}
                       />

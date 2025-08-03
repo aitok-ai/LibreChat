@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Label, HoverCard, SelectDropDown, HoverCardTrigger } from '@librechat/client';
 import type { Assistant, TPreset } from 'librechat-data-provider';
 import type { TModelSelectProps, Option } from '~/common';
 import {
@@ -9,7 +10,6 @@ import {
   mapAssistants,
   createDropdownSetter,
 } from '~/utils';
-import { Label, HoverCard, SelectDropDown, HoverCardTrigger } from '~/components/ui';
 import { useLocalize, useDebouncedInput, useAssistantListMap } from '~/hooks';
 import OptionHover from './OptionHover';
 import { ESide } from '~/common';
@@ -83,7 +83,6 @@ export default function Settings({ conversation, setOption, models, readonly }: 
     }
 
     // Reason: `setOption` causes a re-render on every update
-
   }, [assistantValue]);
 
   if (!conversation) {
@@ -121,6 +120,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
         <div className="grid w-full items-center gap-2">
           <SelectDropDown
             value={model ?? ''}
+            title={localize('com_ui_model')}
             setValue={createDropdownSetter(setModel)}
             availableValues={modelOptions}
             disabled={readonly}

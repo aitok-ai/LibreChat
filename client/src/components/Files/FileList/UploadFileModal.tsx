@@ -1,6 +1,5 @@
 import React, { useState, ChangeEvent } from 'react';
-import AttachFile from '~/components/Chat/Input/Files/AttachFile';
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '~/components/ui';
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -24,7 +23,7 @@ const UploadFileModal = ({ open, onOpenChange }) => {
       >
         <DialogHeader>
           <DialogTitle className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-200">
-            Upoad a File
+            {'Upload a File'}
           </DialogTitle>
         </DialogHeader>
         <div className="flex w-full flex-col p-0 sm:p-6 sm:pb-0 sm:pt-4">
@@ -33,32 +32,34 @@ const UploadFileModal = ({ open, onOpenChange }) => {
               <img />
             </div>
             <div className="flex w-full flex-col text-center sm:w-4/5 sm:text-left">
-              <div className="italic">Please upload square file, size less than 100KB</div>
+              <div className="italic">{'Please upload square file, size less than 100KB'}</div>
               <div className="mt-4 flex w-full flex-row items-center bg-[#f9f9f9] p-2">
                 <div className="w-1/2 sm:w-1/3">
-                  <Button>Choose File</Button>
+                  <Button>{'Choose File'}</Button>
                 </div>
-                <div className="w-1/2 sm:w-1/3"> No File Chosen</div>
+                <div className="w-1/2 sm:w-1/3">{'No File Chosen'}</div>
               </div>
             </div>
           </div>
           <div className="mt-3 flex w-full flex-col">
-            <label htmlFor="name">Name</label>
-            <label className="hidden text-[#808080] sm:block">The name of the uploaded file</label>
+            <label htmlFor="name">{'Name'}</label>
+            <label className="hidden text-[#808080] sm:block">
+              {'The name of the uploaded file'}
+            </label>
             <Input type="text" id="name" name="name" placeholder="Name" />
           </div>
 
           <div className="mt-3 flex w-full flex-col">
-            <label htmlFor="purpose">Purpose</label>
+            <label htmlFor="purpose">{'Purpose'}</label>
             <label className="hidden text-[#808080] sm:block">
-              The purpose of the uploaded file
+              {'The purpose of the uploaded file'}
             </label>
             <Input type="text" id="purpose" name="purpose" placeholder="Purpose" />
           </div>
 
           <div className="mt-3 flex w-full flex-row justify-between">
             <div className="hidden w-1/3 sm:block">
-              <span className="font-bold">Learn about file purpose</span>
+              <span className="font-bold">{'Learn about file purpose'}</span>
             </div>
             <div className="flex w-full flex-row justify-evenly sm:w-1/3">
               <Button
@@ -67,7 +68,7 @@ const UploadFileModal = ({ open, onOpenChange }) => {
                   onOpenChange(false);
                 }}
               >
-                Cancel
+                {'Cancel'}
               </Button>
               <Button
                 className="w-full rounded-md border border-black bg-black p-0 text-white"
@@ -75,7 +76,7 @@ const UploadFileModal = ({ open, onOpenChange }) => {
                   console.log('upload file');
                 }}
               >
-                Upload
+                {'Upload'}
               </Button>
             </div>
           </div>

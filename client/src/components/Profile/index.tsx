@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { Tabs, TabsList, TabsTrigger } from '../ui/Tabs';
+import { Tabs, TabsList, TabsTrigger } from '@librechat/client';
 import { cn } from '~/utils';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -14,10 +13,10 @@ import { useGetStartupConfig } from '~/data-provider';
 import { useAuthContext } from '~/hooks/AuthContext';
 import LikedConversations from './LikedConversation';
 import PublicConversations from './PublicConversations';
-import { Spinner } from '../svg';
-import UserIcon from '../svg/UserIcon';
-import CheckMark from '../svg/CheckMark';
-import EditIcon from '../svg/EditIcon';
+import { Spinner } from '@librechat/client';
+import { UserIcon } from '@librechat/client';
+import { CheckMark } from '@librechat/client';
+import { EditIcon } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 
 function ProfileContent() {
@@ -523,7 +522,9 @@ function ProfileContent() {
               <thead>
                 <tr>
                   <th className="border-2 border-gray-500 text-left">{localize('com_ui_model')}</th>
-                  <th className="border-2 border-gray-500 text-left">{localize('com_ui_usage')}</th>
+                  <th className="border-2 border-gray-500 text-left">
+                    {localize('com_ui_usage_count')}
+                  </th>
                   <th className="border-2 border-gray-500 text-left">{localize('com_ui_quota')}</th>
                 </tr>
               </thead>

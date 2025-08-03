@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React from 'react';
-import { CircleIcon, CircleDotsIcon } from '~/components/svg';
 import { ECallState } from 'librechat-data-provider';
+import { CircleIcon, CircleDotsIcon } from '@librechat/client';
 
 const CircleRender = ({ rmsLevel, isCameraOn, state }) => {
   const getIconComponent = (state) => {

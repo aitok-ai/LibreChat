@@ -1,7 +1,7 @@
-
-import debounce from 'lodash/debounce';
 import { useState, useEffect } from 'react';
+import debounce from 'lodash/debounce';
 import { useFormContext } from 'react-hook-form';
+import { Spinner, useToastContext } from '@librechat/client';
 import {
   validateAndParseOpenAPISpec,
   openapiToFunction,
@@ -18,9 +18,7 @@ import type { Spec } from './ActionsTable';
 import ActionCallback from '~/components/SidePanel/Builder/ActionCallback';
 import { ActionsTable, columns } from './ActionsTable';
 import { useUpdateAgentAction } from '~/data-provider';
-import { useToastContext } from '~/Providers';
-import useLocalize from '~/hooks/useLocalize';
-import { Spinner } from '~/components/svg';
+import { useLocalize } from '~/hooks';
 import { logger } from '~/utils';
 
 const debouncedValidation = debounce(
@@ -210,7 +208,7 @@ export default function ActionsInput({
             htmlFor="schemaInput"
             className="text-token-text-primary whitespace-nowrap font-medium"
           >
-            Schema
+            {localize('com_ui_schema')}
           </label>
           <div className="flex items-center gap-2">
             {/* <button className="btn btn-neutral border-token-border-light relative h-8 min-w-[100px] rounded-lg font-medium">
@@ -222,9 +220,9 @@ export default function ActionsInput({
             >
               <option value="label">{localize('com_ui_examples')}</option>
               {/* TODO: make these appear and function correctly */}
-              <option value="0">Weather (JSON)</option>
-              <option value="1">Pet Store (YAML)</option>
-              <option value="2">Blank Template</option>
+              <option value="0">{localize('com_ui_weather_json')}</option>
+              <option value="1">{localize('com_ui_pet_store_yaml')}</option>
+              <option value="2">{localize('com_ui_blank_template')}</option>
             </select>
           </div>
         </div>

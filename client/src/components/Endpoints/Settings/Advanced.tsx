@@ -1,7 +1,5 @@
 import TextareaAutosize from 'react-textarea-autosize';
 import { ImageDetail, imageDetailNumeric, imageDetailValue } from 'librechat-data-provider';
-import type { ValueType } from '@rc-component/mini-decimal';
-import type { TModelSelectProps } from '~/common';
 import {
   Input,
   Label,
@@ -10,8 +8,10 @@ import {
   HoverCard,
   InputNumber,
   HoverCardTrigger,
-} from '~/components/ui';
-import { cn, defaultTextProps, optionText, removeFocusOutlines } from '~/utils/';
+} from '@librechat/client';
+import type { ValueType } from '@rc-component/mini-decimal';
+import type { TModelSelectProps } from '~/common';
+import { cn, defaultTextProps, optionText, removeFocusOutlines } from '~/utils';
 import { useLocalize, useDebouncedInput } from '~/hooks';
 import OptionHover from './OptionHover';
 import { ESide } from '~/common';
@@ -160,7 +160,10 @@ export default function Settings({
             <div className="flex justify-between">
               <Label htmlFor="top-p-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_top_p')}{' '}
-                <small className="opacity-40">({localize('com_endpoint_default')}: 1)</small>
+                <small className="opacity-40">
+                  ({localize('com_endpoint_default')}
+                  {': 1'})
+                </small>
               </Label>
               <InputNumber
                 id="top-p-int"
@@ -199,7 +202,10 @@ export default function Settings({
             <div className="flex justify-between">
               <Label htmlFor="freq-penalty-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_frequency_penalty')}{' '}
-                <small className="opacity-40">({localize('com_endpoint_default')}: 0)</small>
+                <small className="opacity-40">
+                  ({localize('com_endpoint_default')}
+                  {': 0'})
+                </small>
               </Label>
               <InputNumber
                 id="freq-penalty-int"
@@ -238,7 +244,10 @@ export default function Settings({
             <div className="flex justify-between">
               <Label htmlFor="pres-penalty-int" className="text-left text-sm font-medium">
                 {localize('com_endpoint_presence_penalty')}{' '}
-                <small className="opacity-40">({localize('com_endpoint_default')}: 0)</small>
+                <small className="opacity-40">
+                  ({localize('com_endpoint_default')}
+                  {': 0'})
+                </small>
               </Label>
               <InputNumber
                 id="pres-penalty-int"

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Label, SelectDropDown } from '~/components/ui';
+import { Label, SelectDropDown } from '@librechat/client';
 import { cn } from '~/utils';
-import { MessagesSquared } from '~/components/svg';
+import { MessagesSquared } from '@librechat/client';
 import EndpointOptionsPopover from '~/components/Endpoints/EndpointOptionsPopover';
 import { useRecoilState } from 'recoil';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -105,7 +105,7 @@ function AskMeAnything() {
           <div className="col-span-1 flex flex-col items-center justify-start gap-6">
             <div className="grid w-full items-center gap-1">
               <Label htmlFor="context" className="text-left text-sm font-medium">
-                问题
+                {'问题'}
               </Label>
               <TextareaAutosize
                 id="topic"

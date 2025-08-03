@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, TabsList, TabsTrigger } from './Tabs';
+import { Tabs, TabsList, TabsTrigger } from '@librechat/client';
 import { cn } from '~/utils';
 import { CSSTransition } from 'react-transition-group';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
@@ -12,7 +12,7 @@ import { useLikeConversationMutation } from 'librechat-data-provider/react-query
 import SwitchPage from './SwitchPage';
 import { useLocalize } from '~/hooks';
 import { useAuthContext } from '~/hooks/AuthContext';
-import { Spinner } from '../svg';
+import { Spinner } from '@librechat/client';
 import { useNavigate } from 'react-router-dom';
 // import { alternateName } from '~/utils';
 import { alternateName } from 'librechat-data-provider';
@@ -75,7 +75,7 @@ export default function Recommendations() {
   const plugins = (
     <>
       <span className="py-0.25 ml-1 rounded bg-blue-200 px-1 text-[10px] font-semibold uppercase text-[#4559A4]">
-        beta
+        {localize('com_ui_beta')}
       </span>
       <span className="px-1">•</span>
       {convoData && convoData.length > 0 ? convoData[convoIdx].model : 'No Model'}
@@ -553,10 +553,7 @@ export default function Recommendations() {
                       </>
                     ) : (
                       // Fresh database
-                      <div className="ml-2 mt-2">
-                        API server did not return any documents. Check if you have an empty
-                        database.
-                      </div>
+                      <div className="ml-2 mt-2">{localize('com_ui_empty_database')}</div>
                     )}
                   </>
                 ) : (

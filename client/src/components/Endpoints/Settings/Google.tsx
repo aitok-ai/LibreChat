@@ -1,6 +1,5 @@
 import TextareaAutosize from 'react-textarea-autosize';
 import { EModelEndpoint, endpointSettings } from 'librechat-data-provider';
-import type { TModelSelectProps, OnInputNumberChange } from '~/common';
 import {
   Input,
   Label,
@@ -9,7 +8,8 @@ import {
   InputNumber,
   SelectDropDown,
   HoverCardTrigger,
-} from '~/components/ui';
+} from '@librechat/client';
+import type { TModelSelectProps, OnInputNumberChange } from '~/common';
 import { cn, defaultTextProps, optionText, removeFocusOutlines, removeFocusRings } from '~/utils';
 import OptionHoverAlt from '~/components/SidePanel/Parameters/OptionHover';
 import { useLocalize, useDebouncedInput } from '~/hooks';
@@ -55,6 +55,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
       <div className="col-span-5 flex flex-col items-center justify-start gap-6 sm:col-span-3">
         <div className="grid w-full items-center gap-2">
           <SelectDropDown
+            title={localize('com_ui_model')}
             value={model ?? ''}
             setValue={setModel}
             availableValues={models}

@@ -1,12 +1,9 @@
 import React from 'react';
+import { ListFilter } from 'lucide-react';
+import { Button, Input } from '@librechat/client';
+import VectorStoreButton from './VectorStoreButton';
 import VectorStoreList from './VectorStoreList';
 import { TVectorStore } from '~/common';
-import VectorStoreButton from './VectorStoreButton';
-import { Button, Input } from '~/components/ui';
-import FilesSectionSelector from '../FilesSectionSelector';
-import ActionButton from '../ActionButton';
-import DeleteIconButton from '../DeleteIconButton';
-import { ListFilter } from 'lucide-react';
 import { useLocalize } from '~/hooks';
 
 const fakeVectorStores: TVectorStore[] = [
@@ -219,7 +216,7 @@ export default function VectorStoreSidePanel() {
     <div className="flex flex-col">
       <div className="m-3 flex max-h-[10vh] flex-col">
         <h2 className="text-lg">
-          <strong>Vector Stores</strong>
+          <strong>{'Vector Stores'}</strong>
         </h2>
         <div className="m-1 mt-2 flex w-full flex-row justify-between gap-x-2 lg:m-0">
           <div className="flex w-2/3 flex-row">

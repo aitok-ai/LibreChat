@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Label, SelectDropDown } from '~/components/ui';
+import { Label, SelectDropDown } from '@librechat/client';
 import { cn } from '~/utils';
-import { MessagesSquared } from '~/components/svg';
+import { MessagesSquared } from '@librechat/client';
 import EndpointOptionsPopover from '~/components/Endpoints/EndpointOptionsPopover';
 import { useRecoilState } from 'recoil';
 import TextareaAutosize from 'react-textarea-autosize';

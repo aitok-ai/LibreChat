@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import DeleteIconButton from '../DeleteIconButton';
-import { Button } from '~/components/ui';
-import { TrashIcon } from '~/components/svg';
+import { TrashIcon, Button } from '@librechat/client';
 import { TFile } from 'librechat-data-provider/dist/types';
 import UploadFileButton from '../FileList/UploadFileButton';
 import UploadFileModal from '../FileList/UploadFileModal';
@@ -102,7 +101,7 @@ export default function VectorStorePreview() {
     <div className="m-3 ml-1 mr-7 bg-white p-2 sm:p-4 md:p-6 lg:p-10">
       <div className="flex flex-col justify-between md:flex-row">
         <div className="flex flex-col">
-          <b className="hidden text-base md:text-lg lg:block lg:text-xl">VECTOR STORE</b>
+          <b className="hidden text-base md:text-lg lg:block lg:text-xl">{'VECTOR STORE'}</b>
           <b className="text-center text-xl md:text-2xl lg:text-left lg:text-3xl">
             {vectorStore.name}
           </b>
@@ -136,47 +135,49 @@ export default function VectorStorePreview() {
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center md:w-2/5">
             <BarChart4Icon className="text-base text-gray-500 md:text-lg lg:text-xl" />
-            &nbsp;Usage this &nbsp;month
+            &nbsp;{'Usage this &nbsp;month'}
           </span>
           <div className="w-1/2 md:w-3/5">
             <p className="text-gray-500">
-              <span className="text-[#91c561]">0 KB hours</span>
-              &nbsp; Free until end of 2024
+              <span className="text-[#91c561]">{'0 KB hours'}</span>
+              &nbsp;{'Free until end of 2024'}
             </p>
           </div>
         </div>
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center md:w-2/5">
             <InfoIcon className="text-base text-gray-500 md:text-lg lg:text-xl" />
-            &nbsp;Size
+            &nbsp;{'Size'}
           </span>
-          <span className="w-1/2 text-gray-500 md:w-3/5">{vectorStore.bytes} bytes</span>
+          <span className="w-1/2 text-gray-500 md:w-3/5">
+            {vectorStore.bytes} {'bytes'}
+          </span>
         </div>
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center md:w-2/5">
             <Clock3 className="text-base text-gray-500 md:text-lg lg:text-xl" />
-            &nbsp;Last active
+            &nbsp;{'Last active'}
           </span>
           <span className="w-1/2 text-gray-500 md:w-3/5">{vectorStore.lastActive}</span>
         </div>
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center md:w-2/5">
             <InfoIcon className="text-base text-gray-500 md:text-lg lg:text-xl" />
-            &nbsp;Expiration policy
+            &nbsp;{'Expiration policy'}
           </span>
           <span className="w-1/2 text-gray-500 md:w-3/5">{vectorStore.expirationPolicy}</span>
         </div>
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center md:w-2/5">
             <FileClock className="text-base text-gray-500 md:text-lg lg:text-xl" />
-            &nbsp;Expires
+            &nbsp;{'Expires'}
           </span>
           <span className="w-1/2 text-gray-500 md:w-3/5">{vectorStore.expires}</span>
         </div>
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center md:w-2/5">
             <Clock3 className="text-base text-gray-500 md:text-lg lg:text-xl" />
-            &nbsp;Created At
+            &nbsp;{'Created At'}
           </span>
           <span className="w-1/2 text-gray-500 md:w-3/5">{vectorStore.createdAt.toString()}</span>
         </div>
@@ -184,12 +185,12 @@ export default function VectorStorePreview() {
 
       <div className="mt-10 flex flex-col">
         <div>
-          <b className="text-base md:text-lg lg:text-xl">Files attached</b>
+          <b className="text-base md:text-lg lg:text-xl">{'Files attached'}</b>
         </div>
         <div className="flex flex-col divide-y">
           <div className="mt-2 flex flex-row">
-            <div className="w-1/2 text-base md:text-lg lg:w-2/3 lg:text-xl">File</div>
-            <div className="w-1/2 text-base md:text-lg lg:w-1/3 lg:text-xl">Uploaded</div>
+            <div className="w-1/2 text-base md:text-lg lg:w-2/3 lg:text-xl">{'File'}</div>
+            <div className="w-1/2 text-base md:text-lg lg:w-1/3 lg:text-xl">{'Uploaded'}</div>
           </div>
           <div>
             {filesAttached.map((file, index) => (
@@ -215,16 +216,16 @@ export default function VectorStorePreview() {
 
       <div className="mt-10 flex flex-col">
         <div className="flex flex-row justify-between">
-          <b className="text-base md:text-lg lg:text-xl">Used by</b>
+          <b className="text-base md:text-lg lg:text-xl">{'Used by'}</b>
           <Button variant={'default'}>
             <PlusIcon className="h-4 w-4 font-bold" />
-            &nbsp; Create Assistant
+            &nbsp;{'Create Assistant'}
           </Button>
         </div>
         <div className="flex flex-col divide-y">
           <div className="mt-2 flex flex-row">
-            <div className="w-1/2 text-base md:text-lg lg:w-2/3 lg:text-xl">Resource</div>
-            <div className="w-1/2 text-base md:text-lg lg:w-1/3 lg:text-xl">ID</div>
+            <div className="w-1/2 text-base md:text-lg lg:w-2/3 lg:text-xl">{'Resource'}</div>
+            <div className="w-1/2 text-base md:text-lg lg:w-1/3 lg:text-xl">{'ID'}</div>
           </div>
           <div>
             {assistants.map((assistant, index) => (

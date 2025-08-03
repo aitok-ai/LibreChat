@@ -1,7 +1,6 @@
-import type { TFile } from 'librechat-data-provider';
 import React from 'react';
-import { TrashIcon } from '~/components/svg';
-import { Button } from '~/components/ui';
+import { Button, TrashIcon } from '@librechat/client';
+import type { TFile } from 'librechat-data-provider';
 
 type FileListItemProps = {
   file: TFile;
@@ -17,7 +16,10 @@ export default function FileListItem({ file, deleteFile, width = '400px' }: File
         <p className="text-sm text-gray-500">{file.object}</p>
       </div>
       <div className="w-2/6 text-gray-500">
-        <p>({file.bytes / 1000}KB)</p>
+        <p>
+          ({file.bytes / 1000}
+          {' KB'})
+        </p>
         <p className="text-sm">{file.createdAt?.toString()}</p>
       </div>
       <div className="flex w-1/6 justify-around">

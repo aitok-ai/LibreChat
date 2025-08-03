@@ -1,9 +1,9 @@
 import { TConversation } from 'librechat-data-provider';
 import { useGetPublicConversationQuery } from 'librechat-data-provider/react-query';
 import { useEffect, useState } from 'react';
-import { Spinner } from '../svg';
+import { Spinner } from '@librechat/client';
 import { useNavigate, useParams } from 'react-router-dom';
-import ConvoIcon from '../svg/ConvoIcon';
+import { ConvoIcon } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 
 function PublicConversations() {

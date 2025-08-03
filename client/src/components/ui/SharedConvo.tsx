@@ -6,13 +6,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { useGetFiles } from '~/data-provider';
 import { buildTree, mapFiles } from '~/utils';
-import { Spinner } from '../svg';
+import { Spinner } from '@librechat/client';
 import OldMultiMessage from '../Messages/MultiMessage';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
 import { useScreenshot } from '~/hooks/';
 // import { useRecoilValue } from 'recoil';
 import { useLocalize } from '~/hooks';
-import { Plugin } from '../svg';
+import { Plugin } from '@librechat/client';
 // import { alternateName } from '~/utils/';
 import { alternateName } from 'librechat-data-provider';
 import MessagesView from '../Share/MessagesView';
@@ -45,10 +45,10 @@ export default function SharedConvo() {
     <>
       <Plugin className="" /> <span className="px-1">•</span>
       <span className="py-0.25 ml-1 rounded bg-blue-200 px-1 text-[10px] font-semibold uppercase text-[#4559A4]">
-        beta
+        {localize('com_ui_beta')}
       </span>
       <span className="px-1">•</span>
-      Model: {conversation ? conversation.model : 'No Model'}
+      {localize('com_ui_model')}: {conversation ? conversation.model : localize('com_ui_no_model')}
     </>
   );
 

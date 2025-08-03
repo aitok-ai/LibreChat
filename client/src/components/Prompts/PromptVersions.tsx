@@ -1,8 +1,8 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { Layers3, Crown, Zap } from 'lucide-react';
+import { Tag, TooltipAnchor, Label } from '@librechat/client';
 import type { TPrompt, TPromptGroup } from 'librechat-data-provider';
-import { Tag, TooltipAnchor, Label } from '~/components/ui';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -125,7 +125,7 @@ const VersionCard = ({
 
         <div className="flex items-center gap-1 lg:flex-col xl:flex-row">
           {authorName && (
-            <Label className="text-left text-xs text-text-secondary">by {authorName}</Label>
+            <Label className="text-left text-xs text-text-secondary">@{authorName}</Label>
           )}
 
           {tags.length > 0 && <VersionTags tags={tags} />}

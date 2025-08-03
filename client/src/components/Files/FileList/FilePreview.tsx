@@ -1,11 +1,10 @@
-import { TFile } from 'librechat-data-provider/dist/types';
 import React, { useState } from 'react';
-import { TThread, TVectorStore } from '~/common';
-import { CheckMark, TrashIcon } from '~/components/svg';
-import { Button } from '~/components/ui';
-import DeleteIconButton from '../DeleteIconButton';
+import { TFile } from 'librechat-data-provider/dist/types';
+import { CheckMark, TrashIcon, Button } from '@librechat/client';
 import VectorStoreButton from '../VectorStore/VectorStoreButton';
 import { CircleIcon, Clock3Icon, InfoIcon } from 'lucide-react';
+import DeleteIconButton from '../DeleteIconButton';
+import { TThread, TVectorStore } from '~/common';
 import { useParams } from 'react-router-dom';
 
 const tempFile: TFile = {
@@ -75,14 +74,14 @@ export default function FilePreview() {
         <div className="flex flex-row">
           <span className="flex w-1/2 flex-row items-center sm:w-1/4 md:w-2/5">
             <InfoIcon className="size-4 text-gray-500" />
-            &nbsp; File ID
+            &nbsp;{'File ID'}
           </span>
           <span className="w-1/2 text-gray-500 sm:w-3/4 md:w-3/5">{file._id}</span>
         </div>
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center sm:w-1/4 md:w-2/5">
             <CircleIcon className="m-0 size-4 p-0 text-gray-500" />
-            &nbsp; Status
+            &nbsp;{'Status'}
           </span>
           <div className="w-1/2 sm:w-3/4 md:w-3/5">
             <span className="flex w-20 flex-row items-center justify-evenly rounded-full bg-[#f2f8ec] p-1 text-[#91c561]">
@@ -94,21 +93,21 @@ export default function FilePreview() {
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center sm:w-1/4 md:w-2/5">
             <Clock3Icon className="m-0 size-4 p-0 text-gray-500" />
-            &nbsp; Purpose
+            &nbsp;{'Purpose'}
           </span>
           <span className="w-1/2 text-gray-500 sm:w-3/4 md:w-3/5">{file.message}</span>
         </div>
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center sm:w-1/4 md:w-2/5">
             <Clock3Icon className="m-0 size-4 p-0 text-gray-500" />
-            &nbsp; Size
+            &nbsp;{'Size'}
           </span>
           <span className="w-1/2 text-gray-500 sm:w-3/4 md:w-3/5">{file.bytes}</span>
         </div>
         <div className="mt-3 flex flex-row">
           <span className="flex w-1/2 flex-row items-center sm:w-1/4 md:w-2/5">
             <Clock3Icon className="m-0 size-4 p-0 text-gray-500" />
-            &nbsp; Created At
+            &nbsp;{'Created At'}
           </span>
           <span className="w-1/2 text-gray-500 sm:w-3/4 md:w-3/5">
             {file.createdAt?.toString()}
@@ -118,14 +117,16 @@ export default function FilePreview() {
 
       <div className="mt-10 flex flex-col">
         <div>
-          <b className="text-sm md:text-base lg:text-lg">Attached To</b>
+          <b className="text-sm md:text-base lg:text-lg">{'Attached To'}</b>
         </div>
         <div className="flex flex-col divide-y">
           <div className="mt-2 flex flex-row">
             <div className="w-2/5 text-sm md:w-1/2 md:text-base lg:text-lg xl:w-2/3">
-              Vector Stores
+              {'Vector Stores'}
             </div>
-            <div className="w-3/5 text-sm md:w-1/2 md:text-base lg:text-lg xl:w-1/3">Uploaded</div>
+            <div className="w-3/5 text-sm md:w-1/2 md:text-base lg:text-lg xl:w-1/3">
+              {'Uploaded'}
+            </div>
           </div>
           <div>
             {vectorStoresAttached.map((vectors, index) => (
@@ -152,13 +153,17 @@ export default function FilePreview() {
       <div className="mt-10 flex flex-col">
         <div className="flex flex-col divide-y">
           <div className="flex flex-row">
-            <div className="w-2/5 text-sm md:w-1/2 md:text-base lg:text-lg xl:w-2/3">Threads</div>
-            <div className="w-3/5 text-sm md:w-1/2 md:text-base lg:text-lg xl:w-1/3">Uploaded</div>
+            <div className="w-2/5 text-sm md:w-1/2 md:text-base lg:text-lg xl:w-2/3">
+              {'Threads'}
+            </div>
+            <div className="w-3/5 text-sm md:w-1/2 md:text-base lg:text-lg xl:w-1/3">
+              {'Uploaded'}
+            </div>
           </div>
           <div>
             {threads.map((thread, index) => (
               <div key={index} className="mt-2 flex flex-row">
-                <div className="ml-4 w-2/5 content-center md:w-1/2 xl:w-2/3">ID: {thread.id}</div>
+                <div className="ml-4 w-2/5 content-center md:w-1/2 xl:w-2/3">{`ID: ${thread.id}`}</div>
                 <div className="flex w-3/5 flex-row md:w-1/2 xl:w-1/3">
                   <div className="content-center text-nowrap">{thread.createdAt}</div>
                   <Button
