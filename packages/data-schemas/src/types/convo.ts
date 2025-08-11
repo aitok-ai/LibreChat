@@ -50,6 +50,7 @@ export interface IConversation extends Document {
   max_tokens?: number;
   reasoning_effort?: string;
   reasoning_summary?: string;
+  verbosity?: string;
   useResponsesApi?: boolean;
   web_search?: boolean;
   disableStreaming?: boolean;
