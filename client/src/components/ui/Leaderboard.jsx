@@ -4,9 +4,9 @@ import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import GoldMedal from '../svg/GoldMedal';
-import SilverMedal from '../svg/SilverMedal';
-import BronzeMedal from '../svg/BronzeMedal';
+import { GoldMedal } from '@librechat/client';
+import { SilverMedal } from '@librechat/client';
+import { BronzeMedal } from '@librechat/client';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
 import { useLocalize } from '~/hooks';
 
@@ -82,7 +82,6 @@ export default function Leaderboard() {
 
   // Each Column Definition results in one Column.
   const [columnDefs, setColumnDefs] = useState([
-    // eslint-disable-line
     {
       field: '名次',
       cellRenderer: (params) => placeCellRenderer(params.value),

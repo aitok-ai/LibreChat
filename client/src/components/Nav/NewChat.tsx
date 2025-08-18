@@ -4,12 +4,9 @@ import { useRecoilState } from 'recoil';
 import { useParams, useNavigate } from 'react-router-dom';
 import React, { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-// import type { TMessage } from 'librechat-data-provider';
 import { QueryKeys, Constants } from 'librechat-data-provider';
-import type { TMessage, TStartupConfig } from 'librechat-data-provider';
-// import { NewChatIcon, MobileSidebar, Sidebar } from '~/components/svg';
-// import { TooltipAnchor, Button } from '~/components/ui';
-import { NewChatIcon, MobileSidebar, Sidebar, TooltipAnchor, Button } from '@librechat/client';
+import { TooltipAnchor, NewChatIcon, MobileSidebar, Sidebar, Button } from '@librechat/client';
+import type { TMessage } from 'librechat-data-provider';
 import { useLocalize, useNewConvo } from '~/hooks';
 import store from '~/store';
 
@@ -73,8 +70,9 @@ export default function NewChat({
             </Button>
           }
         />
-        <div className="flex">
+        <div className="flex gap-0.5">
           {headerButtons}
+
           <TooltipAnchor
             description={localize('com_ui_new_chat')}
             render={
@@ -86,7 +84,7 @@ export default function NewChat({
                 className="rounded-full border-none bg-transparent p-2 hover:bg-surface-hover md:rounded-xl"
                 onClick={clickHandler}
               >
-                <NewChatIcon className="icon-md md:h-6 md:w-6" />
+                <NewChatIcon className="icon-lg text-text-primary" />
               </Button>
             }
           />

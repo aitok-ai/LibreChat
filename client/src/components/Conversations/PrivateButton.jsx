@@ -1,6 +1,6 @@
 import React from 'react';
-import EyeIcon from '../svg/EyeIcon';
-import CrossedEyeIcon from '../svg/CrossedEyeIcon';
+import { EyeIcon } from '@librechat/client';
+import { CrossedEyeIcon } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 
 export default function PrivateButton({ isPrivate, setPrivateHandler }) {

@@ -1,7 +1,7 @@
 import { SelectDropDown } from '@librechat/client';
-import { SelectDropDownPop } from '~/components/Input/ModelSelect';
 import type { TModelSelectProps } from '~/common';
-import { cn, cardStyle } from '~/utils/';
+import SelectDropDownPop from '~/components/Input/ModelSelect/SelectDropDownPop';
+import { cn, cardStyle } from '~/utils';
 
 export default function OpenAI({
   conversation,

@@ -37,12 +37,14 @@ describe('resolveHeaders', () => {
   });
 
   it('should return empty object when headers is null', () => {
-    const result = resolveHeaders(null as unknown as Record<string, string> | undefined);
+    const result = resolveHeaders({
+      headers: null as unknown as Record<string, string>,
+    });
     expect(result).toEqual({});
   });
 
   it('should return empty object when headers is empty', () => {
-    const result = resolveHeaders({});
+    const result = resolveHeaders({ headers: {} });
     expect(result).toEqual({});
   });
 
@@ -53,7 +55,7 @@ describe('resolveHeaders', () => {
       'Content-Type': 'application/json',
     };
 
-    const result = resolveHeaders(headers);
+    const result = resolveHeaders({ headers });
 
     expect(result).toEqual({
       Authorization: 'test-api-key-value',
@@ -69,7 +71,7 @@ describe('resolveHeaders', () => {
       'Content-Type': 'application/json',
     };
 
-    const result = resolveHeaders(headers, user);
+    const result = resolveHeaders({ headers, user });
 
     expect(result).toEqual({
       'User-Id': 'test-user-123',
@@ -83,7 +85,7 @@ describe('resolveHeaders', () => {
       'Content-Type': 'application/json',
     };
 
-    const result = resolveHeaders(headers);
+    const result = resolveHeaders({ headers });
 
     expect(result).toEqual({
       'User-Id': '{{LIBRECHAT_USER_ID}}',
@@ -98,7 +100,7 @@ describe('resolveHeaders', () => {
       'Content-Type': 'application/json',
     };
 
-    const result = resolveHeaders(headers, user);
+    const result = resolveHeaders({ headers, user });
 
     expect(result).toEqual({
       'User-Id': '{{LIBRECHAT_USER_ID}}',
@@ -124,7 +126,7 @@ describe('resolveHeaders', () => {
       'Content-Type': 'application/json',
     };
 
-    const result = resolveHeaders(headers, user);
+    const result = resolveHeaders({ headers, user });
 
     expect(result).toEqual({
       'User-Email': 'test@example.com',
@@ -149,7 +151,7 @@ describe('resolveHeaders', () => {
       'Non-Existent': '{{LIBRECHAT_USER_NONEXISTENT}}',
     };
 
-    const result = resolveHeaders(headers, user);
+    const result = resolveHeaders({ headers, user });
 
     expect(result).toEqual({
       'User-Email': 'test@example.com',
@@ -172,7 +174,7 @@ describe('resolveHeaders', () => {
       'X-User-Id': '{{LIBRECHAT_USER_ID}}',
     };
 
-    const result = resolveHeaders(headers, user, customUserVars);
+    const result = resolveHeaders({ headers, user, customUserVars });
 
     expect(result).toEqual({
       Authorization: 'Bearer user-specific-token',
@@ -195,7 +197,7 @@ describe('resolveHeaders', () => {
       'Test-Email': '{{LIBRECHAT_USER_EMAIL}}',
     };
 
-    const result = resolveHeaders(headers, user, customUserVars);
+    const result = resolveHeaders({ headers, user, customUserVars });
 
     expect(result).toEqual({
       'Test-Email': 'custom-email@example.com',
@@ -214,7 +216,7 @@ describe('resolveHeaders', () => {
       'User-Id': '{{LIBRECHAT_USER_ID}}',
     };
 
-    const result = resolveHeaders(headers, user);
+    const result = resolveHeaders({ headers, user });
 
     expect(result).toEqual({
       'User-Role': 'admin',
@@ -234,7 +236,7 @@ describe('resolveHeaders', () => {
       'Backup-Email': '{{LIBRECHAT_USER_EMAIL}}',
     };
 
-    const result = resolveHeaders(headers, user);
+    const result = resolveHeaders({ headers, user });
 
     expect(result).toEqual({
       'Primary-Email': 'test@example.com',
@@ -260,7 +262,7 @@ describe('resolveHeaders', () => {
       'Content-Type': 'application/json',
     };
 
-    const result = resolveHeaders(headers, user, customUserVars);
+    const result = resolveHeaders({ headers, user, customUserVars });
 
     expect(result).toEqual({
       Authorization: 'Bearer secret-token',
@@ -278,7 +280,7 @@ describe('resolveHeaders', () => {
     };
     const user = { id: 'user-123' };
 
-    const result = resolveHeaders(originalHeaders, user);
+    const result = resolveHeaders({ headers: originalHeaders, user });
 
     // Verify the result is processed
     expect(result).toEqual({
@@ -307,7 +309,7 @@ describe('resolveHeaders', () => {
       'Dot-Header': '{{CUSTOM.VAR}}',
     };
 
-    const result = resolveHeaders(headers, user, customUserVars);
+    const result = resolveHeaders({ headers, user, customUserVars });
 
     expect(result).toEqual({
       'Dash-Header': 'dash-value',
@@ -358,7 +360,7 @@ describe('resolveHeaders', () => {
       'X-User-TermsAccepted': '{{LIBRECHAT_USER_TERMSACCEPTED}}',
     };
 
-    const result = resolveHeaders(headers, user);
+    const result = resolveHeaders({ headers, user });
 
     expect(result['X-User-ID']).toBe('abc');
     expect(result['X-User-Name']).toBe('Test User');
@@ -385,7 +387,7 @@ describe('resolveHeaders', () => {
       'X-Multi': 'User: {{LIBRECHAT_USER_ID}}, Env: ${TEST_API_KEY}, Custom: {{MY_CUSTOM}}',
     };
     const customVars = { MY_CUSTOM: 'custom-value' };
-    const result = resolveHeaders(headers, user, customVars);
+    const result = resolveHeaders({ headers, user, customUserVars: customVars });
     expect(result['X-Multi']).toBe('User: abc, Env: test-api-key-value, Custom: custom-value');
   });
 
@@ -395,7 +397,7 @@ describe('resolveHeaders', () => {
       'X-Unknown': '{{SOMETHING_NOT_RECOGNIZED}}',
       'X-Known': '{{LIBRECHAT_USER_ID}}',
     };
-    const result = resolveHeaders(headers, user);
+    const result = resolveHeaders({ headers, user });
     expect(result['X-Unknown']).toBe('{{SOMETHING_NOT_RECOGNIZED}}');
     expect(result['X-Known']).toBe('abc');
   });
@@ -417,7 +419,7 @@ describe('resolveHeaders', () => {
       'X-Boolean': '{{LIBRECHAT_USER_EMAILVERIFIED}}',
     };
     const customVars = { MY_CUSTOM: 'custom-value' };
-    const result = resolveHeaders(headers, user, customVars);
+    const result = resolveHeaders({ headers, user, customUserVars: customVars });
 
     expect(result['X-User']).toBe('abc');
     expect(result['X-Env']).toBe('test-api-key-value');
@@ -426,5 +428,16 @@ describe('resolveHeaders', () => {
     expect(result['X-Unknown']).toBe('{{NOT_A_REAL_PLACEHOLDER}}');
     expect(result['X-Empty']).toBe('');
     expect(result['X-Boolean']).toBe('true');
+  });
+
+  it('should process LIBRECHAT_BODY placeholders', () => {
+    const body = {
+      conversationId: 'conv-123',
+      parentMessageId: 'parent-456',
+      messageId: 'msg-789',
+    };
+    const headers = { 'X-Conversation': '{{LIBRECHAT_BODY_CONVERSATIONID}}' };
+    const result = resolveHeaders({ headers, body });
+    expect(result['X-Conversation']).toBe('conv-123');
   });
 });

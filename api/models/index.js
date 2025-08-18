@@ -24,6 +24,7 @@ const {
 } = require('./Message');
 const { getConvoTitle, getConvo, saveConvo, deleteConvos, likeConvo } = require('./Conversation');
 const { getPreset, getPresets, savePreset, deletePresets } = require('./Preset');
+const { File } = require('~/db/models');
 
 module.exports = {
   ...methods,
@@ -56,4 +57,6 @@ module.exports = {
   getPresets,
   savePreset,
   deletePresets,
+
+  Files: File,
 };

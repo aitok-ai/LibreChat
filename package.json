@@ -73,7 +73,14 @@
     "b:test:api": "cd api && bun run b:test",
     "b:balance": "bun config/add-balance.js",
     "b:list-balances": "bun config/list-balances.js",
-    "reset-terms": "node config/reset-terms.js"
+    "reset-terms": "node config/reset-terms.js",
+    "flush-cache": "node config/flush-cache.js",
+    "migrate:agent-permissions:dry-run": "node config/migrate-agent-permissions.js --dry-run",
+    "migrate:agent-permissions": "node config/migrate-agent-permissions.js",
+    "migrate:agent-permissions:batch": "node config/migrate-agent-permissions.js --batch-size=50",
+    "migrate:prompt-permissions:dry-run": "node config/migrate-prompt-permissions.js --dry-run",
+    "migrate:prompt-permissions": "node config/migrate-prompt-permissions.js",
+    "migrate:prompt-permissions:batch": "node config/migrate-prompt-permissions.js --batch-size=50"
   },
   "repository": {
     "type": "git",
@@ -102,7 +109,6 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jest": "^28.11.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-perfectionist": "^4.8.0",
     "eslint-plugin-prettier": "^5.2.3",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
@@ -151,6 +157,7 @@
     "@aws-sdk/client-s3": "^3.758.0",
     "@azure/storage-blob": "^12.27.0",
     "@esbuild/darwin-x64": "^0.25.8",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "@react-spring/web": "^10.0.1",
     "@smithy/eventstream-codec": "^4.0.5",
     "@smithy/signature-v4": "^5.1.3",

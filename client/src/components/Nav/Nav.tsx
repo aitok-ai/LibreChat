@@ -22,16 +22,17 @@ import store from '~/store';
 import NavLink from './NavLink';
 import { CheckMark } from '@librechat/client';
 import { Clipboard } from '@librechat/client';
-import LeaderboardIcon from '../svg/LeaderboardIcon';
-import NotebookIcon from '../svg/NotebookIcon';
+import { LeaderboardIcon } from '@librechat/client';
+import { NotebookIcon } from '@librechat/client';
 import { useNavigate, useParams } from 'react-router-dom';
-import HomeIcon from '../svg/HomeIcon';
+import { HomeIcon } from '@librechat/client';
 import { LightBulbIcon } from '@librechat/client';
 import { ComputerIcon } from '@librechat/client';
 import { UserIcon } from '@librechat/client';
 
 const BookmarkNav = lazy(() => import('./Bookmarks/BookmarkNav'));
 const AccountSettings = lazy(() => import('./AccountSettings'));
+const AgentMarketplaceButton = lazy(() => import('./AgentMarketplaceButton'));
 
 const NAV_WIDTH_DESKTOP = '260px';
 const NAV_WIDTH_MOBILE = '320px';
@@ -219,16 +220,22 @@ const Nav = memo(
     );
 
     const headerButtons = useMemo(
-      () =>
-        hasAccessToBookmarks && (
-          <>
-            <div className="mt-1.5" />
-            <Suspense fallback={null}>
-              <BookmarkNav tags={tags} setTags={setTags} isSmallScreen={isSmallScreen} />
-            </Suspense>
-          </>
-        ),
-      [hasAccessToBookmarks, tags, isSmallScreen],
+      () => (
+        <>
+          <Suspense fallback={null}>
+            <AgentMarketplaceButton isSmallScreen={isSmallScreen} toggleNav={toggleNavVisible} />
+          </Suspense>
+          {hasAccessToBookmarks && (
+            <>
+              <div className="mt-1.5" />
+              <Suspense fallback={null}>
+                <BookmarkNav tags={tags} setTags={setTags} isSmallScreen={isSmallScreen} />
+              </Suspense>
+            </>
+          )}
+        </>
+      ),
+      [hasAccessToBookmarks, tags, isSmallScreen, toggleNavVisible],
     );
 
     const [isSearchLoading, setIsSearchLoading] = useState(

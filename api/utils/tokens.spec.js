@@ -1,6 +1,7 @@
 const { EModelEndpoint } = require('librechat-data-provider');
 const {
   maxOutputTokensMap,
+  findMatchingPattern,
   getModelMaxTokens,
   processModelData,
   matchModelName,
@@ -805,8 +806,12 @@ describe('Grok Model Tests - Tokens', () => {
 
 describe('Claude Model Tests', () => {
   it('should return correct context length for Claude 4 models', () => {
-    expect(getModelMaxTokens('claude-sonnet-4')).toBe(200000);
-    expect(getModelMaxTokens('claude-opus-4')).toBe(200000);
+    expect(getModelMaxTokens('claude-sonnet-4')).toBe(
+      maxTokensMap[EModelEndpoint.anthropic]['claude-sonnet-4'],
+    );
+    expect(getModelMaxTokens('claude-opus-4')).toBe(
+      maxTokensMap[EModelEndpoint.anthropic]['claude-opus-4'],
+    );
   });
 
   it('should handle Claude 4 model name variations with different prefixes and suffixes', () => {
@@ -828,7 +833,8 @@ describe('Claude Model Tests', () => {
     ];
 
     modelVariations.forEach((model) => {
-      expect(getModelMaxTokens(model)).toBe(200000);
+      const modelKey = findMatchingPattern(model, maxTokensMap[EModelEndpoint.anthropic]);
+      expect(getModelMaxTokens(model)).toBe(maxTokensMap[EModelEndpoint.anthropic][modelKey]);
     });
   });
 
