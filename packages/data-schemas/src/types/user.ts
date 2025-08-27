@@ -1,4 +1,5 @@
-import { Document, Types } from 'mongoose';
+import type { Document, Types } from 'mongoose';
+import { CursorPaginationParams } from '~/common';
 
 export interface IUser extends Document {
   name?: string;
@@ -54,18 +55,39 @@ export interface BalanceConfig {
   refillAmount?: number;
 }
 
-export interface UserCreateData extends Partial<IUser> {
+export interface CreateUserRequest extends Partial<IUser> {
   email: string;
 }
 
-export interface UserUpdateResult {
+export interface UpdateUserRequest {
+  name?: string;
+  username?: string;
+  email?: string;
+  role?: string;
+  emailVerified?: boolean;
+  avatar?: string;
+  plugins?: string[];
+  twoFactorEnabled?: boolean;
+  termsAccepted?: boolean;
+  personalization?: {
+    memories?: boolean;
+  };
+}
+
+export interface UserDeleteResult {
   deletedCount: number;
   message: string;
 }
 
-export interface UserSearchCriteria {
-  email?: string;
-  username?: string;
+export interface UserFilterOptions extends CursorPaginationParams {
+  _id?: Types.ObjectId | string;
+  // Includes email, username and name
+  search?: string;
+  role?: string;
+  emailVerified?: boolean;
+  provider?: string;
+  twoFactorEnabled?: boolean;
+  // External IDs
   googleId?: string;
   facebookId?: string;
   openidId?: string;
@@ -74,7 +96,9 @@ export interface UserSearchCriteria {
   githubId?: string;
   discordId?: string;
   appleId?: string;
-  _id?: Types.ObjectId | string;
+  // Date filters
+  createdAfter?: string;
+  createdBefore?: string;
 }
 
 export interface UserQueryOptions {
