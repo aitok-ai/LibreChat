@@ -31,6 +31,10 @@ const agentCategorySchema = new Schema<IAgentCategory>(
       default: true,
       index: true,
     },
+    custom: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
