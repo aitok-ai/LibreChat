@@ -26,7 +26,6 @@ export enum QueryKeys {
   publicConversatons = 'publicConversatons',
   agents = 'agents',
   agent = 'agent',
-  endpointsConfigOverride = 'endpointsConfigOverride',
   files = 'files',
   fileConfig = 'fileConfig',
   tools = 'tools',

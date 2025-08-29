@@ -26,8 +26,15 @@ const { getConvoTitle, getConvo, saveConvo, deleteConvos, likeConvo } = require(
 const { getPreset, getPresets, savePreset, deletePresets } = require('./Preset');
 const { File } = require('~/db/models');
 
+const seedDatabase = async () => {
+  await methods.initializeRoles();
+  await methods.seedDefaultRoles();
+  await methods.ensureDefaultCategories();
+};
+
 module.exports = {
   ...methods,
+  seedDatabase,
   comparePassword,
   findFileById,
   createFile,

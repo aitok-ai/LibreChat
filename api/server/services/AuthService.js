@@ -1,8 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { webcrypto } = require('node:crypto');
-const { isEnabled } = require('@librechat/api');
 const { logger } = require('@librechat/data-schemas');
+const { isEnabled, checkEmailConfig } = require('@librechat/api');
 const { SystemRoles, errorsToString } = require('librechat-data-provider');
 const {
   findUser,
@@ -21,11 +21,10 @@ const {
   generateRefreshToken,
 } = require('~/models');
 const { isEmailDomainAllowed } = require('~/server/services/domains');
-const { checkEmailConfig, sendEmail } = require('~/server/utils');
-const { getBalanceConfig } = require('~/server/services/Config');
 const { registerSchema } = require('~/strategies/validators');
-// const { logger } = require('~/config');
 const { User } = require('~/db/models');
+const { getAppConfig } = require('~/server/services/Config');
+const { sendEmail } = require('~/server/utils');
 
 const domains = {
   client: process.env.DOMAIN_CLIENT,
@@ -80,7 +79,7 @@ const createTokenHash = () => {
 
 /**
  * Send Verification Email
- * @param {Partial<MongoUser> & { _id: ObjectId, email: string, name: string}} user
+ * @param {Partial<IUser>} user
  * @returns {Promise<void>}
  */
 const sendVerificationEmail = async (user) => {
@@ -114,7 +113,7 @@ const sendVerificationEmail = async (user) => {
 
 /**
  * Verify Email
- * @param {Express.Request} req
+ * @param {ServerRequest} req
  */
 const verifyEmail = async (req) => {
   const { email, token } = req.body;
@@ -162,9 +161,9 @@ const verifyEmail = async (req) => {
 
 /**
  * Register a new user.
- * @param {MongoUser} user <email, password, name, username>
- * @param {Partial<MongoUser>} [additionalData={}]
- * @returns {Promise<{status: number, message: string, user?: MongoUser}>}
+ * @param {IUser} user <email, password, name, username>
+ * @param {Partial<IUser>} [additionalData={}]
+ * @returns {Promise<{status: number, message: string, user?: IUser}>}
  */
 const registerUser = async (user, additionalData = {}) => {
   const { error } = registerSchema.safeParse(user);
@@ -197,7 +196,8 @@ const registerUser = async (user, additionalData = {}) => {
       return { status: 200, message: genericVerificationMessage };
     }
 
-    if (!(await isEmailDomainAllowed(email))) {
+    const appConfig = await getAppConfig({ role: user.role });
+    if (!isEmailDomainAllowed(email, appConfig?.registration?.allowedDomains)) {
       const errorMessage =
         'The email address provided cannot be used. Please use a different email address.';
       logger.error(`[registerUser] [Registration not allowed] [Email: ${user.email}]`);
@@ -234,9 +234,8 @@ const registerUser = async (user, additionalData = {}) => {
     // if (emailEnabled) {
     // const newUser = await createUser(newUserData, false, true);
     const disableTTL = isEnabled(process.env.ALLOW_UNVERIFIED_EMAIL_LOGIN);
-    const balanceConfig = await getBalanceConfig();
 
-    const newUser = await createUser(newUserData, balanceConfig, disableTTL, true);
+    const newUser = await createUser(newUserData, appConfig.balance, disableTTL, true);
     newUserId = newUser._id;
     if (emailEnabled && !newUser.emailVerified) {
       await sendVerificationEmail({
@@ -285,7 +284,7 @@ const registerUser = async (user, additionalData = {}) => {
 
 /**
  * Request password reset
- * @param {Express.Request} req
+ * @param {ServerRequest} req
  */
 const requestPasswordReset = async (req) => {
   const { email } = req.body;
