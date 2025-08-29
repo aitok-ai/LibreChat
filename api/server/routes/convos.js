@@ -17,9 +17,13 @@ const { sleep } = require('@librechat/agents');
 const { isEnabled } = require('@librechat/api');
 const { logger } = require('@librechat/data-schemas');
 const { CacheKeys, EModelEndpoint } = require('librechat-data-provider');
+const {
+  createImportLimiters,
+  createForkLimiters,
+  configMiddleware,
+} = require('~/server/middleware');
 const { getConvosByCursor, deleteConvos, getConvo, saveConvo } = require('~/models/Conversation');
 const { forkConversation, duplicateConversation } = require('~/server/utils/import/fork');
-const { createImportLimiters, createForkLimiters } = require('~/server/middleware');
 const { storage, importFileFilter } = require('~/server/routes/files/multer');
 const requireJwtAuth = require('~/server/middleware/requireJwtAuth');
 const { importConversations } = require('~/server/utils/import');
@@ -305,6 +309,7 @@ router.post(
   '/import',
   importIpLimiter,
   importUserLimiter,
+  configMiddleware,
   upload.single('file'),
   async (req, res) => {
     try {

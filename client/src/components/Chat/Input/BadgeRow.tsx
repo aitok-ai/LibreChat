@@ -374,7 +374,7 @@ function BadgeRow({
             <CodeInterpreter />
             <FileSearch />
             <Artifacts />
-            <MCPSelect />
+            <MCPSelect conversationId={conversationId} />
           </>
         )}
         {ghostBadge && (
