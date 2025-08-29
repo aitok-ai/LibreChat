@@ -51,7 +51,7 @@ export const deleteUser = () => `${BASE_URL}/api/user/delete`;
 const messagesRoot = `${BASE_URL}/api/messages`;
 
 export const messages = (params: q.MessagesListParams) => {
-  const { conversationId, messageId } = params;
+  const { conversationId, messageId, ...rest } = params;
 
   if (conversationId && messageId) {
     return `${messagesRoot}/${conversationId}/${messageId}`;
@@ -61,7 +61,7 @@ export const messages = (params: q.MessagesListParams) => {
     return `${messagesRoot}/${conversationId}`;
   }
 
-  return `${messagesRoot}{buildQuery(rest)}`;
+  return `${messagesRoot}${buildQuery(rest)}`;
 };
 
 export const messagesArtifacts = (messageId: string) => `${messagesRoot}/artifacts/${messageId}`;

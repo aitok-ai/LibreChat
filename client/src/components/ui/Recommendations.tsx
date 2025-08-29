@@ -5,9 +5,8 @@ import { CSSTransition } from 'react-transition-group';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
 import OldMultiMessage from '../Messages/MultiMessage';
 import { useGetFiles } from '~/data-provider';
-import { buildTree, mapFiles } from '~/utils';
 import { useScreenshot } from '~/hooks/';
-import { TConversation, TMessage, TUser } from 'librechat-data-provider';
+import { TConversation, TMessage, TUser, buildTree } from 'librechat-data-provider';
 import { useLikeConversationMutation } from 'librechat-data-provider/react-query';
 import SwitchPage from './SwitchPage';
 import { useLocalize } from '~/hooks';
@@ -17,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 // import { alternateName } from '~/utils';
 import { alternateName } from 'librechat-data-provider';
 import MessagesView from '../Share/MessagesView';
+import { mapFiles } from '~/utils';
 
 export default function Recommendations() {
   const [tabValue, setTabValue] = useState<string>(

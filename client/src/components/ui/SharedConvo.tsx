@@ -5,7 +5,7 @@ import { CSSTransition } from 'react-transition-group';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { useGetFiles } from '~/data-provider';
-import { buildTree, mapFiles } from '~/utils';
+import { mapFiles } from '~/utils';
 import { Spinner } from '@librechat/client';
 import OldMultiMessage from '../Messages/MultiMessage';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
@@ -14,7 +14,7 @@ import { useScreenshot } from '~/hooks/';
 import { useLocalize } from '~/hooks';
 import { Plugin } from '@librechat/client';
 // import { alternateName } from '~/utils/';
-import { alternateName } from 'librechat-data-provider';
+import { alternateName, buildTree } from 'librechat-data-provider';
 import MessagesView from '../Share/MessagesView';
 
 export default function SharedConvo() {
