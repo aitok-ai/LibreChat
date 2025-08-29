@@ -38,123 +38,113 @@ const AuthLayout = () => {
   );
 };
 
-export const router = createBrowserRouter([
-  {
-    path: 'share/:shareId',
-    element: <ShareRoute />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: 'oauth',
-    errorElement: <RouteErrorBoundary />,
-    children: [
-      {
-        path: 'success',
-        element: <OAuthSuccess />,
-      },
-      {
-        path: 'error',
-        element: <OAuthError />,
-      },
-    ],
-  },
-  {
-    path: '/',
-    element: <StartupLayout />,
-    errorElement: <RouteErrorBoundary />,
-    children: [
-      {
-        path: 'register/:userId?',
-        element: <Registration />,
-      },
-      {
-        path: 'forgot-password',
-        element: <RequestPasswordReset />,
-      },
-      {
-        path: 'reset-password',
-        element: <ResetPassword />,
-      },
-    ],
-  },
-  {
-    path: 'verify',
-    element: <VerifyEmail />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    element: <AuthLayout />,
-    errorElement: <RouteErrorBoundary />,
-    children: [
-      {
-        path: '/',
-        element: <LoginLayout />,
-        children: [
-          {
-            path: 'login',
-            element: <Login />,
-          },
-          {
-            path: 'login/2fa',
-            element: <TwoFactorScreen />,
-          },
-        ],
-      },
-      dashboardRoutes,
-      {
-        path: 'chat/share/:conversationId?',
-        element: <SharedConvo />,
-      },
-      {
-        path: '/',
-        element: <Root />,
-        children: [
-          {
-            index: true,
-            element: <Navigate to="/c/new" replace={true} />,
-          },
-          {
-            path: 'c/:conversationId?',
-            element: <ChatRoute />,
-          },
-          // {
-          //   path: 'chat/:conversationId?',
-          //   element: <Chat />,
-          // },
-          // {
-          //   path: 'search/:query?',
-          //   element: <Search />,
-          // },
-          {
-            path: 'leaderboard',
-            element: <Leaderboard />,
-          },
-          {
-            path: 'home',
-            element: <Recommendations />,
-          },
-          {
-            path: 'profile/:userId?',
-            element: <Profile />,
-          },
-          // {
-          //   path: 'search/:query?',
-          //   element: <Search />,
-          // },
-          {
-            path: 'search',
-            element: <Search />,
-          },
-          {
-            path: 'agents',
-            element: <AgentMarketplace />,
-          },
-          {
-            path: 'agents/:category',
-            element: <AgentMarketplace />,
-          },
-        ],
-      },
-    ],
-  },
-]);
+const baseEl = document.querySelector('base');
+const baseHref = baseEl?.getAttribute('href') || '/';
+
+export const router = createBrowserRouter(
+  [
+    {
+      path: 'share/:shareId',
+      element: <ShareRoute />,
+      errorElement: <RouteErrorBoundary />,
+    },
+    {
+      path: 'oauth',
+      errorElement: <RouteErrorBoundary />,
+      children: [
+        {
+          path: 'success',
+          element: <OAuthSuccess />,
+        },
+        {
+          path: 'error',
+          element: <OAuthError />,
+        },
+      ],
+    },
+    {
+      path: '/',
+      element: <StartupLayout />,
+      errorElement: <RouteErrorBoundary />,
+      children: [
+        {
+          path: 'register',
+          element: <Registration />,
+        },
+        {
+          path: 'forgot-password',
+          element: <RequestPasswordReset />,
+        },
+        {
+          path: 'reset-password',
+          element: <ResetPassword />,
+        },
+      ],
+    },
+    {
+      path: 'verify',
+      element: <VerifyEmail />,
+      errorElement: <RouteErrorBoundary />,
+    },
+    {
+      element: <AuthLayout />,
+      errorElement: <RouteErrorBoundary />,
+      children: [
+        {
+          path: '/',
+          element: <LoginLayout />,
+          children: [
+            {
+              path: 'login',
+              element: <Login />,
+            },
+            {
+              path: 'login/2fa',
+              element: <TwoFactorScreen />,
+            },
+          ],
+        },
+        dashboardRoutes,
+        {
+          path: '/',
+          element: <Root />,
+          children: [
+            {
+              index: true,
+              element: <Navigate to="/c/new" replace={true} />,
+            },
+            {
+              path: 'c/:conversationId?',
+              element: <ChatRoute />,
+            },
+            {
+              path: 'leaderboard',
+              element: <Leaderboard />,
+            },
+            {
+              path: 'home',
+              element: <Recommendations />,
+            },
+            {
+              path: 'profile/:userId?',
+              element: <Profile />,
+            },
+            {
+              path: 'search',
+              element: <Search />,
+            },
+            {
+              path: 'agents',
+              element: <AgentMarketplace />,
+            },
+            {
+              path: 'agents/:category',
+              element: <AgentMarketplace />,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  { basename: baseHref },
+);

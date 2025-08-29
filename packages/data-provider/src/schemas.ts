@@ -684,6 +684,8 @@ export const tConversationSchema = z.object({
   iconURL: z.string().nullable().optional(),
   /* temporary chat */
   expiredAt: z.string().nullable().optional(),
+  /* file token limits */
+  fileTokenLimit: coerceNumber.optional(),
   /** @deprecated */
   resendImages: z.boolean().optional(),
   /** @deprecated */
@@ -798,6 +800,8 @@ export const tQueryParamsSchema = tConversationSchema
      * https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-instructions
      * */
     instructions: true,
+    /** @endpoints openAI, google, anthropic */
+    fileTokenLimit: true,
   })
   .merge(
     z.object({
@@ -854,6 +858,7 @@ export const googleBaseSchema = tConversationSchema.pick({
   thinking: true,
   thinkingBudget: true,
   web_search: true,
+  fileTokenLimit: true,
   iconURL: true,
   greeting: true,
   spec: true,
@@ -1105,6 +1110,7 @@ export const openAIBaseSchema = tConversationSchema.pick({
   useResponsesApi: true,
   web_search: true,
   disableStreaming: true,
+  fileTokenLimit: true,
 });
 
 export const openAISchema = openAIBaseSchema
@@ -1149,6 +1155,7 @@ export const anthropicBaseSchema = tConversationSchema.pick({
   spec: true,
   maxContextTokens: true,
   web_search: true,
+  fileTokenLimit: true,
 });
 
 export const anthropicSchema = anthropicBaseSchema
