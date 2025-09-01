@@ -160,6 +160,7 @@
     "@dicebear/adventurer": "^9.2.4",
     "@dicebear/adventurer-neutral": "^9.2.4",
     "@esbuild/darwin-x64": "^0.25.8",
+    "@mcp-ui/client": "^5.9.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@react-spring/web": "^10.0.1",
     "@smithy/eventstream-codec": "^4.0.5",
