@@ -69,13 +69,25 @@ export type MCPToolCallResponse =
       isError?: boolean;
     };
 
-export type Provider = 'google' | 'anthropic' | 'openAI';
+export type Provider =
+  | 'google'
+  | 'anthropic'
+  | 'openai'
+  | 'azureopenai'
+  | 'openrouter'
+  | 'xai'
+  | 'deepseek'
+  | 'ollama'
+  | 'bedrock';
 
 export type FormattedContent =
   | {
       type: 'text';
-      text: string;
-      metadata?: string;
+      metadata?: {
+        type: string;
+        data: UIResource[];
+      };
+      text?: string;
     }
   | {
       type: 'image';

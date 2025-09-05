@@ -185,8 +185,11 @@ export function formatToolContent(
   if (uiResources.length) {
     formattedContent.push({
       type: 'text',
-      metadata: 'ui_resources',
-      text: btoa(JSON.stringify(uiResources)),
+      metadata: {
+        type: 'ui_resources',
+        data: uiResources,
+      },
+      text: '',
     });
   }
 

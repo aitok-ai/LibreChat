@@ -2,8 +2,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useParams, useOutletContext, useLocation } from 'react-router-dom';
 import React, { useContext, useState } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { ThemeContext, Spinner, Button } from '@librechat/client';
-// import { useNavigate, useOutletContext, useLocation } from 'react-router-dom';
+import { ThemeContext, Spinner, Button, isDark } from '@librechat/client';
 import { useRegisterUserMutation } from 'librechat-data-provider/react-query';
 import type { TRegisterUser, TError } from 'librechat-data-provider';
 import type { TLoginLayoutContext } from '~/common';
@@ -33,7 +32,7 @@ const Registration: React.FC = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get('token');
-  const validTheme = theme === 'dark' ? 'dark' : 'light';
+  const validTheme = isDark(theme) ? 'dark' : 'light';
 
   // only require captcha if we have a siteKey
   const requireCaptcha = Boolean(startupConfig?.turnstile?.siteKey);
