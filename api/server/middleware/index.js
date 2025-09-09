@@ -1,6 +1,5 @@
 const validatePasswordReset = require('./validatePasswordReset');
 const validateRegistration = require('./validateRegistration');
-const validateImageRequest = require('./validateImageRequest');
 const buildEndpointOption = require('./buildEndpointOption');
 const validateMessageReq = require('./validateMessageReq');
 const checkDomainAllowed = require('./checkDomainAllowed');
@@ -51,7 +50,6 @@ module.exports = {
   validateMessageReq,
   buildEndpointOption,
   validateRegistration,
-  validateImageRequest,
   validatePasswordReset,
   messageQuota,
 };
