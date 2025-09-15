@@ -644,10 +644,3 @@ declare global {
     google_tag_manager?: unknown;
   }
 }
-
-export type UIResource = {
-  uri: string;
-  mimeType: string;
-  text: string;
-  [key: string]: unknown;
-};
