@@ -156,6 +156,7 @@ export const useRevokeUserKeyMutation = (name: string): UseMutationResult<unknow
         queryClient.invalidateQueries([QueryKeys.assistantDocs]);
         queryClient.invalidateQueries([QueryKeys.assistants]);
         queryClient.invalidateQueries([QueryKeys.assistant]);
+        queryClient.invalidateQueries([QueryKeys.mcpTools]);
         queryClient.invalidateQueries([QueryKeys.actions]);
         queryClient.invalidateQueries([QueryKeys.tools]);
       }
@@ -181,6 +182,7 @@ export const useRevokeAllUserKeysMutation = (): UseMutationResult<unknown> => {
       queryClient.invalidateQueries([QueryKeys.assistantDocs]);
       queryClient.invalidateQueries([QueryKeys.assistants]);
       queryClient.invalidateQueries([QueryKeys.assistant]);
+      queryClient.invalidateQueries([QueryKeys.mcpTools]);
       queryClient.invalidateQueries([QueryKeys.actions]);
       queryClient.invalidateQueries([QueryKeys.tools]);
     },
@@ -415,7 +417,7 @@ export const useReinitializeMCPServerMutation = (): UseMutationResult<
   const queryClient = useQueryClient();
   return useMutation((serverName: string) => dataService.reinitializeMCPServer(serverName), {
     onSuccess: () => {
-      queryClient.refetchQueries([QueryKeys.tools]);
+      queryClient.refetchQueries([QueryKeys.mcpTools]);
     },
   });
 };
