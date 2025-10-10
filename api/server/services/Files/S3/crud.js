@@ -1,15 +1,15 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
+const { initializeS3 } = require('@librechat/api');
+const { logger } = require('@librechat/data-schemas');
 const { FileSources } = require('librechat-data-provider');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const {
   PutObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   DeleteObjectCommand,
 } = require('@aws-sdk/client-s3');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-const { initializeS3 } = require('./initialize');
-const { logger } = require('~/config');
 
 const bucketName = process.env.AWS_BUCKET_NAME;
 const defaultBasePath = 'images';
@@ -252,6 +252,7 @@ function extractKeyFromS3Url(fileUrlOrKey) {
     const url = new URL(fileUrlOrKey);
     return url.pathname.substring(1);
   } catch (error) {
+    logger.error('[extractKeyFromS3Url] Error extracting key from S3 URL:', error.message);
     const parts = fileUrlOrKey.split('/');
 
     if (parts.length >= 3 && !fileUrlOrKey.startsWith('http') && !fileUrlOrKey.startsWith('/')) {

@@ -25,6 +25,7 @@ const messageSchema: Schema<IMessage> = new Schema(
       index: true,
       required: true,
       default: null,
+      meiliIndex: true,
     },
     model: {
       type: String,
