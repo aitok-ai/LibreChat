@@ -9,9 +9,9 @@ const { getAppConfig } = require('~/server/services/Config');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // 检查路径设置是否存在
-    if (!req.app.locals.paths || !req.app.locals.paths.uploads) {
-      return cb(new Error('The path for file uploads is not defined. Please refresh webpage.'));
-    }
+    // if (!req.app.locals.paths || !req.app.locals.paths.uploads) {
+    //   return cb(new Error('The path for file uploads is not defined. Please refresh webpage.'+req.locals));
+    // }
     // 检查是否有已验证的用户
     if (!req.user || !req.user.id) {
       return cb(new Error('User is not authenticated. Please refresh webpage.'));
