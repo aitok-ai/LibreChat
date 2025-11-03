@@ -12,6 +12,7 @@ const { getAppConfig } = require('~/server/services/Config/app');
 const { getProjectByName } = require('~/models/Project');
 const { getMCPManager } = require('~/config');
 const { getLogStores } = require('~/cache');
+const { mcpServersRegistry } = require('@librechat/api');
 
 const router = express.Router();
 const emailLoginEnabled =
@@ -126,7 +127,7 @@ router.get('/', async function (req, res) {
       payload.minPasswordLength = minPasswordLength;
     }
 
-    const getMCPServers = () => {
+    const getMCPServers = async () => {
       try {
         if (appConfig?.mcpConfig == null) {
           return;
@@ -135,9 +136,8 @@ router.get('/', async function (req, res) {
         if (!mcpManager) {
           return;
         }
-        const mcpServers = mcpManager.getAllServers();
+        const mcpServers = await mcpServersRegistry.getAllServerConfigs();
         if (!mcpServers) return;
-        const oauthServers = mcpManager.getOAuthServers();
         for (const serverName in mcpServers) {
           if (!payload.mcpServers) {
             payload.mcpServers = {};
@@ -146,7 +146,7 @@ router.get('/', async function (req, res) {
           payload.mcpServers[serverName] = removeNullishValues({
             startup: serverConfig?.startup,
             chatMenu: serverConfig?.chatMenu,
-            isOAuth: oauthServers?.has(serverName),
+            isOAuth: serverConfig.requiresOAuth,
             customUserVars: serverConfig?.customUserVars,
           });
         }
@@ -155,7 +155,7 @@ router.get('/', async function (req, res) {
       }
     };
 
-    getMCPServers();
+    await getMCPServers();
     const webSearchConfig = appConfig?.webSearch;
     if (
       webSearchConfig != null &&
