@@ -355,7 +355,7 @@ export type TConfig = {
   capabilities?: string[];
   customParams?: {
     defaultParamsEndpoint?: string;
-    paramDefinitions?: SettingDefinition[];
+    paramDefinitions?: Partial<SettingDefinition>[];
   };
 };
 
