@@ -912,6 +912,7 @@ export enum KnownEndpoints {
   fireworks = 'fireworks',
   deepseek = 'deepseek',
   groq = 'groq',
+  helicone = 'helicone',
   huggingface = 'huggingface',
   mistral = 'mistral',
   mlx = 'mlx',
@@ -927,6 +928,7 @@ export enum KnownEndpoints {
 
 export enum FetchTokenConfig {
   openrouter = KnownEndpoints.openrouter,
+  helicone = KnownEndpoints.helicone,
 }
 
 export const defaultEndpoints: EModelEndpoint[] = [
@@ -959,9 +961,14 @@ export const alternateName = {
   [KnownEndpoints.deepseek]: 'DeepSeek',
   [KnownEndpoints.xai]: 'xAI',
   [KnownEndpoints.vercel]: 'Vercel',
+  [KnownEndpoints.helicone]: 'Helicone',
 };
 
 const sharedOpenAIModels = [
+  'gpt-5.1',
+  'gpt-5.1-chat-latest',
+  'gpt-5.1-codex',
+  'gpt-5.1-codex-mini',
   'gpt-5',
   'gpt-5-mini',
   'gpt-5-nano',
@@ -1456,6 +1463,10 @@ export enum ErrorTypes {
    * Generic Authentication failure
    */
   AUTH_FAILED = 'auth_failed',
+  /**
+   * Model refused to respond (content policy violation)
+   */
+  REFUSAL = 'refusal',
 }
 
 /**
