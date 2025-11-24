@@ -177,7 +177,7 @@ const registerUser = async (user, additionalData = {}) => {
     return { status: 404, message: errorMessage };
   }
 
-  const { email, password, name, username, refBy } = user;
+  const { email, password, name, username, refBy, provider } = user;
 
   let newUserId;
   try {
@@ -208,7 +208,7 @@ const registerUser = async (user, additionalData = {}) => {
 
     const salt = bcrypt.genSaltSync(10);
     const newUserData = {
-      provider: 'local',
+      provider: provider ?? 'local',
       email,
       username,
       name,

@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 import * as Ariakit from '@ariakit/react';
-import { forwardRef, useId, useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '~/utils';
 import './Tooltip.css';
@@ -21,7 +21,6 @@ export const TooltipAnchor = forwardRef<HTMLDivElement, TooltipAnchorProps>(func
   const mounted = Ariakit.useStoreState(tooltip, (state) => state.mounted);
   const placement = Ariakit.useStoreState(tooltip, (state) => state.placement);
 
-  const id = useId();
   const sanitizer = useMemo(() => {
     const instance = DOMPurify();
     instance.addHook('afterSanitizeAttributes', (node) => {
@@ -79,7 +78,6 @@ export const TooltipAnchor = forwardRef<HTMLDivElement, TooltipAnchorProps>(func
         {...props}
         ref={ref}
         role={role}
-        aria-describedby={id}
         onKeyDown={handleKeyDown}
         className={cn('cursor-pointer', className)}
       />
@@ -89,7 +87,6 @@ export const TooltipAnchor = forwardRef<HTMLDivElement, TooltipAnchorProps>(func
             gutter={4}
             alwaysVisible
             className="tooltip"
-            id={id}
             render={
               <motion.div
                 initial={{ opacity: 0, x, y }}
