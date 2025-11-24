@@ -11,7 +11,12 @@ const {
   deleteUserController,
   getUserController,
 } = require('~/server/controllers/UserController');
-const { requireJwtAuth, canDeleteAccount, verifyEmailLimiter } = require('~/server/middleware');
+const {
+  verifyEmailLimiter,
+  configMiddleware,
+  canDeleteAccount,
+  requireJwtAuth,
+} = require('~/server/middleware');
 
 const router = express.Router();
 
@@ -23,7 +28,7 @@ router.post('/plugins', requireJwtAuth, updateUserPluginsController);
 router.post('/follow', requireJwtAuth, followUserController);
 router.post('/:userId?', requireJwtAuth, postBiographyController);
 router.put('/:userId?', requireJwtAuth, usernameController);
-router.delete('/delete', requireJwtAuth, canDeleteAccount, deleteUserController);
+router.delete('/delete', requireJwtAuth, canDeleteAccount, configMiddleware, deleteUserController);
 router.post('/verify', verifyEmailController);
 router.post('/verify/resend', verifyEmailLimiter, resendVerificationController);
 

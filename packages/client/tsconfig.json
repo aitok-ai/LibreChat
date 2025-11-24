@@ -28,6 +28,8 @@
     "node_modules",
     "**/*.test.ts",
     "**/*.test.tsx",
+    "**/src/tests/*.test.ts",
+    "**/src/tests/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx"
   ]
