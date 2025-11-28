@@ -13,8 +13,10 @@ import store from '~/store';
 import { useAuthContext } from '~/hooks/AuthContext';
 
 export default function MobileNav({
+  navVisible,
   setNavVisible,
 }: {
+  navVisible: boolean;
   setNavVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   // const conversation = useRecoilValue(store.conversation);
@@ -79,7 +81,7 @@ export default function MobileNav({
         type="button"
         data-testid="mobile-header-new-chat-button"
         aria-label={localize('com_nav_open_sidebar')}
-        className="m-1 inline-flex size-10 items-center justify-center rounded-full hover:bg-surface-hover"
+        className={`m-1 inline-flex size-10 items-center justify-center rounded-full hover:bg-surface-hover ${navVisible ? 'invisible' : ''}`}
         onClick={() =>
           setNavVisible((prev) => {
             localStorage.setItem('navVisible', JSON.stringify(!prev));
