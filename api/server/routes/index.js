@@ -8,7 +8,6 @@ const memories = require('./memories');
 const presets = require('./presets');
 const prompts = require('./prompts');
 const balance = require('./balance');
-const plugins = require('./plugins');
 const actions = require('./actions');
 const banner = require('./banner');
 const search = require('./search');
@@ -24,14 +23,12 @@ const roles = require('./roles');
 const oauth = require('./oauth');
 const tags = require('./tags');
 const auth = require('./auth');
-const edit = require('./edit');
 const keys = require('./keys');
 const user = require('./user');
 const mcp = require('./mcp');
 
 module.exports = {
   mcp,
-  edit,
   auth,
   keys,
   user,
@@ -47,7 +44,6 @@ module.exports = {
   config,
   models,
   prompts,
-  plugins,
   leaderboard,
   assistants,
   webhooks,

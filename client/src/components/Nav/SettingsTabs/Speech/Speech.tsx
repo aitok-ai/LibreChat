@@ -166,7 +166,7 @@ function Speech() {
             value="simple"
             style={{ userSelect: 'none' }}
           >
-            <Lightbulb />
+            <Lightbulb aria-hidden="true" />
             {localize('com_ui_simple')}
           </Tabs.Trigger>
           <Tabs.Trigger
@@ -179,7 +179,7 @@ function Speech() {
             value="advanced"
             style={{ userSelect: 'none' }}
           >
-            <Cog />
+            <Cog aria-hidden="true" />
             {localize('com_ui_advanced')}
           </Tabs.Trigger>
         </Tabs.List>

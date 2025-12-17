@@ -3,15 +3,6 @@ const { createMethods } = require('@librechat/data-schemas');
 const methods = createMethods(mongoose);
 const { comparePassword } = require('./userMethods');
 const {
-  findFileById,
-  createFile,
-  updateFile,
-  deleteFile,
-  deleteFiles,
-  getFiles,
-  updateFileUsage,
-} = require('./File');
-const {
   getMessage,
   getMessages,
   saveMessage,
@@ -36,13 +27,6 @@ module.exports = {
   ...methods,
   seedDatabase,
   comparePassword,
-  findFileById,
-  createFile,
-  updateFile,
-  deleteFile,
-  deleteFiles,
-  getFiles,
-  updateFileUsage,
 
   getMessage,
   getMessages,
