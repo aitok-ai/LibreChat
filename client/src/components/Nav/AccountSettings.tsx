@@ -1,15 +1,13 @@
-import { useState, memo } from 'react';
-import { useRecoilState } from 'recoil';
+import { useState, memo, useRef } from 'react';
 import * as Select from '@ariakit/react/select';
 import { FileText, LogOut } from 'lucide-react';
 import { LinkIcon, GearIcon, DropdownMenuSeparator, Avatar } from '@librechat/client';
+import { MyFilesModal } from '~/components/Chat/Input/Files/MyFilesModal';
 import { useGetStartupConfig, useGetUserBalance } from '~/data-provider';
-import FilesView from '~/components/Chat/Input/Files/FilesView';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { useLocalize } from '~/hooks';
 import Settings from './Settings';
 import Profile from '../Profile';
-import store from '~/store';
 
 function AccountSettings() {
   const localize = useLocalize();
@@ -20,7 +18,8 @@ function AccountSettings() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [showFiles, setShowFiles] = useRecoilState(store.showFiles);
+  const [showFiles, setShowFiles] = useState(false);
+  const accountSettingsButtonRef = useRef<HTMLButtonElement>(null);
 
   if (!user) {
     return null;
@@ -29,6 +28,7 @@ function AccountSettings() {
   return (
     <Select.SelectProvider>
       <Select.Select
+        ref={accountSettingsButtonRef}
         aria-label={localize('com_nav_account_settings')}
         data-testid="nav-user"
         className="mt-text-sm flex h-auto w-full items-center gap-2 rounded-xl p-2 text-sm transition-all duration-200 ease-in-out hover:bg-surface-hover aria-[expanded=true]:bg-surface-hover"
@@ -102,7 +102,13 @@ function AccountSettings() {
           {localize('com_nav_log_out')}
         </Select.SelectItem>
       </Select.SelectPopover>
-      {showFiles && <FilesView open={showFiles} onOpenChange={setShowFiles} />}
+      {showFiles && (
+        <MyFilesModal
+          open={showFiles}
+          onOpenChange={setShowFiles}
+          triggerRef={accountSettingsButtonRef}
+        />
+      )}
       {showSettings && <Settings open={showSettings} onOpenChange={setShowSettings} />}
       {showProfile && <Profile isOpen={showProfile} setIsOpen={setShowProfile} user={user} />}
     </Select.SelectProvider>
