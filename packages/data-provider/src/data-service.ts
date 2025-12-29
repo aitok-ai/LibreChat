@@ -751,7 +751,7 @@ export function archiveConversation(
 }
 
 export function genTitle(payload: m.TGenTitleRequest): Promise<m.TGenTitleResponse> {
-  return request.post(endpoints.genTitle(), payload);
+  return request.get(endpoints.genTitle(payload.conversationId));
 }
 
 export const listMessages = (params?: q.MessagesListParams): Promise<q.MessagesListResponse> => {
@@ -1064,3 +1064,12 @@ export function getGraphApiToken(params: q.GraphTokenParams): Promise<q.GraphTok
 export function getDomainServerBaseUrl(): string {
   return `${endpoints.apiBaseUrl()}/api`;
 }
+
+/* Active Jobs */
+export interface ActiveJobsResponse {
+  activeJobIds: string[];
+}
+
+export const getActiveJobs = (): Promise<ActiveJobsResponse> => {
+  return request.get(endpoints.activeJobs());
+};
