@@ -56,7 +56,7 @@ function ChatView({ index = 0 }: { index?: number }) {
   });
 
   const chatHelpers = useChatHelpers(index, conversationId);
-  const addedChatHelpers = useAddedResponse({ rootIndex: index });
+  const addedChatHelpers = useAddedResponse();
 
   useResumableStreamToggle(
     chatHelpers.conversation?.endpoint,
