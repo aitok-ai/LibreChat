@@ -47,21 +47,15 @@ function ProfileContent() {
   const followUserMutation = useFollowUserMutation();
   const { data: startupConfig } = useGetStartupConfig();
 
-  const defaultClasses = 'p-2 rounded-md min-w-[75px] font-normal text-xs';
-  const defaultSelected = cn(
-    defaultClasses,
-    'font-medium data-[state=active]:text-white text-xs text-white',
-  );
-
   // Component to display user's followers and who they are following
   // Displays username only
   function ListItem({ id, info }: { id: string; info: TUser }) {
     const [copied, setCopied] = useState<boolean>(false);
 
     return (
-      <div className="group relative my-2 flex cursor-pointer flex-row items-center">
+      <div className="group relative my-1 flex cursor-pointer flex-row items-center">
         <div
-          className="flex h-full w-full flex-row items-center gap-2 rounded-lg px-2 py-2 text-base hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
+          className="flex h-full w-full flex-row items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-base transition-all hover:border-gray-200 hover:bg-gray-50 hover:shadow-sm dark:text-gray-200 dark:hover:border-gray-700 dark:hover:bg-gray-800"
           onClick={() => {
             navigate(`/profile/${id}`);
           }}
@@ -73,13 +67,17 @@ function ProfileContent() {
           tabIndex={0}
           role="button"
         >
-          <UserIcon />
-          <div className="w-56 truncate">{info.username}</div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-sm">
+            <UserIcon />
+          </div>
+          <div className="flex-1 truncate font-medium text-gray-900 dark:text-gray-100">
+            {info.username}
+          </div>
         </div>
 
         {/*Copy profile URL button */}
         <button
-          className="visible absolute right-1 z-10 rounded-md p-1 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
+          className="absolute right-2 z-10 rounded-lg p-2 text-gray-500 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-700 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
           onClick={() => {
             if (copied === true) {
               return;
@@ -91,9 +89,10 @@ function ProfileContent() {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           }}
+          aria-label="分享个人资料"
         >
           {copied ? (
-            <div className="flex w-[92px] flex-row items-center gap-1">
+            <div className="flex flex-row items-center gap-1.5 text-sm font-medium text-green-600 dark:text-green-400">
               <svg
                 stroke="currentColor"
                 fill="none"
@@ -101,38 +100,35 @@ function ProfileContent() {
                 viewBox="0 0 24 24"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-5 w-5"
+                className="h-4 w-4"
                 height="1em"
                 width="1em"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              {localize('com_ui_copy_success')}
+              <span className="hidden sm:inline">{localize('com_ui_copy_success')}</span>
             </div>
           ) : (
-            <div className="flex w-[92px] flex-row items-center gap-1">
-              <svg
-                className="h-5 w-5"
-                width="1em"
-                height="1em"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g id="Communication / Share_iOS_Export">
-                  <path
-                    id="Vector"
-                    d="M9 6L12 3M12 3L15 6M12 3V13M7.00023 10C6.06835 10 5.60241 10 5.23486 10.1522C4.74481 10.3552 4.35523 10.7448 4.15224 11.2349C4 11.6024 4 12.0681 4 13V17.8C4 18.9201 4 19.4798 4.21799 19.9076C4.40973 20.2839 4.71547 20.5905 5.0918 20.7822C5.5192 21 6.07899 21 7.19691 21H16.8036C17.9215 21 18.4805 21 18.9079 20.7822C19.2842 20.5905 19.5905 20.2839 19.7822 19.9076C20 19.4802 20 18.921 20 17.8031V13C20 12.0681 19.9999 11.6024 19.8477 11.2349C19.6447 10.7448 19.2554 10.3552 18.7654 10.1522C18.3978 10 17.9319 10 17 10"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </g>
-              </svg>
-              {localize('com_ui_share')}
-            </div>
+            <svg
+              className="h-5 w-5"
+              width="1em"
+              height="1em"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g id="Communication / Share_iOS_Export">
+                <path
+                  id="Vector"
+                  d="M9 6L12 3M12 3L15 6M12 3V13M7.00023 10C6.06835 10 5.60241 10 5.23486 10.1522C4.74481 10.3552 4.35523 10.7448 4.15224 11.2349C4 11.6024 4 12.0681 4 13V17.8C4 18.9201 4 19.4798 4.21799 19.9076C4.40973 20.2839 4.71547 20.5905 5.0918 20.7822C5.5192 21 6.07899 21 7.19691 21H16.8036C17.9215 21 18.4805 21 18.9079 20.7822C19.2842 20.5905 19.5905 20.2839 19.7822 19.9076C20 19.4802 20 18.921 20 17.8031V13C20 12.0681 19.9999 11.6024 19.8477 11.2349C19.6447 10.7448 19.2554 10.3552 18.7654 10.1522C18.3978 10 17.9319 10 17 10"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </g>
+            </svg>
           )}
         </button>
       </div>
@@ -310,7 +306,7 @@ function ProfileContent() {
   const handleUsernameClick = () => {
     setIsEditing(true);
   };
-  let membershipContent;
+  // Removed unused variable: membershipContent
 
   return (
     <>
@@ -367,7 +363,7 @@ function ProfileContent() {
                         value={newUsername}
                         onChange={handleUsernameChange}
                       />
-                      <button className="pl-4" type="submit">
+                      <button className="pl-4" type="submit" aria-label="提交用户名更改">
                         <CheckMark />
                       </button>
                     </form>
@@ -472,220 +468,351 @@ function ProfileContent() {
             </button>
           )}
         </div>
-        {/* Subscription */}
-        {userId === user?.id ? (
-          proMemberExpiredAt && proMemberExpiredAt > new Date() ? (
-            // Current user: show subscription
-            <div className="w-full rounded-lg p-6 dark:text-gray-200">
-              <div className="pl-7">
-                {localize('com_ui_pro_member_expired_at')}: {proMemberExpiredAt.getFullYear()}-
-                {proMemberExpiredAt.getMonth() + 1}-{proMemberExpiredAt.getDate()}
-                <button
-                  type="submit"
-                  className="ml-2 rounded bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
-                  onClick={() =>
-                    window.open(
-                      `${startupConfig?.proMemberPaymentURL}?locale=${lang}&prefilled_email=${profileUser?.email}`,
-                    )
-                  }
-                >
-                  {localize('com_ui_renewal_pro_member')}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full rounded-lg p-6 dark:text-gray-200">
-              <div className="pl-7">
-                {localize('com_ui_free_member')}
-                <button
-                  type="submit"
-                  className="ml-2 rounded bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
-                  onClick={() =>
-                    window.open(
-                      `${startupConfig?.proMemberPaymentURL}?locale=${lang}&prefilled_email=${profileUser?.email}`,
-                    )
-                  }
-                >
-                  {localize('com_ui_become_pro_member')}
-                </button>
-              </div>
-            </div>
-          )
-        ) : (
-          <div></div>
-        )}
-
-        {/* Monthly Quota Usage: a table of quota and usage based on object quotaUsage */}
-        <div className="w-full rounded-lg p-6 dark:text-gray-200">
-          <div className="pl-7">
-            <table className="w-full border-collapse border-2 border-gray-500">
-              <thead>
-                <tr>
-                  <th className="border-2 border-gray-500 text-left">{localize('com_ui_model')}</th>
-                  <th className="border-2 border-gray-500 text-left">
-                    {localize('com_ui_usage_count')}
-                  </th>
-                  <th className="border-2 border-gray-500 text-left">{localize('com_ui_quota')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(quotaUsage).map(([key, value]) => (
-                  <tr key={key}>
-                    <td className="border-2 border-gray-500">{key}</td>
-                    <td className="border-2 border-gray-500">{value.consumed}</td>
-                    <td className="border-2 border-gray-500">{value.quota}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* User bio */}
-        {userId === user?.id ? (
-          // Current user's profile view
-          <div className="w-full rounded-lg p-6 dark:text-gray-200">
-            {editMode ? (
-              // Edit mode
-              <form className="flex flex-col space-y-4" onSubmit={handleSubmit}>
-                <div className="flex items-center">
-                  <label htmlFor="bio" className="flex items-center justify-center pl-5 pr-5">
-                    <span className="text-lg">{localize('com_ui_about_yourself')}</span>
-                  </label>
-                  <textarea
-                    id="bio"
-                    value={bio}
-                    placeholder="分享一下你的兴趣、技能和人生态度..."
-                    onChange={(e) => setBio(e.target.value)}
-                    className="flex-1 border border-gray-300 bg-transparent p-2"
-                  ></textarea>
-                </div>
-
-                <div className="flex justify-end space-x-4">
+        {/* Subscription - 优化的会员信息卡片 */}
+        {userId === user?.id && (
+          <div className="mx-4 my-4 md:mx-12">
+            {proMemberExpiredAt && proMemberExpiredAt > new Date() ? (
+              // Pro会员卡片
+              <div className="rounded-xl border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 shadow-md dark:border-blue-400 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-white">
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-lg font-semibold text-blue-700 dark:text-blue-300">
+                        {localize('com_ui_pro_member')}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {localize('com_ui_pro_member_expired_at')}:{' '}
+                        {proMemberExpiredAt.getFullYear()}-
+                        {String(proMemberExpiredAt.getMonth() + 1).padStart(2, '0')}-
+                        {String(proMemberExpiredAt.getDate()).padStart(2, '0')}
+                      </div>
+                    </div>
+                  </div>
                   <button
                     type="button"
-                    onClick={handleEditProfile}
-                    className="rounded px-4 py-1 hover:bg-gray-500"
+                    className="rounded-lg bg-blue-500 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-95"
+                    onClick={() =>
+                      window.open(
+                        `${startupConfig?.proMemberPaymentURL}?locale=${lang}&prefilled_email=${profileUser?.email}`,
+                      )
+                    }
                   >
-                    {localize('com_ui_back')}
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded bg-green-500 px-4 py-1 text-white hover:bg-green-600"
-                    onClick={handleSubmit}
-                  >
-                    {localize('com_ui_save')}
+                    {localize('com_ui_renewal_pro_member')}
                   </button>
                 </div>
-              </form>
+              </div>
             ) : (
-              // Profile view mode
-              <>
-                <div className="pl-1">
-                  {expanded ? (
+              // 免费会员卡片
+              <div className="rounded-xl border-2 border-gray-300 bg-gradient-to-r from-gray-50 to-slate-50 p-6 shadow-md dark:border-gray-600 dark:from-gray-800/50 dark:to-slate-800/50">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-400 text-white dark:bg-gray-600">
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
                     <div>
-                      <div className="pl-1">{bio}</div>
-                      <button
-                        className="ml-2 text-green-500 hover:text-green-300"
-                        onClick={toggleExpand}
-                      >
-                        {localize('com_ui_show_less')}
-                      </button>
+                      <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                        {localize('com_ui_free_member')}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {localize('com_ui_upgrade_message')}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="pl-1">
-                      {bio.length > 100 ? `${bio.slice(0, 100)}...` : bio}
-                      {bio.length > 100 && (
-                        <button
-                          className="ml-2 text-green-500 hover:text-green-300"
-                          onClick={toggleExpand}
-                        >
-                          {expanded ? localize('com_ui_show_less') : localize('com_ui_show_more')}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
-                  <div className="ml-auto md:flex-none">
-                    <p className="mt-4">
-                      <button
-                        className="flex w-24 flex-col items-center leading-[22px] text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-gray-200"
-                        onClick={handleEditProfile}
-                      >
-                        <EditIcon />
-                      </button>
-                    </p>
                   </div>
+                  <button
+                    type="button"
+                    className="rounded-lg bg-blue-500 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-95"
+                    onClick={() =>
+                      window.open(
+                        `${startupConfig?.proMemberPaymentURL}?locale=${lang}&prefilled_email=${profileUser?.email}`,
+                      )
+                    }
+                  >
+                    {localize('com_ui_become_pro_member')}
+                  </button>
                 </div>
-              </>
+              </div>
             )}
-          </div>
-        ) : (
-          // Other user's profile view
-          <div className="w-full rounded-lg p-6 dark:text-gray-200">
-            <div className="pl-7">{bio}</div>
           </div>
         )}
 
-        {/*Tabs and tab content */}
-        <div className="flex flex-col items-center">
+        {/* Monthly Quota Usage - 优化的使用情况表格 */}
+        {Object.keys(quotaUsage).length > 0 && (
+          <div className="mx-4 my-4 md:mx-12">
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  {localize('com_ui_usage_30days')}
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {localize('com_ui_model')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {localize('com_ui_usage_count')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {localize('com_ui_quota')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {Object.entries(quotaUsage).map(([key, value]) => (
+                      <tr
+                        key={key}
+                        className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                      >
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {key}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-2">
+                            <span>{value.consumed}</span>
+                            <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                              {}
+                              <div
+                                className="h-full rounded-full bg-blue-500 transition-all"
+                                style={{
+                                  width: `${Math.min((value.consumed / value.quota) * 100, 100)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                          {value.quota}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* User bio - 优化的个人简介 */}
+        <div className="mx-4 my-4 md:mx-12">
+          {userId === user?.id ? (
+            // Current user's profile view
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              {editMode ? (
+                // Edit mode
+                <form className="p-6" onSubmit={handleSubmit}>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="bio"
+                      className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                    >
+                      {localize('com_ui_about_yourself')}
+                    </label>
+                    <textarea
+                      id="bio"
+                      value={bio}
+                      placeholder="分享一下你的兴趣、技能和人生态度..."
+                      onChange={(e) => setBio(e.target.value)}
+                      rows={6}
+                      className="w-full rounded-lg border border-gray-300 bg-transparent p-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:text-gray-100 dark:focus:border-blue-400"
+                    ></textarea>
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={handleEditProfile}
+                      className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                    >
+                      {localize('com_ui_back')}
+                    </button>
+                    <button
+                      type="submit"
+                      className="rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95"
+                    >
+                      {localize('com_ui_save')}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                // Profile view mode
+                <div className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {localize('com_ui_bio')}
+                      </h3>
+                      <div className="text-gray-600 dark:text-gray-400">
+                        {expanded ? (
+                          <div>
+                            <p className="whitespace-pre-wrap leading-relaxed">{bio}</p>
+                            {bio.length > 100 && (
+                              <button
+                                className="mt-2 text-sm font-medium text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                                onClick={toggleExpand}
+                              >
+                                {localize('com_ui_show_less')}
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="whitespace-pre-wrap leading-relaxed">
+                              {bio.length > 100 ? `${bio.slice(0, 100)}...` : bio}
+                            </p>
+                            {bio.length > 100 && (
+                              <button
+                                className="mt-2 text-sm font-medium text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                                onClick={toggleExpand}
+                              >
+                                {localize('com_ui_show_more')}
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      className="ml-4 rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                      onClick={handleEditProfile}
+                      title="编辑简介"
+                    >
+                      <EditIcon />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Other user's profile view
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {localize('com_ui_bio')}
+              </h3>
+              <p className="whitespace-pre-wrap leading-relaxed text-gray-600 dark:text-gray-400">
+                {bio}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/*Tabs and tab content - 优化的标签页 */}
+        <div className="mx-4 my-6 flex flex-col md:mx-12">
           <Tabs
             value={tabValue}
             onValueChange={(value: string) => setTabValue(value)}
-            className={defaultClasses}
+            className="w-full"
           >
-            <TabsList className="flex rounded-lg border-2 border-blue-700 bg-blue-600 shadow-md dark:bg-blue-600">
-              {/* {userId === user?.id && (
-                <TabsTrigger value="likes" className="px-4 py-2 text-white dark:text-white">
-                  {localize('com_ui_my_likes')}
-                </TabsTrigger>
-              )} */}
+            <TabsList className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
               {userId != user?.id && (
                 <TabsTrigger
                   value="conversations"
-                  className="border-r-2 border-blue-700 px-4 py-2 text-white transition-colors duration-200 last:border-r-0 hover:bg-blue-500 dark:text-white dark:hover:bg-blue-500"
+                  className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:text-gray-400 dark:hover:text-gray-200 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
                 >
                   {localize('com_ui_conversations')}
                 </TabsTrigger>
               )}
               <TabsTrigger
                 value="followers"
-                className="border-r-2 border-blue-700 px-4 py-2 text-white transition-colors duration-200 last:border-r-0 hover:bg-blue-500 dark:text-white dark:hover:bg-blue-500"
+                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:text-gray-400 dark:hover:text-gray-200 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
               >
                 {localize('com_ui_followers')}
               </TabsTrigger>
               <TabsTrigger
                 value="following"
-                className="border-r-2 border-blue-700 px-4 py-2 text-white transition-colors duration-200 last:border-r-0 hover:bg-blue-500 dark:text-white dark:hover:bg-blue-500"
+                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:text-gray-400 dark:hover:text-gray-200 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
               >
                 {localize('com_ui_following')}
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
-        <div className="flex h-full flex-col overflow-y-auto border-t-2">
+
+        {/* Tab content - 优化的内容区域 */}
+        <div className="mx-4 flex h-full flex-col overflow-y-auto md:mx-12">
           {tabValue === 'likes' && <LikedConversations key={userId} />}
           {tabValue === 'conversations' && <PublicConversations key={userId} />}
 
           {/*New followers and follwings are added at the end of the object in MongoDB. */}
           {/*We reverse the array to dsiplay the most recent follwers and followings at the top. */}
           {tabValue === 'followers' && (
-            <div>
-              {Object.entries(profileUser?.followers || {})
-                .reverse()
-                .map(([id, info]) => (
-                  <ListItem key={id} id={id} info={info} />
-                ))}
+            <div className="space-y-1">
+              {Object.keys(profileUser?.followers || {}).length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+                  <svg
+                    className="mb-3 h-16 w-16 opacity-50"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  <p className="text-sm">{localize('com_ui_no_followers')}</p>
+                </div>
+              ) : (
+                Object.entries(profileUser?.followers || {})
+                  .reverse()
+                  .map(([id, info]) => <ListItem key={id} id={id} info={info} />)
+              )}
             </div>
           )}
           {tabValue === 'following' && (
-            <div>
-              {Object.entries(profileUser?.following || {})
-                .reverse()
-                .map(([id, info]) => (
-                  <ListItem key={id} id={id} info={info} />
-                ))}
+            <div className="space-y-1">
+              {Object.keys(profileUser?.following || {}).length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+                  <svg
+                    className="mb-3 h-16 w-16 opacity-50"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  <p className="text-sm">{localize('com_ui_no_following')}</p>
+                </div>
+              ) : (
+                Object.entries(profileUser?.following || {})
+                  .reverse()
+                  .map(([id, info]) => <ListItem key={id} id={id} info={info} />)
+              )}
             </div>
           )}
           {tabValue === '' && <Spinner />}

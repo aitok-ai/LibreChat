@@ -65,6 +65,7 @@ export interface SharedLinksListParams {
   sortDirection: 'asc' | 'desc';
   search?: string;
   cursor?: string;
+  userId?: string;
 }
 
 export type SharedLinkItem = {

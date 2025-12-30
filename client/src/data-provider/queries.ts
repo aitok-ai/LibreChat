@@ -137,10 +137,13 @@ export const useSharedLinksQuery = (
   params: SharedLinksListParams,
   config?: UseInfiniteQueryOptions<SharedLinksResponse, unknown>,
 ) => {
-  const { pageSize, isPublic, search, sortBy, sortDirection } = params;
+  const { pageSize, isPublic, search, sortBy, sortDirection, userId } = params;
 
   return useInfiniteQuery<SharedLinksResponse>({
-    queryKey: [QueryKeys.sharedLinks, { pageSize, isPublic, search, sortBy, sortDirection }],
+    queryKey: [
+      QueryKeys.sharedLinks,
+      { pageSize, isPublic, search, sortBy, sortDirection, userId },
+    ],
     queryFn: ({ pageParam }) =>
       dataService.listSharedLinks({
         cursor: pageParam?.toString(),
@@ -149,6 +152,7 @@ export const useSharedLinksQuery = (
         search,
         sortBy,
         sortDirection,
+        userId,
       }),
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
     keepPreviousData: true,

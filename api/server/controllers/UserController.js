@@ -45,58 +45,62 @@ const { getLogStores } = require('~/cache');
 
 const getUserController = async (req, res) => {
   const appConfig = await getAppConfig({ role: req.user?.role });
-  /** @type {IUser} */
-  const userData = req.user.toObject != null ? req.user.toObject() : { ...req.user };
-  /**
-   * These fields should not exist due to secure field selection, but deletion
-   * is done in case of alternate database incompatibility with Mongo API
-   * */
-  delete userData.password;
-  delete userData.totpSecret;
-  delete userData.backupCodes;
-  if (appConfig.fileStrategy === FileSources.s3 && userData.avatar) {
-    const avatarNeedsRefresh = needsRefresh(userData.avatar, 3600);
-    if (!avatarNeedsRefresh) {
-      return res.status(200).send(userData);
+  const { userId } = req.params;
+
+  if (userId === undefined || userId === req.user.id) {
+    /** @type {IUser} */
+    const userData = req.user.toObject != null ? req.user.toObject() : { ...req.user };
+    /**
+     * These fields should not exist due to secure field selection, but deletion
+     * is done in case of alternate database incompatibility with Mongo API
+     * */
+    delete userData.password;
+    delete userData.totpSecret;
+    delete userData.backupCodes;
+    if (appConfig.fileStrategy === FileSources.s3 && userData.avatar) {
+      const avatarNeedsRefresh = needsRefresh(userData.avatar, 3600);
+      if (!avatarNeedsRefresh) {
+        return res.status(200).send(userData);
+      }
+      const originalAvatar = userData.avatar;
+      try {
+        userData.avatar = await getNewS3URL(userData.avatar);
+        await updateUser(userData.id, { avatar: userData.avatar });
+      } catch (error) {
+        userData.avatar = originalAvatar;
+        logger.error('Error getting new S3 URL for avatar:', error);
+      }
     }
-    const originalAvatar = userData.avatar;
+    return res.status(200).send(userData);
+  } else {
     try {
-      userData.avatar = await getNewS3URL(userData.avatar);
-      await updateUser(userData.id, { avatar: userData.avatar });
+      const user = await User.findById(userId).lean();
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      const { _id, name, username, followers, following, biography, avatar } = user;
+      let validAvatar = avatar;
+
+      if (appConfig.fileStrategy === FileSources.s3 && validAvatar) {
+        const avatarNeedsRefresh = needsRefresh(validAvatar, 3600);
+        if (avatarNeedsRefresh) {
+          try {
+            validAvatar = await getNewS3URL(validAvatar);
+            await updateUser(_id, { avatar: validAvatar });
+          } catch (error) {
+            logger.error('Error getting new S3 URL for other user avatar:', error);
+          }
+        }
+      }
+
+      res
+        .status(200)
+        .send({ id: _id, name, username, followers, following, biography, avatar: validAvatar });
     } catch (error) {
-      userData.avatar = originalAvatar;
-      logger.error('Error getting new S3 URL for avatar:', error);
+      logger.error(error);
+      return res.status(500).json({ message: 'Error getting user' });
     }
   }
-  res.status(200).send(userData);
-  /*try {
-    const { userId } = req.params;
-    if (userId === undefined || userId === req.user.id) {
-      // information about the current user
-      const monthlyQuotaConsumed = await getUserMessageQuotaUsagePastDays(req.user, 30); // This value might be dynamic based on your application logic
-
-      // Extend req.user with the new field
-      const response = {
-        ...req.user,
-        monthlyQuotaConsumed: monthlyQuotaConsumed,
-      };
-      res.status(200).send(response);
-    } else {
-      // information about another user, without even authentification.
-      // TODO: this might be a security issue
-      const user = await User.findById(userId).exec();
-      const id = user._id;
-      const name = user.name;
-      const username = user.username;
-      const followers = user.followers;
-      const following = user.following;
-      const biography = user.biography;
-      res.status(200).send({ id, name, username, followers, following, biography });
-    }
-  } catch (error) {
-    console.log(error);
-    return { message: 'Error getting user' };
-  }*/
 };
 
 // update biography

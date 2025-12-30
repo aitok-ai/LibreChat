@@ -46,10 +46,10 @@ export function getSharedMessages(shareId: string): Promise<t.TSharedMessagesRes
 export const listSharedLinks = async (
   params: q.SharedLinksListParams,
 ): Promise<q.SharedLinksResponse> => {
-  const { pageSize, isPublic, sortBy, sortDirection, search, cursor } = params;
+  const { pageSize, isPublic, sortBy, sortDirection, search, cursor, userId } = params;
 
   return request.get(
-    endpoints.getSharedLinks(pageSize, isPublic, sortBy, sortDirection, search, cursor),
+    endpoints.getSharedLinks(pageSize, isPublic, sortBy, sortDirection, search, cursor, userId),
   );
 };
 
@@ -208,7 +208,7 @@ export const getLikedConversations = (userId: string) => {
   return request.get(endpoints.likedConversations(userId));
 };
 
-export const getPublicConverstaions = (userId: string) => {
+export const getPublicConversations = (userId: string) => {
   return request.get(endpoints.publicConversations(userId));
 };
 

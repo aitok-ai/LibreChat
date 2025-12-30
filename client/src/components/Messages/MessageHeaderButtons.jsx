@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react';
-// import { useRecoilValue } from 'recoil';
 import PrivateButton from '../Conversations/PrivateButton';
-import { CSSTransition } from 'react-transition-group';
+import { ShareButton } from '~/components/Conversations/ConvoOptions';
 import store from '~/store';
 import { useAuthContext } from '~/hooks/AuthContext';
-// import {
-//   useLikeConversationMutation,
-//   // useUpdateConversationMutation,
-// } from 'librechat-data-provider/react-query';
 import { useUpdateConversationMutation } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 
@@ -24,22 +19,12 @@ export default function MessageHeaderButtons({ conversationId, index = 0 }) {
 
   // UI states
   const [privateState, setPrivateState] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   // const [liked, setLiked] = useState(false);
   // const [numOfLikes, setNumOfLikes] = useState(0);
   // const [likedBy, setLikedBy] = useState({});
 
   // Copies conversation share link
-  const copyShareLinkHandler = () => {
-    if (copied) {
-      return;
-    }
-    navigator.clipboard.writeText(
-      window.location.protocol + '//' + window.location.host + `/chat/share/${conversationId}`,
-    );
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   // Set conversation's private state
   const setPrivateHandler = (e) => {
@@ -84,7 +69,7 @@ export default function MessageHeaderButtons({ conversationId, index = 0 }) {
         <div className="flex w-full flex-row items-center justify-center gap-2 border-b border-black/10 bg-gray-50 px-1 dark:border-gray-900/50 dark:bg-gray-700 dark:text-gray-200">
           {/*Copy share link button*/}
           <button
-            onClick={copyShareLinkHandler}
+            onClick={() => setShowShareDialog(true)}
             className="flex flex-row items-center justify-center gap-1 px-1 hover:bg-gray-200 hover:dark:bg-gray-600"
           >
             <svg
@@ -141,12 +126,11 @@ export default function MessageHeaderButtons({ conversationId, index = 0 }) {
           <div>{localize('com_ui_number_of_views', viewCount ? viewCount.toString() : '0')}</div>
         </div>
       </div>
-      {/*Copied indicator*/}
-      <CSSTransition in={copied} timeout={2000} classNames="copied-toast" unmountOnExit={false}>
-        <div className="text-md bottom-81 invisible absolute left-40 z-10 flex items-center justify-center bg-gray-200 px-4 py-1 text-black opacity-0 ">
-          {localize('com_ui_copied')}
-        </div>
-      </CSSTransition>
+      <ShareButton
+        conversationId={conversationId}
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+      />
     </>
   );
 }

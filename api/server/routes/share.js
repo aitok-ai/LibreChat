@@ -58,8 +58,14 @@ router.get('/', requireJwtAuth, async (req, res) => {
       search: req.query.search ? decodeURIComponent(req.query.search.trim()) : undefined,
     };
 
+    let targetUserId = req.user.id;
+    if (req.query.userId && req.query.userId !== req.user.id) {
+      targetUserId = req.query.userId;
+      params.isPublic = true;
+    }
+
     const result = await getSharedLinks(
-      req.user.id,
+      targetUserId,
       params.pageParam,
       params.pageSize,
       params.isPublic,

@@ -383,7 +383,7 @@ export const useGetPublicConversationQuery = (
 ): QueryObserverResult<t.TConversation[]> => {
   return useQuery(
     [QueryKeys.publicConversatons, userId],
-    () => dataService.getPublicConverstaions(userId),
+    () => dataService.getPublicConversations(userId),
     {
       refetchOnReconnect: false,
       refetchOnMount: false,

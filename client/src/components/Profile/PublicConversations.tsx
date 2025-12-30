@@ -1,21 +1,34 @@
-import { TConversation } from 'librechat-data-provider';
-import { useGetPublicConversationQuery } from 'librechat-data-provider/react-query';
-import { useEffect, useState } from 'react';
+import { useSharedLinksQuery } from '~/data-provider';
+import type { SharedLinkItem } from 'librechat-data-provider';
+import { useState, useMemo } from 'react';
 import { Spinner } from '@librechat/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ConvoIcon } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 
 function PublicConversations() {
-  const { userId = '' } = useParams();
   const navigate = useNavigate();
-  const getLikedConversationsQuery = useGetPublicConversationQuery(userId);
+  const { userId } = useParams();
+  // Default params for shared links
+  const { data, isLoading } = useSharedLinksQuery({
+    pageSize: 50,
+    isPublic: true,
+    sortBy: 'createdAt',
+    sortDirection: 'desc',
+    search: '',
+    userId,
+  });
 
-  const [conversations, setConversations] = useState<TConversation[]>([]);
+  const conversations = useMemo(() => {
+    if (!data?.pages) {
+      return [];
+    }
+    return data.pages.flatMap((page) => page.links);
+  }, [data]);
 
-  // Component to display public conversations
-  // Displays conversation title
-  function ListItem({ convo }: { convo: TConversation }) {
+  // Component to display shared links
+  // Displays title
+  function ListItem({ convo }: { convo: SharedLinkItem }) {
     const [copied, setCopied] = useState<boolean>(false);
     const localize = useLocalize();
 
@@ -23,7 +36,7 @@ function PublicConversations() {
       <div className="group relative my-2 flex cursor-pointer flex-row items-center">
         <div
           className="flex h-full w-full flex-row items-center gap-2 rounded-lg px-2 py-2 text-base hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
-          onClick={() => navigate(`/chat/share/${convo.conversationId}`)}
+          onClick={() => navigate(`/share/${convo.shareId}`)}
         >
           <ConvoIcon />
           <div className="w-56 truncate">{convo.title}</div>
@@ -36,10 +49,7 @@ function PublicConversations() {
             }
 
             navigator.clipboard.writeText(
-              window.location.protocol +
-                '//' +
-                window.location.host +
-                `/chat/share/${convo.conversationId}`,
+              window.location.protocol + '//' + window.location.host + `/share/${convo.shareId}`,
             );
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
@@ -92,24 +102,14 @@ function PublicConversations() {
     );
   }
 
-  useEffect(() => {
-    getLikedConversationsQuery.refetch();
-  }, [getLikedConversationsQuery]);
-
-  useEffect(() => {
-    if (getLikedConversationsQuery.isSuccess) {
-      setConversations(getLikedConversationsQuery.data);
-    }
-  }, [getLikedConversationsQuery.isSuccess, getLikedConversationsQuery.data]);
-
   return (
     <div>
-      {getLikedConversationsQuery.isLoading ? (
+      {isLoading ? (
         <Spinner />
       ) : (
         <>
           {conversations.map((convo) => (
-            <ListItem key={convo.conversationId} convo={convo} />
+            <ListItem key={convo.shareId} convo={convo} />
           ))}
         </>
       )}

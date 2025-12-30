@@ -81,10 +81,11 @@ export const getSharedLinks = (
   sortDirection: 'asc' | 'desc',
   search?: string,
   cursor?: string,
+  userId?: string,
 ) =>
   `${shareRoot}?pageSize=${pageSize}&isPublic=${isPublic}&sortBy=${sortBy}&sortDirection=${sortDirection}${
     search ? `&search=${search}` : ''
-  }${cursor ? `&cursor=${cursor}` : ''}`;
+  }${cursor ? `&cursor=${cursor}` : ''}${userId ? `&userId=${userId}` : ''}`;
 export const createSharedLink = (conversationId: string) => `${shareRoot}/${conversationId}`;
 export const updateSharedLink = (shareId: string) => `${shareRoot}/${shareId}`;
 
