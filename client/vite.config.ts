@@ -21,7 +21,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       allowedHosts: (env.VITE_ALLOWED_HOSTS && env.VITE_ALLOWED_HOSTS.split(',')) || [],
       host,
-      port: (env.PORT && Number(env.PORT)) || 3090,
+      port: (env.FRONT_PORT && Number(env.FRONT_PORT)) || 3090,
       strictPort: false,
       proxy: {
         '/api': {
