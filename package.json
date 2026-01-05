@@ -167,6 +167,7 @@
     "@dicebear/adventurer": "^9.2.4",
     "@dicebear/adventurer-neutral": "^9.2.4",
     "@esbuild/darwin-x64": "^0.25.8",
+    "@google/genai": "^1.34.0",
     "@keyv/redis": "^5.1.2",
     "@mcp-ui/client": "^5.9.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
