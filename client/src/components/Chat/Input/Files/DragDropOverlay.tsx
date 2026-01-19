@@ -3,14 +3,16 @@ import { useLocalize } from '~/hooks';
 
 interface DragDropOverlayProps {
   isActive: boolean;
+  onDismiss?: () => void;
 }
 
-const DragDropOverlay = memo(({ isActive }: DragDropOverlayProps) => {
+const DragDropOverlay = memo(({ isActive, onDismiss }: DragDropOverlayProps) => {
   const localize = useLocalize();
   return (
     <>
       {/** Modal backdrop overlay */}
       <div
+        onClick={onDismiss}
         className={`fixed inset-0 z-[9998] transition-opacity duration-200 ease-in-out ${
           isActive
             ? 'pointer-events-auto visible opacity-100'
@@ -24,6 +26,7 @@ const DragDropOverlay = memo(({ isActive }: DragDropOverlayProps) => {
       />
       {/** Main content overlay */}
       <div
+        onClick={onDismiss}
         className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-2 text-text-primary transition-all duration-200 ease-in-out ${
           isActive
             ? 'pointer-events-auto visible opacity-100'
