@@ -49,7 +49,7 @@ export default function FilePreview() {
         <div className="flex flex-col">
           <b className="hidden text-sm md:text-base lg:block lg:text-lg">FILE</b>
           <b className="text-center text-xl md:text-2xl lg:text-left lg:text-3xl">
-            {file.filename}
+            {file.originalname ?? file.filename}
           </b>
         </div>
         <div className="mt-3 flex flex-row gap-x-3 md:mt-0">

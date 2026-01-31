@@ -1,1 +1,26 @@
-{}
+{
+  "com_ui_video": "བརྙན་འཕྲིན",
+  "com_ui_video_enable_hint": "བརྙན་འཕྲིན་བཟོ་བ་སྒོ་འབྱེད",
+  "com_ui_video_enable": "བརྙན་འཕྲིན་སྒོ་འབྱེད",
+  "com_ui_video_enable_desc": "མཁོ་ཆས་བེད་སྤྱོད་ནས་ཐུང་མོའི་བརྙན་འཕྲིན་བཟོ།",
+  "com_ui_video_requires_mode": "ཡར་བསྐྱར་བཟོས་པའི་བརྙན་འཕྲིན/སྒྲ་ནི་བརྙན་འཕྲིན་མོད་ལྟར་སྒོ་འབྱེད་པ་ཡོད་སྐབས་མ་གཏོགས་བསྒྲུབ་མི་ཐུབ།",
+  "com_ui_video_template": "སྒྲིག་དཔེ",
+  "com_ui_video_platform": "མཐུན་རྟེན",
+  "com_ui_video_template_talking_head": "གསུང་བཤད་མགོ / བཤད་རྒྱུ",
+  "com_ui_video_template_product_review": "ཐོན་རྫས་དཔྱད་ཞིབ / འདོད་འདུན",
+  "com_ui_video_template_storyboard": "སྟོརི་བོརཌ / ཚན་ཆད་བཤུད",
+  "com_ui_video_template_image_mix": "པར + ཆད་མཐུན་བསྲེས",
+  "com_ui_video_template_broll_subtitles": "B-roll + མགོ་ཡིག",
+  "com_ui_video_template_beat_cut": "གདངས་འཕྲིན་བཅད་མཐུན་བསྐྱར་སྒྲིག",
+  "com_ui_video_platform_douyin": "Douyin",
+  "com_ui_video_platform_tiktok": "TikTok",
+  "com_ui_video_platform_xiaohongshu": "Xiaohongshu",
+  "com_ui_video_platform_youtube_shorts": "YouTube Shorts",
+  "com_ui_video_job_status": "ལས་ཀ {{0}} · {{1}} {{2}}",
+  "com_ui_video_job_pending": "སྒུག་སྒྲུབ",
+  "com_ui_video_download_zip": "ZIP ཕབ་ལེན",
+  "com_ui_video_assets_required": "དང་པོར བརྙན་འཕྲིན་དང་། སྒྲ་དང་། པར་གྱི་མཁོ་ཆས་སྦྱར་རོགས།",
+  "com_ui_video_uploading_assets": "མངོན་སྤྱོད་མཐར་ཕྱིན་རྗེས་སྐྱེལ་རོགས།",
+  "com_ui_video_job_failed": "བརྙན་འཕྲིན་ལས་ཀ་འགོ་མི་འཛུགས།",
+  "com_ui_video_stream_disconnected": "བརྙན་འཕྲིན་ལས་ཀའི་སྟར་ལྷན་ཆད་པ།"
+}

@@ -250,7 +250,7 @@ const FileItem = React.memo(function FileItem({
         }
         const link = document.createElement('a');
         link.href = stream.data;
-        link.setAttribute('download', file.filename);
+        link.setAttribute('download', file.originalname ?? file.filename);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -259,7 +259,7 @@ const FileItem = React.memo(function FileItem({
         console.error('Error downloading file:', error);
       }
     },
-    [downloadFile, file.filename, isLocalFile, localize, showToast],
+    [downloadFile, file.filename, file.originalname, isLocalFile, localize, showToast],
   );
   const isLoading = false;
 
@@ -277,7 +277,7 @@ const FileItem = React.memo(function FileItem({
 
   // Simple aria label
   const downloadAriaLabel = localize('com_sources_download_aria_label', {
-    filename: file.filename,
+    filename: file.originalname ?? file.filename,
     status: isLoading ? localize('com_sources_downloading_status') : '',
   });
   const error = null;
@@ -302,7 +302,7 @@ const FileItem = React.memo(function FileItem({
         </div>
         <div className="mt-1 min-w-0">
           <span className="line-clamp-2 break-all text-left text-sm font-medium text-text-primary md:line-clamp-3">
-            {file.filename}
+            {file.originalname ?? file.filename}
           </span>
           {file.pages && file.pages.length > 0 && (
             <span className="mt-1 line-clamp-1 text-left text-xs text-text-secondary">
@@ -341,7 +341,7 @@ const FileItem = React.memo(function FileItem({
       </div>
       <div className="mt-1 min-w-0">
         <span className="line-clamp-2 break-all text-left text-sm font-medium text-text-primary md:line-clamp-3">
-          {file.filename}
+          {file.originalname ?? file.filename}
         </span>
         {file.pages && file.pages.length > 0 && (
           <span className="mt-1 line-clamp-1 text-left text-xs text-text-secondary">

@@ -3,7 +3,7 @@
 // file deepcode ignore HardcodedNonCryptoSecret: No hardcoded secrets present in this file
 
 export default {
-  com_ui_following_no_convo: 'The users you are following don\'t have any public conversations.',
+  com_ui_following_no_convo: "The users you are following don't have any public conversations.",
   com_ui_no_following: 'You are not following any users yet.',
   com_ui_my_following: 'Following',
   com_ui_back: 'Back',
@@ -31,11 +31,11 @@ export default {
   com_ui_public: 'Public',
   com_ui_private: 'Private',
   com_ui_homepage: 'My Profile',
-  com_ui_others_homepage: '{0}\'s Profile',
-  com_ui_register_before_like: 'Let\'s make yourself an account',
+  com_ui_others_homepage: "{0}'s Profile",
+  com_ui_register_before_like: "Let's make yourself an account",
   com_ui_number_of_likes: '{0} Likes',
   com_ui_number_of_views: '{0} Views',
-  com_ui_register_here: 'Don\'t have an account yet? Click here to register.',
+  com_ui_register_here: "Don't have an account yet? Click here to register.",
   com_ui_copied: 'Copied conversation share link to clipboard',
   com_ui_private_conversation: 'The conversation you are trying to view is a private conversation',
   com_ui_recommendation: 'Browse Conversations',
@@ -50,6 +50,29 @@ export default {
   com_nav_convo_menu_options: 'Conversation Menu Options',
   com_ui_artifacts: 'Artifacts',
   com_ui_artifacts_toggle: 'Toggle Artifacts UI',
+  com_ui_video: 'Video',
+  com_ui_video_enable_hint: 'Enable video generation',
+  com_ui_video_enable: 'Enable Video',
+  com_ui_video_enable_desc: 'Use assets to generate a short video',
+  com_ui_video_template: 'Template',
+  com_ui_video_platform: 'Platform',
+  com_ui_video_template_talking_head: 'Talking Head / Explanation',
+  com_ui_video_template_product_review: 'Product Review / Recommendation',
+  com_ui_video_template_storyboard: 'Storyboard / Scene Cut',
+  com_ui_video_template_image_mix: 'Image + Clip Mix',
+  com_ui_video_template_broll_subtitles: 'B-roll + Subtitles',
+  com_ui_video_template_beat_cut: 'Beat-cut Montage',
+  com_ui_video_platform_douyin: 'Douyin',
+  com_ui_video_platform_tiktok: 'TikTok',
+  com_ui_video_platform_xiaohongshu: 'Xiaohongshu',
+  com_ui_video_platform_youtube_shorts: 'YouTube Shorts',
+  com_ui_video_job_status: 'Job {0} · {1} {2}',
+  com_ui_video_job_pending: 'pending',
+  com_ui_video_download_zip: 'Download ZIP',
+  com_ui_video_assets_required: 'Please attach video, audio, or image assets first.',
+  com_ui_video_uploading_assets: 'Please wait for all uploads to finish before submitting.',
+  com_ui_video_job_failed: 'Failed to start video job.',
+  com_ui_video_stream_disconnected: 'Video job stream disconnected.',
   com_nav_info_code_artifacts:
     'Enables the display of experimental code artifacts next to the chat',
   com_ui_include_shadcnui: 'Include shadcn/ui components instructions',
@@ -63,7 +86,7 @@ export default {
   com_a11y_ai_composing: 'The AI is still composing.',
   com_a11y_end: 'The AI has finished their reply.',
   com_error_moderation:
-    'It appears that the content submitted has been flagged by our moderation system for not aligning with our community guidelines. We\'re unable to proceed with this specific topic. If you have any other questions or topics you\'d like to explore, please edit your message, or create a new conversation.',
+    "It appears that the content submitted has been flagged by our moderation system for not aligning with our community guidelines. We're unable to proceed with this specific topic. If you have any other questions or topics you'd like to explore, please edit your message, or create a new conversation.",
   com_error_no_user_key: 'No key found. Please provide a key and try again.',
   com_error_no_base_url: 'No base URL found. Please provide one and try again.',
   com_warning_resubmit_unsupported:
@@ -135,7 +158,7 @@ export default {
   com_assistants_update_actions_success: 'Successfully created or updated Action',
   com_assistants_update_actions_error: 'There was an error creating or updating the action.',
   com_assistants_delete_actions_error: 'There was an error deleting the action.',
-  com_assistants_actions_info: 'Let your Assistant retrieve information or take actions via API\'s',
+  com_assistants_actions_info: "Let your Assistant retrieve information or take actions via API's",
   com_assistants_name_placeholder: 'Optional: The name of the assistant',
   com_assistants_instructions_placeholder: 'The system instructions that the assistant uses',
   com_assistants_description_placeholder: 'Optional: Describe your Assistant here',
@@ -157,7 +180,7 @@ export default {
   com_agents_missing_provider_model: 'Please select a provider and model before creating an agent.',
   com_agents_allow_editing: 'Allow other users to edit your agent',
   com_agents_not_available: 'Agent Not Available',
-  com_agents_no_access: 'You don\'t have access to edit this agent.',
+  com_agents_no_access: "You don't have access to edit this agent.",
   com_agents_enable_file_search: 'Enable File Search',
   com_agents_file_search_info:
     'When enabled, the agent will be informed of the exact filenames listed below, allowing it to retrieve relevant context from these files.',
@@ -197,7 +220,7 @@ export default {
     'Cannot attach file. Create or select a conversation, or try refreshing the page.',
   com_ui_examples: 'Examples',
   com_ui_new_chat: 'New chat',
-  com_ui_happy_birthday: 'It\'s my 1st birthday!',
+  com_ui_happy_birthday: "It's my 1st birthday!",
   com_ui_experimental: 'Experimental Features',
   com_ui_on: 'On',
   com_ui_off: 'Off',
@@ -522,7 +545,7 @@ export default {
     'There was an internal server error. Please wait a few moments and try again.',
   com_auth_error_login_unverified:
     'Your account has not been verified. Please check your email for a verification link.',
-  com_auth_no_account: 'Don\'t have an account?',
+  com_auth_no_account: "Don't have an account?",
   com_auth_sign_up: 'Sign up',
   com_auth_sign_in: 'Sign in',
   com_auth_or: 'Or',
@@ -587,7 +610,7 @@ export default {
   com_auth_email_verification_failed_token_missing: 'Verification failed, token missing',
   com_auth_email_verification_invalid: 'Invalid email verification',
   com_auth_email_verification_in_progress: 'Verifying your email, please wait',
-  com_auth_email_verification_resend_prompt: 'Didn\'t receive the email?',
+  com_auth_email_verification_resend_prompt: "Didn't receive the email?",
   com_auth_email_resend_link: 'Resend Email',
   com_auth_email_verification_redirecting: 'Redirecting in {0} seconds...',
   com_endpoint_open_menu: 'Open Menu',
@@ -595,9 +618,9 @@ export default {
   com_endpoint_bing_to_enable_sydney: 'To enable Sydney',
   com_endpoint_bing_jailbreak: 'Jailbreak',
   com_endpoint_bing_context_placeholder:
-    'Bing can use up to 7k tokens for \'context\', which it can reference for the conversation. The specific limit is not known but may run into errors exceeding 7k tokens',
+    "Bing can use up to 7k tokens for 'context', which it can reference for the conversation. The specific limit is not known but may run into errors exceeding 7k tokens",
   com_endpoint_bing_system_message_placeholder:
-    'WARNING: Misuse of this feature can get you BANNED from using Bing! Click on \'System Message\' for full instructions and the default message if omitted, which is the \'Sydney\' preset that is considered safe.',
+    "WARNING: Misuse of this feature can get you BANNED from using Bing! Click on 'System Message' for full instructions and the default message if omitted, which is the 'Sydney' preset that is considered safe.",
   com_endpoint_system_message: 'System Message',
   com_endpoint_message: 'Message',
   com_endpoint_ai: 'AI',
@@ -620,7 +643,7 @@ export default {
   com_endpoint_google_topp:
     'Top-p changes how the model selects tokens for output. Tokens are selected from most K (see topK parameter) probable to least until the sum of their probabilities equals the top-p value.',
   com_endpoint_google_topk:
-    'Top-k changes how the model selects tokens for output. A top-k of 1 means the selected token is the most probable among all tokens in the model\'s vocabulary (also called greedy decoding), while a top-k of 3 means that the next token is selected from among the 3 most probable tokens (using temperature).',
+    "Top-k changes how the model selects tokens for output. A top-k of 1 means the selected token is the most probable among all tokens in the model's vocabulary (also called greedy decoding), while a top-k of 3 means that the next token is selected from among the 3 most probable tokens (using temperature).",
   com_endpoint_google_maxoutputtokens:
     'Maximum number of tokens that can be generated in the response. Specify a lower value for shorter responses and a higher value for longer responses. Note: models may stop before reaching this maximum.',
   com_endpoint_google_custom_name_placeholder: 'Set a custom name for Google',
@@ -630,7 +653,7 @@ export default {
   com_endpoint_instructions_assistants_placeholder:
     'Overrides the instructions of the assistant. This is useful for modifying the behavior on a per-run basis.',
   com_endpoint_prompt_prefix_assistants_placeholder:
-    'Set additional instructions or context on top of the Assistant\'s main instructions. Ignored if empty.',
+    "Set additional instructions or context on top of the Assistant's main instructions. Ignored if empty.",
   com_endpoint_custom_name: 'Custom Name',
   com_endpoint_prompt_prefix: 'Custom Instructions',
   com_endpoint_prompt_prefix_assistants: 'Additional Instructions',
@@ -649,13 +672,13 @@ export default {
   com_endpoint_openai_temp:
     'Higher values = more random, while lower values = more focused and deterministic. We recommend altering this or Top P but not both.',
   com_endpoint_openai_max:
-    'The max tokens to generate. The total length of input tokens and generated tokens is limited by the model\'s context length.',
+    "The max tokens to generate. The total length of input tokens and generated tokens is limited by the model's context length.",
   com_endpoint_openai_topp:
     'An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We recommend altering this or temperature but not both.',
   com_endpoint_openai_freq:
-    'Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model\'s likelihood to repeat the same line verbatim.',
+    "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.",
   com_endpoint_openai_pres:
-    'Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model\'s likelihood to talk about new topics.',
+    "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.",
   com_endpoint_openai_resend:
     'Resend all previously attached images. Note: this can significantly increase token cost and you may experience errors with many image attachments.',
   com_endpoint_openai_resend_files:
@@ -673,7 +696,7 @@ export default {
   com_endpoint_anthropic_topp:
     'Top-p changes how the model selects tokens for output. Tokens are selected from most K (see topK parameter) probable to least until the sum of their probabilities equals the top-p value.',
   com_endpoint_anthropic_topk:
-    'Top-k changes how the model selects tokens for output. A top-k of 1 means the selected token is the most probable among all tokens in the model\'s vocabulary (also called greedy decoding), while a top-k of 3 means that the next token is selected from among the 3 most probable tokens (using temperature).',
+    "Top-k changes how the model selects tokens for output. A top-k of 1 means the selected token is the most probable among all tokens in the model's vocabulary (also called greedy decoding), while a top-k of 3 means that the next token is selected from among the 3 most probable tokens (using temperature).",
   com_endpoint_anthropic_maxoutputtokens:
     'Maximum number of tokens that can be generated in the response. Specify a lower value for shorter responses and a higher value for longer responses. Note: models may stop before reaching this maximum.',
   com_endpoint_anthropic_prompt_cache:
@@ -771,7 +794,7 @@ export default {
     'Use dev tools or an extension while logged into the site to copy the content of the _U cookie. If this fails, follow these',
   com_endpoint_config_key_edge_instructions: 'instructions',
   com_endpoint_config_key_edge_full_key_string: 'to provide the full cookie strings.',
-  com_endpoint_config_key_chatgpt: 'To get your Access token For ChatGPT \'Free Version\', login to',
+  com_endpoint_config_key_chatgpt: "To get your Access token For ChatGPT 'Free Version', login to",
   com_endpoint_config_key_chatgpt_then_visit: 'then visit',
   com_endpoint_config_key_chatgpt_copy_token: 'Copy access token.',
   com_endpoint_config_key_google_need_to: 'You need to',
@@ -779,7 +802,7 @@ export default {
   com_endpoint_config_key_google_vertex_api: 'API on Google Cloud, then',
   com_endpoint_config_key_google_service_account: 'Create a Service Account',
   com_endpoint_config_key_google_vertex_api_role:
-    'Make sure to click \'Create and Continue\' to give at least the \'Vertex AI User\' role. Lastly, create a JSON key to import here.',
+    "Make sure to click 'Create and Continue' to give at least the 'Vertex AI User' role. Lastly, create a JSON key to import here.",
   com_nav_welcome_message:
     '[New!] Support GPT-4-1106、GPT-4-Vision, Improved UI and Prompt Presets',
   com_nav_account_settings: 'Account Settings',
@@ -844,7 +867,7 @@ export default {
     '. Use dev tools or an extension while logged into the site to copy the content of the _U cookie.\nIf this fails, follow these ',
   com_endpoint_config_token_bing3: ' to provide the full cookie strings.',
   com_endpoint_config_token_chatgpt1:
-    'To get your Access token For ChatGPT \'Free Version\', login to ',
+    "To get your Access token For ChatGPT 'Free Version', login to ",
   com_endpoint_config_token_chatgpt2: ', then visit ',
   com_endpoint_config_token_chatgpt3: '. Copy access token.',
   com_endpoint_config_token_google_import_json_key: 'Import Service Account JSON Key',
@@ -855,7 +878,7 @@ export default {
   com_endpoint_config_token_google1: 'You need to enable ',
   com_endpoint_config_token_google2: ' API on Google Cloud, then ',
   com_endpoint_config_token_google3:
-    '. Make sure to click \'Create and Continue\' to give at least the \'Vertex AI User\' role.\nLastly, create a JSON key to import here.',
+    ". Make sure to click 'Create and Continue' to give at least the 'Vertex AI User' role.\nLastly, create a JSON key to import here.",
   com_nav_export_filename: 'Filename',
   com_nav_export_filename_placeholder: 'Set the filename',
   com_nav_export_type: 'Type',
@@ -945,11 +968,11 @@ export default {
   com_nav_enable_cloud_browser_voice: 'Use cloud-based voices',
   com_nav_show_thinking: 'Open Thinking Dropdowns by Default',
   com_nav_info_enter_to_send:
-    'When enabled, pressing `ENTER` will send your message. When disabled, pressing Enter will add a new line, and you\'ll need to press `CTRL + ENTER` / `⌘ + ENTER` to send your message.',
+    "When enabled, pressing `ENTER` will send your message. When disabled, pressing Enter will add a new line, and you'll need to press `CTRL + ENTER` / `⌘ + ENTER` to send your message.",
   com_nav_info_save_draft:
     'When enabled, the text and attachments you enter in the chat form will be automatically saved locally as drafts. These drafts will be available even if you reload the page or switch to a different conversation. Drafts are stored locally on your device and are deleted once the message is sent.',
   com_nav_info_show_thinking:
-    'When enabled, the chat will display the thinking dropdowns open by default, allowing you to view the AI\'s reasoning in real-time. When disabled, the thinking dropdowns will remain closed by default for a cleaner and more streamlined interface',
+    "When enabled, the chat will display the thinking dropdowns open by default, allowing you to view the AI's reasoning in real-time. When disabled, the thinking dropdowns will remain closed by default for a cleaner and more streamlined interface",
   com_nav_info_fork_change_default:
     '`Visible messages only` includes just the direct path to the selected message. `Include related branches` adds branches along the path. `Include all to/from here` includes all connected messages and branches.',
   com_nav_info_fork_split_target_setting:
@@ -957,7 +980,7 @@ export default {
   com_nav_info_user_name_display:
     'When enabled, the username of the sender will be shown above each message you send. When disabled, you will only see "You" above your messages.',
   com_nav_info_latex_parsing:
-    'When enabled, LaTeX code in messages will be rendered as mathematical equations. Disabling this may improve performance if you don\'t need LaTeX rendering.',
+    "When enabled, LaTeX code in messages will be rendered as mathematical equations. Disabling this may improve performance if you don't need LaTeX rendering.",
   com_nav_info_revoke:
     'This action will revoke and remove all the API keys that you have provided. You will need to re-enter these credentials to continue using those endpoints.',
   com_nav_info_delete_cache_storage:
@@ -1020,7 +1043,7 @@ export default {
   com_error_insufficient_quota:
     'We apologize for any inconvenience caused. The default API key has reached its limit. To continue using this service, please set up your own API key. You can do this by clicking on the model logo in the left corner of the textbox and selecting "Set Token" for the current selected endpoint. Thank you for your understanding.',
   com_error_unknown:
-    'Oops! Something went wrong. Please try again in a few moments. Here\'s the specific error message we encountered: {0}',
+    "Oops! Something went wrong. Please try again in a few moments. Here's the specific error message we encountered: {0}",
   com_nav_lang_arabic: 'العربية',
   com_nav_lang_dutch: 'Nederlands',
   com_nav_lang_indonesia: 'Indonesia',
@@ -1033,6 +1056,6 @@ export default {
   com_ui_decline: 'I do not accept',
   com_ui_terms_and_conditions: 'Terms and Conditions',
   com_ui_no_terms_content: 'No terms and conditions content to display',
-  com_ui_speech_while_submitting: 'Can\'t submit speech while a response is being generated',
+  com_ui_speech_while_submitting: "Can't submit speech while a response is being generated",
   com_nav_balance: 'Balance',
 };

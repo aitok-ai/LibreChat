@@ -208,7 +208,7 @@ const Part = memo(
           imagePath={imageFile.filepath}
           height={height}
           width={width}
-          altText={imageFile.filename ?? 'Uploaded Image'}
+          altText={imageFile.originalname ?? imageFile.filename ?? 'Uploaded Image'}
           placeholderDimensions={{
             height: height + 'px',
             width: width + 'px',

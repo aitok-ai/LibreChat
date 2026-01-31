@@ -24,8 +24,10 @@ function MCPSelectContent() {
     toggleServerSelection,
     getServerStatusIconProps,
   } = mcpServerManager;
+  const { mcpMenuStore } = useBadgeRowContext();
 
-  const menuStore = Ariakit.useMenuStore({ focusLoop: true });
+  const fallbackMenuStore = Ariakit.useMenuStore({ focusLoop: true });
+  const menuStore = mcpMenuStore ?? fallbackMenuStore;
   const isOpen = menuStore.useState('open');
   const focusedElementRef = useRef<HTMLElement | null>(null);
 

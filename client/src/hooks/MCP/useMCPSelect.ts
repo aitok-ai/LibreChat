@@ -3,8 +3,9 @@ import { useAtom } from 'jotai';
 import isEqual from 'lodash/isEqual';
 import { useRecoilState } from 'recoil';
 import { Constants, LocalStorageKeys } from 'librechat-data-provider';
-import { ephemeralAgentByConvoId, mcpValuesAtomFamily, mcpPinnedAtom } from '~/store';
+import { ephemeralAgentByConvoId, mcpValuesAtomFamily } from '~/store';
 import { setTimestamp } from '~/utils/timestamps';
+import useLocalStorage from '~/hooks/useLocalStorageAlt';
 import { MCPServerDefinition } from './useMCPServerManager';
 
 export function useMCPSelect({
@@ -19,9 +20,25 @@ export function useMCPSelect({
     return new Set(servers?.map((s) => s.serverName));
   }, [servers]);
 
-  const [isPinned, setIsPinned] = useAtom(mcpPinnedAtom);
+  const mcpPinnedKey = useMemo(
+    () => `${LocalStorageKeys.LAST_MCP_TOGGLE_ ?? 'LAST_MCP_TOGGLE_'}pinned`,
+    [],
+  );
+  const [isPinned, setIsPinned] = useLocalStorage<boolean>(mcpPinnedKey, true);
   const [mcpValues, setMCPValuesRaw] = useAtom(mcpValuesAtomFamily(key));
   const [ephemeralAgent, setEphemeralAgent] = useRecoilState(ephemeralAgentByConvoId(key));
+
+  useEffect(() => {
+    const legacyPinned = localStorage.getItem(LocalStorageKeys.PIN_MCP_);
+    const currentPinned = localStorage.getItem(mcpPinnedKey);
+    if (legacyPinned != null && currentPinned == null) {
+      try {
+        setIsPinned(JSON.parse(legacyPinned));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }, [mcpPinnedKey, setIsPinned]);
 
   // Sync Jotai state with ephemeral agent state
   useEffect(() => {

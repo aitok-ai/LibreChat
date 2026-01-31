@@ -1,8 +1,14 @@
 import { memo, useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { useWatch } from 'react-hook-form';
-import { TextareaAutosize } from '@librechat/client';
+import * as Ariakit from '@ariakit/react';
+import { TextareaAutosize, TooltipAnchor, useToastContext } from '@librechat/client';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { Constants, isAssistantsEndpoint, isAgentsEndpoint } from 'librechat-data-provider';
+import {
+  Constants,
+  apiBaseUrl,
+  isAssistantsEndpoint,
+  isAgentsEndpoint,
+} from 'librechat-data-provider';
 import {
   useChatContext,
   useChatFormContext,
@@ -19,7 +25,8 @@ import {
   useSubmitMessage,
   useFocusChatEffect,
 } from '~/hooks';
-import { mainTextareaId, BadgeItem } from '~/common';
+import { useCreateVideoJobMutation } from '~/data-provider';
+import { mainTextareaId, BadgeItem, ExtendedFile } from '~/common';
 import AttachFileChat from './Files/AttachFileChat';
 import FileFormChat from './Files/FileFormChat';
 import { cn, removeFocusRings } from '~/utils';
@@ -32,6 +39,8 @@ import StopButton from './StopButton';
 import SendButton from './SendButton';
 import EditBadges from './EditBadges';
 import BadgeRow from './BadgeRow';
+
+type MenuStore = ReturnType<typeof Ariakit.useMenuStore>;
 import Mention from './Mention';
 import store from '~/store';
 
@@ -91,6 +100,31 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     [conversation?.conversationId],
   );
 
+  const convoKey = conversationId ?? Constants.NEW_CONVO;
+  const videoMode = useRecoilValue(store.videoModeByConvoId(convoKey));
+  const videoTemplate = useRecoilValue(store.videoTemplateByConvoId(convoKey));
+  const videoPreset = useRecoilValue(store.videoPresetByConvoId(convoKey));
+  const [videoJobUIState, setVideoJobUIState] = useRecoilState(
+    store.videoJobUIStateByConvoId(convoKey),
+  );
+  const { showToast } = useToastContext();
+  const [videoNotice, setVideoNotice] = useState<{
+    message: string;
+    tone: 'info' | 'error';
+  } | null>(null);
+  const videoNoticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notifiedVideoFilesRef = useRef<Set<string>>(new Set());
+  const [showVideoJobIndicator, setShowVideoJobIndicator] = useState(false);
+  const videoJobIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastDisconnectToastRef = useRef(0);
+  const badgeMenuStoresRef = useRef<{ mcpMenuStore?: MenuStore; videoMenuStore?: MenuStore }>({});
+  const handleBadgeMenuStores = useCallback(
+    (stores: { mcpMenuStore: MenuStore; videoMenuStore: MenuStore }) => {
+      badgeMenuStoresRef.current = stores;
+    },
+    [],
+  );
+
   const isRTL = useMemo(
     () => (chatDirection != null ? chatDirection?.toLowerCase() === 'rtl' : false),
     [chatDirection],
@@ -107,9 +141,13 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     [requiresKey, invalidAssistant],
   );
 
-  const handleContainerClick = useCallback(() => {
+  const handleContainerClick = useCallback((event?: React.MouseEvent<HTMLDivElement>) => {
     /** Check if the device is a touchscreen */
     if (window.matchMedia?.('(pointer: coarse)').matches) {
+      return;
+    }
+    const target = event?.target as HTMLElement | null;
+    if (target?.closest('[data-chat-input-controls]')) {
       return;
     }
     textAreaRef.current?.focus();
@@ -119,6 +157,8 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     if (isCollapsed) {
       setIsCollapsed(false);
     }
+    badgeMenuStoresRef.current.mcpMenuStore?.setOpen(false);
+    badgeMenuStoresRef.current.videoMenuStore?.setOpen(false);
   }, [isCollapsed]);
 
   useAutoSave({
@@ -130,6 +170,9 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   });
 
   const { submitMessage, submitPrompt } = useSubmitMessage();
+
+  const createVideoJobMutation = useCreateVideoJobMutation();
+  const [videoSubmitting, setVideoSubmitting] = useState(false);
 
   const handleKeyUp = useHandleKeyUp({
     index,
@@ -162,6 +205,308 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   });
 
   const textValue = useWatch({ control: methods.control, name: 'text' });
+
+  const handleVideoSubmit = useCallback(async () => {
+    if (videoSubmitting) {
+      return;
+    }
+    const assetFiles = Array.from(files.values());
+    const incomplete = assetFiles.find((file) => (file.progress ?? 0) < 1);
+    if (assetFiles.length === 0) {
+      setVideoJobUIState((prev) => ({
+        ...prev,
+        error: localize('com_ui_video_assets_required'),
+      }));
+      return;
+    }
+    if (incomplete) {
+      setVideoJobUIState((prev) => ({
+        ...prev,
+        error: localize('com_ui_video_uploading_assets'),
+      }));
+      return;
+    }
+    const assetIds = assetFiles.map((file) => file.file_id).filter(Boolean);
+    setVideoJobUIState({ jobId: null, streamId: null, step: null, stepStatus: null, error: null });
+    setVideoSubmitting(true);
+    try {
+      const response = await createVideoJobMutation.mutateAsync({
+        asset_ids: assetIds,
+        template_type: videoTemplate,
+        platform_preset: videoPreset,
+        prompt: textValue,
+      });
+      setVideoJobUIState({
+        jobId: response.job_id,
+        streamId: response.stream_id,
+        step: 'import',
+        stepStatus: 'running',
+        error: null,
+      });
+      setFiles(new Map());
+      setText('');
+      methods.setValue('text', '', { shouldValidate: false });
+    } catch (error) {
+      setVideoJobUIState((prev) => ({
+        ...prev,
+        error: error instanceof Error ? error.message : localize('com_ui_video_job_failed'),
+      }));
+    } finally {
+      setVideoSubmitting(false);
+    }
+  }, [
+    createVideoJobMutation,
+    files,
+    methods,
+    setVideoJobUIState,
+    setFiles,
+    setText,
+    textValue,
+    videoPreset,
+    videoSubmitting,
+    videoTemplate,
+  ]);
+
+  const showVideoNotice = useCallback((message: string) => {
+    if (videoNoticeTimeoutRef.current) {
+      clearTimeout(videoNoticeTimeoutRef.current);
+    }
+    setVideoNotice({ message, tone: 'info' });
+    videoNoticeTimeoutRef.current = setTimeout(() => {
+      setVideoNotice(null);
+    }, 4000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (videoNoticeTimeoutRef.current) {
+        clearTimeout(videoNoticeTimeoutRef.current);
+      }
+      if (videoJobIndicatorTimeoutRef.current) {
+        clearTimeout(videoJobIndicatorTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const isVideoOrAudioFile = useCallback((file: ExtendedFile) => {
+    const type = file.type ?? file.file?.type ?? '';
+    if (type.startsWith('video/') || type.startsWith('audio/')) {
+      return true;
+    }
+    const filename = file.file?.name ?? file.filename ?? '';
+    return /\.(mp4|mov|m4v|mkv|webm|avi|wmv|flv|ogv|3gp|mp3|wav|ogg|m4a|flac|aac|opus|wma)$/i.test(
+      filename,
+    );
+  }, []);
+
+  useEffect(() => {
+    if (videoMode) {
+      setVideoNotice(null);
+      return;
+    }
+
+    for (const file of files.values()) {
+      const fileId = file.file_id;
+      if (!fileId || notifiedVideoFilesRef.current.has(fileId)) {
+        continue;
+      }
+      if (!isVideoOrAudioFile(file)) {
+        continue;
+      }
+      notifiedVideoFilesRef.current.add(fileId);
+      showVideoNotice(localize('com_ui_video_requires_mode'));
+    }
+  }, [files, isVideoOrAudioFile, localize, showVideoNotice, videoMode]);
+
+  useEffect(() => {
+    if (!videoJobUIState.error) {
+      return;
+    }
+    const fileList = Array.from(files.values());
+    const hasFiles = fileList.length > 0;
+    const hasIncomplete = fileList.some((file) => (file.progress ?? 0) < 1);
+
+    if (videoJobUIState.error === localize('com_ui_video_uploading_assets') && !hasIncomplete) {
+      setVideoJobUIState((prev) => ({
+        ...prev,
+        error: null,
+      }));
+    }
+
+    if (videoJobUIState.error === localize('com_ui_video_assets_required') && hasFiles) {
+      setVideoJobUIState((prev) => ({
+        ...prev,
+        error: null,
+      }));
+    }
+  }, [files, localize, setVideoJobUIState, videoJobUIState.error]);
+
+  const activeVideoNotice = videoJobUIState.error
+    ? { message: videoJobUIState.error, tone: 'error' as const }
+    : videoNotice;
+
+  const videoJobStatusKey = useMemo(() => {
+    if (!videoJobUIState.jobId) {
+      return null;
+    }
+    if (videoJobUIState.error) {
+      if (videoJobUIState.error === localize('com_ui_video_stream_disconnected')) {
+        return 'disconnected' as const;
+      }
+      return 'failed' as const;
+    }
+    if (videoJobUIState.step === 'package' && videoJobUIState.stepStatus === 'completed') {
+      return 'completed' as const;
+    }
+    if (videoJobUIState.stepStatus === 'running') {
+      return 'running' as const;
+    }
+    return 'pending' as const;
+  }, [
+    localize,
+    videoJobUIState.error,
+    videoJobUIState.jobId,
+    videoJobUIState.step,
+    videoJobUIState.stepStatus,
+  ]);
+
+  const videoJobStatusText = useMemo(() => {
+    if (!videoJobUIState.jobId) {
+      return '';
+    }
+    return localize('com_ui_video_job_status', {
+      0: videoJobUIState.jobId,
+      1: videoJobUIState.step ?? localize('com_ui_video_job_pending'),
+      2: videoJobUIState.stepStatus ?? '',
+    });
+  }, [localize, videoJobUIState.jobId, videoJobUIState.step, videoJobUIState.stepStatus]);
+
+  useEffect(() => {
+    if (!videoJobUIState.jobId || !videoJobStatusKey) {
+      setShowVideoJobIndicator(false);
+      return;
+    }
+    setShowVideoJobIndicator(true);
+
+    const isTerminal =
+      videoJobStatusKey === 'completed' ||
+      videoJobStatusKey === 'failed' ||
+      videoJobStatusKey === 'disconnected';
+    if (!isTerminal) {
+      if (videoJobIndicatorTimeoutRef.current) {
+        clearTimeout(videoJobIndicatorTimeoutRef.current);
+      }
+      return;
+    }
+
+    if (videoJobIndicatorTimeoutRef.current) {
+      clearTimeout(videoJobIndicatorTimeoutRef.current);
+    }
+    videoJobIndicatorTimeoutRef.current = setTimeout(() => {
+      setShowVideoJobIndicator(false);
+    }, 6000);
+  }, [videoJobStatusKey, videoJobUIState.jobId]);
+
+  useEffect(() => {
+    if (videoJobStatusKey !== 'disconnected') {
+      return;
+    }
+    const now = Date.now();
+    if (now - lastDisconnectToastRef.current < 6000) {
+      return;
+    }
+    lastDisconnectToastRef.current = now;
+    showToast({
+      message: localize('com_ui_video_stream_disconnected'),
+      status: 'error',
+      duration: 3000,
+    });
+  }, [localize, showToast, videoJobStatusKey]);
+
+  const videoJobIndicator = useMemo(() => {
+    if (!showVideoJobIndicator || !videoJobStatusKey) {
+      return null;
+    }
+    const baseBarClass = 'absolute inset-0 rounded-full transition-all duration-200 ease-out';
+    const barStyles: Record<
+      typeof videoJobStatusKey,
+      { className?: string; style?: React.CSSProperties }
+    > = {
+      running: {
+        className: baseBarClass,
+        style: {
+          backgroundImage:
+            'linear-gradient(90deg, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.9) 50%, rgba(59,130,246,0.15) 100%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 1.2s linear infinite, blink 0.6s linear infinite',
+        },
+      },
+      completed: {
+        className: `${baseBarClass} bg-green-500/80`,
+      },
+      failed: {
+        className: `${baseBarClass} bg-red-500/80`,
+      },
+      disconnected: {
+        className: `${baseBarClass} bg-orange-400/80`,
+      },
+      pending: {
+        className: `${baseBarClass} bg-text-secondary/40`,
+      },
+    };
+
+    const barConfig = barStyles[videoJobStatusKey];
+
+    return (
+      <div className="relative h-2 w-14 overflow-hidden rounded-full border border-border-light bg-surface-tertiary">
+        <div className={barConfig.className} style={barConfig.style} />
+      </div>
+    );
+  }, [showVideoJobIndicator, videoJobStatusKey]);
+
+  useEffect(() => {
+    const activeStreamId = videoJobUIState.streamId;
+    if (!activeStreamId) {
+      return;
+    }
+
+    const streamUrl = `${apiBaseUrl()}/api/agents/chat/stream/${activeStreamId}`;
+    const sse = new EventSource(streamUrl, { withCredentials: true });
+
+    const handleMessage = (event: MessageEvent<string>) => {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload?.event === 'video_job_step') {
+          const stepData = payload.data || {};
+          const stepId = stepData.step_id || stepData.stepId || null;
+          const stepStatus = stepData.status || null;
+          setVideoJobUIState((prev) => ({
+            ...prev,
+            step: stepId,
+            stepStatus,
+            error:
+              stepStatus === 'failed'
+                ? stepData.error || localize('com_ui_video_job_failed')
+                : prev.error,
+          }));
+        }
+      } catch (error) {
+        console.error('[VideoJob] Failed to parse SSE payload', error);
+      }
+    };
+
+    sse.addEventListener('message', handleMessage as EventListener);
+    sse.addEventListener('error', () => {
+      setVideoJobUIState((prev) => ({
+        ...prev,
+        error: localize('com_ui_video_stream_disconnected'),
+      }));
+    });
+
+    return () => {
+      sse.close();
+    };
+  }, [setVideoJobUIState, videoJobUIState.streamId]);
 
   useEffect(() => {
     if (textAreaRef.current) {
@@ -204,7 +549,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
 
   return (
     <form
-      onSubmit={methods.handleSubmit(submitMessage)}
+      onSubmit={methods.handleSubmit(videoMode ? handleVideoSubmit : submitMessage)}
       className={cn(
         'mx-auto flex w-full flex-row gap-3 transition-[max-width] duration-300 sm:px-2',
         maximizeChatSpace ? 'max-w-full' : 'md:max-w-3xl xl:max-w-4xl',
@@ -316,6 +661,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                 '@container items-between flex gap-2 pb-2',
                 isRTL ? 'flex-row-reverse' : 'flex-row',
               )}
+              data-chat-input-controls
             >
               <div className={`${isRTL ? 'mr-2' : 'ml-2'}`}>
                 <AttachFileChat conversation={conversation} disableInputs={disableInputs} />
@@ -327,11 +673,21 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                 isSubmitting={isSubmitting}
                 conversationId={conversationId}
                 onChange={setBadges}
+                onMenuStores={handleBadgeMenuStores}
                 isInChat={
                   Array.isArray(conversation?.messages) && conversation.messages.length >= 1
                 }
               />
               <div className="mx-auto flex" />
+              {videoJobIndicator && (
+                <TooltipAnchor
+                  description={videoJobStatusText}
+                  side="top"
+                  render={<div className="flex h-7 w-16 items-center justify-center" />}
+                >
+                  {videoJobIndicator}
+                </TooltipAnchor>
+              )}
               {SpeechToText && (
                 <AudioRecorder
                   methods={methods}
@@ -341,7 +697,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                   isSubmitting={isSubmitting}
                 />
               )}
-              <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
+              <div className={cn('flex items-center gap-2', isRTL ? 'ml-2' : 'mr-2')}>
                 {isSubmitting && showStopButton ? (
                   <StopButton stop={handleStopGenerating} setShowStopButton={setShowStopButton} />
                 ) : (
@@ -349,12 +705,33 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                     <SendButton
                       ref={submitButtonRef}
                       control={methods.control}
-                      disabled={filesLoading || isSubmitting || disableInputs || isNotAppendable}
+                      disabled={
+                        filesLoading ||
+                        isSubmitting ||
+                        videoSubmitting ||
+                        disableInputs ||
+                        isNotAppendable
+                      }
                     />
                   )
                 )}
               </div>
             </div>
+            {activeVideoNotice && (
+              <div
+                role="status"
+                aria-live="polite"
+                className={cn(
+                  'pointer-events-none absolute bottom-14 z-20 max-w-[260px] rounded-lg border px-3 py-2 text-xs shadow-md',
+                  isRTL ? 'left-3' : 'right-3',
+                  activeVideoNotice.tone === 'error'
+                    ? 'border-red-200 bg-red-50 text-red-600'
+                    : 'border-blue-200 bg-blue-50 text-blue-700',
+                )}
+              >
+                {activeVideoNotice.message}
+              </div>
+            )}
             {TextToSpeech && automaticPlayback && <StreamAudio index={index} />}
           </div>
         </div>

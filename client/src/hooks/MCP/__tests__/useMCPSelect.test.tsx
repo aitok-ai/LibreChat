@@ -53,7 +53,7 @@ describe('useMCPSelect', () => {
       });
 
       expect(result.current.mcpValues).toEqual([]);
-      expect(result.current.isPinned).toBe(true); // Default value from mcpPinnedAtom is true
+      expect(result.current.isPinned).toBe(true); // Default value from local storage is true
       expect(typeof result.current.setMCPValues).toBe('function');
       expect(typeof result.current.setIsPinned).toBe('function');
     });

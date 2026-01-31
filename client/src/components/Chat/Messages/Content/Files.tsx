@@ -23,7 +23,7 @@ const Files = ({ message }: { message?: TMessage }) => {
             imagePath={file.preview ?? file.filepath ?? ''}
             height={file.height ?? 1920}
             width={file.width ?? 1080}
-            altText={file.filename ?? 'Uploaded Image'}
+            altText={file.originalname ?? file.filename ?? 'Uploaded Image'}
             placeholderDimensions={{
               height: `${file.height ?? 1920}px`,
               width: `${file.height ?? 1080}px`,

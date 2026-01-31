@@ -197,7 +197,7 @@ export default function VectorStorePreview() {
               <div key={index} className="my-2 flex h-5 flex-row">
                 <div className="lg:w flex w-1/2 flex-row content-center lg:w-2/3">
                   <FileIcon className="m-0 size-5 p-0" />
-                  <div className="ml-2 content-center">{file.filename}</div>
+                  <div className="ml-2 content-center">{file.originalname ?? file.filename}</div>
                 </div>
                 <div className="flex w-1/2 flex-row lg:w-1/3">
                   <div className="content-center text-nowrap">{file.createdAt?.toString()}</div>

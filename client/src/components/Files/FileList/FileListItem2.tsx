@@ -16,6 +16,7 @@ export default function FileListItem2({
   attachedVectorStores,
 }: FileListItemProps) {
   const navigate = useNavigate();
+  const displayName = file.originalname ?? file.filename;
 
   return (
     <div
@@ -29,7 +30,7 @@ export default function FileListItem2({
           <div className="w-1/4 content-center">
             <FileIcon className="m-0 size-5 p-0" />
           </div>
-          <div className="w-3/4 content-center">{file.filename}</div>
+          <div className="w-3/4 content-center">{displayName}</div>
         </div>
         <div className="flex w-fit flex-row flex-wrap text-gray-500 md:w-3/5">
           {attachedVectorStores.map((vectorStore, index) => {

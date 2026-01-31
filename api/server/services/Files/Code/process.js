@@ -77,6 +77,7 @@ const processCodeOutput = async ({
       file_id,
       usage: 1,
       filename: name,
+      originalname: name,
       conversationId,
       user: req.user.id,
       type: `image/${appConfig.imageOutputType}`,

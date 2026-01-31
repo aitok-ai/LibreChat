@@ -105,6 +105,7 @@ export const columns: ColumnDef<TFile>[] = [
     },
     cell: ({ row }) => {
       const file = row.original;
+      const displayName = file.originalname ?? file.filename;
       if (file.type?.startsWith('image')) {
         return (
           <div className="flex gap-2">
@@ -113,7 +114,7 @@ export const columns: ColumnDef<TFile>[] = [
               className="relative h-10 w-10 shrink-0 overflow-visible rounded-md"
               source={file.source}
             />
-            <span className="self-center truncate">{file.filename}</span>
+            <span className="self-center truncate">{displayName}</span>
           </div>
         );
       }
@@ -122,7 +123,7 @@ export const columns: ColumnDef<TFile>[] = [
       return (
         <div className="flex gap-2">
           {fileType && <FilePreview fileType={fileType} className="relative" file={file} />}
-          <span className="self-center truncate">{file.filename}</span>
+          <span className="self-center truncate">{displayName}</span>
         </div>
       );
     },

@@ -8,11 +8,12 @@ import { cn } from '~/utils';
 
 const FileAttachment = memo(({ attachment }: { attachment: Partial<TAttachment> }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const displayName = attachment.originalname ?? attachment.filename ?? '';
   const { handleDownload } = useAttachmentLink({
     href: attachment.filepath ?? '',
-    filename: attachment.filename ?? '',
+    filename: displayName,
   });
-  const extension = attachment.filename?.split('.').pop();
+  const extension = displayName.split('.').pop();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 50);
@@ -70,7 +71,7 @@ const ImageAttachment = memo(({ attachment }: { attachment: TAttachment }) => {
       }}
     >
       <Image
-        altText={attachment.filename || 'attachment image'}
+        altText={attachment.originalname ?? attachment.filename ?? 'attachment image'}
         imagePath={filepath ?? ''}
         height={height ?? 0}
         width={width ?? 0}
@@ -89,8 +90,9 @@ export default function Attachment({ attachment }: { attachment?: TAttachment })
   }
 
   const { width, height, filepath = null } = attachment as TFile & TAttachmentMetadata;
-  const isImage = attachment.filename
-    ? imageExtRegex.test(attachment.filename) && width != null && height != null && filepath != null
+  const nameForType = attachment.originalname ?? attachment.filename;
+  const isImage = nameForType
+    ? imageExtRegex.test(nameForType) && width != null && height != null && filepath != null
     : false;
 
   if (isImage) {
@@ -111,11 +113,9 @@ export function AttachmentGroup({ attachments }: { attachments?: TAttachment[] }
 
   attachments.forEach((attachment) => {
     const { width, height, filepath = null } = attachment as TFile & TAttachmentMetadata;
-    const isImage = attachment.filename
-      ? imageExtRegex.test(attachment.filename) &&
-        width != null &&
-        height != null &&
-        filepath != null
+    const nameForType = attachment.originalname ?? attachment.filename;
+    const isImage = nameForType
+      ? imageExtRegex.test(nameForType) && width != null && height != null && filepath != null
       : false;
 
     if (isImage) {

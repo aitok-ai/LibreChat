@@ -1,1 +1,26 @@
-{}
+{
+  "com_ui_video": "ۋىدېئو",
+  "com_ui_video_enable_hint": "ۋىدېئو ھاسىل قىلىشنى قوزغىتىش",
+  "com_ui_video_enable": "ۋىدېئونى قوزغىتىش",
+  "com_ui_video_enable_desc": "ماتېرياللارنى ئىشلىتىپ قىسقا ۋىدېئو ھاسىل قىلىڭ",
+  "com_ui_video_requires_mode": "يۈكلەنگەن ۋىدېئو/ئاۋاز پەقەت ۋىدېئو ھالىتى قوزغىتىلغاندالا بىر تەرەپ قىلىنىدۇ.",
+  "com_ui_video_template": "قېلىپ",
+  "com_ui_video_platform": "سۇپىسى",
+  "com_ui_video_template_talking_head": "سۆزلەش باش / چۈشەندۈرۈش",
+  "com_ui_video_template_product_review": "مەھسۇلات باھالاش / تەۋسىيە",
+  "com_ui_video_template_storyboard": "ھېكايە تاختىسى / كۆرۈنۈش كېسىش",
+  "com_ui_video_template_image_mix": "سۈرەت + قىسقا بۆلەك ئارىلاشتۇرۇش",
+  "com_ui_video_template_broll_subtitles": "B-roll + سوپتىرلار",
+  "com_ui_video_template_beat_cut": "رېتىم بويىچە مونتاژ",
+  "com_ui_video_platform_douyin": "Douyin",
+  "com_ui_video_platform_tiktok": "TikTok",
+  "com_ui_video_platform_xiaohongshu": "Xiaohongshu",
+  "com_ui_video_platform_youtube_shorts": "YouTube Shorts",
+  "com_ui_video_job_status": "ۋەزىپە {{0}} · {{1}} {{2}}",
+  "com_ui_video_job_pending": "كۈتۈلمەكتە",
+  "com_ui_video_download_zip": "ZIP نى چۈشۈرۈش",
+  "com_ui_video_assets_required": "ئالدى بىلەن ۋىدېئو، ئاۋاز ياكى سۈرەت ماتېرىياللىرىنى قوشۇڭ.",
+  "com_ui_video_uploading_assets": "يوللاشتىن بۇرۇن بارلىق يوللاشلار تاماملانغۇچە كۈتۈڭ.",
+  "com_ui_video_job_failed": "ۋىدېئو ۋەزىپىسىنى باشلاش مەغلۇپ بولدى.",
+  "com_ui_video_stream_disconnected": "ۋىدېئو ۋەزىپە ئېقىمى ئۈزۈلۈپ قالدى."
+}

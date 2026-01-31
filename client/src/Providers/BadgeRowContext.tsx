@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
+import * as Ariakit from '@ariakit/react';
 import { useSetRecoilState } from 'recoil';
 import { Tools, Constants, LocalStorageKeys, AgentCapabilities } from 'librechat-data-provider';
 import type { TAgentsEndpoint } from 'librechat-data-provider';
@@ -22,6 +23,8 @@ interface BadgeRowContextType {
   codeApiKeyForm: ReturnType<typeof useCodeApiKeyForm>;
   searchApiKeyForm: ReturnType<typeof useSearchApiKeyForm>;
   mcpServerManager: ReturnType<typeof useMCPServerManager>;
+  mcpMenuStore?: ReturnType<typeof Ariakit.useMenuStore>;
+  videoMenuStore?: ReturnType<typeof Ariakit.useMenuStore>;
 }
 
 const BadgeRowContext = createContext<BadgeRowContextType | undefined>(undefined);
@@ -38,12 +41,17 @@ interface BadgeRowProviderProps {
   children: React.ReactNode;
   isSubmitting?: boolean;
   conversationId?: string | null;
+  onMenuStores?: (stores: {
+    mcpMenuStore: ReturnType<typeof Ariakit.useMenuStore>;
+    videoMenuStore: ReturnType<typeof Ariakit.useMenuStore>;
+  }) => void;
 }
 
 export default function BadgeRowProvider({
   children,
   isSubmitting,
   conversationId,
+  onMenuStores,
 }: BadgeRowProviderProps) {
   const lastKeyRef = useRef<string>('');
   const hasInitializedRef = useRef(false);
@@ -187,6 +195,12 @@ export default function BadgeRowProvider({
   });
 
   const mcpServerManager = useMCPServerManager({ conversationId });
+  const mcpMenuStore = Ariakit.useMenuStore({ focusLoop: true });
+  const videoMenuStore = Ariakit.useMenuStore({ focusLoop: true });
+
+  useEffect(() => {
+    onMenuStores?.({ mcpMenuStore, videoMenuStore });
+  }, [mcpMenuStore, onMenuStores, videoMenuStore]);
 
   const value: BadgeRowContextType = {
     webSearch,
@@ -198,6 +212,8 @@ export default function BadgeRowProvider({
     codeInterpreter,
     searchApiKeyForm,
     mcpServerManager,
+    mcpMenuStore,
+    videoMenuStore,
   };
 
   return <BadgeRowContext.Provider value={value}>{children}</BadgeRowContext.Provider>;

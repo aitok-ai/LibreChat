@@ -23,6 +23,13 @@ const initialize = async () => {
   router.use(uaParser);
 
   const upload = await createMulterInstance();
+  // Initialize upload quota middleware with configured limits
+  const quotaMiddlewareFactory = require('~/server/middleware/uploadQuota')({
+    perFileLimitBytes: 2 * 1024 * 1024 * 1024,
+    totalLimitBytes: 10 * 1024 * 1024 * 1024,
+  });
+  // Apply quota check early for all file upload POSTs (excluding /speech which has separate handling)
+  router.use((req, res, next) => quotaMiddlewareFactory(req, res, next));
   router.post('/speech/stt', upload.single('audio'));
 
   /* Important: speech route must be added before the upload limiters */

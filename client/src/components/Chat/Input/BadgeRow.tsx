@@ -8,6 +8,7 @@ import React, {
   useReducer,
   useCallback,
 } from 'react';
+import * as Ariakit from '@ariakit/react';
 import { Badge } from '@librechat/client';
 import { useRecoilValue, useRecoilCallback } from 'recoil';
 import type { LucideIcon } from 'lucide-react';
@@ -20,9 +21,11 @@ import ToolDialogs from './ToolDialogs';
 import FileSearch from './FileSearch';
 import Artifacts from './Artifacts';
 import MCPSelect from './MCPSelect';
+import VideoSelect from './VideoSelect';
 import WebSearch from './WebSearch';
 import store from '~/store';
 import { atom } from 'recoil'; // Import atom if not already imported
+import useVideoPinned from '~/hooks/Video/useVideoPinned';
 
 // Define a default atom to use when badge.atom is undefined
 const defaultBadgeAtom = atom({
@@ -36,6 +39,10 @@ interface BadgeRowProps {
   conversationId?: string | null;
   isSubmitting?: boolean;
   isInChat: boolean;
+  onMenuStores?: (stores: {
+    mcpMenuStore: ReturnType<typeof Ariakit.useMenuStore>;
+    videoMenuStore: ReturnType<typeof Ariakit.useMenuStore>;
+  }) => void;
 }
 
 interface BadgeWrapperProps {
@@ -152,6 +159,7 @@ function BadgeRow({
   onChange,
   onToggle,
   isInChat,
+  onMenuStores,
 }: BadgeRowProps) {
   const [orderedBadges, setOrderedBadges] = useState<BadgeItem[]>([]);
   const [dragState, dispatch] = useReducer(dragReducer, {
@@ -174,6 +182,7 @@ function BadgeRow({
     () => allBadges.filter((badge) => badge.isAvailable !== false),
     [allBadges],
   );
+  const [isVideoPinned] = useVideoPinned();
 
   const toggleBadge = useRecoilCallback(
     ({ snapshot, set }) =>
@@ -326,7 +335,11 @@ function BadgeRow({
   }, [dragState.draggedBadge, handleMouseMove, handleMouseUp]);
 
   return (
-    <BadgeRowProvider conversationId={conversationId} isSubmitting={isSubmitting}>
+    <BadgeRowProvider
+      conversationId={conversationId}
+      isSubmitting={isSubmitting}
+      onMenuStores={onMenuStores}
+    >
       <div ref={containerRef} className="relative flex flex-wrap items-center gap-2">
         {showEphemeralBadges === true && <ToolsDropdown />}
         {tempBadges.map((badge, index) => (
@@ -375,6 +388,7 @@ function BadgeRow({
             <FileSearch />
             <Artifacts />
             <MCPSelect />
+            {isVideoPinned && <VideoSelect />}
           </>
         )}
         {ghostBadge && (

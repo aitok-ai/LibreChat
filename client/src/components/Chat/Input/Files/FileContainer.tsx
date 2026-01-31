@@ -20,6 +20,8 @@ const FileContainer = ({
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }) => {
   const fileType = getFileType(overrideType ?? file.type);
+  const displayName =
+    file.originalname ?? file.filename ?? (file as ExtendedFile).file?.name ?? 'File';
 
   return (
     <div
@@ -28,7 +30,7 @@ const FileContainer = ({
       <button
         type="button"
         onClick={onClick}
-        aria-label={file.filename}
+        aria-label={displayName}
         className={cn(
           'relative overflow-hidden rounded-2xl border border-border-light bg-surface-hover-alt',
           buttonClassName,
@@ -38,8 +40,8 @@ const FileContainer = ({
           <div className="flex flex-row items-center gap-2">
             <FilePreview file={file} fileType={fileType} className="relative" />
             <div className="overflow-hidden">
-              <div className="truncate font-medium" title={file.filename}>
-                {file.filename}
+              <div className="truncate font-medium" title={displayName}>
+                {displayName}
               </div>
               <div className="truncate text-text-secondary" title={fileType.title}>
                 {fileType.title}

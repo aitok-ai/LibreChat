@@ -31,6 +31,9 @@ const file: Schema<IMongoFile> = new Schema(
       type: String,
       required: true,
     },
+    originalname: {
+      type: String,
+    },
     filepath: {
       type: String,
       required: true,

@@ -59,7 +59,7 @@ const LogContent: React.FC<LogContentProps> = ({ output = '', renderImages, atta
     const expiresAt =
       'expiresAt' in file && typeof file.expiresAt === 'number' ? new Date(file.expiresAt) : null;
     const isExpired = expiresAt ? isAfter(now, expiresAt) : false;
-    const filename = file.filename || '';
+    const filename = file.originalname ?? file.filename ?? '';
 
     if (isExpired) {
       return `${filename} ${localize('com_download_expired')}`;
@@ -98,7 +98,7 @@ const LogContent: React.FC<LogContentProps> = ({ output = '', renderImages, atta
         return (
           <Image
             key={index}
-            altText={attachment.filename}
+            altText={attachment.originalname ?? attachment.filename}
             imagePath={filepath}
             height={height}
             width={width}

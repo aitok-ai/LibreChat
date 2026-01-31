@@ -1788,6 +1788,8 @@ export enum LocalStorageKeys {
   SHOW_ANALYSIS_CODE = 'showAnalysisCode',
   /** Last selected MCP values per conversation ID */
   LAST_MCP_ = 'LAST_MCP_',
+  /** Last checked toggle for MCP per conversation ID */
+  LAST_MCP_TOGGLE_ = 'LAST_MCP_TOGGLE_',
   /** Last checked toggle for Code Interpreter API per conversation ID */
   LAST_CODE_TOGGLE_ = 'LAST_CODE_TOGGLE_',
   /** Last checked toggle for Web Search per conversation ID */
@@ -1796,6 +1798,8 @@ export enum LocalStorageKeys {
   LAST_FILE_SEARCH_TOGGLE_ = 'LAST_FILE_SEARCH_TOGGLE_',
   /** Last checked toggle for Artifacts per conversation ID */
   LAST_ARTIFACTS_TOGGLE_ = 'LAST_ARTIFACTS_TOGGLE_',
+  /** Last checked toggle for Video per conversation ID */
+  LAST_VIDEO_TOGGLE_ = 'LAST_VIDEO_TOGGLE_',
   /** Key for the last selected agent provider */
   LAST_AGENT_PROVIDER = 'lastAgentProvider',
   /** Key for the last selected agent model */

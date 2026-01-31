@@ -121,6 +121,7 @@ const useFileHandling = (params?: UseFileHandling) => {
               height: data.height,
               width: data.width,
               filename: data.filename,
+              originalname: data.originalname ?? data.filename,
               source: data.source,
               embedded: data.embedded,
             },
@@ -287,6 +288,8 @@ const useFileHandling = (params?: UseFileHandling) => {
           file_id,
           file: originalFile,
           type: originalFile.type,
+          filename: originalFile.name,
+          originalname: originalFile.name,
           preview: initialPreview,
           progress: 0.1, // Show as processing
           size: originalFile.size,

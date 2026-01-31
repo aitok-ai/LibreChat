@@ -166,6 +166,49 @@ const showStopButtonByIndex = atomFamily<boolean, string | number>({
   default: false,
 });
 
+type VideoJobUIState = {
+  jobId: string | null;
+  streamId: string | null;
+  step: string | null;
+  stepStatus: string | null;
+  error: string | null;
+};
+
+type VideoPlatformPreset = 'douyin' | 'tiktok' | 'xiaohongshu' | 'youtube_shorts';
+type VideoTemplateType =
+  | 'talking_head'
+  | 'product_review'
+  | 'storyboard'
+  | 'image_mix'
+  | 'broll_subtitles'
+  | 'beat_cut';
+
+const videoModeByConvoId = atomFamily<boolean, string>({
+  key: 'videoModeByConvoId',
+  default: false,
+});
+
+const videoTemplateByConvoId = atomFamily<VideoTemplateType, string>({
+  key: 'videoTemplateByConvoId',
+  default: 'talking_head',
+});
+
+const videoPresetByConvoId = atomFamily<VideoPlatformPreset, string>({
+  key: 'videoPresetByConvoId',
+  default: 'douyin',
+});
+
+const videoJobUIStateByConvoId = atomFamily<VideoJobUIState, string>({
+  key: 'videoJobUIStateByConvoId',
+  default: {
+    jobId: null,
+    streamId: null,
+    step: null,
+    stepStatus: null,
+    error: null,
+  },
+});
+
 const abortScrollFamily = atomFamily<boolean, string | number>({
   key: 'abortScrollByIndex',
   default: false,
@@ -403,6 +446,10 @@ export default {
   submissionByIndex,
   textByIndex,
   showStopButtonByIndex,
+  videoModeByConvoId,
+  videoTemplateByConvoId,
+  videoPresetByConvoId,
+  videoJobUIStateByConvoId,
   abortScrollFamily,
   isSubmittingFamily,
   optionSettingsFamily,

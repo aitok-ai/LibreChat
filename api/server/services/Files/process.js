@@ -257,6 +257,7 @@ const processFileURL = async ({ fileStrategy, userId, URL, fileName, basePath, c
         bytes,
         filepath,
         filename: fileName,
+        originalname: fileName,
         source: fileStrategy,
         type,
         context,
@@ -304,6 +305,7 @@ const processImageFile = async ({ req, res, metadata, returnFile = false }) => {
       bytes,
       filepath,
       filename: file.originalname,
+      originalname: file.originalname,
       context: FileContext.message_attachment,
       source,
       type: `image/${appConfig.imageOutputType}`,
@@ -355,6 +357,7 @@ const uploadImageBuffer = async ({ req, context, metadata = {}, resize = true })
       bytes,
       filepath,
       filename,
+      originalname: req.file?.originalname ?? filename,
       context,
       source,
       type,
@@ -442,6 +445,7 @@ const processFileUpload = async ({ req, res, metadata }) => {
       bytes,
       filepath,
       filename: filename ?? sanitizeFilename(file.originalname),
+      originalname: file.originalname,
       context: isAssistantUpload ? FileContext.assistants : FileContext.message_attachment,
       model: isAssistantUpload ? req.body.model : undefined,
       type: file.mimetype,
@@ -533,6 +537,7 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
         filepath: filepath ?? file.path,
         source: FileSources.text,
         filename: file.originalname,
+        originalname: file.originalname,
         model: messageAttachment ? undefined : req.body.model,
         context: messageAttachment ? FileContext.message_attachment : FileContext.agents,
       });
@@ -680,6 +685,7 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
     bytes,
     filepath,
     filename: filename ?? sanitizeFilename(file.originalname),
+    originalname: file.originalname,
     context: messageAttachment ? FileContext.message_attachment : FileContext.agents,
     model: messageAttachment ? undefined : req.body.model,
     metadata: fileInfoMetadata,
@@ -733,6 +739,7 @@ const processOpenAIFile = async ({
     source,
     model: openai.req.body.model,
     filename: originalName ?? file_id,
+    originalname: originalName ?? file_id,
   };
 
   if (saveFile) {

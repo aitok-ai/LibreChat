@@ -1,1 +1,26 @@
-{}
+{
+  "com_ui_video": "Видио",
+  "com_ui_video_enable_hint": "Omogući generiranje видеа",
+  "com_ui_video_enable": "Omogući video",
+  "com_ui_video_enable_desc": "Koristite materijale za generisanje kratkog videa",
+  "com_ui_video_requires_mode": "Učitani video/audio se obrađuju samo kada je video način uključen.",
+  "com_ui_video_template": "Predložak",
+  "com_ui_video_platform": "Platforma",
+  "com_ui_video_template_talking_head": "Govorna glava / Objašnjenje",
+  "com_ui_video_template_product_review": "Recenzija proizvoda / Preporuka",
+  "com_ui_video_template_storyboard": "Storyboard / Rez scena",
+  "com_ui_video_template_image_mix": "Miks slika i klipova",
+  "com_ui_video_template_broll_subtitles": "B-roll + Titlovi",
+  "com_ui_video_template_beat_cut": "Beat-cut montaža",
+  "com_ui_video_platform_douyin": "Douyin",
+  "com_ui_video_platform_tiktok": "TikTok",
+  "com_ui_video_platform_xiaohongshu": "Xiaohongshu",
+  "com_ui_video_platform_youtube_shorts": "YouTube Shorts",
+  "com_ui_video_job_status": "Zadatak {{0}} · {{1}} {{2}}",
+  "com_ui_video_job_pending": "na čekanju",
+  "com_ui_video_download_zip": "Preuzmi ZIP",
+  "com_ui_video_assets_required": "Najprije priložite video, audio ili slike.",
+  "com_ui_video_uploading_assets": "Pričekajte da se sva učitavanja završe prije slanja.",
+  "com_ui_video_job_failed": "Neuspjelo pokretanje video zadatka.",
+  "com_ui_video_stream_disconnected": "Video tok zadatka je prekinut."
+}

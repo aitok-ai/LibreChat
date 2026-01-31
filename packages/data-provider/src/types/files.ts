@@ -103,6 +103,7 @@ export type TFile = {
   bytes: number;
   embedded: boolean;
   filename: string;
+  originalname?: string;
   filepath: string;
   object: 'file';
   type: string;

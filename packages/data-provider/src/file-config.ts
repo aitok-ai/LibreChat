@@ -296,6 +296,37 @@ export const imageTypeMapping: { [key: string]: string } = {
   heif: 'image/heif',
 };
 
+/** Maps audio extensions to MIME types for formats browsers may not recognize */
+export const audioTypeMapping: { [key: string]: string } = {
+  mp3: 'audio/mpeg',
+  mpeg: 'audio/mpeg',
+  wav: 'audio/wav',
+  wave: 'audio/wav',
+  ogg: 'audio/ogg',
+  vorbis: 'audio/ogg',
+  m4a: 'audio/mp4',
+  flac: 'audio/flac',
+  webm: 'audio/webm',
+  aac: 'audio/aac',
+  wma: 'audio/wma',
+  opus: 'audio/opus',
+};
+
+/** Maps video extensions to MIME types for formats browsers may not recognize */
+export const videoTypeMapping: { [key: string]: string } = {
+  mp4: 'video/mp4',
+  mov: 'video/quicktime',
+  m4v: 'video/x-m4v',
+  mkv: 'video/x-matroska',
+  webm: 'video/webm',
+  avi: 'video/x-msvideo',
+  wmv: 'video/x-ms-wmv',
+  flv: 'video/x-flv',
+  ogv: 'video/ogg',
+  ogg: 'video/ogg',
+  '3gp': 'video/3gpp',
+};
+
 /**
  * Infers the MIME type from a file's extension when the browser doesn't recognize it
  * @param fileName - The name of the file including extension
@@ -308,7 +339,13 @@ export function inferMimeType(fileName: string, currentType: string): string {
   }
 
   const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
-  return codeTypeMapping[extension] || imageTypeMapping[extension] || currentType;
+  return (
+    codeTypeMapping[extension] ||
+    imageTypeMapping[extension] ||
+    audioTypeMapping[extension] ||
+    videoTypeMapping[extension] ||
+    currentType
+  );
 }
 
 export const retrievalMimeTypes = [

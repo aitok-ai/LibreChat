@@ -8,6 +8,7 @@ export interface IMongoFile extends Omit<Document, 'model'> {
   bytes: number;
   text?: string;
   filename: string;
+  originalname?: string;
   filepath: string;
   object: 'file';
   embedded?: boolean;

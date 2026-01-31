@@ -26,6 +26,7 @@ const auth = require('./auth');
 const keys = require('./keys');
 const user = require('./user');
 const mcp = require('./mcp');
+const videoJobs = require('./videoJobs');
 
 module.exports = {
   mcp,
@@ -39,6 +40,7 @@ module.exports = {
   share,
   banner,
   agents,
+  videoJobs,
   convos,
   search,
   config,

@@ -42,6 +42,12 @@ const buildQuery = (params: Record<string, unknown>): string => {
 export const health = () => `${BASE_URL}/health`;
 export const user = () => `${BASE_URL}/api/user`;
 
+const videoJobsRoot = `${BASE_URL}/api/video/jobs`;
+export const createVideoJob = () => `${videoJobsRoot}`;
+export const getVideoJob = (id: string) => `${videoJobsRoot}/${id}`;
+export const cancelVideoJob = (id: string) => `${videoJobsRoot}/${id}/cancel`;
+export const downloadVideoJobZip = (id: string) => `${videoJobsRoot}/${id}/download/zip`;
+
 export const balance = () => `${BASE_URL}/api/balance`;
 export const userById = (id: string) => {
   return `/api/user/${id}`;

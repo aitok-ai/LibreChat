@@ -59,7 +59,8 @@ export const fileTableColumns: ColumnDef<TFile>[] = [
     },
     cell: ({ row }) => {
       const file = row.original;
-      return <span className="self-center truncate">{file.filename}</span>;
+      const displayName = file.originalname ?? file.filename;
+      return <span className="self-center truncate">{displayName}</span>;
     },
   },
   {

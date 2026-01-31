@@ -12,11 +12,12 @@ const CLEANUP_THRESHOLD = 2 * 24 * 60 * 60 * 1000;
  */
 const TIMESTAMPED_KEYS = [
   LocalStorageKeys.LAST_MCP_,
+  LocalStorageKeys.LAST_MCP_TOGGLE_,
   LocalStorageKeys.LAST_CODE_TOGGLE_,
   LocalStorageKeys.LAST_WEB_SEARCH_TOGGLE_,
   LocalStorageKeys.LAST_FILE_SEARCH_TOGGLE_,
   LocalStorageKeys.LAST_ARTIFACTS_TOGGLE_,
-  LocalStorageKeys.PIN_MCP_,
+  LocalStorageKeys.LAST_VIDEO_TOGGLE_,
 ];
 
 /**
@@ -79,10 +80,6 @@ export function cleanupTimestampedStorage(): void {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (!key) continue;
-      if (key === LocalStorageKeys.PIN_MCP_) {
-        continue;
-      }
-
       // Check if this key should be timestamped
       const isTimestampedKey = TIMESTAMPED_KEYS.some(
         (prefix) => key.startsWith(prefix) && !key.includes('pinned'),

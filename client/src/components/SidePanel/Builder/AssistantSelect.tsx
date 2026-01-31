@@ -98,6 +98,7 @@ export default function AssistantSelect({
                 type: file.type,
                 filepath: file.filepath,
                 filename: file.filename,
+                originalname: file.originalname ?? file.filename,
                 width: file.width,
                 height: file.height,
                 size: file.bytes,

@@ -541,6 +541,7 @@ export interface ExtendedFile {
   type?: string;
   filepath?: string;
   filename?: string;
+  originalname?: string;
   width?: number;
   height?: number;
   size: number;

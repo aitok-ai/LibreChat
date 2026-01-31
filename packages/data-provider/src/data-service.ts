@@ -1,5 +1,10 @@
 import type { AxiosResponse } from 'axios';
 import type * as t from './types';
+import type {
+  TCreateVideoJobRequest,
+  TCreateVideoJobResponse,
+  TVideoJobStatusResponse,
+} from './types/videoJobs';
 import * as endpoints from './api-endpoints';
 import * as a from './types/assistants';
 import * as ag from './types/agents';
@@ -103,6 +108,18 @@ export function getSearchEnabled(): Promise<boolean> {
 
 export function getUser(): Promise<t.TUser> {
   return request.get(endpoints.user());
+}
+
+export function createVideoJob(payload: TCreateVideoJobRequest): Promise<TCreateVideoJobResponse> {
+  return request.post(endpoints.createVideoJob(), payload);
+}
+
+export function getVideoJob(id: string): Promise<TVideoJobStatusResponse> {
+  return request.get(endpoints.getVideoJob(id));
+}
+
+export function cancelVideoJob(id: string): Promise<{ job_id: string; status: string }> {
+  return request.post(endpoints.cancelVideoJob(id));
 }
 
 export function getUserBalance(): Promise<t.TBalanceResponse> {
