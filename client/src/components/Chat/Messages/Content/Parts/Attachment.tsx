@@ -8,10 +8,14 @@ import { cn } from '~/utils';
 
 const FileAttachment = memo(({ attachment }: { attachment: Partial<TAttachment> }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const file = attachment as TFile & TAttachmentMetadata;
   const displayName = attachment.originalname ?? attachment.filename ?? '';
   const { handleDownload } = useAttachmentLink({
-    href: attachment.filepath ?? '',
+    href: file.filepath ?? '',
     filename: displayName,
+    file_id: file.file_id,
+    user: file.user,
+    source: file.source,
   });
   const extension = displayName.split('.').pop();
 

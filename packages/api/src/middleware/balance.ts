@@ -97,7 +97,7 @@ export function createSetBalanceConfig({
         return next();
       }
       const userId = typeof user._id === 'string' ? user._id : user._id.toString();
-      const userBalanceRecord = await Balance.findOne({ user: userId }).lean();
+      const userBalanceRecord = await Balance.findOne({ user: userId }).lean<IBalance>();
       const updateFields = buildUpdateFields(balanceConfig, userBalanceRecord, userId);
 
       if (Object.keys(updateFields).length === 0) {

@@ -67,6 +67,8 @@ export enum QueryKeys {
   mcpServer = 'mcpServer',
   /* Active Jobs */
   activeJobs = 'activeJobs',
+  /* Agent API Keys */
+  agentApiKeys = 'agentApiKeys',
 }
 
 // Dynamic query keys that require parameters
@@ -75,6 +77,8 @@ export const DynamicQueryKeys = {
 } as const;
 
 export enum MutationKeys {
+  createAgentApiKey = 'createAgentApiKey',
+  deleteAgentApiKey = 'deleteAgentApiKey',
   fileUpload = 'fileUpload',
   fileDelete = 'fileDelete',
   updatePreset = 'updatePreset',

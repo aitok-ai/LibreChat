@@ -86,6 +86,20 @@ export function updateUserKey(payload: t.TUpdateUserKeyRequest) {
   return request.put(endpoints.keys(), payload);
 }
 
+export function getAgentApiKeys(): Promise<t.TAgentApiKeyListResponse> {
+  return request.get(endpoints.apiKeys());
+}
+
+export function createAgentApiKey(
+  payload: t.TAgentApiKeyCreateRequest,
+): Promise<t.TAgentApiKeyCreateResponse> {
+  return request.post(endpoints.apiKeys(), payload);
+}
+
+export function deleteAgentApiKey(id: string): Promise<void> {
+  return request.delete(endpoints.apiKeyById(id));
+}
+
 export function getPresets(): Promise<s.TPreset[]> {
   return request.get(endpoints.presets());
 }
@@ -919,6 +933,15 @@ export function updateMCPServersPermissions(
   variables: m.UpdateMCPServersPermVars,
 ): Promise<m.UpdatePermResponse> {
   return request.put(endpoints.updateMCPServersPermissions(variables.roleName), variables.updates);
+}
+
+export function updateRemoteAgentsPermissions(
+  variables: m.UpdateRemoteAgentsPermVars,
+): Promise<m.UpdatePermResponse> {
+  return request.put(
+    endpoints.updateRemoteAgentsPermissions(variables.roleName),
+    variables.updates,
+  );
 }
 
 export function updateMarketplacePermissions(

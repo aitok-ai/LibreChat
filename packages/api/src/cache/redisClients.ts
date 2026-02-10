@@ -3,7 +3,7 @@ import type { Redis, Cluster } from 'ioredis';
 import { logger } from '@librechat/data-schemas';
 import { createClient, createCluster } from '@keyv/redis';
 import type { RedisClientType, RedisClusterType } from '@redis/client';
-import type { ScanCommandOptions } from '@redis/client/dist/lib/commands/SCAN';
+// import type { ScanCommandOptions } from '@redis/client/dist/lib/commands/SCAN';
 import { cacheConfig } from './cacheConfig';
 
 const urls = cacheConfig.REDIS_URI?.split(',').map((uri) => new URL(uri)) || [];
@@ -122,10 +122,7 @@ if (cacheConfig.USE_REDIS) {
 }
 
 let keyvRedisClient: RedisClientType | RedisClusterType | null = null;
-let keyvRedisClientReady:
-  | Promise<void>
-  | Promise<RedisClientType<Record<string, never>, Record<string, never>, Record<string, never>>>
-  | null = null;
+let keyvRedisClientReady: Promise<unknown> | null = null;
 
 if (cacheConfig.USE_REDIS) {
   /**
@@ -171,9 +168,11 @@ if (cacheConfig.USE_REDIS) {
   // Add scanIterator method to cluster client for API consistency with standalone client
   if (!('scanIterator' in keyvRedisClient)) {
     const clusterClient = keyvRedisClient as RedisClusterType;
-    (keyvRedisClient as unknown as RedisClientType).scanIterator = async function* (
-      options?: ScanCommandOptions,
-    ) {
+    (keyvRedisClient as unknown as RedisClientType).scanIterator = async function* (options?: {
+      MATCH?: string;
+      COUNT?: number;
+      [key: string]: unknown;
+    }) {
       const masters = clusterClient.masters;
       for (const master of masters) {
         const nodeClient = await clusterClient.nodeClient(master);
@@ -209,7 +208,7 @@ if (cacheConfig.USE_REDIS) {
   // Start connection immediately
   keyvRedisClientReady = keyvRedisClient.connect();
 
-  keyvRedisClientReady.catch((err): void => {
+  keyvRedisClientReady?.catch((err): void => {
     logger.error('@keyv/redis initial connection failed:', err);
     throw err;
   });

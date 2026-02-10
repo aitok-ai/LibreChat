@@ -92,7 +92,7 @@ export const createMemoryTool = ({
   const isOverflowing = tokenLimit ? remainingTokens <= 0 : false;
 
   return tool(
-    async ({ key, value }) => {
+    (async ({ key, value }: { key: string; value: string }) => {
       try {
         if (validKeys && validKeys.length > 0 && !validKeys.includes(key)) {
           logger.warn(
@@ -106,7 +106,7 @@ export const createMemoryTool = ({
         const tokenCount = Tokenizer.getTokenCount(value, 'o200k_base');
 
         if (isOverflowing) {
-          const errorArtifact: Record<Tools.memory, MemoryArtifact> = {
+          const errorArtifact: Record<string, MemoryArtifact> = {
             [Tools.memory]: {
               key: 'system',
               type: 'error',
@@ -127,7 +127,7 @@ export const createMemoryTool = ({
           const newRemainingTokens = tokenLimit - newTotalTokens;
 
           if (newRemainingTokens < 0) {
-            const errorArtifact: Record<Tools.memory, MemoryArtifact> = {
+            const errorArtifact: Record<string, MemoryArtifact> = {
               [Tools.memory]: {
                 key: 'system',
                 type: 'error',
@@ -144,7 +144,7 @@ export const createMemoryTool = ({
           }
         }
 
-        const artifact: Record<Tools.memory, MemoryArtifact> = {
+        const artifact: Record<string, MemoryArtifact> = {
           [Tools.memory]: {
             key,
             value,
@@ -164,7 +164,8 @@ export const createMemoryTool = ({
         logger.error('Memory Agent failed to set memory', error);
         return [`Error setting memory for key "${key}"`, undefined];
       }
-    },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any,
     {
       name: 'set_memory',
       description: 'Saves important information about the user into memory.',
@@ -183,7 +184,8 @@ export const createMemoryTool = ({
             'Value MUST be a complete sentence that fully describes relevant user information.',
           ),
       }),
-    },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any,
   );
 };
 
@@ -200,7 +202,7 @@ const createDeleteMemoryTool = ({
   validKeys?: string[];
 }) => {
   return tool(
-    async ({ key }) => {
+    (async ({ key }: { key: string }) => {
       try {
         if (validKeys && validKeys.length > 0 && !validKeys.includes(key)) {
           logger.warn(
@@ -211,7 +213,7 @@ const createDeleteMemoryTool = ({
           return [`Invalid key "${key}". Must be one of: ${validKeys.join(', ')}`, undefined];
         }
 
-        const artifact: Record<Tools.memory, MemoryArtifact> = {
+        const artifact: Record<string, MemoryArtifact> = {
           [Tools.memory]: {
             key,
             type: 'delete',
@@ -229,7 +231,8 @@ const createDeleteMemoryTool = ({
         logger.error('Memory Agent failed to delete memory', error);
         return [`Error deleting memory for key "${key}"`, undefined];
       }
-    },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any,
     {
       name: 'delete_memory',
       description:
@@ -244,7 +247,8 @@ const createDeleteMemoryTool = ({
               : 'The key identifier of the memory to delete',
           ),
       }),
-    },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any,
   );
 };
 export class BasicToolEndHandler implements EventHandler {
@@ -535,7 +539,8 @@ export async function createMemoryProcessor({
       } catch (error) {
         logger.error('Memory Agent failed to process memory', error);
       }
-    },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any,
   ];
 }
 

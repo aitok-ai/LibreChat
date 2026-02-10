@@ -118,7 +118,11 @@ const ALLOWED_BODY_FIELDS = ['conversationId', 'parentMessageId', 'messageId'] a
  * @param isHeader - Whether this value will be used in an HTTP header
  * @returns The processed string with placeholders replaced (and encoded if necessary)
  */
-function processUserPlaceholders(value: string, user?: IUser, isHeader: boolean = false): string {
+function processUserPlaceholders(
+  value: string,
+  user?: Partial<IUser>,
+  isHeader: boolean = false,
+): string {
   if (!user || typeof value !== 'string') {
     return value;
   }
@@ -208,7 +212,7 @@ function processSingleValue({
 }: {
   originalValue: string;
   customUserVars?: Record<string, string>;
-  user?: IUser;
+  user?: Partial<IUser>;
   body?: RequestBody;
   isHeader?: boolean;
 }): string {
@@ -255,7 +259,7 @@ function processSingleValue({
  */
 export function processMCPEnv(params: {
   options: Readonly<MCPOptions>;
-  user?: IUser;
+  user?: Partial<IUser>;
   customUserVars?: Record<string, string>;
   body?: RequestBody;
 }): MCPOptions {

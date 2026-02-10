@@ -109,7 +109,11 @@ export async function scanKeys(
     MATCH: pattern,
     COUNT: scanCount,
   })) {
-    keys.push(key);
+    if (Array.isArray(key)) {
+      keys.push(...(key as string[]));
+    } else {
+      keys.push(key as string);
+    }
   }
 
   // Performance monitoring
