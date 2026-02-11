@@ -1,7 +1,15 @@
 import { memo, useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { useWatch } from 'react-hook-form';
 import * as Ariakit from '@ariakit/react';
-import { TextareaAutosize, TooltipAnchor, useToastContext } from '@librechat/client';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardPortal,
+  HoverCardTrigger,
+  TextareaAutosize,
+  TooltipAnchor,
+  useToastContext,
+} from '@librechat/client';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
   Constants,
@@ -718,19 +726,32 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
               </div>
             </div>
             {activeVideoNotice && (
-              <div
-                role="status"
-                aria-live="polite"
-                className={cn(
-                  'pointer-events-none absolute bottom-14 z-20 max-w-[260px] rounded-lg border px-3 py-2 text-xs shadow-md',
-                  isRTL ? 'left-3' : 'right-3',
-                  activeVideoNotice.tone === 'error'
-                    ? 'border-red-200 bg-red-50 text-red-600'
-                    : 'border-blue-200 bg-blue-50 text-blue-700',
-                )}
-              >
-                {activeVideoNotice.message}
-              </div>
+              <HoverCard open={true} onOpenChange={() => undefined}>
+                <HoverCardTrigger
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  className={cn(
+                    'pointer-events-none absolute bottom-14 z-20 h-1 w-1',
+                    isRTL ? 'left-3' : 'right-3',
+                  )}
+                />
+                <HoverCardPortal>
+                  <HoverCardContent
+                    side="top"
+                    align={isRTL ? 'start' : 'end'}
+                    className={cn(
+                      'pointer-events-none w-auto max-w-[260px] px-3 py-2 text-xs',
+                      activeVideoNotice.tone === 'error'
+                        ? 'border-red-200 bg-red-50 text-red-600'
+                        : 'border-black-200 bg-black-50 text-black-700',
+                    )}
+                  >
+                    <span role="status" aria-live="polite">
+                      {activeVideoNotice.message}
+                    </span>
+                  </HoverCardContent>
+                </HoverCardPortal>
+              </HoverCard>
             )}
             {TextToSpeech && automaticPlayback && <StreamAudio index={index} />}
           </div>
