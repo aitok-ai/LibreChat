@@ -61,14 +61,24 @@ export default function VideoSelect() {
               'hover:bg-surface-hover hover:shadow-md active:shadow-inner',
               'md:w-fit md:justify-start md:px-3',
               isOpen && 'bg-surface-hover',
-              videoMode && 'border-purple-500/70',
             )}
           />
         }
       >
-        <VideoIcon
-          className={cn('h-4 w-4', videoMode ? 'text-purple-600' : 'text-text-secondary')}
-        />
+        <div
+          className={cn(
+            'flex items-center justify-center',
+            videoMode &&
+              'relative h-[22px] w-[22px] rounded-full border border-border-medium bg-surface-secondary',
+          )}
+        >
+          <VideoIcon
+            className={cn(
+              videoMode ? 'h-[18px] w-[18px] text-text-primary' : 'h-5 w-5 text-text-secondary',
+            )}
+            aria-hidden="true"
+          />
+        </div>
         <span className="hidden truncate text-text-primary md:block">
           {displayText ?? localize('com_ui_video')}
         </span>

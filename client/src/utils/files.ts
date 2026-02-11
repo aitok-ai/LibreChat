@@ -53,7 +53,7 @@ const audioFile = {
 
 const videoFile = {
   paths: VideoPaths,
-  fill: '#8B5CF6',
+  fill: '#6366F1',
   title: 'Video',
 };
 
