@@ -49,14 +49,8 @@ export default defineConfig(({ command, mode }) => {
         useCredentials: true,
         includeManifestIcons: false,
         workbox: {
-          globPatterns: [
-            '**/*.{js,css,html}',
-            'assets/favicon*.png',
-            'assets/icon-*.png',
-            'assets/apple-touch-icon*.png',
-            'assets/maskable-icon.png',
-            'manifest.webmanifest',
-          ],
+          // reduce warnings by using a broad pattern that will always match
+          globPatterns: ['**/*.{js,css,html,png,webmanifest}'],
           globIgnores: ['images/**/*', '**/*.map', 'index.html'],
           maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
           navigateFallbackDenylist: [/^\/oauth/, /^\/api/],

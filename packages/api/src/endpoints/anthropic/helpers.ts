@@ -75,7 +75,10 @@ function configureReasoning(
     effort?: AnthropicEffort | string | null;
   } = {},
 ): AnthropicClientOptions & { max_tokens?: number } {
-  const updatedOptions = { ...anthropicInput };
+  const updatedOptions = { ...anthropicInput } as AnthropicClientOptions & {
+    max_tokens?: number;
+    thinking?: { type: 'adaptive' | 'enabled' | 'disabled'; budget_tokens?: number };
+  };
   const currentMaxTokens = updatedOptions.max_tokens ?? updatedOptions.maxTokens;
   const modelName = updatedOptions.model ?? '';
 

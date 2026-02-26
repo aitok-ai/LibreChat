@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useCallback, useRef } from 'react';
+import { memo, useMemo, useState, useCallback, useRef, useId } from 'react';
 import { useAtom } from 'jotai';
 import type { MouseEvent, FocusEvent } from 'react';
 import { ContentTypes } from 'librechat-data-provider';
@@ -36,6 +36,7 @@ type ReasoningProps = {
  * For legacy text-based messages, see Thinking.tsx component.
  */
 const Reasoning = memo(({ reasoning, isLast }: ReasoningProps) => {
+  const contentId = useId();
   const localize = useLocalize();
   const [showThinking] = useAtom(showThinkingAtom);
   const [isExpanded, setIsExpanded] = useState(showThinking);
@@ -98,15 +99,20 @@ const Reasoning = memo(({ reasoning, isLast }: ReasoningProps) => {
       onBlur={handleBlur}
     >
       <div className="group/thinking-container">
-        <div className="mb-2 pb-2 pt-2">
+        <div className="mb-2 pt-2 pb-2">
           <ThinkingButton
             isExpanded={isExpanded}
             onClick={handleClick}
             label={label}
             content={reasoningText}
+            contentId={contentId}
           />
         </div>
         <div
+          id={contentId}
+          role="group"
+          aria-label={label}
+          aria-hidden={!isExpanded || undefined}
           className={cn(
             'grid transition-all duration-300 ease-out',
             nextType !== ContentTypes.THINK && isExpanded && 'mb-4',
@@ -122,6 +128,7 @@ const Reasoning = memo(({ reasoning, isLast }: ReasoningProps) => {
               isExpanded={isExpanded}
               onClick={handleClick}
               content={reasoningText}
+              contentId={contentId}
             />
           </div>
         </div>

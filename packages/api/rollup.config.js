@@ -44,6 +44,49 @@ const plugins = [
   json(),
 ];
 
+// helper that marks everything coming from node_modules as external.
+// Rollup by default only externalizes packages listed in `dependencies`, but
+// transient deps like @redis/client were pulled into the bundle and triggered
+// a circular‑dependency warning.  By checking the path we avoid bundling any
+// dependency at all – the package will be required at runtime instead.
+function isExternal(id) {
+  if (id == null) return false;
+
+  // if the module is one of our direct dependencies or devDependencies,
+  // mark it external (handles bare imports like 'xlsx' or scoped names
+  // like '@redis/client'). We match both the package itself and nested
+  // imports under it (e.g. '@redis/client/dist/…').
+  const deps = Object.keys(pkg.dependencies || {});
+  const devDeps = Object.keys(pkg.devDependencies || {});
+  for (const dep of deps.concat(devDeps)) {
+    if (id === dep || id.startsWith(`${dep}/`)) {
+      return true;
+    }
+  }
+
+  // anything clearly coming from node_modules (e.g. a deep import) is external
+  if (/node_modules/.test(id)) {
+    return true;
+  }
+
+  // default: not external (so rollup will include it). This covers local
+  // source files such as 'src/index.ts' or alias'd imports starting with '/'.
+  return false;
+}
+
+// suppress known circular‑dependency noise from third‑party libs such as
+// `@redis/client`.  These cycles live entirely in node_modules and are safe to
+// ignore, especially in a server bundle where dependencies remain external.
+function onwarn(warning, warn) {
+  if (warning.code === 'CIRCULAR_DEPENDENCY') {
+    if (warning.importer && /node_modules\/.+@redis\/client/.test(warning.importer)) {
+      return; // drop the message
+    }
+  }
+  // fall back to default handling for everything else
+  warn(warning);
+}
+
 const cjsBuild = {
   input: 'src/index.ts',
   output: {
@@ -57,9 +100,10 @@ const cjsBuild = {
      */
     sourcemapExcludeSources: false,
   },
-  external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.devDependencies || {})],
+  external: isExternal,
   preserveSymlinks: true,
   plugins,
+  onwarn,
 };
 
 export default cjsBuild;

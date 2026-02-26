@@ -8,5 +8,5 @@
     "preserveConstEnums": true,
     "declarationMap": true
   },
-  "exclude": ["node_modules", "dist", "types", "src/**/*.test.ts", "src/**/*.spec.ts"]
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/**/*.spec.ts"]
 }

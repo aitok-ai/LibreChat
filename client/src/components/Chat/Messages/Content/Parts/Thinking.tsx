@@ -1,4 +1,4 @@
-import { useState, useMemo, memo, useCallback, useRef, type MouseEvent } from 'react';
+import { useState, useMemo, memo, useCallback, useRef, useId, type MouseEvent } from 'react';
 import { useAtomValue } from 'jotai';
 import { Clipboard, CheckMark, TooltipAnchor } from '@librechat/client';
 import { Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
@@ -18,8 +18,8 @@ export const ThinkingContent: FC<{
   const fontSize = useAtomValue(fontSizeAtom);
 
   return (
-    <div className="relative rounded-3xl border border-border-medium bg-surface-tertiary p-4 pb-10 text-text-secondary">
-      <p className={cn('whitespace-pre-wrap leading-[26px]', fontSize)}>{children}</p>
+    <div className="border-border-medium bg-surface-tertiary text-text-secondary relative rounded-3xl border p-4 pb-10">
+      <p className={cn('leading-[26px] whitespace-pre-wrap', fontSize)}>{children}</p>
     </div>
   );
 });
@@ -35,12 +35,14 @@ export const ThinkingButton = memo(
     onClick,
     label,
     content,
+    contentId,
     showCopyButton = true,
   }: {
     isExpanded: boolean;
     onClick: (e: MouseEvent<HTMLButtonElement>) => void;
     label: string;
     content?: string;
+    contentId: string;
     showCopyButton?: boolean;
   }) => {
     const localize = useLocalize();
@@ -66,6 +68,7 @@ export const ThinkingButton = memo(
           type="button"
           onClick={onClick}
           aria-expanded={isExpanded}
+          aria-controls={contentId}
           className={cn(
             'group/button flex flex-1 items-center justify-start rounded-lg leading-[18px]',
             fontSize,
@@ -73,12 +76,12 @@ export const ThinkingButton = memo(
         >
           <span className="relative mr-1.5 inline-flex h-[18px] w-[18px] items-center justify-center">
             <Lightbulb
-              className="icon-sm absolute text-text-secondary opacity-100 transition-opacity group-hover/button:opacity-0"
+              className="icon-sm text-text-secondary absolute opacity-100 transition-opacity group-hover/button:opacity-0"
               aria-hidden="true"
             />
             <ChevronDown
               className={cn(
-                'icon-sm absolute transform-gpu text-text-primary opacity-0 transition-all duration-300 group-hover/button:opacity-100',
+                'icon-sm text-text-primary absolute transform-gpu opacity-0 transition-all duration-300 group-hover/button:opacity-100',
                 isExpanded && 'rotate-180',
               )}
               aria-hidden="true"
@@ -96,12 +99,12 @@ export const ThinkingButton = memo(
                 : localize('com_ui_copy_thoughts_to_clipboard')
             }
             className={cn(
-              'rounded-lg p-1.5 text-text-secondary-alt',
+              'text-text-secondary-alt rounded-lg p-1.5',
               isExpanded
                 ? 'opacity-0 group-focus-within/thinking-container:opacity-100 group-hover/thinking-container:opacity-100'
                 : 'opacity-0',
               'hover:bg-surface-hover hover:text-text-primary',
-              'focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white',
+              'focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none dark:focus-visible:ring-white',
             )}
           >
             <span className="sr-only">
@@ -132,11 +135,13 @@ export const FloatingThinkingBar = memo(
     isExpanded,
     onClick,
     content,
+    contentId,
   }: {
     isVisible: boolean;
     isExpanded: boolean;
     onClick: (e: MouseEvent<HTMLButtonElement>) => void;
     content?: string;
+    contentId: string;
   }) => {
     const localize = useLocalize();
     const [isCopied, setIsCopied] = useState(false);
@@ -164,7 +169,7 @@ export const FloatingThinkingBar = memo(
     return (
       <div
         className={cn(
-          'absolute bottom-3 right-3 flex items-center gap-2 transition-opacity duration-150',
+          'absolute right-3 bottom-3 flex items-center gap-2 transition-opacity duration-150',
           isVisible ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
       >
@@ -176,10 +181,12 @@ export const FloatingThinkingBar = memo(
               tabIndex={isVisible ? 0 : -1}
               onClick={onClick}
               aria-label={collapseTooltip}
+              aria-expanded={isExpanded}
+              aria-controls={contentId}
               className={cn(
-                'flex items-center justify-center rounded-lg bg-surface-secondary p-1.5 text-text-secondary-alt shadow-sm',
+                'bg-surface-secondary text-text-secondary-alt flex items-center justify-center rounded-lg p-1.5 shadow-sm',
                 'hover:bg-surface-hover hover:text-text-primary',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-heavy',
+                'focus-visible:ring-border-heavy focus-visible:ring-2 focus-visible:outline-none',
               )}
             >
               {isExpanded ? (
@@ -200,9 +207,9 @@ export const FloatingThinkingBar = memo(
                 onClick={handleCopy}
                 aria-label={copyTooltip}
                 className={cn(
-                  'flex items-center justify-center rounded-lg bg-surface-secondary p-1.5 text-text-secondary-alt shadow-sm',
+                  'bg-surface-secondary text-text-secondary-alt flex items-center justify-center rounded-lg p-1.5 shadow-sm',
                   'hover:bg-surface-hover hover:text-text-primary',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-heavy',
+                  'focus-visible:ring-border-heavy focus-visible:ring-2 focus-visible:outline-none',
                 )}
               >
                 {isCopied ? (
@@ -240,6 +247,7 @@ const Thinking: React.ElementType = memo(({ children }: { children: React.ReactN
   const [isExpanded, setIsExpanded] = useState(showThinking);
   const [isBarVisible, setIsBarVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentId = useId();
 
   const handleClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -289,15 +297,20 @@ const Thinking: React.ElementType = memo(({ children }: { children: React.ReactN
       onFocus={handleFocus}
       onBlur={handleBlur}
     >
-      <div className="mb-4 pb-2 pt-2">
+      <div className="mb-4 pt-2 pb-2">
         <ThinkingButton
           isExpanded={isExpanded}
           onClick={handleClick}
           label={label}
           content={textContent}
+          contentId={contentId}
         />
       </div>
       <div
+        id={contentId}
+        role="group"
+        aria-label={label}
+        aria-hidden={!isExpanded || undefined}
         className={cn('grid transition-all duration-300 ease-out', isExpanded && 'mb-8')}
         style={{
           gridTemplateRows: isExpanded ? '1fr' : '0fr',
@@ -310,6 +323,7 @@ const Thinking: React.ElementType = memo(({ children }: { children: React.ReactN
             isExpanded={isExpanded}
             onClick={handleClick}
             content={textContent}
+            contentId={contentId}
           />
         </div>
       </div>
@@ -322,4 +336,4 @@ ThinkingContent.displayName = 'ThinkingContent';
 FloatingThinkingBar.displayName = 'FloatingThinkingBar';
 Thinking.displayName = 'Thinking';
 
-export default memo(Thinking);
+export default Thinking;
