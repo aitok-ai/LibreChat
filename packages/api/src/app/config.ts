@@ -68,8 +68,3 @@ export const getCustomEndpointConfig = ({
       normalizeEndpointName(endpointConfig.name) === normalizeEndpointName(endpoint),
   );
 };
-
-export function hasCustomUserVars(appConfig?: AppConfig): boolean {
-  const mcpServers = appConfig?.mcpConfig;
-  return Object.values(mcpServers ?? {}).some((server) => server?.customUserVars);
-}

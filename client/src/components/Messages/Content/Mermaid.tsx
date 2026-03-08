@@ -12,6 +12,7 @@ import {
   OGDialogContent,
 } from '@librechat/client';
 import { useLocalize, useDebouncedMermaid } from '~/hooks';
+import { fixSubgraphTitleContrast } from '~/utils/mermaid';
 import MermaidHeader from './MermaidHeader';
 import cn from '~/utils/cn';
 
@@ -180,6 +181,8 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
       if (!svgElement.getAttribute('xmlns')) {
         svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
       }
+
+      fixSubgraphTitleContrast(svgElement);
 
       return {
         processedSvg: new XMLSerializer().serializeToString(doc),
@@ -435,7 +438,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
   const zoomControls = (
     <div
       className={cn(
-        'absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-md border border-border-light bg-surface-secondary p-1 shadow-lg transition-opacity duration-200',
+        'border-border-light bg-surface-secondary absolute right-2 bottom-2 z-10 flex items-center gap-1 rounded-md border p-1 shadow-lg transition-opacity duration-200',
         showControls ? 'opacity-100' : 'pointer-events-none opacity-0',
       )}
     >
@@ -446,12 +449,12 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           handleZoomOut();
         }}
         disabled={zoom <= MIN_ZOOM}
-        className="rounded p-1.5 text-text-secondary hover:bg-surface-hover disabled:opacity-40 disabled:hover:bg-transparent"
+        className="text-text-secondary hover:bg-surface-hover rounded p-1.5 disabled:opacity-40 disabled:hover:bg-transparent"
         title={localize('com_ui_zoom_out')}
       >
         <ZoomOut className="h-4 w-4" />
       </button>
-      <span className="min-w-[3rem] text-center text-xs text-text-secondary">
+      <span className="text-text-secondary min-w-[3rem] text-center text-xs">
         {Math.round(zoom * 100)}%
       </span>
       <button
@@ -461,12 +464,12 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           handleZoomIn();
         }}
         disabled={zoom >= MAX_ZOOM}
-        className="rounded p-1.5 text-text-secondary hover:bg-surface-hover disabled:opacity-40 disabled:hover:bg-transparent"
+        className="text-text-secondary hover:bg-surface-hover rounded p-1.5 disabled:opacity-40 disabled:hover:bg-transparent"
         title={localize('com_ui_zoom_in')}
       >
         <ZoomIn className="h-4 w-4" />
       </button>
-      <div className="mx-1 h-4 w-px bg-border-medium" />
+      <div className="bg-border-medium mx-1 h-4 w-px" />
       <button
         type="button"
         onClick={(e) => {
@@ -474,12 +477,12 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           handleResetZoom();
         }}
         disabled={zoom === 1 && pan.x === 0 && pan.y === 0}
-        className="rounded p-1.5 text-text-secondary hover:bg-surface-hover disabled:opacity-40 disabled:hover:bg-transparent"
+        className="text-text-secondary hover:bg-surface-hover rounded p-1.5 disabled:opacity-40 disabled:hover:bg-transparent"
         title={localize('com_ui_reset_zoom')}
       >
         <RotateCcw className="h-4 w-4" />
       </button>
-      <div className="mx-1 h-4 w-px bg-border-medium" />
+      <div className="bg-border-medium mx-1 h-4 w-px" />
       <button
         ref={zoomCopyButtonRef}
         type="button"
@@ -487,7 +490,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           e.stopPropagation();
           handleZoomCopy();
         }}
-        className="rounded p-1.5 text-text-secondary hover:bg-surface-hover"
+        className="text-text-secondary hover:bg-surface-hover rounded p-1.5"
         title={localize('com_ui_copy_code')}
       >
         {isZoomCopied ? <CheckMark className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
@@ -497,7 +500,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
 
   // Dialog zoom controls
   const dialogZoomControls = (
-    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 rounded-md border border-border-light bg-surface-secondary p-1 shadow-lg">
+    <div className="border-border-light bg-surface-secondary absolute right-4 bottom-4 z-10 flex items-center gap-1 rounded-md border p-1 shadow-lg">
       <button
         type="button"
         onClick={(e) => {
@@ -505,12 +508,12 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           handleDialogZoomOut();
         }}
         disabled={dialogZoom <= MIN_ZOOM}
-        className="rounded p-1.5 text-text-secondary hover:bg-surface-hover disabled:opacity-40 disabled:hover:bg-transparent"
+        className="text-text-secondary hover:bg-surface-hover rounded p-1.5 disabled:opacity-40 disabled:hover:bg-transparent"
         title={localize('com_ui_zoom_out')}
       >
         <ZoomOut className="h-4 w-4" />
       </button>
-      <span className="min-w-[3rem] text-center text-xs text-text-secondary">
+      <span className="text-text-secondary min-w-[3rem] text-center text-xs">
         {Math.round(dialogZoom * 100)}%
       </span>
       <button
@@ -520,12 +523,12 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           handleDialogZoomIn();
         }}
         disabled={dialogZoom >= MAX_ZOOM}
-        className="rounded p-1.5 text-text-secondary hover:bg-surface-hover disabled:opacity-40 disabled:hover:bg-transparent"
+        className="text-text-secondary hover:bg-surface-hover rounded p-1.5 disabled:opacity-40 disabled:hover:bg-transparent"
         title={localize('com_ui_zoom_in')}
       >
         <ZoomIn className="h-4 w-4" />
       </button>
-      <div className="mx-1 h-4 w-px bg-border-medium" />
+      <div className="bg-border-medium mx-1 h-4 w-px" />
       <button
         type="button"
         onClick={(e) => {
@@ -533,12 +536,12 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           handleDialogResetZoom();
         }}
         disabled={dialogZoom === 1 && dialogPan.x === 0 && dialogPan.y === 0}
-        className="rounded p-1.5 text-text-secondary hover:bg-surface-hover disabled:opacity-40 disabled:hover:bg-transparent"
+        className="text-text-secondary hover:bg-surface-hover rounded p-1.5 disabled:opacity-40 disabled:hover:bg-transparent"
         title={localize('com_ui_reset_zoom')}
       >
         <RotateCcw className="h-4 w-4" />
       </button>
-      <div className="mx-1 h-4 w-px bg-border-medium" />
+      <div className="bg-border-medium mx-1 h-4 w-px" />
       <button
         ref={dialogZoomCopyButtonRef}
         type="button"
@@ -546,7 +549,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           e.stopPropagation();
           handleDialogZoomCopy();
         }}
-        className="rounded p-1.5 text-text-secondary hover:bg-surface-hover"
+        className="text-text-secondary hover:bg-surface-hover rounded p-1.5"
         title={localize('com_ui_copy_code')}
       >
         <Clipboard className="h-4 w-4" />
@@ -559,7 +562,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
     <OGDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} triggerRef={expandButtonRef}>
       <OGDialogContent
         showCloseButton={false}
-        className="h-[85vh] max-h-[85vh] w-[90vw] max-w-[90vw] gap-0 overflow-hidden border-border-light bg-surface-primary-alt p-0"
+        className="border-border-light bg-surface-primary-alt h-[85vh] max-h-[85vh] w-[90vw] max-w-[90vw] gap-0 overflow-hidden p-0"
       >
         <OGDialogTitle className="flex h-10 items-center justify-between bg-gray-700 px-4 font-sans text-xs text-gray-200">
           <span>{localize('com_ui_mermaid')}</span>
@@ -588,15 +591,15 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
               {isDialogCopied ? <CheckMark className="h-[18px] w-[18px]" /> : <Clipboard />}
               {localize('com_ui_copy_code')}
             </Button>
-            <OGDialogClose className="rounded-sm p-1 text-gray-200 hover:bg-gray-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            <OGDialogClose className="rounded-sm p-1 text-gray-200 hover:bg-gray-600 hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none">
               <X className="h-4 w-4" />
               <span className="sr-only">{localize('com_ui_close')}</span>
             </OGDialogClose>
           </div>
         </OGDialogTitle>
         {dialogShowCode && (
-          <div className="border-b border-border-medium bg-surface-secondary p-4">
-            <pre className="max-h-[150px] overflow-auto whitespace-pre-wrap text-xs text-text-secondary">
+          <div className="border-border-medium bg-surface-secondary border-b p-4">
+            <pre className="text-text-secondary max-h-[150px] overflow-auto text-xs whitespace-pre-wrap">
               {children}
             </pre>
           </div>
@@ -624,7 +627,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
             <img
               src={blobUrl}
               alt="Mermaid diagram"
-              className="max-h-full max-w-full select-none object-contain"
+              className="max-h-full max-w-full object-contain select-none"
               style={{
                 transform: `scale(${dialogZoom})`,
                 transformOrigin: 'center center',
@@ -660,7 +663,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
         >
           <MermaidHeader
             className={cn(
-              'absolute left-0 right-0 top-0 z-20',
+              'absolute top-0 right-0 left-0 z-20',
               showControls ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
             codeContent={children}
@@ -672,13 +675,13 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
             className={cn(
               'relative overflow-hidden p-4 transition-colors duration-200',
               'rounded-md',
-              showControls ? 'bg-surface-primary-alt' : 'bg-transparent',
+              showControls ? 'bg-surface-primary-alt dark:bg-white/[0.03]' : 'bg-transparent',
               isPanning ? 'cursor-grabbing' : 'cursor-grab',
             )}
             style={{ height: `${calculatedHeight}px` }}
             onMouseDown={handleMouseDown}
           >
-            <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded border border-border-light bg-surface-secondary px-2 py-1 text-xs text-text-secondary">
+            <div className="border-border-light bg-surface-secondary text-text-secondary absolute top-2 left-2 z-10 flex items-center gap-1 rounded border px-2 py-1 text-xs">
               <Spinner className="h-3 w-3" />
             </div>
             <div
@@ -691,7 +694,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
               <img
                 src={blobUrl}
                 alt="Mermaid diagram"
-                className="select-none opacity-70"
+                className="opacity-70 select-none"
                 style={{
                   width: svgDimensions ? `${svgDimensions.width * initialScale}px` : 'auto',
                   height: svgDimensions ? `${svgDimensions.height * initialScale}px` : 'auto',
@@ -707,14 +710,14 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
 
     // No previous render, show streaming code
     return (
-      <div className="w-full overflow-hidden rounded-md border border-border-light">
+      <div className="border-border-light w-full overflow-hidden rounded-md border">
         <div className="flex items-center gap-2 rounded-t-md bg-gray-700 px-4 py-2 font-sans text-xs text-gray-200">
           <Spinner className="h-3 w-3 text-gray-200" />
           <span>{localize('com_ui_mermaid')}</span>
         </div>
         <pre
           ref={streamingCodeRef}
-          className="max-h-[350px] min-h-[150px] overflow-auto whitespace-pre-wrap rounded-b-md bg-surface-primary-alt p-4 font-mono text-xs text-text-secondary"
+          className="bg-surface-primary-alt text-text-secondary max-h-[350px] min-h-[150px] overflow-auto rounded-b-md p-4 font-mono text-xs whitespace-pre-wrap"
         >
           {children}
         </pre>
@@ -725,7 +728,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
   // Error state
   if (error) {
     return (
-      <div className="w-full overflow-hidden rounded-md border border-border-light">
+      <div className="border-border-light w-full overflow-hidden rounded-md border">
         <MermaidHeader codeContent={children} showCode={showCode} onToggleCode={handleToggleCode} />
         <div className="rounded-b-md border-t border-red-500/30 bg-red-500/10 p-4">
           <div className="mb-2 flex items-center justify-between">
@@ -735,7 +738,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
             <button
               type="button"
               onClick={handleRetry}
-              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-text-secondary hover:bg-surface-hover"
+              className="text-text-secondary hover:bg-surface-hover flex items-center gap-1 rounded px-2 py-1 text-xs"
             >
               <RefreshCw className="h-3 w-3" />
               {localize('com_ui_retry')}
@@ -745,11 +748,11 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
             {error.message}
           </pre>
           {showCode && (
-            <div className="mt-4 border-t border-border-medium pt-4">
-              <div className="mb-2 text-xs text-text-secondary">
+            <div className="border-border-medium mt-4 border-t pt-4">
+              <div className="text-text-secondary mb-2 text-xs">
                 {localize('com_ui_mermaid_source')}
               </div>
-              <pre className="overflow-auto whitespace-pre-wrap text-xs text-text-secondary">
+              <pre className="text-text-secondary overflow-auto text-xs whitespace-pre-wrap">
                 {children}
               </pre>
             </div>
@@ -784,7 +787,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
       >
         <MermaidHeader
           className={cn(
-            'absolute left-0 right-0 top-0 z-20',
+            'absolute top-0 right-0 left-0 z-20',
             showControls ? 'opacity-100' : 'pointer-events-none opacity-0',
           )}
           codeContent={children}
@@ -797,11 +800,11 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
         {showCode && (
           <div
             className={cn(
-              'border-b border-border-medium bg-surface-secondary p-4 pt-12 transition-opacity duration-200',
+              'border-border-medium bg-surface-secondary border-b p-4 pt-12 transition-opacity duration-200',
               showControls ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
           >
-            <pre className="overflow-auto whitespace-pre-wrap text-xs text-text-secondary">
+            <pre className="text-text-secondary overflow-auto text-xs whitespace-pre-wrap">
               {children}
             </pre>
           </div>
@@ -811,7 +814,7 @@ const Mermaid: React.FC<MermaidProps> = memo(({ children, id, theme }) => {
           className={cn(
             'relative overflow-hidden p-4 transition-colors duration-200',
             'rounded-md',
-            showControls ? 'bg-surface-primary-alt' : 'bg-transparent',
+            showControls ? 'bg-surface-primary-alt dark:bg-white/[0.03]' : 'bg-transparent',
             isPanning ? 'cursor-grabbing' : 'cursor-grab',
           )}
           style={{ height: `${calculatedHeight}px` }}

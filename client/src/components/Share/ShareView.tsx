@@ -123,14 +123,14 @@ function SharedView() {
   }
 
   const footer = (
-    <div className="w-full border-t-0 pl-0 pt-2 md:w-[calc(100%-.5rem)] md:border-t-0 md:border-transparent md:pl-0 md:pt-0 md:dark:border-transparent">
-      <Footer className="relative mx-auto mt-4 flex max-w-[55rem] flex-wrap items-center justify-center gap-2 px-3 pb-4 pt-2 text-center text-xs text-text-secondary" />
+    <div className="from-surface-secondary pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-40% to-transparent">
+      <Footer className="text-text-secondary pointer-events-auto relative mx-auto flex max-w-[55rem] flex-wrap items-center justify-center gap-2 px-3 pt-6 pb-4 text-center text-xs" />
     </div>
   );
 
   const mainContent = (
-    <div className="transition-width relative flex h-full w-full flex-1 flex-col items-stretch overflow-hidden pt-0 dark:bg-surface-secondary">
-      <div className="flex h-full min-h-0 flex-col text-text-primary" role="presentation">
+    <div className="transition-width dark:bg-surface-secondary relative flex h-full w-full flex-1 flex-col items-stretch overflow-hidden pt-0">
+      <div className="text-text-primary relative flex h-full min-h-0 flex-col" role="presentation">
         {content}
         {footer}
       </div>
@@ -150,8 +150,8 @@ function SharedView() {
 
   return (
     <ShareContext.Provider value={{ isSharedConvo: true }}>
-      <div className="relative flex h-screen w-full overflow-hidden dark:bg-surface-secondary">
-        <main className="relative flex w-full grow overflow-hidden dark:bg-surface-secondary">
+      <div className="dark:bg-surface-secondary relative flex h-screen w-full overflow-hidden">
+        <main className="dark:bg-surface-secondary relative flex w-full grow overflow-hidden">
           {artifactsContainer}
         </main>
       </div>
@@ -189,13 +189,15 @@ function ShareHeader({
   }, []);
 
   return (
-    <section className="mx-auto w-full px-3 pb-4 pt-6 md:px-5">
-      <div className="bg-surface-primary/80 relative mx-auto flex w-full max-w-[60rem] flex-col gap-4 rounded-3xl border border-border-light px-6 py-5 shadow-xl backdrop-blur">
+    <section className="mx-auto w-full px-2 pt-4 pb-3 md:px-5 md:pt-6 md:pb-4">
+      <div className="bg-surface-primary/80 border-border-light relative mx-auto flex w-full max-w-[60rem] flex-col gap-3 rounded-2xl border px-4 py-4 shadow-xl backdrop-blur md:gap-4 md:rounded-3xl md:px-6 md:py-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-semibold text-text-primary">{title}</h1>
+          <div className="min-w-0 space-y-1.5 md:space-y-2">
+            <h1 className="text-text-primary line-clamp-2 text-2xl font-semibold break-words md:text-4xl">
+              {title}
+            </h1>
             {formattedDate && (
-              <div className="flex items-center gap-2 text-sm text-text-secondary">
+              <div className="text-text-secondary flex items-center gap-2 text-sm">
                 <CalendarDays className="size-4" aria-hidden="true" />
                 <span>{formattedDate}</span>
               </div>
@@ -210,9 +212,9 @@ function ShareHeader({
                 variant="outline"
                 aria-label={settingsLabel}
                 className={cn(
-                  'rounded-full border-border-medium text-sm text-text-primary transition-colors',
+                  'border-border-medium text-text-primary rounded-full text-sm transition-colors',
                   isMobile
-                    ? 'absolute bottom-4 right-4 justify-center p-0 shadow-lg'
+                    ? 'absolute right-4 bottom-4 justify-center p-0 shadow-lg'
                     : 'gap-2 self-start px-4 py-2',
                 )}
               >

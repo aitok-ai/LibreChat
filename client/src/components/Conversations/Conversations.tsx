@@ -64,7 +64,7 @@ const LoadingSpinner = memo(() => {
   return (
     <div className="mx-auto mt-2 flex items-center justify-center gap-2">
       <Spinner className="text-text-primary" />
-      <span className="animate-pulse text-text-primary">{localize('com_ui_loading')}</span>
+      <span className="text-text-primary animate-pulse">{localize('com_ui_loading')}</span>
     </div>
   );
 });
@@ -82,7 +82,7 @@ const ChatsHeader: FC<ChatsHeaderProps> = memo(({ isExpanded, onToggle }) => {
   return (
     <button
       onClick={onToggle}
-      className="group flex w-full items-center justify-between rounded-lg px-1 py-2 text-xs font-bold text-text-secondary outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-black dark:focus-visible:ring-white"
+      className="group text-text-secondary flex w-full items-center justify-between rounded-lg px-1 py-2 text-xs font-bold outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-white"
       type="button"
     >
       <span className="select-none">{localize('com_ui_chats')}</span>
@@ -99,7 +99,7 @@ const DateLabel: FC<{ groupName: string; isFirst?: boolean }> = memo(({ groupNam
   const localize = useLocalize();
   return (
     <h2
-      className={cn('pl-1 pt-1 text-text-secondary', isFirst === true ? 'mt-0' : 'mt-2')}
+      className={cn('text-text-secondary pt-1 pl-1', isFirst === true ? 'mt-0' : 'mt-2')}
       style={{ fontSize: '0.7rem' }}
     >
       {localize(groupName as TranslationKeys) || groupName}
@@ -359,11 +359,11 @@ const Conversations: FC<ConversationsProps> = ({
   );
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col pb-2 text-sm text-text-primary">
+    <div className="text-text-primary relative flex h-full min-h-0 flex-col pb-2 text-sm">
       {isSearchLoading ? (
         <div className="flex flex-1 items-center justify-center">
           <Spinner className="text-text-primary" />
-          <span className="ml-2 text-text-primary">{localize('com_ui_loading')}</span>
+          <span className="text-text-primary ml-2">{localize('com_ui_loading')}</span>
         </div>
       ) : (
         <div className="flex-1">
@@ -384,6 +384,7 @@ const Conversations: FC<ConversationsProps> = ({
                 onRowsRendered={handleRowsRendered}
                 tabIndex={-1}
                 style={{ outline: 'none', scrollbarGutter: 'stable' }}
+                containerRole="rowgroup"
               />
             )}
           </AutoSizer>

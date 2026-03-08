@@ -59,7 +59,7 @@ const SettingsButton = ({
         'text-text-secondary transition-colors duration-150',
         'hover:bg-surface-tertiary hover:text-text-primary',
         'focus-visible:bg-surface-tertiary focus-visible:text-text-primary',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
+        'focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none',
         className,
       )}
       aria-label={`${text} ${endpoint.label}`}
@@ -96,7 +96,7 @@ function EndpointMenuContent({
   const localize = useLocalize();
   const { agentsMap, assistantsMap, modelSpecs, selectedValues, endpointSearchValues } =
     useModelSelectorContext();
-  const { model: selectedModel, modelSpec: selectedSpec } = selectedValues;
+  const { modelSpec: selectedSpec } = selectedValues;
   const searchValue = endpointSearchValues[endpoint.value] || '';
 
   const endpointSpecs = useMemo(() => {
@@ -134,15 +134,9 @@ function EndpointMenuContent({
         <ModelSpecItem key={spec.name} spec={spec} isSelected={selectedSpec === spec.name} />
       ))}
       {filteredModels
-        ? renderEndpointModels(
-            endpoint,
-            endpoint.models || [],
-            selectedModel,
-            filteredModels,
-            endpointIndex,
-          )
+        ? renderEndpointModels(endpoint, endpoint.models || [], filteredModels, endpointIndex)
         : endpoint.models &&
-          renderEndpointModels(endpoint, endpoint.models, selectedModel, undefined, endpointIndex)}
+          renderEndpointModels(endpoint, endpoint.models, undefined, endpointIndex)}
     </>
   );
 }
@@ -157,7 +151,7 @@ export function EndpointItem({ endpoint, endpointIndex }: EndpointItemProps) {
     setEndpointSearchValue,
     endpointRequiresUserKey,
   } = useModelSelectorContext();
-  const { endpoint: selectedEndpoint } = selectedValues;
+  const { endpoint: selectedEndpoint, modelSpec: selectedSpec } = selectedValues;
 
   const searchValue = endpointSearchValues[endpoint.value] || '';
   const isUserProvided = useMemo(
@@ -179,7 +173,7 @@ export function EndpointItem({ endpoint, endpointIndex }: EndpointItemProps) {
     </div>
   );
 
-  const isEndpointSelected = selectedEndpoint === endpoint.value;
+  const isEndpointSelected = !selectedSpec && selectedEndpoint === endpoint.value;
 
   if (endpoint.hasModels) {
     const placeholder =
@@ -204,7 +198,7 @@ export function EndpointItem({ endpoint, endpointIndex }: EndpointItemProps) {
               )}
               {isEndpointSelected && (
                 <>
-                  <CheckCircle2 className="size-4 shrink-0 text-text-primary" aria-hidden="true" />
+                  <CheckCircle2 className="text-text-primary size-4 shrink-0" aria-hidden="true" />
                   <VisuallyHidden>{localize('com_a11y_selected')}</VisuallyHidden>
                 </>
               )}
@@ -235,14 +229,14 @@ export function EndpointItem({ endpoint, endpointIndex }: EndpointItemProps) {
               side="top"
               render={
                 <span className="flex items-center">
-                  <MousePointerClick className="size-4 text-text-secondary" aria-hidden="true" />
+                  <MousePointerClick className="text-text-secondary size-4" aria-hidden="true" />
                 </span>
               }
             />
           )}
           {isEndpointSelected && !isAssistantsNotLoaded && (
             <>
-              <CheckCircle2 className="size-4 shrink-0 text-text-primary" aria-hidden="true" />
+              <CheckCircle2 className="text-text-primary size-4 shrink-0" aria-hidden="true" />
               <VisuallyHidden>{localize('com_a11y_selected')}</VisuallyHidden>
             </>
           )}

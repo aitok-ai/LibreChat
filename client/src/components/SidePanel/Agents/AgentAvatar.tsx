@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import { useToastContext } from '@librechat/client';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { mergeFileConfig, fileConfig as defaultFileConfig } from 'librechat-data-provider';
@@ -84,7 +84,7 @@ function Avatar({ avatar }: { avatar: AgentAvatar | null }) {
           trigger={
             <button
               type="button"
-              className="f h-20 w-20 outline-none ring-offset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="f focus-visible:ring-ring h-20 w-20 ring-offset-0 outline-none focus:outline-none focus-visible:ring-2"
               aria-label={localize('com_ui_upload_agent_avatar_label')}
             >
               {avatarPreview ? <AgentAvatarRender url={avatarPreview} /> : <NoImage />}
@@ -99,4 +99,10 @@ function Avatar({ avatar }: { avatar: AgentAvatar | null }) {
   );
 }
 
-export default Avatar;
+const MemoizedAvatar = memo(
+  Avatar,
+  (prevProps, nextProps) => prevProps.avatar?.filepath === nextProps.avatar?.filepath,
+);
+MemoizedAvatar.displayName = 'Avatar';
+
+export default MemoizedAvatar;

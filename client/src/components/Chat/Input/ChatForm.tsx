@@ -466,7 +466,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     const barConfig = barStyles[videoJobStatusKey];
 
     return (
-      <div className="relative h-2 w-14 overflow-hidden rounded-full border border-border-light bg-surface-tertiary">
+      <div className="border-border-light bg-surface-tertiary relative h-2 w-14 overflow-hidden rounded-full border">
         <div className={barConfig.className} style={barConfig.style} />
       </div>
     );
@@ -548,7 +548,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   const baseClasses = useMemo(
     () =>
       cn(
-        'md:py-3.5 m-0 w-full resize-none py-[13px] placeholder-black/50 bg-transparent dark:placeholder-white/50 [&:has(textarea:focus)]:shadow-[0_2px_6px_rgba(0,0,0,.05)]',
+        'md:py-3.5 m-0 w-full resize-none py-[13px] placeholder-black/60 bg-transparent dark:placeholder-white/60 [&:has(textarea:focus)]:shadow-[0_2px_6px_rgba(0,0,0,.05)]',
         isCollapsed ? 'max-h-[52px]' : 'max-h-[45vh] md:max-h-[55vh]',
         isMoreThanThreeRows ? 'pl-5' : 'px-5',
       ),
@@ -573,7 +573,6 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
         <div className={cn('flex w-full items-center', isRTL && 'flex-row-reverse')}>
           {showPlusPopover && !isAssistantsEndpoint(endpoint) && (
             <Mention
-              conversation={conversation}
               setShowMentionPopover={setShowPlusPopover}
               newConversation={generateConversation}
               textAreaRef={textAreaRef}
@@ -584,7 +583,6 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
           )}
           {showMentionPopover && (
             <Mention
-              conversation={conversation}
               setShowMentionPopover={setShowMentionPopover}
               newConversation={newConversation}
               textAreaRef={textAreaRef}
@@ -594,7 +592,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
           <div
             onClick={handleContainerClick}
             className={cn(
-              'relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border pb-4 text-text-primary transition-all duration-200 sm:rounded-3xl sm:pb-0',
+              'text-text-primary relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border pb-4 transition-all duration-200 sm:rounded-3xl sm:pb-0',
               isTextAreaFocused ? 'shadow-lg' : 'shadow-md',
               isTemporary
                 ? 'border-violet-800/60 bg-violet-950/10'
@@ -655,7 +653,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                     )}
                   />
                 </div>
-                <div className="flex flex-col items-start justify-start pr-2.5 pt-1.5">
+                <div className="flex flex-col items-start justify-start pt-1.5 pr-2.5">
                   <CollapseChat
                     isCollapsed={isCollapsed}
                     isScrollable={isMoreThanThreeRows}
@@ -666,7 +664,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
             )}
             <div
               className={cn(
-                '@container items-between flex gap-2 pb-2',
+                'items-between @container flex gap-2 pb-2',
                 isRTL ? 'flex-row-reverse' : 'flex-row',
               )}
               data-chat-input-controls

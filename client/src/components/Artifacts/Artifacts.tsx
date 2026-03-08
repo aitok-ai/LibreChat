@@ -3,7 +3,7 @@ import * as Tabs from '@radix-ui/react-tabs';
 import { Code, Play, RefreshCw, X } from 'lucide-react';
 import { useSetRecoilState, useResetRecoilState } from 'recoil';
 import { Button, Spinner, useMediaQuery, Radio } from '@librechat/client';
-import type { SandpackPreviewRef, CodeEditorRef } from '@codesandbox/sandpack-react';
+import type { SandpackPreviewRef } from '@codesandbox/sandpack-react';
 import { useShareContext, useMutationState } from '~/Providers';
 import useArtifacts from '~/hooks/Artifacts/useArtifacts';
 import DownloadArtifact from './DownloadArtifact';
@@ -22,7 +22,6 @@ export default function Artifacts() {
   const { isMutating } = useMutationState();
   const { isSharedConvo } = useShareContext();
   const isMobile = useMediaQuery('(max-width: 868px)');
-  const editorRef = useRef<CodeEditorRef>();
   const previewRef = useRef<SandpackPreviewRef>();
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -184,19 +183,19 @@ export default function Artifacts() {
         )}
         <div
           className={cn(
-            'flex w-full flex-col bg-surface-primary text-xl text-text-primary',
+            'bg-surface-primary text-text-primary flex w-full flex-col text-xl',
             isMobile
               ? cn(
                   'fixed inset-x-0 bottom-0 z-[100] rounded-t-[20px] shadow-[0_-10px_60px_rgba(0,0,0,0.35)]',
                   isVisible && !isClosing
                     ? 'translate-y-0 opacity-100'
-                    : 'duration-250 translate-y-full opacity-0 transition-all',
+                    : 'translate-y-full opacity-0 transition-all duration-250',
                   isDragging ? '' : 'transition-all duration-300',
                 )
               : cn(
                   'h-full shadow-2xl',
                   isVisible && !isClosing
-                    ? 'duration-350 translate-x-0 opacity-100 transition-all'
+                    ? 'translate-x-0 opacity-100 transition-all duration-350'
                     : 'translate-x-5 opacity-0 transition-all duration-300',
                 ),
           )}
@@ -204,20 +203,20 @@ export default function Artifacts() {
         >
           {isMobile && (
             <div
-              className="flex flex-shrink-0 cursor-grab items-center justify-center bg-surface-primary-alt pb-1.5 pt-2.5 active:cursor-grabbing"
+              className="bg-surface-primary-alt flex flex-shrink-0 cursor-grab items-center justify-center pt-2.5 pb-1.5 active:cursor-grabbing"
               onPointerDown={handleDragStart}
               onPointerMove={handleDragMove}
               onPointerUp={handleDragEnd}
               onPointerCancel={handleDragEnd}
             >
-              <div className="h-1 w-12 rounded-full bg-border-xheavy opacity-40 transition-all duration-200 active:opacity-60" />
+              <div className="bg-border-xheavy h-1 w-12 rounded-full opacity-40 transition-all duration-200 active:opacity-60" />
             </div>
           )}
 
           {/* Header */}
           <div
             className={cn(
-              'flex flex-shrink-0 items-center justify-between gap-2 border-b border-border-light bg-surface-primary-alt px-3 py-2 transition-all duration-300',
+              'border-border-light bg-surface-primary-alt flex flex-shrink-0 items-center justify-between gap-2 border-b px-3 py-2 transition-all duration-300',
               isMobile ? 'justify-center' : 'overflow-hidden',
             )}
           >
@@ -266,7 +265,7 @@ export default function Artifacts() {
                 </Button>
               )}
               {activeTab !== 'preview' && isMutating && (
-                <RefreshCw size={16} className="animate-spin text-text-secondary" />
+                <RefreshCw size={16} className="text-text-secondary animate-spin" />
               )}
               {orderedArtifactIds.length > 1 && (
                 <ArtifactVersion
@@ -293,11 +292,10 @@ export default function Artifacts() {
             </div>
           </div>
 
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-primary">
+          <div className="bg-surface-primary relative flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="absolute inset-0 flex flex-col">
               <ArtifactTabs
                 artifact={currentArtifact}
-                editorRef={editorRef as React.MutableRefObject<CodeEditorRef>}
                 previewRef={previewRef as React.MutableRefObject<SandpackPreviewRef>}
                 isSharedConvo={isSharedConvo}
               />
@@ -323,7 +321,7 @@ export default function Artifacts() {
           </div>
 
           {isMobile && (
-            <div className="flex-shrink-0 border-t border-border-light bg-surface-primary-alt p-2">
+            <div className="border-border-light bg-surface-primary-alt flex-shrink-0 border-t p-2">
               <Radio
                 fullWidth
                 options={tabOptions}

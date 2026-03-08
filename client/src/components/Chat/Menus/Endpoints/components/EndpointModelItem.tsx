@@ -11,12 +11,18 @@ import { cn } from '~/utils';
 interface EndpointModelItemProps {
   modelId: string | null;
   endpoint: Endpoint;
-  isSelected: boolean;
 }
 
-export function EndpointModelItem({ modelId, endpoint, isSelected }: EndpointModelItemProps) {
+export function EndpointModelItem({ modelId, endpoint }: EndpointModelItemProps) {
   const localize = useLocalize();
-  const { handleSelectModel } = useModelSelectorContext();
+  const { handleSelectModel, selectedValues } = useModelSelectorContext();
+  const {
+    endpoint: selectedEndpoint,
+    model: selectedModel,
+    modelSpec: selectedSpec,
+  } = selectedValues;
+  const isSelected =
+    !selectedSpec && selectedEndpoint === endpoint.value && selectedModel === modelId;
   const { isFavoriteModel, toggleFavoriteModel, isFavoriteAgent, toggleFavoriteAgent } =
     useFavorites();
 
@@ -117,26 +123,26 @@ export function EndpointModelItem({ modelId, endpoint, isSelected }: EndpointMod
       <div className="flex w-full min-w-0 items-center gap-2 px-1 py-1">
         {renderAvatar()}
         <span className="truncate">{modelName}</span>
-        {isGlobal && <EarthIcon className="ml-1 size-4 text-surface-submit" />}
+        {isGlobal && <EarthIcon className="text-surface-submit ml-1 size-4" />}
       </div>
       <button
         tabIndex={isActive ? 0 : -1}
         onClick={handleFavoriteClick}
         aria-label={isFavorite ? localize('com_ui_unpin') : localize('com_ui_pin')}
         className={cn(
-          'rounded-md p-1 hover:bg-surface-hover',
+          'hover:bg-surface-hover rounded-md p-1',
           isFavorite ? 'visible' : 'invisible group-hover:visible group-data-[active-item]:visible',
         )}
       >
         {isFavorite ? (
-          <PinOff className="h-4 w-4 text-text-secondary" />
+          <PinOff className="text-text-secondary h-4 w-4" />
         ) : (
-          <Pin className="h-4 w-4 text-text-secondary" aria-hidden="true" />
+          <Pin className="text-text-secondary h-4 w-4" aria-hidden="true" />
         )}
       </button>
       {isSelected && (
         <>
-          <CheckCircle2 className="size-4 shrink-0 text-text-primary" aria-hidden="true" />
+          <CheckCircle2 className="text-text-primary size-4 shrink-0" aria-hidden="true" />
           <VisuallyHidden>{localize('com_a11y_selected')}</VisuallyHidden>
         </>
       )}
@@ -147,7 +153,6 @@ export function EndpointModelItem({ modelId, endpoint, isSelected }: EndpointMod
 export function renderEndpointModels(
   endpoint: Endpoint | null,
   models: Array<{ name: string; isGlobal?: boolean }>,
-  selectedModel: string | null,
   filteredModels?: string[],
   endpointIndex?: number,
 ) {
@@ -161,7 +166,6 @@ export function renderEndpointModels(
           key={`${endpoint.value}${indexSuffix}-${modelId}-${modelIndex}`}
           modelId={modelId}
           endpoint={endpoint}
-          isSelected={selectedModel === modelId}
         />
       ),
   );

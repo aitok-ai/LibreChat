@@ -81,7 +81,7 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
                 <div className="flex min-w-0 flex-col gap-1">
                   <span className="truncate text-left">{spec.label}</span>
                   {spec.description && (
-                    <span className="break-words text-xs font-normal">{spec.description}</span>
+                    <span className="text-xs font-normal break-words">{spec.description}</span>
                   )}
                 </div>
               </div>
@@ -89,7 +89,7 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
                 <>
                   <CheckCircle2
                     className={cn(
-                      'size-4 shrink-0 text-text-primary',
+                      'text-text-primary size-4 shrink-0',
                       spec.description ? 'mt-1' : '',
                     )}
                     aria-hidden="true"
@@ -160,7 +160,9 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
                   }
 
                   const isModelSelected =
-                    selectedEndpoint === endpoint.value && selectedModel === modelId;
+                    !selectedSpec &&
+                    selectedEndpoint === endpoint.value &&
+                    selectedModel === modelId;
                   return (
                     <MenuItem
                       key={`${endpoint.value}-${modelId}-search-${i}`}
@@ -186,7 +188,7 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
                       {isModelSelected && (
                         <>
                           <CheckCircle2
-                            className="size-4 shrink-0 text-text-primary"
+                            className="text-text-primary size-4 shrink-0"
                             aria-hidden="true"
                           />
                           <VisuallyHidden>{localize('com_a11y_selected')}</VisuallyHidden>
@@ -199,7 +201,7 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
             );
           } else {
             // Endpoints with no models
-            const isEndpointSelected = selectedEndpoint === endpoint.value;
+            const isEndpointSelected = !selectedSpec && selectedEndpoint === endpoint.value;
             return (
               <MenuItem
                 key={`endpoint-${endpoint.value}-search-item`}
@@ -221,7 +223,7 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
                 {isEndpointSelected && (
                   <>
                     <CheckCircle2
-                      className="size-4 shrink-0 text-text-primary"
+                      className="text-text-primary size-4 shrink-0"
                       aria-hidden="true"
                     />
                     <VisuallyHidden>{localize('com_a11y_selected')}</VisuallyHidden>

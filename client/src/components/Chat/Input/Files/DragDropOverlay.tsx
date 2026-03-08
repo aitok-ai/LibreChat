@@ -27,7 +27,7 @@ const DragDropOverlay = memo(({ isActive, onDismiss }: DragDropOverlayProps) => 
       {/** Main content overlay */}
       <div
         onClick={onDismiss}
-        className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-2 text-text-primary transition-all duration-200 ease-in-out ${
+        className={`text-text-primary fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-2 transition-all duration-200 ease-in-out ${
           isActive
             ? 'pointer-events-auto visible opacity-100'
             : 'pointer-events-none invisible opacity-0'
@@ -39,7 +39,7 @@ const DragDropOverlay = memo(({ isActive, onDismiss }: DragDropOverlayProps) => 
         }}
       >
         {/** Content area with subtle background */}
-        <div className="bg-surface-primary/95 flex flex-col items-center rounded-lg p-8 shadow-xl">
+        <div className="bg-surface-primary flex flex-col items-center rounded-lg p-8 shadow-xl">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 132 108"
@@ -93,7 +93,7 @@ const DragDropOverlay = memo(({ isActive, onDismiss }: DragDropOverlayProps) => 
             </defs>
           </svg>
           <h3 className="mt-4 text-lg font-semibold">{localize('com_ui_upload_files')}</h3>
-          <h4 className="text-sm text-text-secondary">{localize('com_ui_drag_drop')}</h4>
+          <h4 className="text-text-secondary text-sm">{localize('com_ui_drag_drop')}</h4>
         </div>
       </div>
     </>

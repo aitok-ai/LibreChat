@@ -67,9 +67,9 @@ export default function Message(props: TMessageProps) {
             <div
               className={cn('relative flex w-11/12 flex-col', isCreatedByUser ? '' : 'agent-turn')}
             >
-              <div className={cn('select-none font-semibold', fontSize)}>{messageLabel}</div>
+              <div className={cn('font-semibold select-none', fontSize)}>{messageLabel}</div>
               <div className="flex-col gap-1 md:gap-3">
-                <div className="flex max-w-full flex-grow flex-col gap-0">
+                <div className="flex min-h-[20px] max-w-full flex-grow flex-col gap-0">
                   <MessageContext.Provider
                     value={{
                       messageId,

@@ -42,7 +42,9 @@ export {
   getVideoJob,
   cancelVideoJob,
   downloadVideoJobZip,
+  buildLoginRedirectUrl,
 } from './api-endpoints';
+
 export { default as request } from './request';
 export { dataService };
 import * as dataService from './data-service';

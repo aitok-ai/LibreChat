@@ -288,7 +288,8 @@ const Nav = memo(
           id="chat-history-nav"
           aria-label={localize('com_ui_chat_history')}
           className="flex h-full flex-col px-2 pb-3.5"
-          aria-hidden={!navVisible ? 'true' : 'false'}
+          aria-hidden={!navVisible}
+          {...{ inert: !navVisible ? '' : undefined }}
         >
           <div className="flex flex-1 flex-col overflow-hidden" ref={outerContainerRef}>
             <MemoNewChat
@@ -374,7 +375,7 @@ const Nav = memo(
           <div
             data-testid="nav"
             className={cn(
-              'nav fixed left-0 top-0 z-[110] h-full bg-surface-primary-alt',
+              'nav bg-surface-primary-alt fixed top-0 left-0 z-[110] h-full',
               navVisible && 'active',
             )}
             style={{
@@ -398,7 +399,7 @@ const Nav = memo(
       >
         <div
           data-testid="nav"
-          className={cn('nav h-full bg-surface-primary-alt', navVisible && 'active')}
+          className={cn('nav bg-surface-primary-alt h-full', navVisible && 'active')}
           style={{
             width: sidebarWidth,
             transform: navVisible ? 'translateX(0)' : `translateX(-${sidebarWidth}px)`,

@@ -19,19 +19,7 @@ type THoverButtons = {
   message: TMessage;
   regenerate: () => void;
   handleContinue: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  latestMessage: TMessage | null;
-  stopPlaybackMessage: (
-    { isPaused, isStopped },
-    setPlaybackStatus: React.Dispatch<
-      React.SetStateAction<{ isPaused: boolean; isStopped: boolean }>
-    >,
-  ) => void;
-  playbackMessage: (
-    { isPaused, isStopped },
-    setPlaybackStatus: React.Dispatch<
-      React.SetStateAction<{ isPaused: boolean; isStopped: boolean }>
-    >,
-  ) => void;
+  latestMessageId?: string;
   isLast: boolean;
   index: number;
   handleFeedback?: ({ feedback }: { feedback: TFeedback | undefined }) => void;
@@ -132,9 +120,7 @@ const HoverButtons = ({
   message,
   regenerate,
   handleContinue,
-  latestMessage,
-  stopPlaybackMessage,
-  playbackMessage,
+  latestMessageId,
   isLast,
   handleFeedback,
 }: THoverButtons) => {
@@ -160,7 +146,7 @@ const HoverButtons = ({
     searchResult: message.searchResult,
     finish_reason: message.finish_reason,
     isCreatedByUser: message.isCreatedByUser,
-    latestMessageId: latestMessage?.messageId,
+    latestMessageId: latestMessageId,
   });
 
   const {
@@ -256,7 +242,7 @@ const HoverButtons = ({
         messageId={message.messageId}
         conversationId={conversation.conversationId}
         forkingSupported={forkingSupported}
-        latestMessageId={latestMessage?.messageId}
+        latestMessageId={latestMessageId}
         isLast={isLast}
       />
 
@@ -281,7 +267,7 @@ const HoverButtons = ({
         <HoverButton
           onClick={(e) => e && handleContinue(e)}
           title={localize('com_ui_continue')}
-          icon={<ContinueIcon className="w-19 h-19 -rotate-180" />}
+          icon={<ContinueIcon className="h-19 w-19 -rotate-180" />}
           isLast={isLast}
           className="active"
         />
