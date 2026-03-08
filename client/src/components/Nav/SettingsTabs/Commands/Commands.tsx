@@ -58,12 +58,12 @@ function Commands() {
   return (
     <div className="space-y-4 p-1">
       <div className="flex items-center gap-2">
-        <h3 className="text-lg font-medium text-text-primary">
+        <h3 className="text-text-primary text-lg font-medium">
           {localize('com_nav_chat_commands')}
         </h3>
         <InfoHoverCard side={ESide.Bottom} text={localize('com_nav_chat_commands_info')} />
       </div>
-      <div className="flex flex-col gap-3 text-sm text-text-primary">
+      <div className="text-text-primary flex flex-col gap-3 text-sm">
         {commandSwitchConfigs.map((config) => (
           <div key={config.key} className="pb-3">
             <ToggleSwitch

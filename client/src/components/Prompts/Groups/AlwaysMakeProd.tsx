@@ -22,7 +22,7 @@ export default function AlwaysMakeProd({
   };
 
   return (
-    <div className={cn('flex select-none items-center justify-end gap-2 text-xs', className)}>
+    <div className={cn('flex items-center justify-end gap-2 text-xs select-none', className)}>
       <Switch
         id="alwaysMakeProd"
         checked={alwaysMakeProd}

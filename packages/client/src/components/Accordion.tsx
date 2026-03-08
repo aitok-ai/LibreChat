@@ -27,7 +27,7 @@ const AccordionTrigger = React.forwardRef<
       {...props}
     >
       {children}
-      <ChevronDownIcon className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+      <ChevronDownIcon className="text-muted-foreground h-4 w-4 shrink-0 transition-transform duration-200" />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));
@@ -39,10 +39,10 @@ const AccordionContent = React.forwardRef<
 >(({ className = '', children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-y-hidden overflow-x-visible text-sm transition-opacity data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down data-[state=closed]:opacity-0 data-[state=open]:opacity-100"
+    className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-x-visible overflow-y-hidden text-sm transition-opacity data-[state=closed]:opacity-0 data-[state=open]:opacity-100"
     {...props}
   >
-    <div className={cn('pb-4 pt-0', className)}>{children}</div>
+    <div className={cn('pt-0 pb-4', className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;

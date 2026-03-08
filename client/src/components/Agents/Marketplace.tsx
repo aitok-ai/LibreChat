@@ -240,7 +240,7 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
     return null;
   }
   return (
-    <div className={`relative flex w-full grow overflow-hidden bg-presentation ${className}`}>
+    <div className={`bg-presentation relative flex w-full grow overflow-hidden ${className}`}>
       <SidePanelProvider>
         <SidePanelGroup
           defaultLayout={defaultLayout}
@@ -251,11 +251,11 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
             {/* Scrollable container */}
             <div
               ref={scrollContainerRef}
-              className="scrollbar-gutter-stable relative flex h-full flex-col overflow-y-auto overflow-x-hidden"
+              className="scrollbar-gutter-stable relative flex h-full flex-col overflow-x-hidden overflow-y-auto"
             >
               {/* Simplified header for agents marketplace - only show nav controls when needed */}
               {!isSmallScreen && (
-                <div className="sticky top-0 z-20 flex items-center justify-between bg-surface-secondary p-2 font-semibold text-text-primary md:h-14">
+                <div className="bg-surface-secondary text-text-primary sticky top-0 z-20 flex items-center justify-between p-2 font-semibold md:h-14">
                   <div className="mx-1 flex items-center gap-2">
                     {!navVisible ? (
                       <>
@@ -268,7 +268,7 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
                               variant="outline"
                               data-testid="agents-new-chat-button"
                               aria-label={localize('com_ui_new_chat')}
-                              className="rounded-xl border border-border-light bg-surface-secondary p-2 hover:bg-surface-active-alt max-md:hidden"
+                              className="border-border-light bg-surface-secondary hover:bg-surface-active-alt rounded-xl border p-2 max-md:hidden"
                               onClick={handleNewChat}
                             >
                               <NewChatIcon />
@@ -287,10 +287,10 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
               {!isSmallScreen && (
                 <div className="container mx-auto max-w-4xl">
                   <div className={cn('mb-8 text-center', 'mt-12')}>
-                    <h1 className="mb-3 text-3xl font-bold tracking-tight text-text-primary md:text-5xl">
+                    <h1 className="text-text-primary mb-3 text-3xl font-bold tracking-tight md:text-5xl">
                       {localize('com_agents_marketplace')}
                     </h1>
-                    <p className="mx-auto mb-6 max-w-2xl text-lg text-text-secondary">
+                    <p className="text-text-secondary mx-auto mb-6 max-w-2xl text-lg">
                       {localize('com_agents_marketplace_subtitle')}
                     </p>
                   </div>
@@ -299,7 +299,7 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
               {/* Sticky wrapper for search bar and categories */}
               <div
                 className={cn(
-                  'sticky z-10 bg-presentation pb-4',
+                  'bg-presentation sticky z-10 pb-4',
                   isSmallScreen ? 'top-0' : 'top-14',
                 )}
               >
@@ -337,7 +337,7 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
                   >
                     {/* Category header - only show when not searching */}
                     {!searchQuery && (
-                      <div className="mb-6 mt-6">
+                      <div className="mt-6 mb-6">
                         {(() => {
                           // Get category data for display
                           const getCategoryData = () => {
@@ -381,9 +381,9 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
 
                           return (
                             <div className="text-left">
-                              <h2 className="text-2xl font-bold text-text-primary">{name}</h2>
+                              <h2 className="text-text-primary text-2xl font-bold">{name}</h2>
                               {description && (
-                                <p className="mt-2 text-text-secondary">{description}</p>
+                                <p className="text-text-secondary mt-2">{description}</p>
                               )}
                             </div>
                           );
@@ -414,7 +414,7 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
                     >
                       {/* Category header - only show when not searching */}
                       {!searchQuery && (
-                        <div className="mb-6 mt-6">
+                        <div className="mt-6 mb-6">
                           {(() => {
                             // Get category data for display
                             const getCategoryData = () => {
@@ -461,9 +461,9 @@ const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ className = '' }) =
 
                             return (
                               <div className="text-left">
-                                <h2 className="text-2xl font-bold text-text-primary">{name}</h2>
+                                <h2 className="text-text-primary text-2xl font-bold">{name}</h2>
                                 {description && (
-                                  <p className="mt-2 text-text-secondary">{description}</p>
+                                  <p className="text-text-secondary mt-2">{description}</p>
                                 )}
                               </div>
                             );

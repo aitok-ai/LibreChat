@@ -3,8 +3,10 @@ import { useState, useCallback } from 'react';
 import { Eye, EyeOff, Copy, Check } from 'lucide-react';
 import { cn } from '~/utils';
 
-export interface SecretInputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+export interface SecretInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'type'
+> {
   /** Show copy button */
   showCopy?: boolean;
   /** Callback when value is copied */
@@ -53,7 +55,7 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
         <input
           type={isVisible ? 'text' : 'password'}
           className={cn(
-            'flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            'border-input ring-offset-background placeholder:text-muted-foreground flex h-10 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             showCopy ? 'pr-20' : 'pr-10',
             className ?? '',
           )}
@@ -71,7 +73,7 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
               onClick={handleCopy}
               disabled={disabled || !value}
               className={cn(
-                'flex size-8 items-center justify-center rounded-md text-text-secondary transition-colors',
+                'text-text-secondary flex size-8 items-center justify-center rounded-md transition-colors',
                 disabled || !value
                   ? 'cursor-not-allowed opacity-50'
                   : 'hover:bg-surface-hover hover:text-text-primary',
@@ -86,7 +88,7 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
             onClick={toggleVisibility}
             disabled={disabled}
             className={cn(
-              'flex size-8 items-center justify-center rounded-md text-text-secondary transition-colors',
+              'text-text-secondary flex size-8 items-center justify-center rounded-md transition-colors',
               disabled
                 ? 'cursor-not-allowed opacity-50'
                 : 'hover:bg-surface-hover hover:text-text-primary',

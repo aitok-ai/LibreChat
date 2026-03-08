@@ -117,14 +117,14 @@ const CreatePromptForm = ({
                     {...field}
                     id="prompt-name"
                     type="text"
-                    className="peer mr-2 w-full border border-border-medium p-2 text-2xl text-text-primary"
+                    className="peer border-border-medium text-text-primary mr-2 w-full border p-2 text-2xl"
                     placeholder=" "
                     tabIndex={0}
                     aria-label={localize('com_ui_prompt_name')}
                   />
                   <label
                     htmlFor="prompt-name"
-                    className="pointer-events-none absolute -top-1 left-3 origin-[0] translate-y-3 scale-100 rounded bg-white px-1 text-base text-text-secondary transition-transform duration-200 peer-placeholder-shown:translate-y-3 peer-placeholder-shown:scale-100 peer-focus:-translate-y-2 peer-focus:scale-75 peer-focus:text-text-primary peer-[:not(:placeholder-shown)]:-translate-y-2 peer-[:not(:placeholder-shown)]:scale-75 dark:bg-gray-850"
+                    className="text-text-secondary peer-focus:text-text-primary dark:bg-gray-850 pointer-events-none absolute -top-1 left-3 origin-[0] translate-y-3 scale-100 rounded bg-white px-1 text-base transition-transform duration-200 peer-placeholder-shown:translate-y-3 peer-placeholder-shown:scale-100 peer-focus:-translate-y-2 peer-focus:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-2 peer-[:not(:placeholder-shown)]:scale-75"
                   >
                     {localize('com_ui_prompt_name')}*
                   </label>
@@ -144,11 +144,11 @@ const CreatePromptForm = ({
         </div>
         <div className="flex w-full flex-col gap-4 md:mt-[1.075rem]">
           <div>
-            <h2 className="flex items-center justify-between rounded-t-lg border border-border-medium py-2 pl-4 pr-1 text-base font-semibold dark:text-gray-200">
+            <h2 className="border-border-medium flex items-center justify-between rounded-t-lg border py-2 pr-1 pl-4 text-base font-semibold dark:text-gray-200">
               <span>{localize('com_ui_prompt_text')}*</span>
               <VariablesDropdown fieldName="prompt" className="mr-2" />
             </h2>
-            <div className="min-h-32 rounded-b-lg border border-border-medium p-4 transition-all duration-150">
+            <div className="border-border-medium min-h-32 rounded-b-lg border p-4 transition-all duration-150">
               <Controller
                 name="prompt"
                 control={control}
@@ -157,7 +157,7 @@ const CreatePromptForm = ({
                   <div>
                     <TextareaAutosize
                       {...field}
-                      className="w-full rounded border border-border-medium px-2 py-1 focus:outline-none dark:bg-transparent dark:text-gray-200"
+                      className="border-border-medium w-full rounded border px-2 py-1 focus:outline-none dark:bg-transparent dark:text-gray-200"
                       minRows={6}
                       tabIndex={0}
                       aria-label={localize('com_ui_prompt_input_field')}

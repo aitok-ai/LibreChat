@@ -87,7 +87,7 @@ export default function MemoryArtifacts({ attachments }: { attachments?: TAttach
         <div className="inline-block">
           <button
             className={cn(
-              'outline-hidden my-1 flex items-center gap-1 text-sm font-semibold transition-colors',
+              'my-1 flex items-center gap-1 text-sm font-semibold outline-hidden transition-colors',
               hasErrors
                 ? 'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500'
                 : 'text-text-secondary-alt hover:text-text-primary',
@@ -139,7 +139,7 @@ export default function MemoryArtifacts({ attachments }: { attachments?: TAttach
       >
         <div
           className={cn(
-            'overflow-hidden rounded-xl border border-border-light bg-surface-primary-alt shadow-md',
+            'border-border-light bg-surface-primary-alt overflow-hidden rounded-xl border shadow-md',
             showInfo && 'shadow-lg',
           )}
           style={{

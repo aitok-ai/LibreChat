@@ -59,7 +59,7 @@ export default function DashBreadcrumb({
   );
 
   return (
-    <div className="mr-2 mt-2 flex h-10 items-center justify-between">
+    <div className="mt-2 mr-2 flex h-10 items-center justify-between">
       <Breadcrumb className="mt-1 px-2 dark:text-gray-200">
         <BreadcrumbList>
           {showToggle && onToggle && (
@@ -69,7 +69,7 @@ export default function DashBreadcrumb({
                   ref={openPanelRef}
                   type="button"
                   onClick={onToggle}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-medium bg-surface-primary text-text-primary transition-all hover:bg-surface-hover"
+                  className="border-border-medium bg-surface-primary text-text-primary hover:bg-surface-hover flex h-8 w-8 items-center justify-center rounded-lg border transition-all"
                   aria-label={localize('com_nav_open_sidebar')}
                   aria-expanded={false}
                   aria-controls="prompts-panel"

@@ -56,7 +56,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
   return (
     <div className="flex max-h-[85vh] flex-col sm:max-h-[85vh]">
       <h2 className="sr-only">{localize('com_ui_control_bar')}</h2>
-      <div className="flex items-center justify-between rounded-t-xl border border-border-light py-1.5 pl-3 text-sm font-semibold text-text-primary sm:py-2 sm:pl-4 sm:text-base">
+      <div className="border-border-light text-text-primary flex items-center justify-between rounded-t-xl border py-1.5 pl-3 text-sm font-semibold sm:py-2 sm:pl-4 sm:text-base">
         <span className="max-w-[200px] truncate sm:max-w-none">
           {localize('com_ui_prompt_text')}
         </span>
@@ -83,9 +83,9 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
       <div
         role="button"
         className={cn(
-          'w-full flex-1 overflow-auto rounded-b-xl border border-border-light p-2 shadow-md transition-all duration-150 sm:p-4',
+          'border-border-light w-full flex-1 overflow-auto rounded-b-xl border p-2 shadow-md transition-all duration-150 sm:p-4',
           {
-            'cursor-pointer bg-surface-primary hover:bg-surface-secondary active:bg-surface-tertiary':
+            'bg-surface-primary hover:bg-surface-secondary active:bg-surface-tertiary cursor-pointer':
               !isEditing,
           },
         )}
@@ -98,7 +98,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
         tabIndex={0}
       >
         {!isEditing && (
-          <EditIcon className="icon-xl absolute inset-0 m-auto hidden h-6 w-6 text-text-primary opacity-25 group-hover:block sm:h-8 sm:w-8" />
+          <EditIcon className="icon-xl text-text-primary absolute inset-0 m-auto hidden h-6 w-6 opacity-25 group-hover:block sm:h-8 sm:w-8" />
         )}
         <Controller
           name={name}
@@ -109,7 +109,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
                 {...field}
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus
-                className="w-full resize-none overflow-y-auto rounded bg-transparent text-sm text-text-primary focus:outline-none sm:text-base"
+                className="text-text-primary w-full resize-none overflow-y-auto rounded bg-transparent text-sm focus:outline-none sm:text-base"
                 minRows={3}
                 maxRows={14}
                 onBlur={() => setIsEditing(false)}
@@ -137,7 +137,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
                   rehypePlugins={rehypePlugins}
                   /** @ts-ignore */
                   components={{ p: PromptVariableGfm, code: codeNoExecution }}
-                  className="markdown prose dark:prose-invert light my-1 w-full break-words text-text-primary"
+                  className="markdown prose dark:prose-invert light text-text-primary my-1 w-full break-words"
                 >
                   {field.value}
                 </ReactMarkdown>

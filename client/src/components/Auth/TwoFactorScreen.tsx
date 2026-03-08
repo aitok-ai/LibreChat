@@ -76,11 +76,11 @@ const TwoFactorScreen: React.FC = React.memo(() => {
   return (
     <div className="mt-4">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Label className="flex justify-center break-keep text-center text-sm text-text-primary">
+        <Label className="text-text-primary flex justify-center text-center text-sm break-keep">
           {localize('com_auth_two_factor')}
         </Label>
         {!useBackup && (
-          <div className="my-4 flex justify-center text-text-primary">
+          <div className="text-text-primary my-4 flex justify-center">
             <Controller
               name="token"
               control={control}
@@ -109,7 +109,7 @@ const TwoFactorScreen: React.FC = React.memo(() => {
           </div>
         )}
         {useBackup && (
-          <div className="my-4 flex justify-center text-text-primary">
+          <div className="text-text-primary my-4 flex justify-center">
             <Controller
               name="backupCode"
               control={control}

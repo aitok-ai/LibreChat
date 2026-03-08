@@ -25,7 +25,7 @@ export default function AdvancedPanel() {
   return (
     <div className="scrollbar-gutter-stable h-full min-h-[40vh] overflow-auto pb-12 text-sm">
       <div className="advanced-panel relative flex flex-col items-center px-16 py-4 text-center">
-        <div className="absolute left-0 top-4">
+        <div className="absolute top-4 left-0">
           <button
             type="button"
             className="btn btn-neutral relative"
@@ -39,7 +39,7 @@ export default function AdvancedPanel() {
             </div>
           </button>
         </div>
-        <div className="mb-2 mt-2 text-xl font-medium">{localize('com_ui_advanced_settings')}</div>
+        <div className="mt-2 mb-2 text-xl font-medium">{localize('com_ui_advanced_settings')}</div>
       </div>
       <div className="flex flex-col gap-4 px-2">
         <MaxAgentSteps />

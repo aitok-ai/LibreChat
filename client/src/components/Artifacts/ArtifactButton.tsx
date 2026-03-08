@@ -54,7 +54,7 @@ const ArtifactButton = ({ artifact }: { artifact: Artifact | null }) => {
   const fileType = getFileType('artifact');
 
   return (
-    <div className="group relative my-4 rounded-xl text-sm text-text-primary">
+    <div className="group text-text-primary relative my-4 rounded-xl text-sm">
       {(() => {
         const handleClick = () => {
           if (isSelected) {
@@ -94,7 +94,7 @@ const ArtifactButton = ({ artifact }: { artifact: Artifact | null }) => {
                 <FilePreview fileType={fileType} className="relative" />
                 <div className="overflow-hidden text-left">
                   <div className="truncate font-medium">{artifact.title}</div>
-                  <div className="truncate text-text-secondary">{actionLabel}</div>
+                  <div className="text-text-secondary truncate">{actionLabel}</div>
                 </div>
               </div>
             </div>

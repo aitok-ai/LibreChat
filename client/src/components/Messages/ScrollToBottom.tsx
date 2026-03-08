@@ -9,7 +9,7 @@ const ScrollToBottom = forwardRef<HTMLButtonElement, Props>(({ scrollHandler }, 
     <button
       ref={ref}
       onClick={scrollHandler}
-      className="premium-scroll-button absolute bottom-5 right-1/2 cursor-pointer border border-border-light bg-surface-secondary"
+      className="premium-scroll-button border-border-light bg-surface-secondary absolute right-1/2 bottom-5 cursor-pointer border"
       aria-label="Scroll to bottom"
     >
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-text-secondary">

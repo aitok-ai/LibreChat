@@ -46,7 +46,7 @@ export const CustomMenu = React.forwardRef<HTMLDivElement, CustomMenuProps>(func
         {...props}
         className={cn(
           !parent &&
-            'flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border-light px-3 py-2 text-sm text-text-primary',
+            'border-border-light text-text-primary flex h-10 w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm',
           menuStore.useState('open')
             ? 'bg-surface-active-alt hover:bg-surface-active-alt'
             : 'bg-presentation hover:bg-surface-active-alt',
@@ -65,9 +65,9 @@ export const CustomMenu = React.forwardRef<HTMLDivElement, CustomMenuProps>(func
         gutter={parent ? -4 : 4}
         className={cn(
           parent ? 'animate-popover-left ml-3' : 'animate-popover',
-          'outline-none! z-40 flex max-h-[min(450px,var(--popover-available-height))] w-full',
-          'w-[var(--menu-width,auto)] min-w-[300px] flex-col overflow-auto rounded-xl border border-border-light',
-          'bg-presentation px-3 py-2 text-sm text-text-primary shadow-lg',
+          'z-40 flex max-h-[min(450px,var(--popover-available-height))] w-full outline-none!',
+          'border-border-light w-[var(--menu-width,auto)] min-w-[300px] flex-col overflow-auto rounded-xl border',
+          'bg-presentation text-text-primary px-3 py-2 text-sm shadow-lg',
           'max-w-[calc(100vw-4rem)] sm:max-h-[calc(65vh)] sm:max-w-[400px]',
           searchable && 'p-0',
         )}
@@ -83,11 +83,11 @@ export const CustomMenu = React.forwardRef<HTMLDivElement, CustomMenuProps>(func
                     className={cn(
                       'peer flex h-10 w-full items-center justify-center rounded-lg border-none bg-transparent px-2 text-base',
                       'sm:h-8 sm:text-sm',
-                      'focus:outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-primary',
+                      'focus-visible:ring-primary focus:ring-0 focus:outline-none focus-visible:ring-2',
                     )}
                   />
                   {comboboxLabel && (
-                    <label className="pointer-events-none absolute left-2.5 top-2.5 text-sm text-text-secondary transition-all duration-200 peer-[:not(:placeholder-shown)]:-top-1.5 peer-[:not(:placeholder-shown)]:left-1.5 peer-[:not(:placeholder-shown)]:bg-presentation peer-[:not(:placeholder-shown)]:text-xs sm:top-1.5">
+                    <label className="text-text-secondary peer-[:not(:placeholder-shown)]:bg-presentation pointer-events-none absolute top-2.5 left-2.5 text-sm transition-all duration-200 peer-[:not(:placeholder-shown)]:-top-1.5 peer-[:not(:placeholder-shown)]:left-1.5 peer-[:not(:placeholder-shown)]:text-xs sm:top-1.5">
                       {comboboxLabel}
                     </label>
                   )}

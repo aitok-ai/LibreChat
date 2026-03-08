@@ -72,13 +72,13 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
 
   return (
     <Ariakit.ComboboxProvider store={combobox}>
-      <Ariakit.ComboboxLabel className="mb-2 block font-medium text-text-primary">
+      <Ariakit.ComboboxLabel className="text-text-primary mb-2 block font-medium">
         {label}
       </Ariakit.ComboboxLabel>
       <>
         <div
           className={cn(
-            'group relative flex h-10 cursor-pointer items-center gap-2 rounded-lg border-border-medium text-text-primary transition-colors duration-200 focus-within:bg-surface-hover hover:bg-surface-hover',
+            'group border-border-medium text-text-primary focus-within:bg-surface-hover hover:bg-surface-hover relative flex h-10 cursor-pointer items-center gap-2 rounded-lg transition-colors duration-200',
             isSmallScreen === true ? 'mb-2 h-14 rounded-2xl' : '',
           )}
         >
@@ -86,7 +86,7 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
             <Spinner className="absolute left-3 h-4 w-4" />
           ) : (
             <Search
-              className="absolute left-3 h-4 w-4 text-text-secondary group-focus-within:text-text-primary group-hover:text-text-primary"
+              className="text-text-secondary group-focus-within:text-text-primary group-hover:text-text-primary absolute left-3 h-4 w-4"
               aria-hidden="true"
             />
           )}
@@ -113,7 +113,7 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
             value={localQuery}
             // autoSelect
             placeholder={placeholder || localize('com_ui_select_options')}
-            className="h-10 w-full rounded-lg bg-transparent pl-10 text-sm leading-tight text-text-primary placeholder-text-secondary placeholder-opacity-100 focus:outline-none focus-visible:outline-none group-focus-within:placeholder-text-primary group-hover:placeholder-text-primary"
+            className="text-text-primary placeholder-text-secondary placeholder-opacity-100 group-focus-within:placeholder-text-primary group-hover:placeholder-text-primary h-10 w-full rounded-lg bg-transparent pl-10 text-sm leading-tight focus:outline-none focus-visible:outline-none"
           />
         </div>
       </>
@@ -131,7 +131,7 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
         autoFocusOnShow={false}
         modal={false}
         className={cn(
-          'animate-popover z-[9999] min-w-64 overflow-hidden rounded-2xl border border-border-light bg-surface-secondary shadow-lg',
+          'animate-popover border-border-light bg-surface-secondary z-[9999] min-w-64 overflow-hidden rounded-2xl border shadow-lg',
           '[pointer-events:auto]', // Override body's pointer-events:none when in modal
         )}
       >
@@ -176,13 +176,13 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
               <div
                 className={cn(
                   'flex items-center justify-center px-4 py-8 text-center',
-                  'text-sm text-text-secondary',
+                  'text-text-secondary text-sm',
                 )}
               >
                 <div className="flex flex-col items-center gap-2">
-                  <Search className="h-8 w-8 text-text-tertiary opacity-50" />
+                  <Search className="text-text-tertiary h-8 w-8 opacity-50" />
                   <div className="font-medium">{localize('com_ui_no_results_found')}</div>
-                  <div className="text-xs text-text-tertiary">
+                  <div className="text-text-tertiary text-xs">
                     {localize('com_ui_try_adjusting_search')}
                   </div>
                 </div>

@@ -30,7 +30,7 @@ export default function UninitializedMCPTool({ serverInfo }: { serverInfo?: MCPS
       onClick={(e) => {
         e.stopPropagation();
       }}
-      className="cursor-pointer rounded p-0.5 hover:bg-surface-secondary"
+      className="hover:bg-surface-secondary cursor-pointer rounded p-0.5"
     >
       <MCPServerStatusIcon {...statusIconProps} />
     </div>
@@ -39,7 +39,7 @@ export default function UninitializedMCPTool({ serverInfo }: { serverInfo?: MCPS
   return (
     <OGDialog>
       <div
-        className="group relative flex w-full items-center gap-1 rounded-lg p-1 text-sm hover:bg-surface-primary-alt"
+        className="group hover:bg-surface-primary-alt relative flex w-full items-center gap-1 rounded-lg p-1 text-sm"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         onFocus={() => setIsFocused(true)}
@@ -94,7 +94,7 @@ export default function UninitializedMCPTool({ serverInfo }: { serverInfo?: MCPS
           >
             {serverName}
             {isServerInitializing && (
-              <span className="ml-2 text-xs text-text-secondary">
+              <span className="text-text-secondary ml-2 text-xs">
                 {localize('com_ui_initializing')}
               </span>
             )}
@@ -105,7 +105,7 @@ export default function UninitializedMCPTool({ serverInfo }: { serverInfo?: MCPS
           <button
             type="button"
             className={cn(
-              'flex h-7 w-7 items-center justify-center rounded transition-all duration-200 hover:bg-surface-active-alt focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+              'hover:bg-surface-active-alt focus:ring-ring flex h-7 w-7 items-center justify-center rounded transition-all duration-200 focus:opacity-100 focus:ring-2 focus:ring-offset-1 focus:outline-none',
               isHovering || isFocused ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
             aria-label={`Delete ${serverName}`}

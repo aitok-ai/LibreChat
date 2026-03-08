@@ -18,7 +18,7 @@ export default function UnconfiguredMCPTool({ serverName }: { serverName?: strin
   return (
     <OGDialog>
       <div
-        className="group relative flex w-full items-center gap-1 rounded-lg p-1 text-sm hover:bg-surface-primary-alt"
+        className="group hover:bg-surface-primary-alt relative flex w-full items-center gap-1 rounded-lg p-1 text-sm"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         onFocus={() => setIsFocused(true)}
@@ -36,11 +36,11 @@ export default function UnconfiguredMCPTool({ serverName }: { serverName?: strin
 
         <div className="flex grow cursor-not-allowed items-center gap-1 rounded bg-transparent p-0 text-left transition-colors">
           <div
-            className="grow select-none px-2 py-1.5"
+            className="grow px-2 py-1.5 select-none"
             style={{ textOverflow: 'ellipsis', wordBreak: 'break-all', overflow: 'hidden' }}
           >
             {serverName}
-            <span className="ml-2 text-xs text-text-secondary">
+            <span className="text-text-secondary ml-2 text-xs">
               {' - '}
               {localize('com_ui_unavailable')}
             </span>
@@ -51,7 +51,7 @@ export default function UnconfiguredMCPTool({ serverName }: { serverName?: strin
           <button
             type="button"
             className={cn(
-              'flex h-7 w-7 items-center justify-center rounded transition-all duration-200 hover:bg-surface-active-alt focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+              'hover:bg-surface-active-alt focus:ring-ring flex h-7 w-7 items-center justify-center rounded transition-all duration-200 focus:opacity-100 focus:ring-2 focus:ring-offset-1 focus:outline-none',
               isHovering || isFocused ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
             aria-label={`Delete ${serverName}`}

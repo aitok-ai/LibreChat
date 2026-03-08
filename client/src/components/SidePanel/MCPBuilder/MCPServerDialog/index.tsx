@@ -157,7 +157,7 @@ export default function MCPServerDialog({
                   type="text"
                   readOnly
                   value={redirectUri}
-                  className="flex-1 text-text-secondary"
+                  className="text-text-secondary flex-1"
                 />
                 <Button
                   size="icon"

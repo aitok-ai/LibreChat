@@ -61,8 +61,8 @@ const PeoplePickerSearchItem = forwardRef<HTMLDivElement, PeoplePickerSearchItem
         <PrincipalAvatar principal={principal} size="md" />
 
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium text-text-primary">{displayName}</div>
-          <div className="truncate text-xs text-text-secondary">{subtitle}</div>
+          <div className="text-text-primary truncate text-sm font-medium">{displayName}</div>
+          <div className="text-text-secondary truncate text-xs">{subtitle}</div>
         </div>
 
         <div className="flex-shrink-0">

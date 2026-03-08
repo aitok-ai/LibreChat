@@ -20,7 +20,7 @@ export default function PanelFileCell({ row }: { row: Row<TFile | undefined> }) 
         <FilePreview fileType={getFileType(file?.type)} file={file} />
       )}
       <div className="min-w-0 flex-1 overflow-hidden">
-        <span className="block w-full overflow-hidden truncate text-ellipsis whitespace-nowrap text-xs">
+        <span className="block w-full truncate overflow-hidden text-xs text-ellipsis whitespace-nowrap">
           {displayName}
         </span>
       </div>

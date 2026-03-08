@@ -24,7 +24,7 @@ const VersionTags = ({ tags }: { tags: string[] }) => {
 
   if (isLatestAndProduction) {
     return (
-      <span className="absolute bottom-3 right-3">
+      <span className="absolute right-3 bottom-3">
         <CombinedStatusIcon description={localize('com_ui_latest_production_version')} />
       </span>
     );
@@ -103,10 +103,10 @@ const VersionCard = ({
     <button
       type="button"
       className={cn(
-        'group relative w-full rounded-lg border border-border-light p-4 transition-all duration-300',
+        'group border-border-light relative w-full rounded-lg border p-4 transition-all duration-300',
         isSelected
           ? 'bg-surface-secondary shadow-xl ring-2 ring-gray-400'
-          : 'bg-surface-primary shadow-sm hover:bg-surface-secondary',
+          : 'bg-surface-primary hover:bg-surface-secondary shadow-sm',
       )}
       onClick={onClick}
       aria-selected={isSelected}
@@ -115,17 +115,17 @@ const VersionCard = ({
     >
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between lg:flex-col xl:flex-row">
-          <h3 className="font-bold text-text-primary">
+          <h3 className="text-text-primary font-bold">
             {localize('com_ui_version_var', { 0: `${totalVersions - index}` })}
           </h3>
-          <time className="text-xs text-text-secondary" dateTime={prompt.createdAt}>
+          <time className="text-text-secondary text-xs" dateTime={prompt.createdAt}>
             {format(new Date(prompt.createdAt), 'yyyy-MM-dd HH:mm')}
           </time>
         </div>
 
         <div className="flex items-center gap-1 lg:flex-col xl:flex-row">
           {authorName && (
-            <Label className="text-left text-xs text-text-secondary">
+            <Label className="text-text-secondary text-left text-xs">
               {localize('com_ui_by_author', { 0: authorName })}
             </Label>
           )}
@@ -153,7 +153,7 @@ const PromptVersions = ({
   return (
     <section className="my-6" aria-label="Prompt Versions">
       <header className="mb-6">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-text-primary">
+        <h2 className="text-text-primary flex items-center gap-2 text-base font-semibold">
           <Layers3 className="h-5 w-5 text-green-500" />
           {localize('com_ui_versions')}
         </h2>

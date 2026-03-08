@@ -431,14 +431,14 @@ function DataTable<TData extends Record<string, unknown>, TValue>({
   return (
     <div
       className={cn(
-        'relative flex w-full flex-col overflow-hidden rounded-lg border border-border-light bg-background',
+        'border-border-light bg-background relative flex w-full flex-col overflow-hidden rounded-lg border',
         'h-[calc(100vh-8rem)] max-h-[80vh]',
         className,
       )}
       role="region"
       aria-label={localize('com_ui_data_table')}
     >
-      <div className="flex w-full shrink-0 items-center gap-2 border-b border-border-light md:gap-3">
+      <div className="border-border-light flex w-full shrink-0 items-center gap-2 border-b md:gap-3">
         {shouldShowSearch && <DataTableSearch value={searchTerm} onChange={setSearchTerm} />}
         {customActionsRenderer &&
           customActionsRenderer({
@@ -467,7 +467,7 @@ function DataTable<TData extends Record<string, unknown>, TValue>({
           className="table-auto"
           unwrapped={true}
         >
-          <TableHeader className="sticky top-0 z-10 bg-surface-secondary">
+          <TableHeader className="bg-surface-secondary sticky top-0 z-10">
             {headerGroups.map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -524,9 +524,9 @@ function DataTable<TData extends Record<string, unknown>, TValue>({
                       key={header.id}
                       scope="col"
                       className={cn(
-                        'border-b border-border-light px-2 py-2 md:px-3 md:py-2',
+                        'border-border-light border-b px-2 py-2 md:px-3 md:py-2',
                         isSelectHeader && 'px-0 text-center',
-                        canSort && 'cursor-pointer hover:bg-surface-tertiary',
+                        canSort && 'hover:bg-surface-tertiary cursor-pointer',
                         meta?.className,
                         header.column.getIsResizing() && 'bg-surface-tertiary/60',
                         isDesktopOnly && 'hidden md:table-cell',
@@ -553,10 +553,10 @@ function DataTable<TData extends Record<string, unknown>, TValue>({
                           {canSort && (
                             <span className="text-text-primary" aria-hidden="true">
                               {{
-                                asc: <ArrowUp className="size-4 text-text-primary" />,
-                                desc: <ArrowDown className="size-4 text-text-primary" />,
+                                asc: <ArrowUp className="text-text-primary size-4" />,
+                                desc: <ArrowDown className="text-text-primary size-4" />,
                               }[header.column.getIsSorted() as string] ?? (
-                                <ArrowDownUp className="size-4 text-text-primary" />
+                                <ArrowDownUp className="text-text-primary size-4" />
                               )}
                             </span>
                           )}
@@ -596,7 +596,7 @@ function DataTable<TData extends Record<string, unknown>, TValue>({
             role="status"
             aria-live="polite"
           >
-            <Label className="text-center text-text-secondary">
+            <Label className="text-text-secondary text-center">
               {searchTerm ? localize('com_ui_no_search_results') : localize('com_ui_no_data')}
             </Label>
           </div>

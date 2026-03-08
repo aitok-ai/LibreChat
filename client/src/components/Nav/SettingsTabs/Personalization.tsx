@@ -48,18 +48,18 @@ export default function Personalization({
 
   if (!hasAnyPersonalizationFeature) {
     return (
-      <div className="flex flex-col gap-3 text-sm text-text-primary">
+      <div className="text-text-primary flex flex-col gap-3 text-sm">
         <div className="text-text-secondary">{localize('com_ui_no_personalization_available')}</div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 text-sm text-text-primary">
+    <div className="text-text-primary flex flex-col gap-3 text-sm">
       {/* Memory Settings Section */}
       {hasMemoryOptOut && (
         <>
-          <div className="border-b border-border-medium pb-3">
+          <div className="border-border-medium border-b pb-3">
             <div className="text-base font-semibold">{localize('com_ui_memory')}</div>
           </div>
 
@@ -70,7 +70,7 @@ export default function Personalization({
               </div>
               <div
                 id="reference-saved-memories-description"
-                className="mt-1 text-xs text-text-secondary"
+                className="text-text-secondary mt-1 text-xs"
               >
                 {localize('com_ui_reference_saved_memories_description')}
               </div>

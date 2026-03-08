@@ -152,7 +152,7 @@ export default function ArchivedChatsTable({
                 <Button
                   variant="ghost"
                   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                  className="px-2 py-0 text-xs hover:bg-surface-hover sm:px-2 sm:py-2 sm:text-sm"
+                  className="hover:bg-surface-hover px-2 py-0 text-xs sm:px-2 sm:py-2 sm:text-sm"
                   aria-sort={ariaSort}
                   aria-label={localize('com_ui_name_sort')}
                   aria-current={sortState ? 'true' : 'false'}
@@ -178,7 +178,7 @@ export default function ArchivedChatsTable({
                 to={`/c/${conversationId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-1 truncate rounded-sm text-blue-600 underline decoration-1 underline-offset-2 hover:decoration-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                className="group focus:ring-ring flex items-center gap-1 truncate rounded-sm text-blue-600 underline decoration-1 underline-offset-2 hover:decoration-2 focus:ring-2 focus:outline-none"
                 title={title}
                 aria-label={localize('com_ui_open_archived_chat_new_tab_title', { title })}
               >
@@ -217,7 +217,7 @@ export default function ArchivedChatsTable({
                 <Button
                   variant="ghost"
                   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                  className="px-2 py-0 text-xs hover:bg-surface-hover sm:px-2 sm:py-2 sm:text-sm"
+                  className="hover:bg-surface-hover px-2 py-0 text-xs sm:px-2 sm:py-2 sm:text-sm"
                   aria-sort={ariaSort}
                   aria-label={localize('com_ui_date_sort')}
                   aria-current={sortState ? 'true' : 'false'}
@@ -251,7 +251,7 @@ export default function ArchivedChatsTable({
                 render={
                   <Button
                     variant="ghost"
-                    className="h-8 w-8 p-0 hover:bg-surface-hover"
+                    className="hover:bg-surface-hover h-8 w-8 p-0"
                     onClick={() =>
                       unarchiveMutation.mutate({
                         conversationId: conversation.conversationId,
@@ -275,7 +275,7 @@ export default function ArchivedChatsTable({
                 render={
                   <Button
                     variant="ghost"
-                    className="h-8 w-8 p-0 hover:bg-surface-hover"
+                    className="hover:bg-surface-hover h-8 w-8 p-0"
                     onClick={() => {
                       setDeleteConversation(row.original);
                       setIsDeleteOpen(true);

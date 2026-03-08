@@ -59,7 +59,7 @@ export default function BasicInfoSection() {
             className={cn(errors.title && 'border-border-destructive')}
           />
           {errors.title && (
-            <p id="mcp-title-error" role="alert" className="text-xs text-text-destructive">
+            <p id="mcp-title-error" role="alert" className="text-text-destructive text-xs">
               {errors.title.message}
             </p>
           )}
@@ -70,7 +70,7 @@ export default function BasicInfoSection() {
       <div className="space-y-1.5">
         <Label htmlFor="mcp-description" className="text-sm font-medium">
           {localize('com_ui_description')}{' '}
-          <span className="text-xs text-text-secondary">{localize('com_ui_optional')}</span>
+          <span className="text-text-secondary text-xs">{localize('com_ui_optional')}</span>
         </Label>
         <Textarea
           id="mcp-description"

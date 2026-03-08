@@ -52,9 +52,9 @@ function MultiSelectPop({
             <button
               data-testid="select-dropdown-button"
               className={cn(
-                'relative flex flex-col rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-0 focus:ring-offset-0 dark:border-gray-700 dark:bg-gray-800 sm:text-sm',
+                'relative flex flex-col rounded-md border border-black/10 bg-white py-2 pr-10 pl-3 text-left focus:ring-0 focus:ring-offset-0 focus:outline-none sm:text-sm dark:border-gray-700 dark:bg-gray-800',
                 'pointer-cursor font-normal',
-                'hover:bg-gray-50 radix-state-open:bg-gray-50 dark:hover:bg-gray-700 dark:radix-state-open:bg-gray-700',
+                'radix-state-open:bg-gray-50 dark:radix-state-open:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700',
               )}
             >
               {' '}
@@ -81,7 +81,7 @@ function MultiSelectPop({
                           ) : (
                             <Wrench className="icon-lg rounded-sm bg-white" />
                           )}
-                          <div className="absolute inset-0 rounded-sm ring-1 ring-inset ring-black/10" />
+                          <div className="absolute inset-0 rounded-sm ring-1 ring-black/10 ring-inset" />
                         </div>
                       ))}
                     </div>

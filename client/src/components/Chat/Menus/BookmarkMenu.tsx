@@ -60,9 +60,9 @@ const BookmarkMenu: FC = () => {
 
   const isActiveConvo = Boolean(
     conversation &&
-      conversationId &&
-      conversationId !== Constants.NEW_CONVO &&
-      conversationId !== 'search',
+    conversationId &&
+    conversationId !== Constants.NEW_CONVO &&
+    conversationId !== 'search',
   );
 
   const handleSubmit = useCallback(
@@ -181,7 +181,7 @@ const BookmarkMenu: FC = () => {
                 aria-label={buttonAriaLabel}
                 aria-pressed={hasBookmarks}
                 className={cn(
-                  'mt-text-sm flex size-10 flex-shrink-0 items-center justify-center gap-2 rounded-xl border border-border-light bg-presentation text-sm transition-colors duration-200 hover:bg-surface-hover',
+                  'mt-text-sm border-border-light bg-presentation hover:bg-surface-hover flex size-10 flex-shrink-0 items-center justify-center gap-2 rounded-xl border text-sm transition-colors duration-200',
                   isMenuOpen ? 'bg-surface-hover' : '',
                 )}
                 data-testid="bookmark-menu"

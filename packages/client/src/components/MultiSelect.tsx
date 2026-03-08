@@ -104,7 +104,7 @@ export default function MultiSelect<T extends string>({
         setOpen={setIsPopoverOpen}
       >
         {label && (
-          <SelectLabel className={cn('mb-1 block text-sm text-text-primary', labelClassName)}>
+          <SelectLabel className={cn('text-text-primary mb-1 block text-sm', labelClassName)}>
             {label}
           </SelectLabel>
         )}
@@ -112,8 +112,8 @@ export default function MultiSelect<T extends string>({
           ref={selectRef}
           className={cn(
             'flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm',
-            'bg-surface-tertiary text-text-primary shadow-sm hover:cursor-pointer hover:bg-surface-hover',
-            'outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white',
+            'bg-surface-tertiary text-text-primary hover:bg-surface-hover shadow-sm hover:cursor-pointer',
+            'outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none',
             selectClassName,
             selectedValues.length > 0 && selectItemsClassName != null && selectItemsClassName,
           )}
@@ -139,8 +139,8 @@ export default function MultiSelect<T extends string>({
           className={cn(
             'animate-popover z-40 flex max-h-[300px]',
             'flex-col overflow-auto overscroll-contain rounded-xl',
-            'bg-surface-secondary px-1.5 py-1 text-text-primary shadow-lg',
-            'border border-border-light',
+            'bg-surface-secondary text-text-primary px-1.5 py-1 shadow-lg',
+            'border-border-light border',
             'outline-none',
             popoverClassName,
           )}
@@ -150,7 +150,7 @@ export default function MultiSelect<T extends string>({
             const label = getItemLabel(item);
             const defaultContent = (
               <>
-                <SelectItemCheck className="mr-0.5 text-primary" />
+                <SelectItemCheck className="text-primary mr-0.5" />
                 <span className="truncate">{label}</span>
               </>
             );
@@ -161,7 +161,7 @@ export default function MultiSelect<T extends string>({
                 value={value}
                 className={cn(
                   'flex items-center gap-2 rounded-lg px-2 py-1.5 hover:cursor-pointer',
-                  'scroll-m-1 outline-none transition-colors',
+                  'scroll-m-1 transition-colors outline-none',
                   'hover:bg-black/[0.075] dark:hover:bg-white/10',
                   'data-[active-item]:bg-black/[0.075] dark:data-[active-item]:bg-white/10',
                   'w-full min-w-0 text-sm',

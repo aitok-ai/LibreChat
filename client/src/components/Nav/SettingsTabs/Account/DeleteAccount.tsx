@@ -60,7 +60,7 @@ const DeleteAccount = ({ disabled = false }: { title?: string; disabled?: boolea
         </div>
         <OGDialogContent className="w-11/12 max-w-md">
           <OGDialogHeader>
-            <OGDialogTitle className="text-lg font-medium leading-6">
+            <OGDialogTitle className="text-lg leading-6 font-medium">
               {localize('com_nav_delete_account_confirm')}
             </OGDialogTitle>
           </OGDialogHeader>
@@ -109,7 +109,7 @@ const renderDeleteButton = (
 ) => (
   <button
     className={cn(
-      'mt-4 flex w-full items-center justify-center rounded-lg bg-surface-tertiary px-4 py-2 transition-all duration-200',
+      'bg-surface-tertiary mt-4 flex w-full items-center justify-center rounded-lg px-4 py-2 transition-all duration-200',
       isLocked ? 'cursor-not-allowed opacity-30' : 'bg-destructive text-destructive-foreground',
     )}
     onClick={handleDeleteUser}

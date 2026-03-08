@@ -1,7 +1,7 @@
 export default function FinishedIcon() {
   return (
     <div
-      className="flex size-4 items-center justify-center rounded-full bg-brand-purple text-white"
+      className="bg-brand-purple flex size-4 items-center justify-center rounded-full text-white"
       data-projection-id="162"
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="none" width="8" height="8">

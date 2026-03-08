@@ -52,7 +52,9 @@ class TrieSensitive {
         stopFlag = 'first';
         stopToken = char;
         if (currentToken !== '') {
-          if (currentToken.length > 1) {tokens.push(currentToken);}
+          if (currentToken.length > 1) {
+            tokens.push(currentToken);
+          }
           currentToken = '';
         }
       } else {

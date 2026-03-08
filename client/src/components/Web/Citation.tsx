@@ -65,7 +65,7 @@ export function CompositeCitation(props: CompositeCitationProps) {
       onMouseLeave={() => setHoveredCitationId(null)}
     >
       {totalPages > 1 && (
-        <span className="mb-2 flex items-center justify-between border-b border-border-heavy pb-2">
+        <span className="border-border-heavy mb-2 flex items-center justify-between border-b pb-2">
           <span className="flex gap-2">
             <button
               onClick={handlePrevPage}
@@ -84,7 +84,7 @@ export function CompositeCitation(props: CompositeCitationProps) {
               →
             </button>
           </span>
-          <span className="text-xs text-text-tertiary">
+          <span className="text-text-tertiary text-xs">
             {currentPage + 1}/{totalPages}
           </span>
         </span>
@@ -95,13 +95,13 @@ export function CompositeCitation(props: CompositeCitationProps) {
           href={currentSource.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="line-clamp-2 cursor-pointer overflow-hidden text-sm font-bold text-[#0066cc] hover:underline dark:text-blue-400 md:line-clamp-3"
+          className="line-clamp-2 cursor-pointer overflow-hidden text-sm font-bold text-[#0066cc] hover:underline md:line-clamp-3 dark:text-blue-400"
         >
           {currentSource.attribution}
         </a>
       </span>
-      <h4 className="mb-1.5 mt-0 text-xs text-text-primary md:text-sm">{currentSource.title}</h4>
-      <p className="my-2 text-ellipsis break-all text-xs text-text-secondary md:text-sm">
+      <h4 className="text-text-primary mt-0 mb-1.5 text-xs md:text-sm">{currentSource.title}</h4>
+      <p className="text-text-secondary my-2 text-xs break-all text-ellipsis md:text-sm">
         {currentSource.snippet}
       </p>
     </SourceHovercard>

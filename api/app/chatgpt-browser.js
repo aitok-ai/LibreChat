@@ -32,7 +32,7 @@ const browserClient = async ({
     reverseProxyUrl:
       process.env.CHATGPT_REVERSE_PROXY ?? 'https://ai.fakeopen.com/api/conversation',
     // Access token from https://chat.openai.com/api/auth/session
-    accessToken: isUserProvided ? key : process.env.CHATGPT_TOKEN ?? null,
+    accessToken: isUserProvided ? key : (process.env.CHATGPT_TOKEN ?? null),
     model: model,
     debug: false,
     proxy: process.env.PROXY ?? null,

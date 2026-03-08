@@ -146,25 +146,25 @@ const AgentDetail: React.FC<AgentDetailProps> = ({ agent, isOpen, onClose }) => 
 
         {/* Agent name */}
         <div className="mt-3 text-center">
-          <h2 className="text-2xl font-bold text-text-primary">
+          <h2 className="text-text-primary text-2xl font-bold">
             {agent?.name || localize('com_agents_loading')}
           </h2>
         </div>
 
         {/* Contact info */}
         {agent?.support_contact && formatContact() && (
-          <div className="mt-1 text-center text-sm text-text-secondary">
+          <div className="text-text-secondary mt-1 text-center text-sm">
             {localize('com_agents_contact')}: {formatContact()}
           </div>
         )}
 
         {/* Agent description */}
-        <div className="mt-4 whitespace-pre-wrap px-6 text-center text-base text-text-primary">
+        <div className="text-text-primary mt-4 px-6 text-center text-base whitespace-pre-wrap">
           {agent?.description}
         </div>
 
         {/* Action button */}
-        <div className="mb-4 mt-6 flex justify-center gap-2">
+        <div className="mt-6 mb-4 flex justify-center gap-2">
           <Button
             variant="outline"
             size="icon"

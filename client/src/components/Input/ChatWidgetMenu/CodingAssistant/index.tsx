@@ -77,7 +77,7 @@ function CodingAssistant() {
                 disabled={false}
                 className={cn(
                   defaultTextProps,
-                  'flex w-full resize-none focus:outline-none focus:ring-0 focus:ring-opacity-0 focus:ring-offset-0',
+                  'focus:ring-opacity-0 flex w-full resize-none focus:ring-0 focus:ring-offset-0 focus:outline-none',
                 )}
                 containerClassName="flex w-full resize-none"
                 subContainerClassName=""
@@ -92,7 +92,7 @@ function CodingAssistant() {
                 disabled={false}
                 className={cn(
                   defaultTextProps,
-                  'flex w-full resize-none focus:outline-none focus:ring-0 focus:ring-opacity-0 focus:ring-offset-0',
+                  'focus:ring-opacity-0 flex w-full resize-none focus:ring-0 focus:ring-offset-0 focus:outline-none',
                 )}
                 containerClassName="flex w-full resize-none"
                 subContainerClassName=""

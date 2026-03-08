@@ -178,7 +178,7 @@ function Avatar() {
 
       <OGDialogContent showCloseButton={false} className="w-11/12 max-w-md">
         <OGDialogHeader>
-          <OGDialogTitle className="text-lg font-medium leading-6 text-text-primary">
+          <OGDialogTitle className="text-text-primary text-lg leading-6 font-medium">
             {image != null ? localize('com_ui_preview') : localize('com_ui_upload_image')}
           </OGDialogTitle>
         </OGDialogHeader>
@@ -224,7 +224,7 @@ function Avatar() {
                     <Label htmlFor="zoom-slider" className="text-sm font-medium">
                       {localize('com_ui_zoom')}
                     </Label>
-                    <span className="text-sm text-text-secondary">{Math.round(scale * 100)}%</span>
+                    <span className="text-text-secondary text-sm">{Math.round(scale * 100)}%</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Button
@@ -335,10 +335,10 @@ function Avatar() {
               aria-label={localize('com_ui_upload_avatar_label')}
             >
               <FileImage className="mb-4 size-16 text-gray-400" />
-              <p className="mb-2 text-center text-sm font-medium text-text-primary">
+              <p className="text-text-primary mb-2 text-center text-sm font-medium">
                 {localize('com_ui_drag_drop')}
               </p>
-              <p className="mb-4 text-center text-xs text-text-secondary">
+              <p className="text-text-secondary mb-4 text-center text-xs">
                 {localize('com_ui_max_file_size', {
                   0:
                     fileConfig.avatarSizeLimit != null

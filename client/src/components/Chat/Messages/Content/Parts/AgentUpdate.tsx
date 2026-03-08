@@ -20,8 +20,8 @@ const AgentUpdate: React.FC<AgentUpdateProps> = ({ currentAgentId }) => {
     <div className="relative">
       <div className="absolute -left-6 flex h-full w-4 items-center justify-center">
         <div className="relative h-full w-4">
-          <div className="absolute left-0 top-0 h-1/2 w-px border border-border-medium"></div>
-          <div className="absolute left-0 top-1/2 h-px w-3 border border-border-medium"></div>
+          <div className="border-border-medium absolute top-0 left-0 h-1/2 w-px border"></div>
+          <div className="border-border-medium absolute top-1/2 left-0 h-px w-3 border"></div>
         </div>
       </div>
       <div className="my-4 flex items-center gap-2">
@@ -36,7 +36,7 @@ const AgentUpdate: React.FC<AgentUpdateProps> = ({ currentAgentId }) => {
             agent={currentAgent}
           />
         </div>
-        <div className="text-base font-medium text-text-primary">
+        <div className="text-text-primary text-base font-medium">
           {currentAgent?.name || localize('com_ui_agent')}
         </div>
       </div>

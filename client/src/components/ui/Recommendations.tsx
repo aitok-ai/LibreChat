@@ -74,7 +74,7 @@ export default function Recommendations() {
 
   const plugins = (
     <>
-      <span className="py-0.25 ml-1 rounded bg-blue-200 px-1 text-[10px] font-semibold uppercase text-[#4559A4]">
+      <span className="ml-1 rounded bg-blue-200 px-1 py-0.25 text-[10px] font-semibold text-[#4559A4] uppercase">
         {localize('com_ui_beta')}
       </span>
       <span className="px-1">•</span>
@@ -428,12 +428,12 @@ export default function Recommendations() {
         </Tabs>
       </div>
       <div className="flex h-full flex-col items-center overflow-y-auto pt-0 text-sm dark:bg-gray-800">
-        <div className="flex w-full flex-col items-center px-6 text-gray-800 dark:text-gray-100 md:flex md:max-w-2xl md:flex-col lg:max-w-5xl">
+        <div className="flex w-full flex-col items-center px-6 text-gray-800 md:flex md:max-w-2xl md:flex-col lg:max-w-5xl dark:text-gray-100">
           <>
-            <div className="grid-row sticky top-0 z-30 grid w-full items-center gap-1 bg-white dark:bg-gray-800 md:gap-0">
+            <div className="grid-row sticky top-0 z-30 grid w-full items-center gap-1 bg-white md:gap-0 dark:bg-gray-800">
               <h1
                 id="landing-title"
-                className="ml-auto mr-auto mt-0.5 flex gap-2 text-center text-2xl font-semibold"
+                className="mt-0.5 mr-auto ml-auto flex gap-2 text-center text-2xl font-semibold"
               >
                 {convoData && convoData.length > 0 ? convoData[convoIdx].title : ''}
               </h1>
@@ -544,7 +544,7 @@ export default function Recommendations() {
                       <>
                         {Object.keys(user?.following || {}).length === 0 ? ( // The user might not be following anyone...
                           <>
-                            <div className="ml-2 mt-2">{localize('com_ui_no_following')}</div>
+                            <div className="mt-2 ml-2">{localize('com_ui_no_following')}</div>
                           </>
                         ) : (
                           // The users whom the current user is following does not have any public conversations
@@ -553,7 +553,7 @@ export default function Recommendations() {
                       </>
                     ) : (
                       // Fresh database
-                      <div className="ml-2 mt-2">{localize('com_ui_empty_database')}</div>
+                      <div className="mt-2 ml-2">{localize('com_ui_empty_database')}</div>
                     )}
                   </>
                 ) : (

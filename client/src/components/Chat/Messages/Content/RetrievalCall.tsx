@@ -25,7 +25,7 @@ export default function RetrievalCall({
         {progress < 1 ? (
           <InProgressCall progress={progress} isSubmitting={isSubmitting} error={error}>
             <div
-              className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-full bg-transparent text-white"
+              className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-full bg-transparent text-white"
               style={{ opacity: 1, transform: 'none' }}
             >
               <div>

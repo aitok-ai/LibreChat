@@ -109,7 +109,7 @@ const BookmarkTable = () => {
             >
               {localize('com_ui_prev')}
             </Button>
-            <div className="whitespace-nowrap text-sm" aria-live="polite">
+            <div className="text-sm whitespace-nowrap" aria-live="polite">
               {pageIndex + 1} / {totalPages}
             </div>
             <Button

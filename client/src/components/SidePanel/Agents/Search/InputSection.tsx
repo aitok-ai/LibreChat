@@ -73,7 +73,7 @@ export default function InputSection({
             trigger={
               <Menu.MenuButton
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center rounded-md border border-border-light px-3 py-1 text-sm text-text-secondary"
+                className="border-border-light text-text-secondary flex items-center rounded-md border px-3 py-1 text-sm"
               >
                 {selectedOption?.label}
                 <ChevronDown className="ml-1 h-4 w-4" />
@@ -81,7 +81,7 @@ export default function InputSection({
             }
           />
         ) : (
-          <div className="text-sm text-text-secondary">{selectedOption?.label}</div>
+          <div className="text-text-secondary text-sm">{selectedOption?.label}</div>
         )}
       </div>
       {selectedOption?.inputs &&
@@ -105,7 +105,7 @@ export default function InputSection({
                 <button
                   type="button"
                   onClick={() => togglePasswordVisibility(name)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary transition-colors hover:text-text-primary"
+                  className="text-text-secondary hover:text-text-primary absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
                   aria-label={
                     passwordVisibility[name]
                       ? localize('com_ui_hide_password')
@@ -115,12 +115,12 @@ export default function InputSection({
                   <div className="relative h-4 w-4">
                     {passwordVisibility[name] ? (
                       <EyeOff
-                        className="absolute inset-0 h-4 w-4 duration-200 animate-in fade-in"
+                        className="animate-in fade-in absolute inset-0 h-4 w-4 duration-200"
                         aria-hidden="true"
                       />
                     ) : (
                       <Eye
-                        className="absolute inset-0 h-4 w-4 duration-200 animate-in fade-in"
+                        className="animate-in fade-in absolute inset-0 h-4 w-4 duration-200"
                         aria-hidden="true"
                       />
                     )}
@@ -129,7 +129,7 @@ export default function InputSection({
               )}
             </div>
             {config.link && (
-              <div className="mt-1 text-xs text-text-secondary">
+              <div className="text-text-secondary mt-1 text-xs">
                 <a
                   href={config.link.url}
                   target="_blank"

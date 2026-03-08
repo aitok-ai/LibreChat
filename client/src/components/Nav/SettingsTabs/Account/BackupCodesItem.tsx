@@ -94,7 +94,7 @@ const BackupCodesItem: React.FC = () => {
             {Array.isArray(user?.backupCodes) && user?.backupCodes.length > 0 ? (
               <>
                 <div className="border-warning-300 bg-warning-50 dark:border-warning-700 dark:bg-warning-900/20 mb-6 rounded-lg border p-4">
-                  <p className="text-sm text-text-secondary">
+                  <p className="text-text-secondary text-sm">
                     {localize('com_ui_backup_codes_security_info')}
                   </p>
                 </div>
@@ -127,14 +127,14 @@ const BackupCodesItem: React.FC = () => {
                           });
                           document.dispatchEvent(announcement);
                         }}
-                        className={`flex flex-col rounded-xl border p-4 backdrop-blur-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                        className={`focus-visible:ring-primary flex flex-col rounded-xl border p-4 backdrop-blur-sm transition-colors focus-visible:ring-2 focus-visible:outline-none ${
                           isUsed
                             ? 'border-red-200 bg-red-50/80 dark:border-red-800 dark:bg-red-900/20'
                             : 'border-green-200 bg-green-50/80 dark:border-green-800 dark:bg-green-900/20'
                         } `}
                       >
                         <div className="flex items-center justify-between" aria-hidden="true">
-                          <span className="text-sm font-medium text-text-secondary">
+                          <span className="text-text-secondary text-sm font-medium">
                             {localize('com_ui_backup_code_number', { number: index + 1 })}
                           </span>
                           <TooltipAnchor

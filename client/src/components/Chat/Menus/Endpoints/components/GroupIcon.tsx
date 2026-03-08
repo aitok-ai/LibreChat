@@ -20,7 +20,7 @@ const GroupIcon: React.FC<GroupIconProps> = ({ iconURL, groupName }) => {
   // Check if the iconURL is a built-in icon key
   if (iconURL in icons) {
     const Icon: IconType = (icons[iconURL] ?? icons.unknown) as IconType;
-    return <Icon size={20} context="menu-item" className="icon-md shrink-0 text-text-primary" />;
+    return <Icon size={20} context="menu-item" className="icon-md text-text-primary shrink-0" />;
   }
 
   if (imageError) {

@@ -68,9 +68,9 @@ function SelectDropDownPop({
             <button
               data-testid="select-dropdown-button"
               className={cn(
-                'pointer-cursor relative flex flex-col rounded-lg border border-black/10 bg-white py-2 pl-3 pr-10 text-left focus:ring-0 focus:ring-offset-0 dark:border-gray-700 dark:bg-gray-800 sm:text-sm',
-                'hover:bg-gray-50 radix-state-open:bg-gray-50 dark:hover:bg-gray-700 dark:radix-state-open:bg-gray-700',
-                'min-w-[200px] max-w-[215px] sm:min-w-full sm:max-w-full',
+                'pointer-cursor relative flex flex-col rounded-lg border border-black/10 bg-white py-2 pr-10 pl-3 text-left focus:ring-0 focus:ring-offset-0 sm:text-sm dark:border-gray-700 dark:bg-gray-800',
+                'radix-state-open:bg-gray-50 dark:radix-state-open:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700',
+                'max-w-[215px] min-w-[200px] sm:max-w-full sm:min-w-full',
               )}
               aria-label={`Select ${title}`}
               aria-haspopup="false"
@@ -82,7 +82,7 @@ function SelectDropDownPop({
               <span className="inline-flex w-full">
                 <span
                   className={cn(
-                    'flex h-6 items-center gap-1 text-sm text-text-primary',
+                    'text-text-primary flex h-6 items-center gap-1 text-sm',
                     !showLabel ? 'text-xs' : '',
                     'min-w-[75px] font-normal',
                   )}
@@ -114,7 +114,7 @@ function SelectDropDownPop({
               side="bottom"
               align="start"
               className={cn(
-                'z-50 mr-3 mt-2 max-h-[52vh] w-full max-w-[85vw] overflow-hidden overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-700 dark:text-white sm:max-w-full lg:max-h-[52vh]',
+                'z-50 mt-2 mr-3 max-h-[52vh] w-full max-w-[85vw] overflow-hidden overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg sm:max-w-full lg:max-h-[52vh] dark:border-gray-700 dark:bg-gray-700 dark:text-white',
                 hasSearchRender && 'relative',
               )}
             >

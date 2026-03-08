@@ -20,7 +20,7 @@ export default function MinimalHoverButtons({ message, searchResults }: THoverBu
   return (
     <div className="visible mt-1 flex justify-center gap-1 self-end text-gray-400 lg:justify-start">
       <button
-        className="ml-0 flex items-center gap-1.5 rounded-lg p-1.5 text-xs text-text-secondary-alt transition-colors duration-200 hover:bg-surface-hover hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+        className="text-text-secondary-alt hover:bg-surface-hover hover:text-text-primary ml-0 flex items-center gap-1.5 rounded-lg p-1.5 text-xs transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 dark:focus-visible:ring-white"
         onClick={() => copyToClipboard(setIsCopied)}
         type="button"
         title={

@@ -110,12 +110,12 @@ function RequestPasswordReset() {
               },
             })}
             aria-invalid={!!errors.email}
-            className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
+            className="webkit-dark-styles transition-color peer border-border-light bg-surface-primary text-text-primary w-full rounded-2xl border px-3.5 pt-3 pb-2.5 duration-200 focus:border-green-500 focus:outline-none"
             placeholder=" "
           />
           <label
             htmlFor="email"
-            className="absolute -top-2 left-2 z-10 bg-surface-primary px-2 text-sm text-text-secondary-alt transition-all peer-focus:text-green-600 dark:text-gray-400 dark:peer-focus:text-green-500"
+            className="bg-surface-primary text-text-secondary-alt absolute -top-2 left-2 z-10 px-2 text-sm transition-all peer-focus:text-green-600 dark:text-gray-400 dark:peer-focus:text-green-500"
           >
             {localize('com_auth_email_address')}
           </label>

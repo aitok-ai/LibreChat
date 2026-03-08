@@ -48,11 +48,11 @@ function MessagesViewContent({
               width: '100%',
             }}
           >
-            <div className="flex flex-col pb-9 pt-14 dark:bg-transparent">
+            <div className="flex flex-col pt-14 pb-9 dark:bg-transparent">
               {(_messagesTree && _messagesTree.length == 0) || _messagesTree === null ? (
                 <div
                   className={cn(
-                    'flex w-full items-center justify-center p-3 text-text-secondary',
+                    'text-text-secondary flex w-full items-center justify-center p-3',
                     fontSize,
                   )}
                 >

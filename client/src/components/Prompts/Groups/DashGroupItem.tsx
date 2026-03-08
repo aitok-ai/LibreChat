@@ -86,7 +86,7 @@ function DashGroupItemComponent({ group, instanceProjectId }: DashGroupItemProps
   return (
     <div
       className={cn(
-        'relative mx-2 my-2 rounded-lg border border-border-light bg-surface-primary shadow-sm transition-all duration-300 ease-in-out hover:bg-surface-secondary',
+        'border-border-light bg-surface-primary hover:bg-surface-secondary relative mx-2 my-2 rounded-lg border shadow-sm transition-all duration-300 ease-in-out',
         params.promptId === group._id && 'bg-surface-hover',
       )}
     >
@@ -109,7 +109,7 @@ function DashGroupItemComponent({ group, instanceProjectId }: DashGroupItemProps
         <div className="flex items-center gap-2 truncate pr-2">
           <CategoryIcon category={group.category ?? ''} className="icon-lg" aria-hidden="true" />
 
-          <Label className="text-md cursor-pointer truncate font-semibold text-text-primary">
+          <Label className="text-md text-text-primary cursor-pointer truncate font-semibold">
             {group.name}
           </Label>
         </div>
@@ -124,7 +124,7 @@ function DashGroupItemComponent({ group, instanceProjectId }: DashGroupItemProps
         </div>
       </button>
 
-      <div className="absolute right-0 top-0 mr-1 mt-2.5 flex items-start gap-1 pl-2">
+      <div className="absolute top-0 right-0 mt-2.5 mr-1 flex items-start gap-1 pl-2">
         {canEdit && (
           <OGDialog>
             <OGDialogTrigger asChild>
@@ -136,7 +136,7 @@ function DashGroupItemComponent({ group, instanceProjectId }: DashGroupItemProps
                     e.stopPropagation();
                   }
                 }}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-medium bg-transparent p-0 text-sm font-medium transition-all duration-300 ease-in-out hover:border-border-heavy hover:bg-surface-hover focus:border-border-heavy focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                className="border-border-medium hover:border-border-heavy hover:bg-surface-hover focus:border-border-heavy inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-transparent p-0 text-sm font-medium transition-all duration-300 ease-in-out focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                 aria-label={localize('com_ui_rename_prompt_name', { name: group.name })}
               >
                 <Pen className="icon-sm text-text-primary" aria-hidden="true" />
@@ -180,7 +180,7 @@ function DashGroupItemComponent({ group, instanceProjectId }: DashGroupItemProps
                     e.stopPropagation();
                   }
                 }}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-medium bg-transparent p-0 text-sm font-medium transition-all duration-300 ease-in-out hover:border-border-heavy hover:bg-surface-hover focus:border-border-heavy focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                className="border-border-medium hover:border-border-heavy hover:bg-surface-hover focus:border-border-heavy inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-transparent p-0 text-sm font-medium transition-all duration-300 ease-in-out focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                 aria-label={localize('com_ui_delete_prompt_name', { name: group.name })}
               >
                 <TrashIcon className="icon-sm text-text-primary" aria-hidden="true" />

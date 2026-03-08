@@ -105,9 +105,9 @@ function ControlCombobox({
         id={selectId}
         disabled={disabled}
         className={cn(
-          'flex items-center justify-center gap-2 rounded-full bg-surface-secondary',
+          'bg-surface-secondary flex items-center justify-center gap-2 rounded-full',
           'text-text-primary hover:bg-surface-tertiary',
-          'border border-border-light',
+          'border-border-light border',
           isCollapsed ? 'h-10 w-10' : 'h-10 w-full rounded-xl px-3 py-2 text-sm',
           className,
         )}
@@ -125,7 +125,7 @@ function ControlCombobox({
             {SelectIcon != null && iconSide === 'right' && (
               <div className={selectIconClassName}>{SelectIcon}</div>
             )}
-            {showCarat && <ChevronDown className="h-4 w-4 text-text-secondary" />}
+            {showCarat && <ChevronDown className="text-text-secondary h-4 w-4" />}
           </>
         )}
       </Ariakit.Select>
@@ -134,18 +134,18 @@ function ControlCombobox({
         gutter={4}
         portal
         className={cn(
-          'animate-popover z-40 overflow-hidden rounded-xl border border-border-light bg-surface-secondary shadow-lg',
+          'animate-popover border-border-light bg-surface-secondary z-40 overflow-hidden rounded-xl border shadow-lg',
         )}
         style={{ width: isCollapsed ? '300px' : (buttonWidth ?? '300px') }}
       >
         <div className="py-1.5">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-primary" />
+            <Search className="text-text-primary absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Ariakit.Combobox
               store={combobox}
               autoSelect
               placeholder={searchPlaceholder}
-              className="w-full rounded-md bg-surface-secondary py-2 pl-9 pr-3 text-sm text-text-primary focus:outline-none"
+              className="bg-surface-secondary text-text-primary w-full rounded-md py-2 pr-3 pl-9 text-sm focus:outline-none"
             />
           </div>
         </div>

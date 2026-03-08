@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { render, fireEvent } from '@testing-library/react';
 import Button from '../Button';
 

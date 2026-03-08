@@ -58,9 +58,9 @@ export default function VariablesDropdown({
           <Menu.MenuButton
             id="variables-menu-button"
             aria-label={localize('com_ui_add_special_variables')}
-            className="flex h-8 items-center gap-1 rounded-md border border-border-medium bg-surface-secondary px-2 py-0 text-sm text-text-primary transition-colors duration-200 hover:bg-surface-tertiary"
+            className="border-border-medium bg-surface-secondary text-text-primary hover:bg-surface-tertiary flex h-8 items-center gap-1 rounded-md border px-2 py-0 text-sm transition-colors duration-200"
           >
-            <PlusCircle className="mr-1 h-3 w-3 text-text-secondary" aria-hidden={true} />
+            <PlusCircle className="text-text-secondary mr-1 h-3 w-3" aria-hidden={true} />
             {localize('com_ui_special_variables')}
           </Menu.MenuButton>
         }

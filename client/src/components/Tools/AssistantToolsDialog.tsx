@@ -149,22 +149,22 @@ function AssistantToolsDialog({
       className="relative z-[102]"
     >
       {/* The backdrop, rendered as a fixed sibling to the panel container */}
-      <div className="fixed inset-0 bg-surface-primary opacity-60 transition-opacity dark:opacity-80" />
+      <div className="bg-surface-primary fixed inset-0 opacity-60 transition-opacity dark:opacity-80" />
       {/* Full-screen container to center the panel */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel
-          className="relative w-full transform overflow-hidden overflow-y-auto rounded-lg bg-surface-secondary text-left shadow-xl transition-all max-sm:h-full sm:mx-7 sm:my-8 sm:max-w-2xl lg:max-w-5xl xl:max-w-7xl"
+          className="bg-surface-secondary relative w-full transform overflow-hidden overflow-y-auto rounded-lg text-left shadow-xl transition-all max-sm:h-full sm:mx-7 sm:my-8 sm:max-w-2xl lg:max-w-5xl xl:max-w-7xl"
           style={{ minHeight: '610px' }}
         >
-          <div className="flex items-center justify-between border-b-[1px] border-border-medium px-4 pb-4 pt-5 sm:p-6">
+          <div className="border-border-medium flex items-center justify-between border-b-[1px] px-4 pt-5 pb-4 sm:p-6">
             <div className="flex items-center">
               <div className="text-center sm:text-left">
-                <DialogTitle className="text-lg font-medium leading-6 text-text-primary">
+                <DialogTitle className="text-text-primary text-lg leading-6 font-medium">
                   {isAgentTools
                     ? localize('com_nav_tool_dialog_agents')
                     : localize('com_nav_tool_dialog')}
                 </DialogTitle>
-                <Description className="text-sm text-text-secondary">
+                <Description className="text-text-secondary text-sm">
                   {localize('com_nav_tool_dialog_description')}
                 </Description>
               </div>
@@ -176,7 +176,7 @@ function AssistantToolsDialog({
                     setIsOpen(false);
                     setCurrentPage(1);
                   }}
-                  className="inline-block rounded-full text-text-secondary transition-colors hover:text-text-primary"
+                  className="text-text-secondary hover:text-text-primary inline-block rounded-full transition-colors"
                   aria-label="Close dialog"
                   type="button"
                 >
@@ -205,13 +205,13 @@ function AssistantToolsDialog({
           <div className="p-4 sm:p-6 sm:pt-4">
             <div className="mt-4 flex flex-col gap-4">
               <div className="flex items-center justify-center space-x-4">
-                <Search className="h-6 w-6 text-text-tertiary" />
+                <Search className="text-text-tertiary h-6 w-6" />
                 <input
                   type="text"
                   value={searchValue}
                   onChange={handleSearch}
                   placeholder={localize('com_nav_tool_search')}
-                  className="w-64 rounded border border-border-medium bg-transparent px-2 py-1 text-text-primary focus:outline-none"
+                  className="border-border-medium text-text-primary w-64 rounded border bg-transparent px-2 py-1 focus:outline-none"
                 />
               </div>
               <div

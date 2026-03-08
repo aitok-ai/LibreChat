@@ -50,9 +50,9 @@ const CheckboxButton = React.forwardRef<
       className={cn(
         // Base styling from MultiSelect's selectClassName
         'group relative inline-flex items-center justify-center gap-1.5',
-        'rounded-full border border-border-medium text-sm font-medium',
+        'border-border-medium rounded-full border text-sm font-medium',
         'size-9 p-2 transition-all md:w-full md:p-3',
-        'bg-transparent shadow-sm hover:bg-surface-hover hover:shadow-md active:shadow-inner',
+        'hover:bg-surface-hover bg-transparent shadow-sm hover:shadow-md active:shadow-inner',
 
         // Checked state styling
         isChecked && isCheckedClassName && isCheckedClassName,

@@ -23,7 +23,7 @@ export default function VersionContent({
 
   if (!selectedAgentId) {
     return (
-      <div className="py-8 text-center text-text-secondary">
+      <div className="text-text-secondary py-8 text-center">
         {localize('com_ui_agent_version_no_agent')}
       </div>
     );
@@ -61,7 +61,7 @@ export default function VersionContent({
   }
 
   return (
-    <div className="py-8 text-center text-text-secondary">
+    <div className="text-text-secondary py-8 text-center">
       {localize('com_ui_agent_version_empty')}
     </div>
   );

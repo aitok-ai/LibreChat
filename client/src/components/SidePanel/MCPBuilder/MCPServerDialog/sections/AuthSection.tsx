@@ -79,7 +79,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
 
       {/* API Key Fields */}
       {authType === AuthTypeEnum.ServiceHttp && (
-        <div className="space-y-3 rounded-lg border border-border-light p-3">
+        <div className="border-border-light space-y-3 rounded-lg border p-3">
           {/* User provides own key checkbox */}
           <div className="flex items-center gap-2">
             <Checkbox
@@ -145,7 +145,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
 
       {/* OAuth Fields */}
       {authType === AuthTypeEnum.OAuth && (
-        <div className="space-y-3 rounded-lg border border-border-light p-3">
+        <div className="border-border-light space-y-3 rounded-lg border p-3">
           {/* Client ID & Secret in a grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -175,7 +175,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
                 <p
                   id="oauth-client-id-error"
                   role="alert"
-                  className="text-xs text-text-destructive"
+                  className="text-text-destructive text-xs"
                 >
                   {localize('com_ui_field_required')}
                 </p>
@@ -207,7 +207,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
                 <p
                   id="oauth-client-secret-error"
                   role="alert"
-                  className="text-xs text-text-destructive"
+                  className="text-text-destructive text-xs"
                 >
                   {localize('com_ui_field_required')}
                 </p>
@@ -259,7 +259,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
                   type="text"
                   readOnly
                   value={redirectUri}
-                  className="flex-1 text-xs text-text-secondary"
+                  className="text-text-secondary flex-1 text-xs"
                 />
                 <button
                   type="button"
@@ -268,7 +268,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
                     showToast({ message: localize('com_ui_copied_to_clipboard') });
                     copyLink(setIsCopying);
                   }}
-                  className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border-light text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
+                  className="border-border-light text-text-secondary hover:bg-surface-hover hover:text-text-primary flex size-10 shrink-0 items-center justify-center rounded-lg border transition-colors"
                   aria-label={localize('com_ui_copy_link')}
                 >
                   {isCopying ? <CopyCheck className="size-4" /> : <Copy className="size-4" />}

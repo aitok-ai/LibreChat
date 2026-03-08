@@ -100,14 +100,14 @@ interface CompactStatusDotProps {
 function CompactStatusDot({ serverStatus, isInitializing }: CompactStatusDotProps) {
   if (isInitializing) {
     return (
-      <div className="flex size-3.5 items-center justify-center rounded-full border-2 border-surface-secondary bg-blue-500">
+      <div className="border-surface-secondary flex size-3.5 items-center justify-center rounded-full border-2 bg-blue-500">
         <div className="size-1.5 animate-pulse rounded-full bg-white" />
       </div>
     );
   }
 
   if (!serverStatus) {
-    return <div className="size-3 rounded-full border-2 border-surface-secondary bg-gray-400" />;
+    return <div className="border-surface-secondary size-3 rounded-full border-2 bg-gray-400" />;
   }
 
   const { connectionState, requiresOAuth } = serverStatus;
@@ -124,7 +124,7 @@ function CompactStatusDot({ serverStatus, isInitializing }: CompactStatusDotProp
   }
 
   return (
-    <div className={cn('size-3 rounded-full border-2 border-surface-secondary', colorClass)} />
+    <div className={cn('border-surface-secondary size-3 rounded-full border-2', colorClass)} />
   );
 }
 
@@ -139,7 +139,7 @@ function LoadingStatusIcon({ serverName, onCancel, canCancel }: InitializingStat
         title={localize('com_ui_cancel')}
       >
         <div className="relative size-4">
-          <Spinner className="size-4 text-text-primary group-hover:opacity-0" />
+          <Spinner className="text-text-primary size-4 group-hover:opacity-0" />
           <X className="absolute inset-0 size-4 text-red-500 opacity-0 group-hover:opacity-100" />
         </div>
       </button>
@@ -149,7 +149,7 @@ function LoadingStatusIcon({ serverName, onCancel, canCancel }: InitializingStat
   return (
     <div className="flex size-6 items-center justify-center rounded p-1">
       <Spinner
-        className="size-4 text-text-primary"
+        className="text-text-primary size-4"
         aria-label={localize('com_nav_mcp_status_connecting', { 0: serverName })}
       />
     </div>
@@ -160,7 +160,7 @@ function ConnectingSpinner({ serverName }: { serverName: string }) {
   return (
     <div className="flex size-6 items-center justify-center rounded p-1">
       <Spinner
-        className="size-4 text-text-primary"
+        className="text-text-primary size-4"
         aria-label={localize('com_nav_mcp_status_connecting', { 0: serverName })}
       />
     </div>
@@ -173,10 +173,10 @@ function ConnectButton({ serverName, onConfigClick }: StatusIconProps) {
     <button
       type="button"
       onClick={onConfigClick}
-      className="flex size-6 items-center justify-center rounded p-1 hover:bg-surface-secondary"
+      className="hover:bg-surface-secondary flex size-6 items-center justify-center rounded p-1"
       aria-label={localize('com_nav_mcp_connect_server', { 0: serverName })}
     >
-      <PlugZap className="size-4 text-text-secondary" aria-hidden="true" />
+      <PlugZap className="text-text-secondary size-4" aria-hidden="true" />
     </button>
   );
 }
@@ -187,10 +187,10 @@ function ConfigureButton({ serverName, onConfigClick }: StatusIconProps) {
     <button
       type="button"
       onClick={onConfigClick}
-      className="flex size-6 items-center justify-center rounded p-1 hover:bg-surface-secondary"
+      className="hover:bg-surface-secondary flex size-6 items-center justify-center rounded p-1"
       aria-label={localize('com_nav_mcp_configure_server', { 0: serverName })}
     >
-      <SlidersHorizontal className="size-4 text-text-secondary" aria-hidden="true" />
+      <SlidersHorizontal className="text-text-secondary size-4" aria-hidden="true" />
     </button>
   );
 }

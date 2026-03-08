@@ -22,7 +22,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
             className="border-token-border-light text-token-text-tertiary border-b text-left text-xs"
           >
             {headerGroup.headers.map((header, j) => (
-              <th key={j} className="py-1 font-normal text-text-secondary-alt">
+              <th key={j} className="text-text-secondary-alt py-1 font-normal">
                 {header.isPlaceholder
                   ? null
                   : flexRender(header.column.columnDef.header, header.getContext())}

@@ -57,8 +57,8 @@ function FeedbackOptionButton({
   return (
     <button
       className={cn(
-        'flex w-full items-center gap-3 rounded-xl p-2 text-text-secondary transition-colors duration-200 hover:bg-surface-hover hover:text-text-primary',
-        active && 'bg-surface-hover font-semibold text-text-primary',
+        'text-text-secondary hover:bg-surface-hover hover:text-text-primary flex w-full items-center gap-3 rounded-xl p-2 transition-colors duration-200',
+        active && 'bg-surface-hover text-text-primary font-semibold',
       )}
       onClick={onClick}
       type="button"
@@ -163,7 +163,7 @@ function FeedbackButtons({
         gutter={8}
         portal
         unmountOnHide
-        className="popover-animate flex w-auto flex-col gap-1.5 overflow-hidden rounded-2xl border border-border-medium bg-surface-secondary p-1.5 shadow-lg"
+        className="popover-animate border-border-medium bg-surface-secondary flex w-auto flex-col gap-1.5 overflow-hidden rounded-2xl border p-1.5 shadow-lg"
       >
         <div className="flex flex-col items-stretch justify-center">
           {positiveTags.map((tag) => (
@@ -197,7 +197,7 @@ function FeedbackButtons({
         gutter={8}
         portal
         unmountOnHide
-        className="popover-animate flex w-auto flex-col gap-1.5 overflow-hidden rounded-2xl border border-border-medium bg-surface-secondary p-1.5 shadow-lg"
+        className="popover-animate border-border-medium bg-surface-secondary flex w-auto flex-col gap-1.5 overflow-hidden rounded-2xl border p-1.5 shadow-lg"
       >
         <div className="flex flex-col items-stretch justify-center">
           {negativeTags.map((tag) => (
@@ -315,11 +315,11 @@ export default function Feedback({
       )}
       <OGDialog open={openDialog} onOpenChange={setOpenDialog}>
         <OGDialogContent className="w-11/12 max-w-lg">
-          <OGDialogTitle className="text-token-text-primary text-lg font-semibold leading-6">
+          <OGDialogTitle className="text-token-text-primary text-lg leading-6 font-semibold">
             {localize('com_ui_feedback_more_information')}
           </OGDialogTitle>
           <textarea
-            className="w-full rounded-xl border border-border-light bg-transparent p-2 text-text-primary"
+            className="border-border-light text-text-primary w-full rounded-xl border bg-transparent p-2"
             value={feedback?.text || ''}
             onChange={handleTextChange}
             rows={4}

@@ -170,7 +170,7 @@ export default function Leaderboard() {
     <div className="flex h-full flex-col items-center overflow-y-auto pt-0 text-sm dark:bg-gray-800">
       <h1
         id="landing-title"
-        className="mb-5 ml-auto mr-auto mt-3 flex items-center justify-center gap-2 text-center text-4xl font-semibold dark:text-gray-200 sm:mb-8 md:mt-[5vh]"
+        className="mt-3 mr-auto mb-5 ml-auto flex items-center justify-center gap-2 text-center text-4xl font-semibold sm:mb-8 md:mt-[5vh] dark:text-gray-200"
       >
         邀请排行榜
       </h1>

@@ -76,7 +76,7 @@ const TermsAndConditionsModal = ({
             className="max-h-[60vh] overflow-y-auto p-4"
             aria-label={localize('com_ui_terms_and_conditions')}
           >
-            <div className="prose dark:prose-invert w-full max-w-none !text-text-primary">
+            <div className="prose dark:prose-invert !text-text-primary w-full max-w-none">
               {content !== '' ? (
                 <MarkdownLite content={content} />
               ) : (
@@ -89,13 +89,13 @@ const TermsAndConditionsModal = ({
           <>
             <button
               onClick={handleDecline}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-border-heavy bg-surface-secondary px-4 py-2 text-sm text-text-primary hover:bg-surface-active"
+              className="border-border-heavy bg-surface-secondary text-text-primary hover:bg-surface-active inline-flex h-10 items-center justify-center rounded-lg border px-4 py-2 text-sm"
             >
               {localize('com_ui_decline')}
             </button>
             <button
               onClick={handleAccept}
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-border-heavy bg-surface-secondary px-4 py-2 text-sm text-text-primary hover:bg-green-500 hover:text-white focus:bg-green-500 focus:text-white dark:hover:bg-green-600 dark:focus:bg-green-600"
+              className="border-border-heavy bg-surface-secondary text-text-primary inline-flex h-10 items-center justify-center rounded-lg border px-4 py-2 text-sm hover:bg-green-500 hover:text-white focus:bg-green-500 focus:text-white dark:hover:bg-green-600 dark:focus:bg-green-600"
             >
               {localize('com_ui_accept')}
             </button>

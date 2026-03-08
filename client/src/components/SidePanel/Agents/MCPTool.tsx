@@ -91,7 +91,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
   const statusIcon = statusIconProps && (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="cursor-pointer rounded p-0.5 hover:bg-surface-secondary"
+      className="hover:bg-surface-secondary cursor-pointer rounded p-0.5"
     >
       <MCPServerStatusIcon {...statusIconProps} />
     </div>
@@ -102,7 +102,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
       <Accordion type="single" value={accordionValue} onValueChange={setAccordionValue} collapsible>
         <AccordionItem value={currentServerName} className="group relative w-full border-none">
           <div
-            className="relative flex w-full items-center gap-1 rounded-lg p-1 hover:bg-surface-primary-alt"
+            className="hover:bg-surface-primary-alt relative flex w-full items-center gap-1 rounded-lg p-1"
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
             onFocus={() => setIsFocused(true)}
@@ -114,7 +114,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
           >
             <AccordionPrimitive.Header asChild>
               <div
-                className="flex grow cursor-pointer select-none items-center gap-1 rounded bg-transparent p-0 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                className="focus:ring-ring flex grow cursor-pointer items-center gap-1 rounded bg-transparent p-0 text-left transition-colors select-none focus:ring-2 focus:ring-offset-1 focus:outline-none"
                 onClick={() => setAccordionValue((prev) => (prev ? '' : currentServerName))}
               >
                 {statusIcon && <div className="flex items-center">{statusIcon}</div>}
@@ -166,7 +166,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
                               updateFormTools(newSelectedTools);
                             }}
                             className={cn(
-                              'h-4 w-4 rounded border border-border-medium transition-all duration-200 hover:border-border-heavy',
+                              'border-border-medium hover:border-border-heavy h-4 w-4 rounded border transition-all duration-200',
                               isExpanded ? 'visible' : 'pointer-events-none invisible',
                             )}
                             onClick={(e) => e.stopPropagation()}
@@ -205,7 +205,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
                             aria-pressed={allDeferred}
                             className={cn(
                               'flex h-7 w-7 items-center justify-center rounded transition-colors duration-200',
-                              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+                              'focus:ring-ring focus:ring-2 focus:ring-offset-1 focus:outline-none',
                               isExpanded ? 'visible' : 'pointer-events-none invisible',
                               allDeferred
                                 ? 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30'
@@ -245,7 +245,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
                             aria-pressed={allProgrammatic}
                             className={cn(
                               'flex h-7 w-7 items-center justify-center rounded transition-colors duration-200',
-                              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+                              'focus:ring-ring focus:ring-2 focus:ring-offset-1 focus:outline-none',
                               isExpanded ? 'visible' : 'pointer-events-none invisible',
                               allProgrammatic
                                 ? 'bg-violet-500/20 text-violet-500 hover:bg-violet-500/30'
@@ -275,7 +275,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
                               type="button"
                               onClick={(e) => e.stopPropagation()}
                               className={cn(
-                                'flex h-7 w-7 items-center justify-center rounded transition-colors duration-200 hover:bg-surface-active-alt focus:translate-x-0 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+                                'hover:bg-surface-active-alt focus:ring-ring flex h-7 w-7 items-center justify-center rounded transition-colors duration-200 focus:translate-x-0 focus:opacity-100 focus:ring-2 focus:ring-offset-1 focus:outline-none',
                                 isExpanded && 'bg-surface-active-alt',
                               )}
                               aria-label={
@@ -303,7 +303,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
                           <OGDialogTrigger asChild>
                             <button
                               type="button"
-                              className="flex h-7 w-7 items-center justify-center rounded transition-colors duration-200 hover:bg-surface-active-alt focus:translate-x-0 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                              className="hover:bg-surface-active-alt focus:ring-ring flex h-7 w-7 items-center justify-center rounded transition-colors duration-200 focus:translate-x-0 focus:opacity-100 focus:ring-2 focus:ring-offset-1 focus:outline-none"
                               onClick={(e) => e.stopPropagation()}
                               aria-label={`Delete ${currentServerName}`}
                               tabIndex={0}
@@ -321,7 +321,7 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
             </AccordionPrimitive.Header>
           </div>
 
-          <AccordionContent className="relative ml-1 pt-1 before:absolute before:bottom-2 before:left-0 before:top-0 before:w-0.5 before:bg-border-medium">
+          <AccordionContent className="before:bg-border-medium relative ml-1 pt-1 before:absolute before:top-0 before:bottom-2 before:left-0 before:w-0.5">
             <div className="space-y-1">
               {tools.map((tool) => (
                 <MCPToolItem

@@ -59,7 +59,7 @@ export default function PublicSharingToggle({
             <div className="flex items-center gap-2">
               <Label
                 htmlFor="share-everyone-toggle"
-                className="cursor-pointer text-sm font-medium text-text-primary"
+                className="text-text-primary cursor-pointer text-sm font-medium"
               >
                 {localize('com_ui_share_everyone')}
               </Label>
@@ -102,13 +102,13 @@ export default function PublicSharingToggle({
                   'transition-all duration-300',
                   isPublic
                     ? 'scale-100 text-blue-600 dark:text-blue-500'
-                    : 'scale-95 text-text-secondary',
+                    : 'text-text-secondary scale-95',
                 )}
               >
                 <Shield className="size-5" />
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="permission-level" className="text-sm font-medium text-text-primary">
+                <Label htmlFor="permission-level" className="text-text-primary text-sm font-medium">
                   {localize('com_ui_everyone_permission_level')}
                 </Label>
               </div>

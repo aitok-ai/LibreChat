@@ -23,7 +23,7 @@ const AnimatedSearchInput = ({
       <div className="relative rounded-lg transition-all duration-500 ease-in-out">
         <div className="relative">
           {/* Icon on the left */}
-          <div className="absolute left-3 top-1/2 z-50 -translate-y-1/2">
+          <div className="absolute top-1/2 left-3 z-50 -translate-y-1/2">
             <Search
               className={cn(
                 `h-4 w-4 transition-all duration-500 ease-in-out`,
@@ -39,7 +39,7 @@ const AnimatedSearchInput = ({
             onChange={onChange}
             placeholder={placeholder}
             aria-label={localize('com_ui_search')}
-            className={`peer relative z-20 w-full rounded-lg bg-surface-secondary py-2 pl-10 outline-none backdrop-blur-sm transition-all duration-500 ease-in-out placeholder:text-gray-500 focus:ring-ring`}
+            className={`peer bg-surface-secondary focus:ring-ring relative z-20 w-full rounded-lg py-2 pl-10 backdrop-blur-sm transition-all duration-500 ease-in-out outline-none placeholder:text-gray-500`}
           />
 
           {/* Gradient overlay */}
@@ -49,7 +49,7 @@ const AnimatedSearchInput = ({
 
           {/* Animated loading indicator */}
           <div
-            className={`absolute right-3 top-1/2 z-20 -translate-y-1/2 transition-all duration-500 ease-in-out ${isSearching && hasValue ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} `}
+            className={`absolute top-1/2 right-3 z-20 -translate-y-1/2 transition-all duration-500 ease-in-out ${isSearching && hasValue ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} `}
           >
             <div className="relative h-2 w-2">
               <div className="absolute inset-0 animate-ping rounded-full bg-blue-500/60" />

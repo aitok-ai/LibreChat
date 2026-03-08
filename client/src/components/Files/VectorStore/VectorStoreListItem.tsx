@@ -18,7 +18,7 @@ export default function VectorStoreListItem({
       onClick={() => {
         navigate('vs_id_abcdef');
       }}
-      className="w-100 mt-2 flex cursor-pointer flex-row justify-around rounded-md border border-0 bg-white p-4 transition duration-300 ease-in-out hover:bg-slate-200"
+      className="mt-2 flex w-100 cursor-pointer flex-row justify-around rounded-md border border-0 bg-white p-4 transition duration-300 ease-in-out hover:bg-slate-200"
     >
       <div className="flex w-1/2 flex-col justify-around align-middle">
         <strong>{vectorStore.name}</strong>

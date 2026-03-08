@@ -42,7 +42,7 @@ const SpecIcon: React.FC<SpecIconProps> = ({ currentSpec, endpointsConfig }) => 
       endpoint={endpoint}
       context="menu-item"
       iconURL={endpointIconURL}
-      className="icon-md shrink-0 text-text-primary"
+      className="icon-md text-text-primary shrink-0"
     />
   );
 };

@@ -98,7 +98,7 @@ const OGDialogTemplate = forwardRef((props: DialogTemplateProps, ref: Ref<HTMLDi
         } flex h-10 items-center justify-center rounded-lg border-none px-4 py-2 text-sm disabled:opacity-80 max-sm:order-first max-sm:w-full sm:order-none`}
       >
         {isLoading === true ? (
-          <Spinner className="size-4 text-text-primary" />
+          <Spinner className="text-text-primary size-4" />
         ) : (
           (selectText as React.JSX.Element)
         )}
@@ -113,7 +113,7 @@ const OGDialogTemplate = forwardRef((props: DialogTemplateProps, ref: Ref<HTMLDi
       overlayClassName={overlayClassName}
       showCloseButton={showCloseButton}
       ref={ref}
-      className={cn('w-11/12 border-none bg-background text-foreground', className ?? '')}
+      className={cn('bg-background text-foreground w-11/12 border-none', className ?? '')}
       onClick={(e) => e.stopPropagation()}
     >
       <OGDialogHeader className={cn(headerClassName ?? '')}>

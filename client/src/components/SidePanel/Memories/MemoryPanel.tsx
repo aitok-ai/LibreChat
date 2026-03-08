@@ -112,7 +112,7 @@ export default function MemoryPanel() {
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-sm text-text-secondary">{localize('com_ui_no_read_access')}</p>
+          <p className="text-text-secondary text-sm">{localize('com_ui_no_read_access')}</p>
         </div>
       </div>
     );
@@ -207,7 +207,7 @@ export default function MemoryPanel() {
                 >
                   {localize('com_ui_prev')}
                 </Button>
-                <div className="whitespace-nowrap text-sm" aria-live="polite">
+                <div className="text-sm whitespace-nowrap" aria-live="polite">
                   {pageIndex + 1} / {totalPages}
                 </div>
                 <Button

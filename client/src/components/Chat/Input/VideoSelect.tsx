@@ -56,7 +56,7 @@ export default function VideoSelect() {
           <Ariakit.MenuButton
             className={cn(
               'group relative inline-flex items-center justify-center gap-1.5',
-              'border border-border-medium text-sm font-medium transition-all',
+              'border-border-medium border text-sm font-medium transition-all',
               'h-9 min-w-9 rounded-full bg-transparent px-2.5 shadow-sm',
               'hover:bg-surface-hover hover:shadow-md active:shadow-inner',
               'md:w-fit md:justify-start md:px-3',
@@ -69,22 +69,22 @@ export default function VideoSelect() {
           className={cn(
             'flex items-center justify-center',
             videoMode &&
-              'relative h-[22px] w-[22px] rounded-full border border-border-medium bg-surface-secondary',
+              'border-border-medium bg-surface-secondary relative h-[22px] w-[22px] rounded-full border',
           )}
         >
           <VideoIcon
             className={cn(
-              videoMode ? 'h-[18px] w-[18px] text-text-primary' : 'h-5 w-5 text-text-secondary',
+              videoMode ? 'text-text-primary h-[18px] w-[18px]' : 'text-text-secondary h-5 w-5',
             )}
             aria-hidden="true"
           />
         </div>
-        <span className="hidden truncate text-text-primary md:block">
+        <span className="text-text-primary hidden truncate md:block">
           {displayText ?? localize('com_ui_video')}
         </span>
         <ChevronDown
           className={cn(
-            'hidden h-3 w-3 text-text-secondary transition-transform md:block',
+            'text-text-secondary hidden h-3 w-3 transition-transform md:block',
             isOpen && 'rotate-180',
           )}
         />
@@ -95,8 +95,8 @@ export default function VideoSelect() {
         gutter={8}
         aria-label={localize('com_ui_video')}
         className={cn(
-          'z-50 flex min-w-[260px] max-w-[320px] flex-col rounded-xl',
-          'border border-border-light bg-presentation p-1.5 shadow-lg',
+          'z-50 flex max-w-[320px] min-w-[260px] flex-col rounded-xl',
+          'border-border-light bg-presentation border p-1.5 shadow-lg',
           'origin-top opacity-0 transition-[opacity,transform] duration-200 ease-out',
           'data-[enter]:scale-100 data-[enter]:opacity-100',
           'scale-95 data-[leave]:scale-95 data-[leave]:opacity-0',
@@ -110,19 +110,19 @@ export default function VideoSelect() {
           onChange={() => setVideoMode(!videoMode)}
           className={cn(
             'group flex w-full cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2',
-            'outline-none transition-all duration-150',
+            'transition-all duration-150 outline-none',
             'hover:bg-surface-hover data-[active-item]:bg-surface-hover',
             videoMode && 'bg-surface-active-alt',
           )}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-tertiary">
-            <VideoIcon className="h-5 w-5 text-text-secondary" />
+          <div className="bg-surface-tertiary flex h-8 w-8 items-center justify-center rounded-lg">
+            <VideoIcon className="text-text-secondary h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <span className="truncate text-sm font-medium text-text-primary">
+            <span className="text-text-primary truncate text-sm font-medium">
               {localize('com_ui_video_enable')}
             </span>
-            <p className="truncate text-xs text-text-secondary">
+            <p className="text-text-secondary truncate text-xs">
               {localize('com_ui_video_enable_desc')}
             </p>
           </div>
@@ -139,9 +139,9 @@ export default function VideoSelect() {
           </span>
         </Ariakit.MenuItemCheckbox>
 
-        <div className="my-1 h-px bg-border-light" />
+        <div className="bg-border-light my-1 h-px" />
 
-        <div className="px-2.5 pb-1 pt-1 text-xs font-medium text-text-secondary">
+        <div className="text-text-secondary px-2.5 pt-1 pb-1 text-xs font-medium">
           {localize('com_ui_video_template')}
         </div>
         {VIDEO_TEMPLATE_OPTIONS.map((option) => {
@@ -153,22 +153,22 @@ export default function VideoSelect() {
               onClick={() => setVideoTemplate(option.value as typeof videoTemplate)}
               className={cn(
                 'flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-2',
-                'outline-none transition-all duration-150',
+                'transition-all duration-150 outline-none',
                 'hover:bg-surface-hover data-[active-item]:bg-surface-hover',
                 selected && 'bg-surface-active-alt',
               )}
             >
-              <span className="truncate text-sm text-text-primary">
+              <span className="text-text-primary truncate text-sm">
                 {localize(option.labelKey as Parameters<typeof localize>[0])}
               </span>
-              {selected && <Check className="h-4 w-4 text-text-secondary" />}
+              {selected && <Check className="text-text-secondary h-4 w-4" />}
             </Ariakit.MenuItem>
           );
         })}
 
-        <div className="my-1 h-px bg-border-light" />
+        <div className="bg-border-light my-1 h-px" />
 
-        <div className="px-2.5 pb-1 pt-1 text-xs font-medium text-text-secondary">
+        <div className="text-text-secondary px-2.5 pt-1 pb-1 text-xs font-medium">
           {localize('com_ui_video_platform')}
         </div>
         {VIDEO_PRESET_OPTIONS.map((option) => {
@@ -180,23 +180,23 @@ export default function VideoSelect() {
               onClick={() => setVideoPreset(option.value as typeof videoPreset)}
               className={cn(
                 'flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-2',
-                'outline-none transition-all duration-150',
+                'transition-all duration-150 outline-none',
                 'hover:bg-surface-hover data-[active-item]:bg-surface-hover',
                 selected && 'bg-surface-active-alt',
               )}
             >
-              <span className="truncate text-sm text-text-primary">
+              <span className="text-text-primary truncate text-sm">
                 {localize(option.labelKey as Parameters<typeof localize>[0])}
               </span>
-              {selected && <Check className="h-4 w-4 text-text-secondary" />}
+              {selected && <Check className="text-text-secondary h-4 w-4" />}
             </Ariakit.MenuItem>
           );
         })}
 
         {jobState.jobId && jobState.step === 'package' && jobState.stepStatus === 'completed' && (
           <>
-            <div className="my-1 h-px bg-border-light" />
-            <div className="px-2.5 py-2 text-xs text-text-secondary">
+            <div className="bg-border-light my-1 h-px" />
+            <div className="text-text-secondary px-2.5 py-2 text-xs">
               <a
                 href={downloadVideoJobZip(jobState.jobId)}
                 className="text-blue-500 hover:underline"

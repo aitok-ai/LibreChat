@@ -36,18 +36,18 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
         href={source.link}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex w-full flex-col rounded-lg bg-surface-primary-contrast px-3 py-2 text-sm transition-all duration-300 hover:bg-surface-tertiary"
+        className="bg-surface-primary-contrast hover:bg-surface-tertiary flex w-full flex-col rounded-lg px-3 py-2 text-sm transition-all duration-300"
       >
         <div className="flex items-center gap-2">
           <FaviconImage domain={domain} />
-          <span className="truncate text-xs font-medium text-text-secondary">{domain}</span>
+          <span className="text-text-secondary truncate text-xs font-medium">{domain}</span>
         </div>
         <div className="mt-1">
-          <span className="line-clamp-2 text-sm font-medium text-text-primary md:line-clamp-3">
+          <span className="text-text-primary line-clamp-2 text-sm font-medium md:line-clamp-3">
             {source.title || source.link}
           </span>
           {'snippet' in source && source.snippet && (
-            <span className="mt-1 line-clamp-2 text-xs text-text-secondary md:line-clamp-3">
+            <span className="text-text-secondary mt-1 line-clamp-2 text-xs md:line-clamp-3">
               {source.snippet}
             </span>
           )}
@@ -66,21 +66,21 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
                 href={source.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-full w-full flex-col rounded-lg bg-surface-primary-contrast px-3 py-2 text-sm transition-all duration-300 hover:bg-surface-tertiary"
+                className="bg-surface-primary-contrast hover:bg-surface-tertiary flex h-full w-full flex-col rounded-lg px-3 py-2 text-sm transition-all duration-300"
               >
                 <div className="flex items-center gap-2">
                   <FaviconImage domain={domain} />
-                  <span className="truncate text-xs font-medium text-text-secondary">{domain}</span>
+                  <span className="text-text-secondary truncate text-xs font-medium">{domain}</span>
                 </div>
                 <div className="mt-1">
-                  <span className="line-clamp-2 text-sm font-medium text-text-primary md:line-clamp-3">
+                  <span className="text-text-primary line-clamp-2 text-sm font-medium md:line-clamp-3">
                     {source.title || source.link}
                   </span>
                 </div>
               </a>
             }
           />
-          <Ariakit.HovercardDisclosure className="absolute right-2 rounded-full text-text-primary focus:outline-none focus:ring-2 focus:ring-ring">
+          <Ariakit.HovercardDisclosure className="text-text-primary focus:ring-ring absolute right-2 rounded-full focus:ring-2 focus:outline-none">
             <VisuallyHidden>
               {localize('com_citation_more_details', { label: domain })}
             </VisuallyHidden>
@@ -89,7 +89,7 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
 
           <Ariakit.Hovercard
             gutter={16}
-            className="dark:shadow-lg-dark z-[999] w-[300px] max-w-[calc(100vw-2rem)] rounded-xl border border-border-medium bg-surface-secondary p-3 text-text-primary shadow-lg"
+            className="dark:shadow-lg-dark border-border-medium bg-surface-secondary text-text-primary z-[999] w-[300px] max-w-[calc(100vw-2rem)] rounded-xl border p-3 shadow-lg"
             portal={true}
             unmountOnHide={true}
           >
@@ -101,16 +101,16 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
                     href={source.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="line-clamp-2 cursor-pointer overflow-hidden text-sm font-bold text-[#0066cc] hover:underline dark:text-blue-400 md:line-clamp-3"
+                    className="line-clamp-2 cursor-pointer overflow-hidden text-sm font-bold text-[#0066cc] hover:underline md:line-clamp-3 dark:text-blue-400"
                   >
                     {source.attribution || domain}
                   </a>
                 </div>
-                <h4 className="mb-1.5 mt-0 text-xs text-text-primary md:text-sm">
+                <h4 className="text-text-primary mt-0 mb-1.5 text-xs md:text-sm">
                   {source.title || source.link}
                 </h4>
                 {'snippet' in source && source.snippet && (
-                  <span className="my-2 text-ellipsis break-all text-xs text-text-secondary md:text-sm">
+                  <span className="text-text-secondary my-2 text-xs break-all text-ellipsis md:text-sm">
                     {source.snippet}
                   </span>
                 )}
@@ -139,7 +139,7 @@ function ImageItem({ image }: { image: ImageResult }) {
       href={image.imageUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group overflow-hidden rounded-lg bg-surface-secondary transition-all duration-300 hover:bg-surface-tertiary"
+      className="group bg-surface-secondary hover:bg-surface-tertiary overflow-hidden rounded-lg transition-all duration-300"
     >
       {image.imageUrl && (
         <div className="relative aspect-square w-full overflow-hidden">
@@ -149,7 +149,7 @@ function ImageItem({ image }: { image: ImageResult }) {
             className="size-full object-cover"
           />
           {image.title && (
-            <div className="absolute bottom-0 left-0 right-0 w-full border-none bg-gray-900/80 p-1 text-xs font-medium text-white backdrop-blur-sm">
+            <div className="absolute right-0 bottom-0 left-0 w-full border-none bg-gray-900/80 p-1 text-xs font-medium text-white backdrop-blur-sm">
               <span className="truncate">{image.title}</span>
             </div>
           )}
@@ -286,7 +286,7 @@ const FileItem = React.memo(function FileItem({
       <button
         onClick={isLocalFile ? undefined : handleDownload}
         disabled={isLoading}
-        className={`flex w-full flex-col rounded-lg bg-surface-primary-contrast px-3 py-2 text-sm transition-all duration-300 disabled:opacity-50 ${
+        className={`bg-surface-primary-contrast flex w-full flex-col rounded-lg px-3 py-2 text-sm transition-all duration-300 disabled:opacity-50 ${
           isLocalFile ? 'cursor-default' : 'hover:bg-surface-tertiary'
         }`}
         aria-label={
@@ -295,23 +295,23 @@ const FileItem = React.memo(function FileItem({
       >
         <div className="flex items-center gap-2">
           <span className="text-base">{fileIcon}</span>
-          <span className="truncate text-xs font-medium text-text-secondary">
+          <span className="text-text-secondary truncate text-xs font-medium">
             {localize('com_sources_agent_file')}
           </span>
           {!isLocalFile && <Download className="ml-auto h-3 w-3" aria-hidden="true" />}
         </div>
         <div className="mt-1 min-w-0">
-          <span className="line-clamp-2 break-all text-left text-sm font-medium text-text-primary md:line-clamp-3">
+          <span className="text-text-primary line-clamp-2 text-left text-sm font-medium break-all md:line-clamp-3">
             {file.originalname ?? file.filename}
           </span>
           {file.pages && file.pages.length > 0 && (
-            <span className="mt-1 line-clamp-1 text-left text-xs text-text-secondary">
+            <span className="text-text-secondary mt-1 line-clamp-1 text-left text-xs">
               {localize('com_sources_pages')}:{' '}
               {sortPagesByRelevance(file.pages, file.pageRelevance).join(', ')}
             </span>
           )}
           {file.bytes && (
-            <span className="mt-1 line-clamp-1 text-xs text-text-secondary">
+            <span className="text-text-secondary mt-1 line-clamp-1 text-xs">
               {(file.bytes / 1024).toFixed(1)} KB
             </span>
           )}
@@ -325,7 +325,7 @@ const FileItem = React.memo(function FileItem({
     <button
       onClick={isLocalFile ? undefined : handleDownload}
       disabled={isLoading}
-      className={`flex h-full w-full flex-col rounded-lg bg-surface-primary-contrast px-3 py-2 text-sm transition-all duration-300 disabled:opacity-50 ${
+      className={`bg-surface-primary-contrast flex h-full w-full flex-col rounded-lg px-3 py-2 text-sm transition-all duration-300 disabled:opacity-50 ${
         isLocalFile ? 'cursor-default' : 'hover:bg-surface-tertiary'
       }`}
       aria-label={
@@ -334,17 +334,17 @@ const FileItem = React.memo(function FileItem({
     >
       <div className="flex items-center gap-2">
         <span className="text-base">{fileIcon}</span>
-        <span className="truncate text-xs font-medium text-text-secondary">
+        <span className="text-text-secondary truncate text-xs font-medium">
           {localize('com_sources_agent_file')}
         </span>
         {!isLocalFile && <Download className="ml-auto h-3 w-3" aria-hidden="true" />}
       </div>
       <div className="mt-1 min-w-0">
-        <span className="line-clamp-2 break-all text-left text-sm font-medium text-text-primary md:line-clamp-3">
+        <span className="text-text-primary line-clamp-2 text-left text-sm font-medium break-all md:line-clamp-3">
           {file.originalname ?? file.filename}
         </span>
         {file.pages && file.pages.length > 0 && (
-          <span className="mt-1 line-clamp-1 text-left text-xs text-text-secondary">
+          <span className="text-text-secondary mt-1 line-clamp-1 text-left text-xs">
             {localize('com_sources_pages')}:{' '}
             {sortPagesByRelevance(file.pages, file.pageRelevance).join(', ')}
           </span>
@@ -410,22 +410,22 @@ const SourcesGroup = React.memo(function SourcesGroup({
           </div>
         ))}
         {hasMoreSources && (
-          <OGDialogTrigger className="flex flex-col rounded-lg bg-surface-primary-contrast px-3 py-2 text-sm transition-all duration-300 hover:bg-surface-tertiary">
+          <OGDialogTrigger className="bg-surface-primary-contrast hover:bg-surface-tertiary flex flex-col rounded-lg px-3 py-2 text-sm transition-all duration-300">
             <div className="flex items-center gap-2">
               <StackedFavicons sources={remainingSources} />
-              <span className="truncate text-xs font-medium text-text-secondary">
+              <span className="text-text-secondary truncate text-xs font-medium">
                 {localize('com_sources_more_sources', { count: remainingSources.length })}
               </span>
             </div>
           </OGDialogTrigger>
         )}
-        <OGDialogContent className="flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg bg-surface-primary p-0 md:max-w-[600px]">
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-light bg-surface-primary px-3 py-2">
+        <OGDialogContent className="bg-surface-primary flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[600px]">
+          <div className="border-border-light bg-surface-primary sticky top-0 z-10 flex items-center justify-between border-b px-3 py-2">
             <OGDialogTitle className="text-base font-medium">
               {localize('com_sources_title')}
             </OGDialogTitle>
             <OGDialogClose
-              className="rounded-full p-1 text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+              className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary rounded-full p-1"
               aria-label={localize('com_ui_close')}
             >
               <X className="h-4 w-4" aria-hidden="true" />
@@ -439,22 +439,22 @@ const SourcesGroup = React.memo(function SourcesGroup({
                   href={source.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-surface-tertiary"
+                  className="hover:bg-surface-tertiary flex gap-2 rounded-lg px-2 py-2 transition-colors"
                 >
                   <FaviconImage
                     domain={getCleanDomain(source.link)}
                     className="h-5 w-5 flex-shrink-0"
                   />
                   <div className="min-w-0 flex-1">
-                    <h3 className="mb-0.5 truncate text-sm font-medium text-text-primary">
+                    <h3 className="text-text-primary mb-0.5 truncate text-sm font-medium">
                       {source.title || source.link}
                     </h3>
                     {'snippet' in source && source.snippet && (
-                      <p className="mb-1 line-clamp-2 text-xs text-text-secondary md:line-clamp-3">
+                      <p className="text-text-secondary mb-1 line-clamp-2 text-xs md:line-clamp-3">
                         {source.snippet}
                       </p>
                     )}
-                    <span className="text-xs text-text-secondary-alt">
+                    <span className="text-text-secondary-alt text-xs">
                       {getCleanDomain(source.link)}
                     </span>
                   </div>
@@ -502,26 +502,26 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
           </div>
         ))}
         {hasMoreFiles && (
-          <OGDialogTrigger className="flex flex-col rounded-lg bg-surface-primary-contrast px-3 py-2 text-sm transition-all duration-300 hover:bg-surface-tertiary">
+          <OGDialogTrigger className="bg-surface-primary-contrast hover:bg-surface-tertiary flex flex-col rounded-lg px-3 py-2 text-sm transition-all duration-300">
             <div className="flex items-center gap-2">
               <div className="relative flex">
                 {remainingFiles.slice(0, 3).map((_, i) => (
                   <File key={`file-icon-${i}`} className={`h-4 w-4 ${i > 0 ? 'ml-[-6px]' : ''}`} />
                 ))}
               </div>
-              <span className="truncate text-xs font-medium text-text-secondary">
+              <span className="text-text-secondary truncate text-xs font-medium">
                 {localize('com_sources_more_files', { count: remainingFiles.length })}
               </span>
             </div>
           </OGDialogTrigger>
         )}
-        <OGDialogContent className="flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg bg-surface-primary p-0 md:max-w-[600px]">
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-light bg-surface-primary px-3 py-2">
+        <OGDialogContent className="bg-surface-primary flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[600px]">
+          <div className="border-border-light bg-surface-primary sticky top-0 z-10 flex items-center justify-between border-b px-3 py-2">
             <OGDialogTitle className="text-base font-medium">
               {localize('com_sources_agent_files')}
             </OGDialogTitle>
             <OGDialogClose
-              className="rounded-full p-1 text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+              className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary rounded-full p-1"
               aria-label={localize('com_ui_close')}
             >
               <X className="h-4 w-4" aria-hidden="true" />
@@ -548,7 +548,7 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
 
 function TabWithIcon({ label, icon }: { label: string; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 rounded-md px-3 py-1 text-sm transition-colors hover:bg-surface-tertiary hover:text-text-primary">
+    <div className="hover:bg-surface-tertiary hover:text-text-primary flex items-center gap-2 rounded-md px-3 py-1 text-sm transition-colors">
       {React.cloneElement(icon as React.ReactElement, { size: 14, 'aria-hidden': true })}
       <span>{label}</span>
     </div>
@@ -740,16 +740,16 @@ export default function Sources(props: SourcesProps) {
 
   const fallbackUI = (
     <div
-      className="flex flex-col items-center justify-center rounded-lg border border-border-medium bg-surface-secondary p-4 text-center"
+      className="border-border-medium bg-surface-secondary flex flex-col items-center justify-center rounded-lg border p-4 text-center"
       role="alert"
       aria-live="polite"
     >
-      <div className="mb-2 text-sm text-text-secondary">
+      <div className="text-text-secondary mb-2 text-sm">
         {localize('com_sources_error_fallback')}
       </div>
       <button
         onClick={() => window.location.reload()}
-        className="hover:bg-surface-primary-hover rounded-md bg-surface-primary px-3 py-1 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+        className="hover:bg-surface-primary-hover bg-surface-primary text-text-primary focus:ring-ring rounded-md px-3 py-1 text-sm focus:ring-2 focus:outline-none"
         aria-label={localize('com_sources_reload_page')}
       >
         {localize('com_ui_refresh')}

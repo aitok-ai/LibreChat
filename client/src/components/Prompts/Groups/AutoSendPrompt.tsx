@@ -24,7 +24,7 @@ export default function AutoSendPrompt({
   return (
     <div
       className={cn(
-        'flex select-none items-center justify-end gap-2 text-right text-sm',
+        'flex items-center justify-end gap-2 text-right text-sm select-none',
         className,
       )}
     >

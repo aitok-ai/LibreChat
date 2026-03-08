@@ -46,7 +46,7 @@ export default function GroupSidePanel({
                 data-testid="close-prompts-panel-button"
                 aria-label={localize('com_nav_close_sidebar')}
                 aria-expanded={true}
-                className="rounded-full border-none bg-transparent p-2 hover:bg-surface-hover md:rounded-xl"
+                className="hover:bg-surface-hover rounded-full border-none bg-transparent p-2 md:rounded-xl"
                 onClick={onClose}
               >
                 <Sidebar />
@@ -65,7 +65,7 @@ export default function GroupSidePanel({
           />
         </div>
       </div>
-      <div className={cn(isChatRoute ? '' : 'px-2 pb-3 pt-2 md:px-0')}>
+      <div className={cn(isChatRoute ? '' : 'px-2 pt-2 pb-3 md:px-0')}>
         <PanelNavigation
           onPrevious={prevPage}
           onNext={nextPage}

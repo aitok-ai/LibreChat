@@ -38,7 +38,7 @@ export default function ConnectionSection() {
         className={cn(errors.url && 'border-border-destructive')}
       />
       {errors.url && (
-        <p id="url-error" role="alert" className="text-xs text-text-destructive">
+        <p id="url-error" role="alert" className="text-text-destructive text-xs">
           {errors.url.message}
         </p>
       )}

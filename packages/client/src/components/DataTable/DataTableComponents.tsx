@@ -60,7 +60,7 @@ const TableRowComponent = <TData extends Record<string, unknown>>(
       ref={ref}
       data-state={selected ? 'selected' : undefined}
       data-index={virtualIndex}
-      className="border-none hover:bg-surface-secondary"
+      className="hover:bg-surface-secondary border-none"
       style={style}
     >
       {row.getVisibleCells().map((cell) => {
@@ -140,7 +140,7 @@ export const SkeletonRows = memo(
   }) => (
     <>
       {Array.from({ length: count }, (_, index) => (
-        <TableRow key={`skeleton-${index}`} className="h-[56px] border-b border-border-light">
+        <TableRow key={`skeleton-${index}`} className="border-border-light h-[56px] border-b">
           {columns.map((column) => {
             const columnKey = String(
               column.id ?? ('accessorKey' in column && column.accessorKey) ?? '',

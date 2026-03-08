@@ -77,7 +77,7 @@ export const fileTableColumns: ColumnDef<TFile>[] = [
               return (
                 <span
                   key={index}
-                  className="ml-2 mt-2 flex w-fit flex-row items-center rounded-full bg-[#f5f5f5] px-2 text-gray-500"
+                  className="mt-2 ml-2 flex w-fit flex-row items-center rounded-full bg-[#f5f5f5] px-2 text-gray-500"
                 >
                   <PlusIcon className="h-3 w-3" />
                   &nbsp;
@@ -90,7 +90,7 @@ export const fileTableColumns: ColumnDef<TFile>[] = [
               return null;
             }
             return (
-              <span key={index} className="ml-2 mt-2 rounded-full bg-[#f2f8ec] px-2 text-[#91c561]">
+              <span key={index} className="mt-2 ml-2 rounded-full bg-[#f2f8ec] px-2 text-[#91c561]">
                 {vectorStore.name}
               </span>
             );

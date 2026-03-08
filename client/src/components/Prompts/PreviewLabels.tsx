@@ -44,7 +44,7 @@ const PromptForm = ({ selectedPrompt }: { selectedPrompt?: TPrompt }) => {
         {labels.length ? (
           labels.map((label, index) => (
             <label
-              className="mb-1 mr-1 flex items-center gap-x-2 rounded-full border px-2"
+              className="mr-1 mb-1 flex items-center gap-x-2 rounded-full border px-2"
               key={index}
             >
               {label}

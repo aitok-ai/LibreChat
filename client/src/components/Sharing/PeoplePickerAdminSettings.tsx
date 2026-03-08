@@ -165,7 +165,7 @@ const PeoplePickerAdminSettings = () => {
           {localize('com_ui_admin_settings')}
         </Button>
       </OGDialogTrigger>
-      <OGDialogContent className="w-full border-border-light bg-surface-primary text-text-primary lg:w-1/4">
+      <OGDialogContent className="border-border-light bg-surface-primary text-text-primary w-full lg:w-1/4">
         <OGDialogTitle>
           {localize('com_ui_admin_settings_section', { section: localize('com_ui_people_picker') })}
         </OGDialogTitle>
@@ -179,7 +179,7 @@ const PeoplePickerAdminSettings = () => {
               isOpen={isRoleMenuOpen}
               setIsOpen={setIsRoleMenuOpen}
               trigger={
-                <Ariakit.MenuButton className="inline-flex w-1/4 items-center justify-center rounded-lg border border-border-light bg-transparent px-2 py-1 text-text-primary transition-all ease-in-out hover:bg-surface-tertiary">
+                <Ariakit.MenuButton className="border-border-light text-text-primary hover:bg-surface-tertiary inline-flex w-1/4 items-center justify-center rounded-lg border bg-transparent px-2 py-1 transition-all ease-in-out">
                   {selectedRole}
                 </Ariakit.MenuButton>
               }

@@ -66,7 +66,7 @@ export function SourceHovercard({
               isFile ? (
                 <button
                   onClick={onClick}
-                  className="ml-1 inline-block h-5 max-w-36 cursor-pointer items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-xl border border-border-heavy bg-surface-secondary px-2 text-xs font-medium text-blue-600 no-underline transition-colors hover:bg-surface-hover dark:border-border-medium dark:text-blue-400 dark:hover:bg-surface-tertiary"
+                  className="border-border-heavy bg-surface-secondary hover:bg-surface-hover dark:border-border-medium dark:hover:bg-surface-tertiary ml-1 inline-block h-5 max-w-36 cursor-pointer items-center overflow-hidden rounded-xl border px-2 text-xs font-medium text-ellipsis whitespace-nowrap text-blue-600 no-underline transition-colors dark:text-blue-400"
                   onMouseEnter={onMouseEnter}
                   onMouseLeave={onMouseLeave}
                   title={
@@ -80,7 +80,7 @@ export function SourceHovercard({
                   href={source.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ml-1 inline-block h-5 max-w-36 cursor-pointer items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-xl border border-border-heavy bg-surface-secondary px-2 text-xs font-medium no-underline transition-colors hover:bg-surface-hover dark:border-border-medium dark:hover:bg-surface-tertiary"
+                  className="border-border-heavy bg-surface-secondary hover:bg-surface-hover dark:border-border-medium dark:hover:bg-surface-tertiary ml-1 inline-block h-5 max-w-36 cursor-pointer items-center overflow-hidden rounded-xl border px-2 text-xs font-medium text-ellipsis whitespace-nowrap no-underline transition-colors"
                   onMouseEnter={onMouseEnter}
                   onMouseLeave={onMouseLeave}
                 >
@@ -89,14 +89,14 @@ export function SourceHovercard({
               )
             }
           />
-          <Ariakit.HovercardDisclosure className="ml-0.5 rounded-full text-text-primary focus:outline-none focus:ring-2 focus:ring-ring">
+          <Ariakit.HovercardDisclosure className="text-text-primary focus:ring-ring ml-0.5 rounded-full focus:ring-2 focus:outline-none">
             <VisuallyHidden>{localize('com_citation_more_details', { label })}</VisuallyHidden>
             <ChevronDown className="icon-sm" aria-hidden="true" />
           </Ariakit.HovercardDisclosure>
 
           <Ariakit.Hovercard
             gutter={16}
-            className="dark:shadow-lg-dark z-[999] w-[300px] max-w-[calc(100vw-2rem)] rounded-xl border border-border-medium bg-surface-secondary p-3 text-text-primary shadow-lg"
+            className="dark:shadow-lg-dark border-border-medium bg-surface-secondary text-text-primary z-[999] w-[300px] max-w-[calc(100vw-2rem)] rounded-xl border p-3 shadow-lg"
             portal={true}
             unmountOnHide={true}
           >
@@ -106,7 +106,7 @@ export function SourceHovercard({
                 <span className="mb-2 flex items-center">
                   {isFile ? (
                     <div className="mr-2 flex h-4 w-4 items-center justify-center">
-                      <Paperclip className="h-3 w-3 text-text-secondary" />
+                      <Paperclip className="text-text-secondary h-3 w-3" />
                     </div>
                   ) : (
                     <FaviconImage domain={domain} className="mr-2" />
@@ -114,7 +114,7 @@ export function SourceHovercard({
                   {isFile ? (
                     <button
                       onClick={onClick}
-                      className="line-clamp-2 cursor-pointer overflow-hidden text-left text-sm font-bold text-[#0066cc] hover:underline dark:text-blue-400 md:line-clamp-3"
+                      className="line-clamp-2 cursor-pointer overflow-hidden text-left text-sm font-bold text-[#0066cc] hover:underline md:line-clamp-3 dark:text-blue-400"
                     >
                       {source.attribution || source.title || localize('com_file_source')}
                     </button>
@@ -123,7 +123,7 @@ export function SourceHovercard({
                       href={source.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="line-clamp-2 cursor-pointer overflow-hidden text-sm font-bold text-[#0066cc] hover:underline dark:text-blue-400 md:line-clamp-3"
+                      className="line-clamp-2 cursor-pointer overflow-hidden text-sm font-bold text-[#0066cc] hover:underline md:line-clamp-3 dark:text-blue-400"
                     >
                       {source.attribution || domain}
                     </a>
@@ -133,18 +133,18 @@ export function SourceHovercard({
                 {isFile ? (
                   <>
                     {source.snippet && (
-                      <span className="my-2 text-ellipsis break-all text-xs text-text-secondary md:text-sm">
+                      <span className="text-text-secondary my-2 text-xs break-all text-ellipsis md:text-sm">
                         {source.snippet}
                       </span>
                     )}
                   </>
                 ) : (
                   <>
-                    <h4 className="mb-1.5 mt-0 text-xs text-text-primary md:text-sm">
+                    <h4 className="text-text-primary mt-0 mb-1.5 text-xs md:text-sm">
                       {source.title || source.link}
                     </h4>
                     {source.snippet && (
-                      <span className="my-2 text-ellipsis break-all text-xs text-text-secondary md:text-sm">
+                      <span className="text-text-secondary my-2 text-xs break-all text-ellipsis md:text-sm">
                         {source.snippet}
                       </span>
                     )}

@@ -62,7 +62,7 @@ export default function PromptsView() {
 
   return (
     <PromptGroupsProvider>
-      <div className="flex h-screen w-full flex-col bg-surface-primary p-0 lg:p-2">
+      <div className="bg-surface-primary flex h-screen w-full flex-col p-0 lg:p-2">
         <DashBreadcrumb
           showToggle={isSmallerScreen && isDetailView}
           onToggle={togglePanel}
@@ -84,7 +84,7 @@ export default function PromptsView() {
               className={cn(
                 'transition-transform duration-300 ease-in-out',
                 isSmallerScreen && isDetailView
-                  ? 'fixed left-0 top-0 z-50 h-full w-[320px] bg-surface-primary'
+                  ? 'bg-surface-primary fixed top-0 left-0 z-50 h-full w-[320px]'
                   : 'flex',
               )}
             >

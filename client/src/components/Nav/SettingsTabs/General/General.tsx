@@ -180,7 +180,7 @@ function General() {
   );
 
   return (
-    <div className="flex flex-col gap-3 p-1 text-sm text-text-primary">
+    <div className="text-text-primary flex flex-col gap-3 p-1 text-sm">
       <div className="pb-3">
         <ThemeSelector theme={theme} onChange={changeTheme} />
       </div>

@@ -24,7 +24,7 @@ const InputWithLabel: FC<InputWithLabelProps> = forwardRef((props, ref) => {
         <Label htmlFor={id} className="text-left text-sm font-medium">
           {label}
         </Label>
-        {Label && <Label className="mx-1 text-right text-sm text-text-secondary">{subLabel}</Label>}
+        {Label && <Label className="text-text-secondary mx-1 text-right text-sm">{subLabel}</Label>}
         <br />
       </div>
       <div className="h-1" />

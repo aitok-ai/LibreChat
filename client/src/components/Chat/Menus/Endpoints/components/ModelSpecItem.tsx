@@ -40,14 +40,14 @@ export function ModelSpecItem({ spec, isSelected }: ModelSpecItemProps) {
         <div className="flex min-w-0 flex-col gap-1">
           <span className="truncate text-left">{spec.label}</span>
           {spec.description && (
-            <span className="break-words text-xs font-normal">{spec.description}</span>
+            <span className="text-xs font-normal break-words">{spec.description}</span>
           )}
         </div>
       </div>
       {isSelected && (
         <>
           <CheckCircle2
-            className="size-4 shrink-0 self-center text-text-primary"
+            className="text-text-primary size-4 shrink-0 self-center"
             aria-hidden="true"
           />
           <VisuallyHidden>{localize('com_a11y_selected')}</VisuallyHidden>

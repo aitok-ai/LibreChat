@@ -81,20 +81,20 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
     <HoverCard openDelay={50}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <label className="font-semibold text-text-primary">
+          <label className="text-text-primary font-semibold">
             {localize('com_ui_agent_chain')}
           </label>
           <HoverCardTrigger>
-            <CircleHelpIcon className="h-4 w-4 text-text-tertiary" />
+            <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
           </HoverCardTrigger>
         </div>
-        <div className="text-xs text-text-secondary">
+        <div className="text-text-secondary text-xs">
           {agentIds.length} / {MAX_AGENTS}
         </div>
       </div>
       <div className="space-y-1">
         {/* Current fixed agent */}
-        <div className="flex h-10 items-center justify-between rounded-md border border-border-medium bg-surface-primary-contrast px-3 py-2">
+        <div className="border-border-medium bg-surface-primary-contrast flex h-10 items-center justify-between rounded-md border px-3 py-2">
           <div className="flex items-center gap-2">
             <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full">
               <MessageIcon
@@ -107,15 +107,15 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
                 agent={currentAgentId ? agentsMap[currentAgentId] : undefined}
               />
             </div>
-            <div className="font-medium text-text-primary">
+            <div className="text-text-primary font-medium">
               {getAgentDetails(currentAgentId)?.name}
             </div>
           </div>
         </div>
-        {<Link2 className="mx-auto text-text-secondary" size={14} />}
+        {<Link2 className="text-text-secondary mx-auto" size={14} />}
         {agentIds.map((agentId, idx) => (
           <React.Fragment key={agentId}>
-            <div className="flex h-10 items-center gap-2 rounded-md border border-border-medium bg-surface-tertiary pr-2">
+            <div className="border-border-medium bg-surface-tertiary flex h-10 items-center gap-2 rounded-md border pr-2">
               <ControlCombobox
                 isCollapsed={false}
                 ariaLabel={localize('com_ui_agent_var', { 0: localize('com_ui_select') })}
@@ -136,7 +136,7 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
                     agent={agentId ? agentsMap[agentId] : undefined}
                   />
                 }
-                className="flex-1 border-border-heavy"
+                className="border-border-heavy flex-1"
                 containerClassName="px-0"
               />
               {/* Future Settings button? */}
@@ -144,7 +144,7 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
                 <Settings size={16} className="text-text-secondary" />
               </button> */}
               <button
-                className="rounded-xl p-1 transition hover:bg-surface-hover"
+                className="hover:bg-surface-hover rounded-xl p-1 transition"
                 onClick={() => removeAgentAt(idx)}
                 aria-label={localize('com_ui_remove_agent_from_chain', {
                   0: getAgentDetails(agentId)?.name || localize('com_ui_agent'),
@@ -154,14 +154,14 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
               </button>
             </div>
             {idx < agentIds.length - 1 && (
-              <Link2 className="mx-auto text-text-secondary" size={14} />
+              <Link2 className="text-text-secondary mx-auto" size={14} />
             )}
           </React.Fragment>
         ))}
 
         {agentIds.length < MAX_AGENTS && (
           <>
-            {agentIds.length > 0 && <Link2 className="mx-auto text-text-secondary" size={14} />}
+            {agentIds.length > 0 && <Link2 className="text-text-secondary mx-auto" size={14} />}
             <ControlCombobox
               isCollapsed={false}
               ariaLabel={localize('com_ui_agent_var', { 0: localize('com_ui_add') })}
@@ -170,7 +170,7 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
               selectPlaceholder={localize('com_ui_agent_var', { 0: localize('com_ui_add') })}
               searchPlaceholder={localize('com_ui_agent_var', { 0: localize('com_ui_search') })}
               items={selectableAgents}
-              className="h-10 w-full border-dashed border-border-heavy text-center text-text-secondary hover:text-text-primary"
+              className="border-border-heavy text-text-secondary hover:text-text-primary h-10 w-full border-dashed text-center"
               containerClassName="px-0"
               SelectIcon={<PlusCircle size={16} className="text-text-secondary" />}
             />
@@ -178,7 +178,7 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
         )}
 
         {agentIds.length >= MAX_AGENTS && (
-          <p className="pt-1 text-center text-xs italic text-text-tertiary">
+          <p className="text-text-tertiary pt-1 text-center text-xs italic">
             {localize('com_ui_agent_chain_max', { 0: MAX_AGENTS })}
           </p>
         )}
@@ -186,7 +186,7 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
       <HoverCardPortal>
         <HoverCardContent side={ESide.Top} className="w-80">
           <div className="space-y-2">
-            <p className="text-sm text-text-secondary">{localize('com_ui_agent_chain_info')}</p>
+            <p className="text-text-secondary text-sm">{localize('com_ui_agent_chain_info')}</p>
           </div>
         </HoverCardContent>
       </HoverCardPortal>

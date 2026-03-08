@@ -25,14 +25,14 @@ const FileContainer = ({
 
   return (
     <div
-      className={cn('group relative inline-block text-sm text-text-primary', containerClassName)}
+      className={cn('group text-text-primary relative inline-block text-sm', containerClassName)}
     >
       <button
         type="button"
         onClick={onClick}
         aria-label={displayName}
         className={cn(
-          'relative overflow-hidden rounded-2xl border border-border-light bg-surface-hover-alt',
+          'border-border-light bg-surface-hover-alt relative overflow-hidden rounded-2xl border',
           buttonClassName,
         )}
       >
@@ -43,7 +43,7 @@ const FileContainer = ({
               <div className="truncate font-medium" title={displayName}>
                 {displayName}
               </div>
-              <div className="truncate text-text-secondary" title={fileType.title}>
+              <div className="text-text-secondary truncate" title={fileType.title}>
                 {fileType.title}
               </div>
             </div>

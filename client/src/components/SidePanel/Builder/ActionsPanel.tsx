@@ -96,7 +96,7 @@ export default function ActionsPanel({
       <form className="h-full grow overflow-hidden">
         <div className="h-full overflow-auto px-2 pb-12 text-sm">
           <div className="relative flex flex-col items-center px-16 py-6 text-center">
-            <div className="absolute left-0 top-6">
+            <div className="absolute top-6 left-0">
               <button
                 type="button"
                 className="btn btn-neutral relative"
@@ -114,7 +114,7 @@ export default function ActionsPanel({
             {!!action && (
               <OGDialog>
                 <OGDialogTrigger asChild>
-                  <div className="absolute right-0 top-6">
+                  <div className="absolute top-6 right-0">
                     <button
                       type="button"
                       disabled={!(assistant_id ?? '') || !action.action_id}
@@ -158,7 +158,7 @@ export default function ActionsPanel({
             )}
 
             <div className="text-xl font-medium">{(action ? 'Edit' : 'Add') + ' ' + 'actions'}</div>
-            <div className="text-xs text-text-secondary">
+            <div className="text-text-secondary text-xs">
               {localize('com_assistants_actions_info')}
             </div>
             {/* <div className="text-sm text-text-secondary">

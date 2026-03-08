@@ -256,7 +256,7 @@ export default function GenericGrantAccessDialog({
           <Share2Icon className="icon-md h-4 w-4" />
         </span>
         {totalCurrentShares > 0 && (
-          <Label className="cursor-pointer text-sm font-medium text-text-secondary">
+          <Label className="text-text-secondary cursor-pointer text-sm font-medium">
             {totalCurrentShares}
           </Label>
         )}
@@ -283,7 +283,7 @@ export default function GenericGrantAccessDialog({
             {/* Search Bar with Default Permission Setting */}
             {hasPeoplePickerAccess && (
               <div className="space-y-2">
-                <h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-text-primary">
+                <h4 className="text-text-primary mb-2 flex items-center gap-2 text-sm font-medium">
                   <UserCheck className="h-4 w-4" aria-hidden="true" />
                   {localize('com_ui_user_group_permissions')} ( {allShares.length} )
                 </h4>
@@ -308,12 +308,12 @@ export default function GenericGrantAccessDialog({
 
                   if (allShares.length === 0 && !hasChanges) {
                     return (
-                      <div className="rounded-lg border-2 border-dashed border-border-light p-8 text-center">
-                        <Users className="mx-auto h-8 w-8 text-text-primary" aria-hidden="true" />
-                        <p className="mt-2 text-sm text-text-primary">
+                      <div className="border-border-light rounded-lg border-2 border-dashed p-8 text-center">
+                        <Users className="text-text-primary mx-auto h-8 w-8" aria-hidden="true" />
+                        <p className="text-text-primary mt-2 text-sm">
                           {localize('com_ui_no_individual_access')}
                         </p>
-                        <p className="mt-1 text-xs text-text-primary">
+                        <p className="text-text-primary mt-1 text-xs">
                           {localize('com_ui_search_above_to_add_people')}
                         </p>
                       </div>
@@ -323,7 +323,7 @@ export default function GenericGrantAccessDialog({
                   return (
                     <div className="space-y-2">
                       {!hasAtLeastOneOwner && hasChanges && (
-                        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-center">
+                        <div className="border-destructive/30 bg-destructive/10 rounded-lg border p-3 text-center">
                           <div className="flex items-center justify-center gap-2 text-sm text-red-600 dark:text-red-400">
                             <UserX className="h-4 w-4" aria-hidden="true" />
                             {localize('com_ui_at_least_one_owner_required')}
@@ -345,7 +345,7 @@ export default function GenericGrantAccessDialog({
 
           {canSharePublic && (
             <>
-              <div className="flex border-t border-border-light" />
+              <div className="border-border-light flex border-t" />
 
               {/* Public Access Section */}
               <PublicSharingToggle

@@ -23,7 +23,7 @@ export const SetupPhase: React.FC<SetupPhaseProps> = ({ isGenerating, onGenerate
 
   return (
     <motion.div {...fadeAnimation} className="space-y-6">
-      <div className="rounded-xl bg-surface-secondary p-6">
+      <div className="bg-surface-secondary rounded-xl p-6">
         <h3 className="mb-4 flex justify-center text-lg font-medium">
           {localize('com_ui_2fa_account_security')}
         </h3>

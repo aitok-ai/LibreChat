@@ -83,7 +83,7 @@ function DynamicTextarea({
             }
             className={cn(
               // TODO: configurable max height
-              'flex max-h-[138px] min-h-[100px] w-full resize-none rounded-lg bg-surface-secondary px-3 py-2 focus:outline-none',
+              'bg-surface-secondary flex max-h-[138px] min-h-[100px] w-full resize-none rounded-lg px-3 py-2 focus:outline-none',
             )}
           />
         </HoverCardTrigger>

@@ -23,7 +23,7 @@ const TagPrimitiveRoot = React.forwardRef<HTMLDivElement, TagProps>(
         className,
       )}
     >
-      <div className={cn('ml-1 whitespace-pre-wrap px-2 py-1', labelClassName)}>
+      <div className={cn('ml-1 px-2 py-1 whitespace-pre-wrap', labelClassName)}>
         {LabelNode ? <>{LabelNode} </> : null}
         {label}
       </div>

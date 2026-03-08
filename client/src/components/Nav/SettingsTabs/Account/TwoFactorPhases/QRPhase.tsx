@@ -42,7 +42,7 @@ export const QRPhase: React.FC<QRPhaseProps> = ({ secret, otpauthUrl, onNext }) 
           <QRCodeSVG value={otpauthUrl} size={240} />
         </motion.div>
         <div className="w-full space-y-3">
-          <Label className="text-sm font-medium text-text-secondary">
+          <Label className="text-text-secondary text-sm font-medium">
             {localize('com_ui_secret_key')}
           </Label>
           <div className="flex gap-2">

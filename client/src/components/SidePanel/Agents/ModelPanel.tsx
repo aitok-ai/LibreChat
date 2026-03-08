@@ -99,7 +99,7 @@ export default function ModelPanel({
   return (
     <div className="mx-1 mb-1 flex h-full min-h-[50vh] w-full flex-col gap-2 text-sm">
       <div className="model-panel relative flex flex-col items-center px-16 py-4 text-center">
-        <div className="absolute left-0 top-4">
+        <div className="absolute top-4 left-0">
           <button
             type="button"
             className="btn btn-neutral relative"
@@ -114,7 +114,7 @@ export default function ModelPanel({
           </button>
         </div>
 
-        <div className="mb-2 mt-2 text-xl font-medium">{localize('com_ui_model_parameters')}</div>
+        <div className="mt-2 mb-2 text-xl font-medium">{localize('com_ui_model_parameters')}</div>
       </div>
       <div className="p-2">
         {/* Endpoint aka Provider for Agents */}

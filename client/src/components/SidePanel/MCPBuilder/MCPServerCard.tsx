@@ -91,7 +91,7 @@ export default function MCPServerCard({
       <div
         className={cn(
           'group flex items-center gap-3 rounded-lg px-3 py-2.5',
-          'border border-border-light bg-transparent',
+          'border-border-light border bg-transparent',
         )}
         aria-label={`${displayName} - ${getStatusText()}`}
       >
@@ -105,15 +105,15 @@ export default function MCPServerCard({
               aria-hidden="true"
             />
           ) : (
-            <div className="flex size-8 items-center justify-center rounded-lg bg-surface-tertiary">
-              <MCPIcon className="size-5 text-text-secondary" aria-hidden="true" />
+            <div className="bg-surface-tertiary flex size-8 items-center justify-center rounded-lg">
+              <MCPIcon className="text-text-secondary size-5" aria-hidden="true" />
             </div>
           )}
           {/* Status dot - color indicates connection state */}
           <div
             className={cn(
-              'absolute -bottom-0.5 -right-0.5 size-3 rounded-full',
-              'border-2 border-surface-primary',
+              'absolute -right-0.5 -bottom-0.5 size-3 rounded-full',
+              'border-surface-primary border-2',
               statusDotColor,
               (isInitializing || serverStatus?.connectionState === 'connecting') && 'animate-pulse',
             )}
@@ -123,8 +123,8 @@ export default function MCPServerCard({
 
         {/* Server Info */}
         <div className="min-w-0 flex-1">
-          <span className="truncate text-sm font-medium text-text-primary">{displayName}</span>
-          {description && <p className="truncate text-xs text-text-secondary">{description}</p>}
+          <span className="text-text-primary truncate text-sm font-medium">{displayName}</span>
+          {description && <p className="text-text-secondary truncate text-xs">{description}</p>}
         </div>
 
         {/* Actions */}

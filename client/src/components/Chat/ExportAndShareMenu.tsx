@@ -47,7 +47,7 @@ export default function ExportAndShareMenu({
     {
       label: localize('com_ui_share'),
       onClick: shareHandler,
-      icon: <Share2 className="icon-md mr-2 text-text-secondary" />,
+      icon: <Share2 className="icon-md text-text-secondary mr-2" />,
       show: isSharedButtonEnabled,
       /** NOTE: THE FOLLOWING PROPS ARE REQUIRED FOR MENU ITEMS THAT OPEN DIALOGS */
       hideOnClick: false,
@@ -57,7 +57,7 @@ export default function ExportAndShareMenu({
     {
       label: localize('com_endpoint_export'),
       onClick: exportHandler,
-      icon: <Upload className="icon-md mr-2 text-text-secondary" />,
+      icon: <Upload className="icon-md text-text-secondary mr-2" />,
       /** NOTE: THE FOLLOWING PROPS ARE REQUIRED FOR MENU ITEMS THAT OPEN DIALOGS */
       hideOnClick: false,
       ref: exportButtonRef,
@@ -81,7 +81,7 @@ export default function ExportAndShareMenu({
               <Ariakit.MenuButton
                 id="export-menu-button"
                 aria-label="Export options"
-                className="inline-flex size-10 flex-shrink-0 items-center justify-center rounded-xl border border-border-light bg-presentation text-text-primary transition-all ease-in-out hover:bg-surface-tertiary disabled:pointer-events-none disabled:opacity-50 radix-state-open:bg-surface-tertiary"
+                className="border-border-light bg-presentation text-text-primary hover:bg-surface-tertiary radix-state-open:bg-surface-tertiary inline-flex size-10 flex-shrink-0 items-center justify-center rounded-xl border transition-all ease-in-out disabled:pointer-events-none disabled:opacity-50"
               >
                 <Share2
                   className="icon-lg text-text-primary"
@@ -93,7 +93,7 @@ export default function ExportAndShareMenu({
           />
         }
         items={dropdownItems}
-        className={isSmallScreen ? '' : 'absolute right-0 top-0 mt-2'}
+        className={isSmallScreen ? '' : 'absolute top-0 right-0 mt-2'}
       />
       <ExportModal
         open={showExports}

@@ -44,7 +44,7 @@ export default function SharedConvo() {
   const plugins = (
     <>
       <Plugin className="" /> <span className="px-1">•</span>
-      <span className="py-0.25 ml-1 rounded bg-blue-200 px-1 text-[10px] font-semibold uppercase text-[#4559A4]">
+      <span className="ml-1 rounded bg-blue-200 px-1 py-0.25 text-[10px] font-semibold text-[#4559A4] uppercase">
         {localize('com_ui_beta')}
       </span>
       <span className="px-1">•</span>
@@ -280,7 +280,7 @@ export default function SharedConvo() {
               <div className="grid-row sticky top-0 z-30 grid w-full items-center justify-center gap-1 bg-white text-gray-800 dark:bg-gray-800 dark:text-gray-100">
                 <h1
                   id="landing-title"
-                  className="ml-auto mr-auto mt-0.5 flex gap-2 text-center text-2xl font-semibold"
+                  className="mt-0.5 mr-auto ml-auto flex gap-2 text-center text-2xl font-semibold"
                 >
                   {conversation ? conversation.title : ''}
                 </h1>

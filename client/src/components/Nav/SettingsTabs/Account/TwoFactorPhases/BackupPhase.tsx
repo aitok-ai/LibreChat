@@ -29,18 +29,18 @@ export const BackupPhase: React.FC<BackupPhaseProps> = ({
 
   return (
     <motion.div {...fadeAnimation} className="space-y-6">
-      <Label className="break-keep text-sm">{localize('com_ui_download_backup_tooltip')}</Label>
-      <div className="grid grid-cols-2 gap-4 rounded-xl bg-surface-secondary p-6">
+      <Label className="text-sm break-keep">{localize('com_ui_download_backup_tooltip')}</Label>
+      <div className="bg-surface-secondary grid grid-cols-2 gap-4 rounded-xl p-6">
         {backupCodes.map((code, index) => (
           <motion.div
             key={code}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="rounded-lg bg-surface-tertiary p-3"
+            className="bg-surface-tertiary rounded-lg p-3"
           >
             <div className="flex items-center justify-between">
-              <span className="hidden text-sm text-text-secondary sm:inline">#{index + 1}</span>
+              <span className="text-text-secondary hidden text-sm sm:inline">#{index + 1}</span>
               <span className="font-mono text-lg">{code}</span>
             </div>
           </motion.div>

@@ -188,7 +188,7 @@ function ConvoOptions({
       {
         label: localize('com_ui_share'),
         onClick: shareHandler,
-        icon: <Share2 className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+        icon: <Share2 className="icon-sm text-text-primary mr-2" aria-hidden="true" />,
         show: startupConfig && startupConfig.sharedLinksEnabled,
         ariaHasPopup: 'dialog' as const,
         ariaControls: 'share-conversation-dialog',
@@ -200,7 +200,7 @@ function ConvoOptions({
       {
         label: localize('com_ui_rename'),
         onClick: renameHandler,
-        icon: <Pen className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+        icon: <Pen className="icon-sm text-text-primary mr-2" aria-hidden="true" />,
       },
       {
         label: localize('com_ui_duplicate'),
@@ -209,7 +209,7 @@ function ConvoOptions({
         icon: isDuplicateLoading ? (
           <Spinner className="size-4" />
         ) : (
-          <CopyPlus className="icon-sm mr-2 text-text-primary" aria-hidden="true" />
+          <CopyPlus className="icon-sm text-text-primary mr-2" aria-hidden="true" />
         ),
       },
       {
@@ -219,13 +219,13 @@ function ConvoOptions({
         icon: isArchiveLoading ? (
           <Spinner className="size-4" />
         ) : (
-          <Archive className="icon-sm mr-2 text-text-primary" aria-hidden="true" />
+          <Archive className="icon-sm text-text-primary mr-2" aria-hidden="true" />
         ),
       },
       {
         label: localize('com_ui_delete'),
         onClick: deleteHandler,
-        icon: <Trash className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+        icon: <Trash className="icon-sm text-text-primary mr-2" aria-hidden="true" />,
         ariaHasPopup: 'dialog' as const,
         ariaControls: 'delete-conversation-dialog',
         /** NOTE: THE FOLLOWING PROPS ARE REQUIRED FOR MENU ITEMS THAT OPEN DIALOGS */
@@ -304,10 +304,10 @@ function ConvoOptions({
             aria-label={localize('com_nav_convo_menu_options')}
             aria-expanded={isPopoverActive}
             className={cn(
-              'inline-flex h-7 w-7 items-center justify-center gap-2 rounded-md border-none p-0 text-sm font-medium ring-ring-primary transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50',
+              'ring-ring-primary inline-flex h-7 w-7 items-center justify-center gap-2 rounded-md border-none p-0 text-sm font-medium transition-all duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-50',
               isActiveConvo === true || isPopoverActive
                 ? 'opacity-100'
-                : 'opacity-0 focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 data-[open]:opacity-100',
+                : 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100 data-[open]:opacity-100',
             )}
             onClick={(e: MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();

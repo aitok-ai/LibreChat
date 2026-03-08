@@ -291,7 +291,7 @@ export default function AssistantSelect({
         value === '' ? 'text-gray-500' : '',
       )}
       className={cn(
-        'mt-1 rounded-md dark:border-gray-700 dark:bg-gray-850',
+        'dark:bg-gray-850 mt-1 rounded-md dark:border-gray-700',
         'z-50 flex h-[40px] w-full flex-none items-center justify-center px-4 hover:cursor-pointer hover:border-green-500 focus:border-gray-400',
       )}
       renderOption={() => (

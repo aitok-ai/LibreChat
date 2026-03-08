@@ -77,7 +77,7 @@ function ProfileContent() {
 
         {/*Copy profile URL button */}
         <button
-          className="absolute right-2 z-10 rounded-lg p-2 text-gray-500 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-700 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+          className="absolute right-2 z-10 rounded-lg p-2 text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
           onClick={() => {
             if (copied === true) {
               return;
@@ -311,7 +311,7 @@ function ProfileContent() {
   return (
     <>
       <button
-        className="absolute right-0 top-12 mx-2 my-1 flex w-fit flex-row items-center rounded-md px-3 py-2 text-gray-800 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600 md:left-12 md:top-1"
+        className="absolute top-12 right-0 mx-2 my-1 flex w-fit flex-row items-center rounded-md px-3 py-2 text-gray-800 hover:bg-gray-200 md:top-1 md:left-12 dark:text-gray-200 dark:hover:bg-gray-600"
         onClick={() => {
           history.back();
         }}
@@ -642,7 +642,7 @@ function ProfileContent() {
                       placeholder="分享一下你的兴趣、技能和人生态度..."
                       onChange={(e) => setBio(e.target.value)}
                       rows={6}
-                      className="w-full rounded-lg border border-gray-300 bg-transparent p-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:text-gray-100 dark:focus:border-blue-400"
+                      className="w-full rounded-lg border border-gray-300 bg-transparent p-3 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:text-gray-100 dark:focus:border-blue-400"
                     ></textarea>
                   </div>
 
@@ -673,7 +673,7 @@ function ProfileContent() {
                       <div className="text-gray-600 dark:text-gray-400">
                         {expanded ? (
                           <div>
-                            <p className="whitespace-pre-wrap leading-relaxed">{bio}</p>
+                            <p className="leading-relaxed whitespace-pre-wrap">{bio}</p>
                             {bio.length > 100 && (
                               <button
                                 className="mt-2 text-sm font-medium text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
@@ -685,7 +685,7 @@ function ProfileContent() {
                           </div>
                         ) : (
                           <div>
-                            <p className="whitespace-pre-wrap leading-relaxed">
+                            <p className="leading-relaxed whitespace-pre-wrap">
                               {bio.length > 100 ? `${bio.slice(0, 100)}...` : bio}
                             </p>
                             {bio.length > 100 && (
@@ -717,7 +717,7 @@ function ProfileContent() {
               <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 {localize('com_ui_bio')}
               </h3>
-              <p className="whitespace-pre-wrap leading-relaxed text-gray-600 dark:text-gray-400">
+              <p className="leading-relaxed whitespace-pre-wrap text-gray-600 dark:text-gray-400">
                 {bio}
               </p>
             </div>

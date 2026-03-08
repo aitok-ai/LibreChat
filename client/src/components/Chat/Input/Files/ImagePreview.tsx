@@ -115,7 +115,7 @@ const ImagePreview = ({
         type="button"
         className={cn(
           'relative size-14 overflow-hidden rounded-xl transition-shadow',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-primary',
+          'focus-visible:ring-ring focus-visible:ring-offset-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           className,
         )}
         style={style}
@@ -179,7 +179,7 @@ const ImagePreview = ({
               ref={closeButtonRef}
               onClick={() => handleOpenChange(false)}
               variant="ghost"
-              className="absolute right-4 top-4 z-20 h-10 w-10 p-0 text-white hover:bg-white/10"
+              className="absolute top-4 right-4 z-20 h-10 w-10 p-0 text-white hover:bg-white/10"
               aria-label="Close"
             >
               <X className="size-5" aria-hidden="true" />

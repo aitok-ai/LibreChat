@@ -106,7 +106,7 @@ const SidePanelGroup = memo(
         <ResizablePanelGroup
           direction="horizontal"
           onLayout={(sizes) => throttledSaveLayout(sizes)}
-          className="relative h-full w-full flex-1 overflow-auto bg-presentation"
+          className="bg-presentation relative h-full w-full flex-1 overflow-auto"
         >
           <ResizablePanel
             defaultSize={currentLayout[0]}

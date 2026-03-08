@@ -36,7 +36,7 @@ export default function AgentMarketplaceButton({
           variant="outline"
           data-testid="nav-agents-marketplace-button"
           aria-label={localize('com_agents_marketplace')}
-          className="rounded-full border-none bg-transparent p-2 hover:bg-surface-hover md:rounded-xl"
+          className="hover:bg-surface-hover rounded-full border-none bg-transparent p-2 md:rounded-xl"
           onClick={handleAgentMarketplace}
         >
           <LayoutGrid className="icon-lg text-text-primary" aria-hidden="true" />

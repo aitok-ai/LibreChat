@@ -51,8 +51,8 @@ const AgentHandoff: React.FC<AgentHandoffProps> = ({ name, args: _args = '' }) =
     <div className="my-3">
       <div
         className={cn(
-          'flex items-center gap-2.5 text-sm text-text-secondary',
-          hasInfo && 'cursor-pointer transition-colors hover:text-text-primary',
+          'text-text-secondary flex items-center gap-2.5 text-sm',
+          hasInfo && 'hover:text-text-primary cursor-pointer transition-colors',
         )}
         onClick={() => hasInfo && setShowInfo(!showInfo)}
       >
@@ -68,7 +68,7 @@ const AgentHandoff: React.FC<AgentHandoffProps> = ({ name, args: _args = '' }) =
           />
         </div>
         <span className="select-none">{localize('com_ui_transferred_to')}</span>
-        <span className="select-none font-medium text-text-primary">
+        <span className="text-text-primary font-medium select-none">
           {targetAgent?.name || localize('com_ui_agent')}
         </span>
         {hasInfo && (
@@ -79,11 +79,11 @@ const AgentHandoff: React.FC<AgentHandoffProps> = ({ name, args: _args = '' }) =
         )}
       </div>
       {hasInfo && showInfo && (
-        <div className="ml-8 mt-2 rounded-md bg-surface-secondary p-3 text-xs">
-          <div className="mb-1 font-medium text-text-secondary">
+        <div className="bg-surface-secondary mt-2 ml-8 rounded-md p-3 text-xs">
+          <div className="text-text-secondary mb-1 font-medium">
             {localize('com_ui_handoff_instructions')}:
           </div>
-          <pre className="overflow-x-auto whitespace-pre-wrap text-text-primary">{args}</pre>
+          <pre className="text-text-primary overflow-x-auto whitespace-pre-wrap">{args}</pre>
         </div>
       )}
     </div>

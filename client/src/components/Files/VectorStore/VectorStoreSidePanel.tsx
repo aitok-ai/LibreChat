@@ -229,7 +229,7 @@ export default function VectorStoreSidePanel() {
               onChange={() => {
                 console.log('changed');
               }}
-              className="max-w-sm border-border-light placeholder:text-text-secondary"
+              className="border-border-light placeholder:text-text-secondary max-w-sm"
             />
           </div>
           <div className="w-1/3">
@@ -241,7 +241,7 @@ export default function VectorStoreSidePanel() {
           </div>
         </div>
       </div>
-      <div className="mr-2 mt-2 max-h-[80vh] w-full overflow-y-auto">
+      <div className="mt-2 mr-2 max-h-[80vh] w-full overflow-y-auto">
         <VectorStoreList vectorStores={fakeVectorStores} deleteVectorStore={deleteVectorStore} />
       </div>
     </div>

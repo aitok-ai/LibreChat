@@ -32,7 +32,7 @@ function Balance() {
     refillIntervalValue !== undefined;
 
   return (
-    <div className="flex flex-col gap-4 p-4 text-sm text-text-primary">
+    <div className="text-text-primary flex flex-col gap-4 p-4 text-sm">
       {/* Token credits display */}
       <TokenCreditsItem tokenCredits={tokenCredits} />
 

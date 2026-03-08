@@ -26,7 +26,7 @@ const MarketplaceAdminSettings = () => {
   const trigger = (
     <Button
       variant="outline"
-      className="relative h-12 rounded-xl border-border-medium font-medium"
+      className="border-border-medium relative h-12 rounded-xl font-medium"
       aria-label={localize('com_ui_admin_settings')}
     >
       <ShieldEllipsis className="cursor-pointer" aria-hidden="true" />

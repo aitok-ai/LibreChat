@@ -23,7 +23,7 @@ const HoverToggle = ({
       <div
         onClick={onClick}
         className={cn(
-          'peer items-center gap-1.5 rounded-r-lg from-gray-900 pl-2 pr-2 dark:text-white',
+          'peer items-center gap-1.5 rounded-r-lg from-gray-900 pr-2 pl-2 dark:text-white',
           isPopoverActive || isActiveConvo ? 'flex' : 'hidden group-hover:flex',
           isActiveConvo
             ? 'from-gray-50 from-85% to-transparent group-hover:bg-gradient-to-l group-hover:from-gray-200 dark:from-gray-800 dark:group-hover:from-gray-800'

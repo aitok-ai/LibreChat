@@ -101,7 +101,7 @@ export default function BookmarkCardActions({ bookmark }: BookmarkCardActionsPro
           title={localize('com_ui_bookmarks_delete')}
           className="max-w-[450px]"
           main={
-            <p className="text-left text-sm text-text-secondary">
+            <p className="text-text-secondary text-left text-sm">
               {localize('com_ui_bookmark_delete_confirm')} <strong>{bookmark.tag}</strong>
             </p>
           }

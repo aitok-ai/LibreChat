@@ -46,7 +46,7 @@ export default function FormInput<
       <div className="flex w-full items-center justify-start gap-2">
         <Label
           htmlFor={`${field.name}-input`}
-          className={cn('text-left text-sm font-semibold text-text-primary', labelClass)}
+          className={cn('text-text-primary text-left text-sm font-semibold', labelClass)}
         >
           {label}
         </Label>
@@ -58,7 +58,7 @@ export default function FormInput<
         onChange={handleChange}
         placeholder={placeholder}
         className={cn(
-          'flex h-10 max-h-10 w-full resize-none border-none bg-surface-secondary px-3 py-2',
+          'bg-surface-secondary flex h-10 max-h-10 w-full resize-none border-none px-3 py-2',
           inputClass,
         )}
       />

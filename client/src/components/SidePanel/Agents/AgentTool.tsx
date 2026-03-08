@@ -98,7 +98,7 @@ export default function AgentTool({
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded transition-all duration-200',
               'hover:bg-gray-200 dark:hover:bg-gray-700',
-              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+              'focus:ring-ring focus:ring-2 focus:ring-offset-1 focus:outline-none',
               'focus:opacity-100',
               isHovering || isFocused ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
@@ -116,14 +116,14 @@ export default function AgentTool({
         className="max-w-[450px]"
         main={
           <>
-            <div className="flex w-full flex-col items-start gap-2 text-sm text-text-secondary">
+            <div className="text-text-secondary flex w-full flex-col items-start gap-2 text-sm">
               <p>
                 {localize('com_ui_delete_tool_confirm')}{' '}
                 <strong>&quot;{currentTool.name}&quot;</strong>?
               </p>
               {currentTool.description && (
                 <div className="flex items-start gap-2">
-                  <CircleHelpIcon className="h-4 w-4 flex-shrink-0 text-text-secondary" />
+                  <CircleHelpIcon className="text-text-secondary h-4 w-4 flex-shrink-0" />
                   <p className="text-sm">{currentTool.description}</p>
                 </div>
               )}

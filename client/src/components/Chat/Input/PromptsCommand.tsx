@@ -177,14 +177,14 @@ function PromptsCommand({
       textAreaRef={textAreaRef}
     >
       <div className="absolute bottom-28 z-10 w-full space-y-2">
-        <div className="popover border-token-border-light rounded-2xl border bg-surface-tertiary-alt p-2 shadow-lg">
+        <div className="popover border-token-border-light bg-surface-tertiary-alt rounded-2xl border p-2 shadow-lg">
           <input
             // The user expects focus to transition to the input field when the popover is opened
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             ref={inputRef}
             placeholder={localize('com_ui_command_usage_placeholder')}
-            className="mb-1 w-full border-0 bg-surface-tertiary-alt p-2 text-sm focus:outline-none dark:text-gray-200"
+            className="bg-surface-tertiary-alt mb-1 w-full border-0 p-2 text-sm focus:outline-none dark:text-gray-200"
             autoComplete="off"
             value={searchValue}
             onKeyDown={(e) => {
@@ -221,7 +221,7 @@ function PromptsCommand({
             {(() => {
               if (isLoading && open) {
                 return (
-                  <div className="flex h-32 items-center justify-center text-text-primary">
+                  <div className="text-text-primary flex h-32 items-center justify-center">
                     <Spinner />
                   </div>
                 );

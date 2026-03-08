@@ -317,7 +317,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
           id="tools-dropdown-button"
           aria-label="Tools Options"
           className={cn(
-            'flex size-9 items-center justify-center rounded-full p-1 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-opacity-50',
+            'hover:bg-surface-hover focus-visible:ring-primary focus-visible:ring-opacity-50 flex size-9 items-center justify-center rounded-full p-1 focus-visible:ring-2 focus-visible:outline-none',
             isPopoverActive && 'bg-surface-hover',
           )}
         >

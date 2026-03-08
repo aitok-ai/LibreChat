@@ -34,14 +34,14 @@ class SourcesErrorBoundary extends Component<Props, State> {
       /* eslint-disable i18next/no-literal-string */
       return (
         <div
-          className="flex flex-col items-center justify-center rounded-lg border border-border-medium bg-surface-secondary p-4 text-center"
+          className="border-border-medium bg-surface-secondary flex flex-col items-center justify-center rounded-lg border p-4 text-center"
           role="alert"
           aria-live="polite"
         >
-          <div className="mb-2 text-sm text-text-secondary">Sources temporarily unavailable</div>
+          <div className="text-text-secondary mb-2 text-sm">Sources temporarily unavailable</div>
           <button
             onClick={() => window.location.reload()}
-            className="hover:bg-surface-primary-hover rounded-md bg-surface-primary px-3 py-1 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+            className="hover:bg-surface-primary-hover bg-surface-primary text-text-primary focus:ring-ring rounded-md px-3 py-1 text-sm focus:ring-2 focus:outline-none"
             aria-label="Reload the page"
           >
             Refresh

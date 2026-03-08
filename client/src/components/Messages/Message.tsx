@@ -4,7 +4,7 @@ import { useGetConversationByIdQuery } from 'librechat-data-provider/react-query
 import { useSetRecoilState, useRecoilState, useRecoilValue } from 'recoil';
 import copy from 'copy-to-clipboard';
 import { SubRow, Plugin, MessageContent } from './Content';
-// eslint-disable-next-line import/no-cycle
+
 import MultiMessage from './MultiMessage';
 import HoverButtons from './HoverButtons';
 import SiblingSwitch from '../Chat/Messages/SiblingSwitch';
@@ -229,11 +229,11 @@ export default function Message(props: TMessageProps) {
         <div className="relative m-auto flex gap-4 p-4 text-base md:max-w-2xl md:gap-4 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
           <div className="relative flex h-[40px] w-[40px] flex-col items-end text-right text-xs md:text-sm">
             {typeof icon === 'string' && /[^\\x00-\\x7F]+/.test(icon as string) ? (
-              <span className=" direction-rtl w-40 overflow-x-scroll">{icon}</span>
+              <span className="direction-rtl w-40 overflow-x-scroll">{icon}</span>
             ) : (
               icon
             )}
-            <div className="sibling-switch invisible absolute left-0 top-2 -ml-4 flex -translate-x-full items-center justify-center gap-1 text-xs group-hover:visible">
+            <div className="sibling-switch invisible absolute top-2 left-0 -ml-4 flex -translate-x-full items-center justify-center gap-1 text-xs group-hover:visible">
               <SiblingSwitch
                 siblingIdx={siblingIdx}
                 siblingCount={siblingCount}
@@ -241,7 +241,7 @@ export default function Message(props: TMessageProps) {
               />
             </div>
           </div>
-          <div className="relative flex w-[calc(100%-50px)] flex-col gap-1  md:gap-3 lg:w-[calc(100%-115px)]">
+          <div className="relative flex w-[calc(100%-50px)] flex-col gap-1 md:gap-3 lg:w-[calc(100%-115px)]">
             {searchResult && (
               <SubRow
                 classes={messageProps.titleclass + ' rounded'}

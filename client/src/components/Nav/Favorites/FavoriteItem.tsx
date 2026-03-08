@@ -100,7 +100,7 @@ export default function FavoriteItem({
     {
       label: localize('com_ui_unpin'),
       onClick: handleRemove,
-      icon: <PinOff className="h-4 w-4 text-text-secondary" />,
+      icon: <PinOff className="text-text-secondary h-4 w-4" />,
     },
   ];
 
@@ -110,7 +110,7 @@ export default function FavoriteItem({
       tabIndex={0}
       aria-label={ariaLabel}
       className={cn(
-        'group relative flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm text-text-primary outline-none hover:bg-surface-active-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-black dark:focus-visible:ring-white',
+        'group text-text-primary hover:bg-surface-active-alt relative flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-white',
         isPopoverActive ? 'bg-surface-active-alt' : '',
       )}
       onClick={handleClick}
@@ -140,10 +140,10 @@ export default function FavoriteItem({
           trigger={
             <Menu.MenuButton
               className={cn(
-                'inline-flex h-7 w-7 items-center justify-center rounded-md border-none p-0 text-sm font-medium ring-ring-primary transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50',
+                'ring-ring-primary inline-flex h-7 w-7 items-center justify-center rounded-md border-none p-0 text-sm font-medium transition-all duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-50',
                 isPopoverActive
                   ? 'opacity-100'
-                  : 'opacity-0 focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 data-[open]:opacity-100',
+                  : 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100 data-[open]:opacity-100',
               )}
               aria-label={localize('com_nav_convo_menu_options')}
               data-testid="favorite-options-button"

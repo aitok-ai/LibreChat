@@ -155,11 +155,11 @@ function Speech() {
       value={advancedMode ? 'advanced' : 'simple'}
     >
       <div className="sticky -top-1 z-50 mb-4 bg-white dark:bg-gray-700">
-        <Tabs.List className="flex justify-center bg-background">
+        <Tabs.List className="bg-background flex justify-center">
           <Tabs.Trigger
             onClick={() => setAdvancedMode(false)}
             className={cn(
-              'group m-1 flex items-center justify-center gap-2 bg-transparent px-4 py-2 text-sm text-text-secondary transition-all duration-200 ease-in-out radix-state-active:bg-secondary radix-state-active:text-foreground radix-state-active:shadow-lg',
+              'group text-text-secondary radix-state-active:bg-secondary radix-state-active:text-foreground radix-state-active:shadow-lg m-1 flex items-center justify-center gap-2 bg-transparent px-4 py-2 text-sm transition-all duration-200 ease-in-out',
               isSmallScreen ? 'flex-row rounded-lg' : 'rounded-xl',
               'w-full',
             )}
@@ -172,7 +172,7 @@ function Speech() {
           <Tabs.Trigger
             onClick={() => setAdvancedMode(true)}
             className={cn(
-              'group m-1 flex items-center justify-center gap-2 bg-transparent px-4 py-2 text-sm text-text-secondary transition-all duration-200 ease-in-out radix-state-active:bg-secondary radix-state-active:text-foreground radix-state-active:shadow-lg',
+              'group text-text-secondary radix-state-active:bg-secondary radix-state-active:text-foreground radix-state-active:shadow-lg m-1 flex items-center justify-center gap-2 bg-transparent px-4 py-2 text-sm transition-all duration-200 ease-in-out',
               isSmallScreen ? 'flex-row rounded-lg' : 'rounded-xl',
               'w-full',
             )}
@@ -186,11 +186,11 @@ function Speech() {
       </div>
 
       <Tabs.Content value={'simple'} tabIndex={-1}>
-        <div className="flex flex-col gap-3 text-sm text-text-primary">
+        <div className="text-text-primary flex flex-col gap-3 text-sm">
           <SpeechToTextSwitch />
           <EngineSTTDropdown external={sttExternal} />
           <LanguageSTTDropdown />
-          <div className="h-px bg-border-medium" role="none" />
+          <div className="bg-border-medium h-px" role="none" />
           <TextToSpeechSwitch />
           <EngineTTSDropdown external={ttsExternal} />
           <VoiceDropdown />
@@ -198,9 +198,9 @@ function Speech() {
       </Tabs.Content>
 
       <Tabs.Content value={'advanced'} tabIndex={-1}>
-        <div className="flex flex-col gap-3 text-sm text-text-primary">
+        <div className="text-text-primary flex flex-col gap-3 text-sm">
           <ConversationModeSwitch />
-          <div className="mt-2 h-px bg-border-medium" role="none" />
+          <div className="bg-border-medium mt-2 h-px" role="none" />
           <SpeechToTextSwitch />
 
           <EngineSTTDropdown external={sttExternal} />
@@ -217,7 +217,7 @@ function Speech() {
           <div className="pb-2">
             <AutoSendTextSelector />
           </div>
-          <div className="h-px bg-border-medium" role="none" />
+          <div className="bg-border-medium h-px" role="none" />
           <div className="pb-3">
             <TextToSpeechSwitch />
           </div>

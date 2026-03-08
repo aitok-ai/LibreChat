@@ -163,7 +163,7 @@ export default function FileSidePanel() {
             onChange={() => {
               console.log('changed');
             }}
-            className="max-w-sm border-border-light placeholder:text-text-secondary"
+            className="border-border-light placeholder:text-text-secondary max-w-sm"
           />
         </div>
         <div className="w-1/3">

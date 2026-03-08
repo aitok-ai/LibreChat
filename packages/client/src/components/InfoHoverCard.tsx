@@ -15,17 +15,17 @@ const InfoHoverCard = ({ side, text }: InfoHoverCardProps) => {
     <HoverCard openDelay={50} open={isOpen} onOpenChange={setIsOpen}>
       <HoverCardTrigger
         tabIndex={0}
-        className="inline-flex cursor-help items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-primary focus-visible:ring-offset-2"
+        className="focus-visible:ring-ring-primary inline-flex cursor-help items-center justify-center rounded-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         onFocus={() => setIsOpen(true)}
         onBlur={() => setIsOpen(false)}
         aria-label={text}
       >
-        <CircleHelpIcon className="h-5 w-5 text-text-tertiary" aria-hidden="true" />
+        <CircleHelpIcon className="text-text-tertiary h-5 w-5" aria-hidden="true" />
       </HoverCardTrigger>
       <HoverCardPortal>
         <HoverCardContent side={side} className="z-[999] w-80">
           <div className="max-h-[80vh] space-y-2 overflow-y-auto">
-            <span className="text-sm text-text-secondary">{text}</span>
+            <span className="text-text-secondary text-sm">{text}</span>
           </div>
         </HoverCardContent>
       </HoverCardPortal>

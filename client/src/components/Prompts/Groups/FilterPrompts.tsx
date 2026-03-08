@@ -29,17 +29,17 @@ export default function FilterPrompts({
       {
         value: SystemCategories.ALL,
         label: localize('com_ui_all_proper'),
-        icon: <ListFilter className="h-4 w-4 text-text-primary" />,
+        icon: <ListFilter className="text-text-primary h-4 w-4" />,
       },
       {
         value: SystemCategories.MY_PROMPTS,
         label: localize('com_ui_my_prompts'),
-        icon: <User className="h-4 w-4 text-text-primary" />,
+        icon: <User className="text-text-primary h-4 w-4" />,
       },
       {
         value: SystemCategories.SHARED_PROMPTS,
         label: localize('com_ui_shared_prompts'),
-        icon: <Share2 className="h-4 w-4 text-text-primary" />,
+        icon: <Share2 className="text-text-primary h-4 w-4" />,
       },
       { divider: true, value: null },
     ];
@@ -92,7 +92,7 @@ export default function FilterPrompts({
   }, [debouncedSearchTerm, resultCount]);
 
   return (
-    <div role="search" className={cn('flex w-full gap-2 text-text-primary', className)}>
+    <div role="search" className={cn('text-text-primary flex w-full gap-2', className)}>
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {searchResultsAnnouncement}
       </div>

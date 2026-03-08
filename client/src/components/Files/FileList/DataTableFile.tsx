@@ -111,7 +111,7 @@ export default function DataTableFile<TData, TValue>({
                 deleteFiles({ files: filesToDelete as TFile[], setFiles });
                 setRowSelection({});
               }}
-              className="ml-1 gap-2 dark:hover:bg-gray-850/25 sm:ml-0"
+              className="dark:hover:bg-gray-850/25 ml-1 gap-2 sm:ml-0"
               disabled={!table.getFilteredSelectedRowModel().rows.length || isDeleting}
             >
               {isDeleting ? (
@@ -126,13 +126,13 @@ export default function DataTableFile<TData, TValue>({
             {' '}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto border border-border-medium">
+                <Button variant="outline" className="border-border-medium ml-auto border">
                   <ListFilter className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="z-[1001] dark:border-gray-700 dark:bg-gray-850"
+                className="dark:bg-gray-850 z-[1001] dark:border-gray-700"
               >
                 {table
                   .getAllColumns()
@@ -155,13 +155,13 @@ export default function DataTableFile<TData, TValue>({
               placeholder={localize('com_files_filter')}
               value={(table.getColumn('filename')?.getFilterValue() as string | undefined) ?? ''}
               onChange={(event) => table.getColumn('filename')?.setFilterValue(event.target.value)}
-              className="max-w-sm border-border-medium placeholder:text-text-secondary"
+              className="border-border-medium placeholder:text-text-secondary max-w-sm"
             />
             <UploadFileButton onClick={() => console.log('click')} />
           </div>
         </div>
       </div>
-      <div className="relative mt-3 max-h-[25rem] min-h-0 overflow-y-auto rounded-md border border-black/10 pb-4 dark:border-white/10 sm:min-h-[28rem]">
+      <div className="relative mt-3 max-h-[25rem] min-h-0 overflow-y-auto rounded-md border border-black/10 pb-4 sm:min-h-[28rem] dark:border-white/10">
         <Table className="w-full min-w-[600px] border-separate border-spacing-0">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -192,7 +192,7 @@ export default function DataTableFile<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2"
+                      className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 sm:px-4 sm:py-2 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100"
                       style={style}
                     >
                       {header.isPlaceholder
@@ -246,8 +246,8 @@ export default function DataTableFile<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="ml-4 mr-4 mt-4 flex h-auto items-center justify-end space-x-2 py-4 sm:ml-0 sm:mr-0 sm:h-0">
-        <div className="ml-2 flex-1 text-sm text-muted-foreground">
+      <div className="mt-4 mr-4 ml-4 flex h-auto items-center justify-end space-x-2 py-4 sm:mr-0 sm:ml-0 sm:h-0">
+        <div className="text-muted-foreground ml-2 flex-1 text-sm">
           {localize('com_files_number_selected', {
             0: `${table.getFilteredSelectedRowModel().rows.length}`,
             1: `${table.getFilteredRowModel().rows.length}`,

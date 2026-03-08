@@ -11,7 +11,7 @@ type FileListItemProps = {
 export default function FileListItem({ file, deleteFile, width = '400px' }: FileListItemProps) {
   const displayName = file.originalname ?? file.filename;
   return (
-    <div className="w-100 my-3 mr-2 flex cursor-pointer flex-row rounded-md border border-0 bg-white p-4 transition duration-300 ease-in-out hover:bg-slate-200">
+    <div className="my-3 mr-2 flex w-100 cursor-pointer flex-row rounded-md border border-0 bg-white p-4 transition duration-300 ease-in-out hover:bg-slate-200">
       <div className="flex w-1/2 flex-col justify-around align-middle">
         <strong>{displayName}</strong>
         <p className="text-sm text-gray-500">{file.object}</p>

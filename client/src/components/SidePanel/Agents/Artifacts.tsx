@@ -100,13 +100,13 @@ function SwitchItem({
         <div className="flex items-center space-x-2">
           <div className={disabled ? 'text-text-tertiary' : ''}>{label}</div>
           <HoverCardTrigger>
-            <CircleHelpIcon className="h-4 w-4 text-text-tertiary" />
+            <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
           </HoverCardTrigger>
         </div>
         <HoverCardPortal>
           <HoverCardContent side={ESide.Top} className="w-80">
             <div className="space-y-2">
-              <p className="text-sm text-text-secondary">{hoverCardText}</p>
+              <p className="text-text-secondary text-sm">{hoverCardText}</p>
             </div>
           </HoverCardContent>
         </HoverCardPortal>

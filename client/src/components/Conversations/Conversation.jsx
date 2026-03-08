@@ -155,7 +155,7 @@ export default function Conversation({ conversation, retainView }) {
   return (
     <button data-testid="convo-item" onClick={() => clickHandler()} {...aProps}>
       {icon}
-      <div className="relative max-h-5 flex-1 overflow-hidden text-ellipsis break-all">
+      <div className="relative max-h-5 flex-1 overflow-hidden break-all text-ellipsis">
         {renaming === true ? (
           <input
             ref={inputRef}

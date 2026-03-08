@@ -81,7 +81,7 @@ function MCPSelectContent() {
             <Ariakit.MenuButton
               className={cn(
                 'group relative inline-flex items-center justify-center gap-1.5',
-                'border border-border-medium text-sm font-medium transition-all',
+                'border-border-medium border text-sm font-medium transition-all',
                 'h-9 min-w-9 rounded-full bg-transparent px-2.5 shadow-sm',
                 'hover:bg-surface-hover hover:shadow-md active:shadow-inner',
                 'md:w-fit md:justify-start md:px-3',
@@ -91,12 +91,12 @@ function MCPSelectContent() {
           }
         >
           <StackedMCPIcons selectedServers={selectedServers} maxIcons={3} iconSize="sm" />
-          <span className="hidden truncate text-text-primary md:block">
+          <span className="text-text-primary hidden truncate md:block">
             {displayText || placeholderText}
           </span>
           <ChevronDown
             className={cn(
-              'hidden h-3 w-3 text-text-secondary transition-transform md:block',
+              'text-text-secondary hidden h-3 w-3 transition-transform md:block',
               isOpen && 'rotate-180',
             )}
           />
@@ -107,8 +107,8 @@ function MCPSelectContent() {
           gutter={8}
           aria-label={localize('com_ui_mcp_servers')}
           className={cn(
-            'z-50 flex min-w-[260px] max-w-[320px] flex-col rounded-xl',
-            'border border-border-light bg-presentation p-1.5 shadow-lg',
+            'z-50 flex max-w-[320px] min-w-[260px] flex-col rounded-xl',
+            'border-border-light bg-presentation border p-1.5 shadow-lg',
             'origin-top opacity-0 transition-[opacity,transform] duration-200 ease-out',
             'data-[enter]:scale-100 data-[enter]:opacity-100',
             'scale-95 data-[leave]:scale-95 data-[leave]:opacity-0',

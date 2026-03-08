@@ -130,7 +130,6 @@ describe('formatToolContent', () => {
         content: [{ type: 'image', data: 'https://example.com/image.png', mimeType: 'image/png' }],
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_content, artifacts] = formatToolContent(result, 'openai');
       expect(artifacts).toEqual({
         content: [
@@ -147,7 +146,6 @@ describe('formatToolContent', () => {
         content: [{ type: 'image', data: 'iVBORw0KGgoAAAA...', mimeType: 'image/png' }],
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_content, artifacts] = formatToolContent(result, 'openai');
       expect(artifacts).toEqual({
         content: [

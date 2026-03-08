@@ -181,9 +181,9 @@ export default function Conversation({
     <div
       ref={containerRef}
       className={cn(
-        'group relative flex h-12 w-full items-center rounded-lg outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-black dark:focus-visible:ring-white md:h-9',
+        'group relative flex h-12 w-full items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none focus-visible:ring-inset md:h-9 dark:focus-visible:ring-white',
         isActiveConvo || isPopoverActive
-          ? 'bg-surface-active-alt before:absolute before:bottom-1 before:left-0 before:top-1 before:w-0.5 before:rounded-full before:bg-black dark:before:bg-white'
+          ? 'bg-surface-active-alt before:absolute before:top-1 before:bottom-1 before:left-0 before:w-0.5 before:rounded-full before:bg-black dark:before:bg-white'
           : 'hover:bg-surface-active-alt',
       )}
       role="button"
@@ -237,7 +237,7 @@ export default function Conversation({
         >
           {isGenerating ? (
             <svg
-              className="h-5 w-5 flex-shrink-0 animate-spin text-text-primary"
+              className="text-text-primary h-5 w-5 flex-shrink-0 animate-spin"
               viewBox="0 0 24 24"
               fill="none"
               aria-label={localize('com_ui_generating')}

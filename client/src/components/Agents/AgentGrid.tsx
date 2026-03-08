@@ -129,7 +129,7 @@ const AgentGrid: React.FC<AgentGridProps> = ({
   // Simple loading spinner
   const loadingSpinner = (
     <div className="flex justify-center py-12">
-      <Spinner className="h-8 w-8 text-primary" />
+      <Spinner className="text-primary h-8 w-8" />
     </div>
   );
 
@@ -160,7 +160,7 @@ const AgentGrid: React.FC<AgentGridProps> = ({
       {/* Handle empty results with enhanced accessibility */}
       {(!currentAgents || currentAgents.length === 0) && !isLoading && !isFetching ? (
         <div
-          className="py-12 text-center text-text-secondary"
+          className="text-text-secondary py-12 text-center"
           role="status"
           aria-live="polite"
           aria-label={
@@ -207,7 +207,7 @@ const AgentGrid: React.FC<AgentGridProps> = ({
               aria-live="polite"
               aria-label={localize('com_agents_loading')}
             >
-              <Spinner className="h-6 w-6 text-primary" />
+              <Spinner className="text-primary h-6 w-6" />
               <span className="sr-only">{localize('com_agents_loading')}</span>
             </div>
           )}
@@ -215,7 +215,7 @@ const AgentGrid: React.FC<AgentGridProps> = ({
           {/* End of results indicator */}
           {!hasNextPage && currentAgents && currentAgents.length > 0 && (
             <div className="mt-8 text-center">
-              <p className="text-sm text-text-secondary">
+              <p className="text-text-secondary text-sm">
                 {localize('com_agents_no_more_results')}
               </p>
             </div>

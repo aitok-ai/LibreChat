@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import * as Popover from '@radix-ui/react-popover';
+import { useLocalize } from '~/hooks';
 
 export function NoImage() {
   return (
@@ -86,6 +87,7 @@ export function AvatarMenu({
 }: {
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const localize = useLocalize();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onItemClick = () => {
@@ -98,17 +100,17 @@ export function AvatarMenu({
   return (
     <Popover.Portal>
       <Popover.Content
-        className="flex min-w-[100px] max-w-xs flex-col rounded-xl border border-gray-400 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-850 dark:text-white"
+        className="dark:bg-gray-850 flex max-w-xs min-w-[100px] flex-col rounded-xl border border-gray-400 bg-white shadow-lg dark:border-gray-700 dark:text-white"
         sideOffset={5}
       >
         <div
           role="menuitem"
-          className="group m-1.5 flex cursor-pointer gap-2 rounded p-2.5 text-sm hover:bg-gray-100 focus:ring-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 dark:hover:bg-gray-800 dark:hover:bg-white/5"
+          className="group radix-disabled:pointer-events-none radix-disabled:opacity-50 m-1.5 flex cursor-pointer gap-2 rounded p-2.5 text-sm hover:bg-gray-100 focus:ring-0 dark:hover:bg-gray-800 dark:hover:bg-white/5"
           tabIndex={-1}
           data-orientation="vertical"
           onClick={onItemClick}
         >
-          Upload Photo
+          {localize('com_ui_upload')}
         </div>
         {/* <Popover.Close
           role="menuitem"

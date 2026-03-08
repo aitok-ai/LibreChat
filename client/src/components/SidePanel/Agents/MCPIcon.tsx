@@ -42,7 +42,7 @@ export default function MCPIcon({ icon, onIconChange }: MCPIconProps) {
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         aria-label={localize('com_ui_upload_icon')}
-        className="bg-token-surface-secondary dark:bg-token-surface-tertiary border-token-border-medium flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed focus:outline-none focus-visible:ring-2 focus-visible:ring-border-heavy"
+        className="bg-token-surface-secondary dark:bg-token-surface-tertiary border-token-border-medium focus-visible:ring-border-heavy flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed focus:outline-none focus-visible:ring-2"
       >
         {previewUrl ? (
           <img
@@ -60,7 +60,7 @@ export default function MCPIcon({ icon, onIconChange }: MCPIconProps) {
         <span className="token-text-secondary text-sm">
           {localize('com_ui_icon')} {localize('com_ui_optional')}
         </span>
-        <span className="text-xs text-text-secondary">{localize('com_agents_mcp_icon_size')}</span>
+        <span className="text-text-secondary text-xs">{localize('com_agents_mcp_icon_size')}</span>
       </div>
       <input
         accept="image/png,.png,image/jpeg,.jpg,.jpeg,image/gif,.gif,image/webp,.webp"

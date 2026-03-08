@@ -197,7 +197,7 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
     >
       {icon}
       {error === true && (
-        <span className="absolute right-0 top-[20px] -mr-2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-red-500 text-[10px] text-white">
+        <span className="absolute top-[20px] right-0 -mr-2 flex h-3 w-3 items-center justify-center rounded-full border border-white bg-red-500 text-[10px] text-white">
           !
         </span>
       )}

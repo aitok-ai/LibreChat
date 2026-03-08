@@ -1,7 +1,7 @@
 import React from 'react';
 
 const VectorStoreFilter = () => {
-  return <div>VectorStoreFilter</div>;
+  return <div aria-hidden="true" />;
 };
 
 export default VectorStoreFilter;

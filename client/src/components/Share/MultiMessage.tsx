@@ -22,7 +22,6 @@ export default function MultiMessage({
   useEffect(() => {
     // reset siblingIdx when the tree changes, mostly when a new message is submitting.
     setSiblingIdx(0);
-
   }, [messagesTree?.length]);
 
   useEffect(() => {

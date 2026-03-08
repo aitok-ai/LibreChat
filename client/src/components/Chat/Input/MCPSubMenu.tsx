@@ -54,12 +54,12 @@ const MCPSubMenu = React.forwardRef<HTMLDivElement, MCPSubMenuProps>(
                   e.stopPropagation();
                   menuStore.toggle();
                 }}
-                className="flex w-full cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-surface-hover"
+                className="hover:bg-surface-hover flex w-full cursor-pointer items-center justify-between rounded-lg p-2"
               />
             }
           >
             <div className="flex items-center gap-2">
-              <MCPIcon className="h-5 w-5 flex-shrink-0 text-text-primary" aria-hidden="true" />
+              <MCPIcon className="text-text-primary h-5 w-5 flex-shrink-0" aria-hidden="true" />
               <span>{placeholder || placeholderText}</span>
               <ChevronRight className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
             </div>
@@ -87,8 +87,8 @@ const MCPSubMenu = React.forwardRef<HTMLDivElement, MCPSubMenuProps>(
             unmountOnHide={true}
             aria-label={localize('com_ui_mcp_servers')}
             className={cn(
-              'animate-popover-left z-40 ml-3 flex min-w-[260px] max-w-[320px] flex-col rounded-xl',
-              'border border-border-light bg-presentation p-1.5 shadow-lg',
+              'animate-popover-left z-40 ml-3 flex max-w-[320px] min-w-[260px] flex-col rounded-xl',
+              'border-border-light bg-presentation border p-1.5 shadow-lg',
             )}
           >
             <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto">

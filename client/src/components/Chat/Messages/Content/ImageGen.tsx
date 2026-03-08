@@ -32,7 +32,7 @@ export default function ImageGen({
     <div className="my-2.5 flex items-center gap-2.5">
       <div className="relative h-5 w-5 shrink-0">
         <div
-          className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-full bg-transparent text-white"
+          className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-full bg-transparent text-white"
           style={{ opacity: 1, transform: 'none' }}
           data-projection-id="106"
         >

@@ -73,7 +73,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       <Select.Select
         store={selectProps}
         className={cn(
-          'focus:ring-offset-ring-offset relative inline-flex items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm text-text-primary transition-all duration-200 ease-in-out hover:bg-accent hover:text-accent-foreground focus:ring-ring-primary',
+          'focus:ring-offset-ring-offset border-input bg-background text-text-primary hover:bg-accent hover:text-accent-foreground focus:ring-ring-primary relative inline-flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-all duration-200 ease-in-out',
           iconOnly ? 'h-full w-10' : 'w-fit gap-2',
           className,
         )}
@@ -111,7 +111,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       >
         {options.map((item, index) => {
           if (isDivider(item)) {
-            return <div key={`divider-${index}`} className="my-1 border-t border-border-heavy" />;
+            return <div key={`divider-${index}`} className="border-border-heavy my-1 border-t" />;
           }
 
           const option = typeof item === 'string' ? { value: item, label: item } : item;

@@ -70,7 +70,7 @@ export default function ProgressText({
   return (
     <div
       className={cn(
-        'progress-text-content pointer-events-none absolute left-0 top-0 inline-flex w-full items-center gap-2 overflow-visible whitespace-nowrap',
+        'progress-text-content pointer-events-none absolute top-0 left-0 inline-flex w-full items-center gap-2 overflow-visible whitespace-nowrap',
       )}
     >
       <span className={`font-medium ${progress < 1 ? 'shimmer' : ''}`}>{text}</span>

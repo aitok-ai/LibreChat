@@ -14,7 +14,7 @@ export default function TrustSection() {
   } = useFormContext<MCPServerFormData>();
 
   return (
-    <div className="rounded-lg border border-border-light bg-surface-secondary p-2">
+    <div className="border-border-light bg-surface-secondary rounded-lg border p-2">
       <div className="flex items-start gap-3">
         <Controller
           name="trust"
@@ -36,7 +36,7 @@ export default function TrustSection() {
           )}
         />
         <Label htmlFor="trust" className="flex cursor-pointer flex-col gap-0.5 text-sm">
-          <span id="trust-label" className="font-medium text-text-primary">
+          <span id="trust-label" className="text-text-primary font-medium">
             {startupConfig?.interface?.mcpServers?.trustCheckbox?.label ? (
               <span
                 dangerouslySetInnerHTML={{
@@ -53,7 +53,7 @@ export default function TrustSection() {
               *
             </span>
           </span>
-          <span id="trust-description" className="text-xs font-normal text-text-secondary">
+          <span id="trust-description" className="text-text-secondary text-xs font-normal">
             {startupConfig?.interface?.mcpServers?.trustCheckbox?.subLabel ? (
               <span
                 dangerouslySetInnerHTML={{
@@ -70,7 +70,7 @@ export default function TrustSection() {
         </Label>
       </div>
       {errors.trust && (
-        <p id="trust-error" role="alert" className="mt-2 text-xs text-text-destructive">
+        <p id="trust-error" role="alert" className="text-text-destructive mt-2 text-xs">
           {localize('com_ui_field_required')}
         </p>
       )}

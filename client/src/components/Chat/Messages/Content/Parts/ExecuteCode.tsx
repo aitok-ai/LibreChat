@@ -172,7 +172,7 @@ export default function ExecuteCode({
       >
         <div
           className={cn(
-            'code-analyze-block mt-0.5 overflow-hidden rounded-xl bg-surface-primary',
+            'code-analyze-block bg-surface-primary mt-0.5 overflow-hidden rounded-xl',
             showCode && 'shadow-lg',
           )}
           ref={codeContentRef}
@@ -202,7 +202,7 @@ export default function ExecuteCode({
             <div
               className={cn(
                 'bg-surface-tertiary p-4 text-xs',
-                showCode ? 'border-t border-surface-primary-contrast' : '',
+                showCode ? 'border-surface-primary-contrast border-t' : '',
               )}
               style={{
                 transform: showCode ? 'translateY(0)' : 'translateY(-6px)',

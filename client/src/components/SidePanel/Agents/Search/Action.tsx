@@ -98,7 +98,7 @@ export default function Action({
                 aria-label={localize('com_ui_add_web_search_api_keys')}
                 aria-haspopup="dialog"
               >
-                <KeyRoundIcon className="h-5 w-5 text-text-primary" />
+                <KeyRoundIcon className="text-text-primary h-5 w-5" />
               </button>
             )}
             <HoverCardTrigger asChild>
@@ -107,14 +107,14 @@ export default function Action({
                 className="inline-flex items-center"
                 aria-label={localize('com_agents_search_info')}
               >
-                <CircleHelpIcon className="h-4 w-4 text-text-tertiary" />
+                <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
               </button>
             </HoverCardTrigger>
           </div>
           <HoverCardPortal>
             <HoverCardContent side={ESide.Top} className="w-80">
               <div className="space-y-2">
-                <p className="text-sm text-text-secondary">{localize('com_agents_search_info')}</p>
+                <p className="text-text-secondary text-sm">{localize('com_agents_search_info')}</p>
               </div>
             </HoverCardContent>
           </HoverCardPortal>

@@ -159,7 +159,7 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
             />
             {startupConfig?.showBirthdayIcon && (
               <TooltipAnchor
-                className="absolute bottom-[27px] right-2"
+                className="absolute right-2 bottom-[27px]"
                 description={localize('com_ui_happy_birthday')}
                 aria-label={localize('com_ui_happy_birthday')}
               >
@@ -172,7 +172,7 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
               <SplitText
                 key={`split-text-${name}`}
                 text={name}
-                className={`${getTextSizeClass(name)} font-medium text-text-primary`}
+                className={`${getTextSizeClass(name)} text-text-primary font-medium`}
                 delay={50}
                 textAlign="center"
                 animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
@@ -187,7 +187,7 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
             <SplitText
               key={`split-text-${greetingText}${user?.name ? '-user' : ''}`}
               text={greetingText}
-              className={`${getTextSizeClass(greetingText)} font-medium text-text-primary`}
+              className={`${getTextSizeClass(greetingText)} text-text-primary font-medium`}
               delay={50}
               textAlign="center"
               animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
@@ -200,7 +200,7 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
           )}
         </div>
         {description && (
-          <div className="animate-fadeIn mt-4 max-w-md text-center text-sm font-normal text-text-primary">
+          <div className="animate-fadeIn text-text-primary mt-4 max-w-md text-center text-sm font-normal">
             {description}
           </div>
         )}

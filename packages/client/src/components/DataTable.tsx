@@ -98,7 +98,7 @@ const TableRowComponent = <TData, TValue>({
   return (
     <TableRow
       data-state={row.getIsSelected() ? 'selected' : undefined}
-      className="motion-safe:animate-fadeIn border-b border-border-light transition-all duration-300 ease-out hover:bg-surface-secondary"
+      className="motion-safe:animate-fadeIn border-border-light hover:bg-surface-secondary border-b transition-all duration-300 ease-out"
       style={{
         animationDelay: `${index * 20}ms`,
         transform: `translateY(${isSearching ? '4px' : '0'})`,
@@ -377,7 +377,7 @@ export default function DataTable<TData, TValue>({
     const firstDataColumnIndex = tableColumns[0]?.id === 'select' ? 1 : 0;
 
     return (
-      <TableRow key={index} className="motion-safe:animate-fadeIn border-b border-border-light">
+      <TableRow key={index} className="motion-safe:animate-fadeIn border-border-light border-b">
         {tableColumns.map((column, columnIndex) => {
           const style = getColumnStyle(column as TableColumn<TData, TValue>, isSmallScreen);
           const isFirstDataColumn = columnIndex === firstDataColumnIndex;
@@ -435,13 +435,13 @@ export default function DataTable<TData, TValue>({
         )}
       >
         <Table className="w-full min-w-[300px] table-fixed border-separate border-spacing-0">
-          <TableHeader className="sticky top-0 z-50 bg-surface-secondary">
+          <TableHeader className="bg-surface-secondary sticky top-0 z-50">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b border-border-light">
+              <TableRow key={headerGroup.id} className="border-border-light border-b">
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="whitespace-nowrap bg-surface-secondary px-2 py-2 text-left text-sm font-medium text-text-secondary sm:px-4"
+                    className="bg-surface-secondary text-text-secondary px-2 py-2 text-left text-sm font-medium whitespace-nowrap sm:px-4"
                     style={getColumnStyle(
                       header.column.columnDef as TableColumn<TData, TValue>,
                       isSmallScreen,

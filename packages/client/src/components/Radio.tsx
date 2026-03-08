@@ -79,11 +79,11 @@ const Radio = memo(function Radio({
   if (options.length === 0) {
     return (
       <div
-        className="relative inline-flex items-center rounded-lg bg-muted p-1 opacity-50"
+        className="bg-muted relative inline-flex items-center rounded-lg p-1 opacity-50"
         role="radiogroup"
         aria-labelledby={ariaLabelledBy}
       >
-        <span className="px-4 py-2 text-xs text-muted-foreground">
+        <span className="text-muted-foreground px-4 py-2 text-xs">
           {localize('com_ui_no_options')}
         </span>
       </div>
@@ -94,13 +94,13 @@ const Radio = memo(function Radio({
 
   return (
     <div
-      className={`relative ${fullWidth ? 'flex' : 'inline-flex'} items-center rounded-lg bg-muted p-1 ${className}`}
+      className={`relative ${fullWidth ? 'flex' : 'inline-flex'} bg-muted items-center rounded-lg p-1 ${className}`}
       role="radiogroup"
       aria-labelledby={ariaLabelledBy}
     >
       {selectedIndex >= 0 && isMounted && (
         <div
-          className="pointer-events-none absolute inset-y-1 rounded-md border border-border/50 bg-background shadow-sm transition-all duration-300 ease-out"
+          className="border-border/50 bg-background pointer-events-none absolute inset-y-1 rounded-md border shadow-sm transition-all duration-300 ease-out"
           style={backgroundStyle}
         />
       )}
@@ -115,7 +115,7 @@ const Radio = memo(function Radio({
           aria-checked={currentValue === option.value}
           onClick={() => handleChange(option.value)}
           disabled={disabled}
-          className={`relative z-10 flex h-[34px] items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          className={`focus-visible:ring-ring relative z-10 flex h-[34px] items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none ${
             currentValue === option.value ? 'text-foreground' : 'text-foreground'
           } ${disabled ? 'cursor-not-allowed opacity-50' : ''} ${fullWidth ? 'flex-1' : ''}`}
         >

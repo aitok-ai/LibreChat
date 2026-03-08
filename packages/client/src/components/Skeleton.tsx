@@ -4,7 +4,7 @@ function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-surface-tertiary opacity-50 dark:opacity-25',
+        'bg-surface-tertiary animate-pulse rounded-md opacity-50 dark:opacity-25',
         className,
       )}
       {...props}

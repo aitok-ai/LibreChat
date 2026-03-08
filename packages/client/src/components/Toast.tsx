@@ -54,7 +54,7 @@ export function Toast() {
             </div>
           )}
           <RadixToast.Description className="flex-1 justify-center gap-2">
-            <div className="whitespace-pre-wrap text-left">{toast.message}</div>
+            <div className="text-left whitespace-pre-wrap">{toast.message}</div>
           </RadixToast.Description>
         </div>
       </div>

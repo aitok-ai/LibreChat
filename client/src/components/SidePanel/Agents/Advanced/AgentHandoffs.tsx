@@ -119,18 +119,18 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
     <HoverCard openDelay={50}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <label className="font-semibold text-text-primary">
+          <label className="text-text-primary font-semibold">
             {localize('com_ui_agent_handoffs')}
           </label>
           <HoverCardTrigger>
-            <CircleHelpIcon className="h-4 w-4 text-text-tertiary" />
+            <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
           </HoverCardTrigger>
         </div>
         <div className="flex items-center gap-3">
           <div className="rounded-full border border-purple-600/40 bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-700 hover:bg-purple-700/10 dark:text-purple-400">
             {localize('com_ui_beta')}
           </div>
-          <div className="text-xs text-text-secondary">
+          <div className="text-text-secondary text-xs">
             {edges.length} / {MAX_HANDOFFS}
           </div>
         </div>
@@ -143,7 +143,7 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
           return (
             <React.Fragment key={idx}>
               <div className="space-y-1">
-                <div className="flex h-10 items-center gap-2 rounded-md border border-border-medium bg-surface-tertiary pr-2">
+                <div className="border-border-medium bg-surface-tertiary flex h-10 items-center gap-2 rounded-md border pr-2">
                   <ControlCombobox
                     isCollapsed={false}
                     ariaLabel={localize('com_ui_agent_var', { 0: localize('com_ui_select') })}
@@ -168,12 +168,12 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
                         agent={targetAgentId && agentsMap ? agentsMap[targetAgentId] : undefined}
                       />
                     }
-                    className="flex-1 border-border-heavy"
+                    className="border-border-heavy flex-1"
                     containerClassName="px-0"
                   />
                   <button
                     type="button"
-                    className="rounded p-1 transition hover:bg-surface-hover"
+                    className="hover:bg-surface-hover rounded p-1 transition"
                     onClick={() => toggleExpanded(idx)}
                   >
                     <ChevronDown
@@ -185,7 +185,7 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
                   </button>
                   <button
                     type="button"
-                    className="rounded-xl p-1 transition hover:bg-surface-hover"
+                    className="hover:bg-surface-hover rounded-xl p-1 transition"
                     onClick={() => removeHandoffAt(idx)}
                   >
                     <X size={18} className="text-text-secondary" />
@@ -193,11 +193,11 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
                 </div>
 
                 {isExpanded && (
-                  <div className="space-y-3 rounded-md border border-border-light bg-surface-primary p-3">
+                  <div className="border-border-light bg-surface-primary space-y-3 rounded-md border p-3">
                     <div>
                       <Label
                         htmlFor={`handoff-desc-${idx}`}
-                        className="text-xs text-text-secondary"
+                        className="text-text-secondary text-xs"
                       >
                         {localize('com_ui_agent_handoff_description')}
                       </Label>
@@ -215,7 +215,7 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
                     <div>
                       <Label
                         htmlFor={`handoff-prompt-${idx}`}
-                        className="text-xs text-text-secondary"
+                        className="text-text-secondary text-xs"
                       >
                         {localize('com_ui_agent_handoff_prompt')}
                       </Label>
@@ -232,7 +232,7 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
                       <div>
                         <Label
                           htmlFor={`handoff-promptkey-${idx}`}
-                          className="text-xs text-text-secondary"
+                          className="text-text-secondary text-xs"
                         >
                           {localize('com_ui_agent_handoff_prompt_key')}
                         </Label>
@@ -251,7 +251,7 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
                 )}
               </div>
               {idx < edges.length - 1 && (
-                <Waypoints className="mx-auto text-text-secondary" size={14} />
+                <Waypoints className="text-text-secondary mx-auto" size={14} />
               )}
             </React.Fragment>
           );
@@ -259,7 +259,7 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
 
         {edges.length < MAX_HANDOFFS && (
           <>
-            {edges.length > 0 && <Waypoints className="mx-auto text-text-secondary" size={14} />}
+            {edges.length > 0 && <Waypoints className="text-text-secondary mx-auto" size={14} />}
             <ControlCombobox
               isCollapsed={false}
               ariaLabel={localize('com_ui_agent_var', { 0: localize('com_ui_add') })}
@@ -268,7 +268,7 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
               selectPlaceholder={localize('com_ui_agent_handoff_add')}
               searchPlaceholder={localize('com_ui_agent_var', { 0: localize('com_ui_search') })}
               items={selectableAgents}
-              className="h-10 w-full border-dashed border-border-heavy text-center text-text-secondary hover:text-text-primary"
+              className="border-border-heavy text-text-secondary hover:text-text-primary h-10 w-full border-dashed text-center"
               containerClassName="px-0"
               SelectIcon={<PlusCircle size={16} className="text-text-secondary" />}
             />
@@ -276,7 +276,7 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
         )}
 
         {edges.length >= MAX_HANDOFFS && (
-          <p className="pt-1 text-center text-xs italic text-text-tertiary">
+          <p className="text-text-tertiary pt-1 text-center text-xs italic">
             {localize('com_ui_agent_handoff_max', { 0: MAX_HANDOFFS })}
           </p>
         )}
@@ -284,8 +284,8 @@ const AgentHandoffs: React.FC<AgentHandoffsProps> = ({ field, currentAgentId }) 
       <HoverCardPortal>
         <HoverCardContent side={ESide.Top} className="w-80">
           <div className="space-y-2">
-            <p className="text-sm text-text-secondary">{localize('com_ui_agent_handoff_info')}</p>
-            <p className="text-sm text-text-secondary">{localize('com_ui_agent_handoff_info_2')}</p>
+            <p className="text-text-secondary text-sm">{localize('com_ui_agent_handoff_info')}</p>
+            <p className="text-text-secondary text-sm">{localize('com_ui_agent_handoff_info_2')}</p>
           </div>
         </HoverCardContent>
       </HoverCardPortal>

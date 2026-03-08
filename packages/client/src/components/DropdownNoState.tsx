@@ -53,7 +53,7 @@ const Dropdown: FC<DropdownProps> = ({
           <ListboxButton
             data-testid={testId}
             className={cn(
-              'relative inline-flex items-center justify-between rounded-md border-gray-50 bg-white py-2 pl-3 pr-8 text-black transition-all duration-100 ease-in-out hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:ring-white dark:focus:ring-offset-gray-700',
+              'relative inline-flex items-center justify-between rounded-md border-gray-50 bg-white py-2 pr-8 pl-3 text-black transition-all duration-100 ease-in-out hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:ring-white dark:focus:ring-offset-gray-700',
               'w-auto',
               className,
             )}
@@ -94,7 +94,7 @@ const Dropdown: FC<DropdownProps> = ({
                   key={index}
                   value={item}
                   className={cn(
-                    'relative cursor-pointer select-none rounded border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm text-gray-700 hover:bg-gray-100 dark:border-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600',
+                    'relative cursor-pointer rounded border-gray-300 bg-white py-2.5 pr-3 pl-3 text-sm text-gray-700 select-none hover:bg-gray-100 dark:border-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600',
                   )}
                   style={{ width: '100%' }}
                   data-theme={getValue(item)}

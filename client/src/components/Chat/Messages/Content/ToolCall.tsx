@@ -235,7 +235,7 @@ export default function ToolCall({
       >
         <div
           className={cn(
-            'overflow-hidden rounded-xl border border-border-light bg-surface-secondary shadow-md',
+            'border-border-light bg-surface-secondary overflow-hidden rounded-xl border shadow-md',
             showInfo && 'shadow-lg',
           )}
           style={{
@@ -262,7 +262,7 @@ export default function ToolCall({
       </div>
       {auth != null && auth && progress < 1 && !cancelled && (
         <div className="flex w-full flex-col gap-2.5">
-          <div className="mb-1 mt-2">
+          <div className="mt-2 mb-1">
             <Button
               className="font-mediu inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm"
               variant="default"
@@ -272,7 +272,7 @@ export default function ToolCall({
               {localize('com_ui_sign_in_to_domain', { 0: authDomain })}
             </Button>
           </div>
-          <p className="flex items-center text-xs text-text-warning">
+          <p className="text-text-warning flex items-center text-xs">
             <TriangleAlert className="mr-1.5 inline-block h-4 w-4" aria-hidden="true" />
             {localize('com_assistants_allow_sites_you_trust')}
           </p>

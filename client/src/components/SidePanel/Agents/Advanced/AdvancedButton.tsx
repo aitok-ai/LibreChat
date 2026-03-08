@@ -15,7 +15,7 @@ const AdvancedButton: React.FC<AdvancedButtonProps> = ({ setActivePanel }) => {
     <Button
       size={'sm'}
       variant={'outline'}
-      className="btn btn-neutral border-token-border-light relative h-9 w-full gap-1 rounded-lg font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary"
+      className="btn btn-neutral border-token-border-light focus-visible:outline-text-primary relative h-9 w-full gap-1 rounded-lg font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
       onClick={() => setActivePanel(Panel.advanced)}
       aria-label={localize('com_ui_advanced')}
     >

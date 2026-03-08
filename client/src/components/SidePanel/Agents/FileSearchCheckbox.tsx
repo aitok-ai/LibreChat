@@ -50,13 +50,13 @@ function FileSearchCheckbox() {
               className="inline-flex items-center"
               aria-label={localize('com_agents_file_search_info')}
             >
-              <CircleHelpIcon className="h-4 w-4 text-text-tertiary" />
+              <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
             </button>
           </HoverCardTrigger>
           <HoverCardPortal>
             <HoverCardContent side={ESide.Top} className="w-80">
               <div className="space-y-2">
-                <p className="text-sm text-text-secondary">
+                <p className="text-text-secondary text-sm">
                   {localize('com_agents_file_search_info')}
                 </p>
               </div>

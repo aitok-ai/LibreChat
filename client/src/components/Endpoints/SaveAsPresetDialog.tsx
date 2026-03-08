@@ -74,7 +74,7 @@ const SaveAsPresetDialog = ({ open, onOpenChange, preset }: TEditPresetProps) =>
                 aria-label={localize('com_endpoint_preset_name')}
                 className={cn(
                   defaultTextProps,
-                  'flex h-10 max-h-10 w-full resize-none border-border-medium px-3 py-2',
+                  'border-border-medium flex h-10 max-h-10 w-full resize-none px-3 py-2',
                   removeFocusOutlines,
                 )}
               />

@@ -45,7 +45,7 @@ export default function OpenSidebar({
           aria-expanded={false}
           aria-controls="chat-history-nav"
           className={cn(
-            'rounded-xl bg-presentation duration-0 hover:bg-surface-active-alt',
+            'bg-presentation hover:bg-surface-active-alt rounded-xl duration-0',
             className,
           )}
           onClick={handleClick}

@@ -185,12 +185,12 @@ function KeyItem({
   };
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-border-light p-3">
+    <div className="border-border-light flex items-center justify-between rounded-lg border p-3">
       <div className="flex items-center gap-3">
-        <Key className="h-5 w-5 text-text-secondary" />
+        <Key className="text-text-secondary h-5 w-5" />
         <div>
           <div className="font-medium">{name}</div>
-          <div className="text-sm text-text-secondary">
+          <div className="text-text-secondary text-sm">
             <span className="font-mono">{keyPrefix}...</span>
             <span className="mx-2">•</span>
             <span>
@@ -233,7 +233,7 @@ function KeyItem({
             onClick={() => setConfirmDelete(true)}
             title={localize('com_ui_delete')}
           >
-            <Trash2 className="h-4 w-4 text-text-secondary hover:text-red-500" />
+            <Trash2 className="text-text-secondary h-4 w-4 hover:text-red-500" />
           </Button>
         )}
       </div>
@@ -276,9 +276,9 @@ function ApiKeysContent({ isOpen }: { isOpen: boolean }) {
             />
           ))}
         {!isLoading && (!data?.keys || data.keys.length === 0) && (
-          <div className="rounded-lg border-2 border-dashed border-border-light p-8 text-center">
-            <Key className="mx-auto h-8 w-8 text-text-secondary" />
-            <p className="mt-2 text-sm text-text-secondary">{localize('com_ui_no_api_keys')}</p>
+          <div className="border-border-light rounded-lg border-2 border-dashed p-8 text-center">
+            <Key className="text-text-secondary mx-auto h-8 w-8" />
+            <p className="text-text-secondary mt-2 text-sm">{localize('com_ui_no_api_keys')}</p>
           </div>
         )}
       </div>
@@ -346,11 +346,11 @@ export function AgentApiKeys() {
 
         <OGDialogContent
           title={localize('com_ui_agent_api_keys')}
-          className="w-11/12 max-w-2xl bg-background text-text-primary shadow-2xl"
+          className="bg-background text-text-primary w-11/12 max-w-2xl shadow-2xl"
         >
           <OGDialogHeader>
             <OGDialogTitle>{localize('com_ui_agent_api_keys')}</OGDialogTitle>
-            <p className="text-sm text-text-secondary">
+            <p className="text-text-secondary text-sm">
               {localize('com_ui_agent_api_keys_description')}
             </p>
           </OGDialogHeader>

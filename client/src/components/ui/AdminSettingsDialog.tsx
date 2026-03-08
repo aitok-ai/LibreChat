@@ -168,7 +168,7 @@ const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
     <Button
       size="sm"
       variant="outline"
-      className="relative h-9 w-full gap-2 rounded-lg border-border-light font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary"
+      className="border-border-light focus-visible:outline-text-primary relative h-9 w-full gap-2 rounded-lg font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
       aria-label={localize('com_ui_admin_settings')}
     >
       <ShieldEllipsis className="size-5 cursor-pointer" aria-hidden="true" />
@@ -183,7 +183,7 @@ const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
         <OGDialogContent
           className={
             dialogContentClassName ??
-            'w-11/12 max-w-lg border-border-light bg-surface-primary text-text-primary'
+            'border-border-light bg-surface-primary text-text-primary w-11/12 max-w-lg'
           }
         >
           <OGDialogTitle>
@@ -199,7 +199,7 @@ const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
                 isOpen={isRoleMenuOpen}
                 setIsOpen={setIsRoleMenuOpen}
                 trigger={
-                  <Ariakit.MenuButton className="inline-flex w-1/4 items-center justify-center rounded-lg border border-border-light bg-transparent px-2 py-1 text-text-primary transition-all ease-in-out hover:bg-surface-tertiary">
+                  <Ariakit.MenuButton className="border-border-light text-text-primary hover:bg-surface-tertiary inline-flex w-1/4 items-center justify-center rounded-lg border bg-transparent px-2 py-1 transition-all ease-in-out">
                     {selectedRole}
                   </Ariakit.MenuButton>
                 }
@@ -236,7 +236,7 @@ const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
                       {showAdminWarning &&
                         selectedRole === SystemRoles.ADMIN &&
                         permission === Permissions.USE && (
-                          <div className="mb-2 max-w-full whitespace-normal break-words text-sm text-red-600">
+                          <div className="mb-2 max-w-full text-sm break-words whitespace-normal text-red-600">
                             <span>{localize('com_ui_admin_access_warning')}</span>
                             {'\n'}
                             <a

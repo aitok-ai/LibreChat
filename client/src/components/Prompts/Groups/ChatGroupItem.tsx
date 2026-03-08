@@ -55,7 +55,7 @@ function ChatGroupItem({
 
   return (
     <>
-      <div className="relative my-2 items-stretch justify-between rounded-xl border border-border-light px-1 shadow-sm transition-all duration-300 ease-in-out hover:bg-surface-tertiary hover:shadow-lg">
+      <div className="border-border-light hover:bg-surface-tertiary relative my-2 items-stretch justify-between rounded-xl border px-1 shadow-sm transition-all duration-300 ease-in-out hover:shadow-lg">
         <ListCard
           name={group.name}
           category={group.category ?? ''}
@@ -67,14 +67,14 @@ function ChatGroupItem({
           }
         ></ListCard>
         {groupIsGlobal === true && (
-          <div className="absolute right-14 top-[16px]">
+          <div className="absolute top-[16px] right-14">
             <EarthIcon
               className="icon-md text-green-400"
               aria-label={localize('com_ui_sr_global_prompt')}
             />
           </div>
         )}
-        <div className="absolute right-0 top-0 mr-1 mt-2.5 items-start pl-2">
+        <div className="absolute top-0 right-0 mt-2.5 mr-1 items-start pl-2">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button
@@ -90,7 +90,7 @@ function ChatGroupItem({
                     e.stopPropagation();
                   }
                 }}
-                className="z-50 mr-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-medium bg-transparent p-0 text-sm font-medium transition-all duration-300 ease-in-out hover:border-border-heavy hover:bg-surface-hover focus:border-border-heavy focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                className="border-border-medium hover:border-border-heavy hover:bg-surface-hover focus:border-border-heavy z-50 mr-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-transparent p-0 text-sm font-medium transition-all duration-300 ease-in-out focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
               >
                 <MenuIcon className="icon-md text-text-secondary" aria-hidden="true" />
               </button>
@@ -110,20 +110,20 @@ function ChatGroupItem({
                 onKeyDown={(e) => {
                   e.stopPropagation();
                 }}
-                className="w-full cursor-pointer rounded-lg text-text-primary hover:bg-surface-hover focus:bg-surface-hover disabled:cursor-not-allowed"
+                className="text-text-primary hover:bg-surface-hover focus:bg-surface-hover w-full cursor-pointer rounded-lg disabled:cursor-not-allowed"
               >
-                <TextSearch className="mr-2 h-4 w-4 text-text-primary" aria-hidden="true" />
+                <TextSearch className="text-text-primary mr-2 h-4 w-4" aria-hidden="true" />
                 <span>{localize('com_ui_preview')}</span>
               </DropdownMenuItem>
               {canEdit && (
                 <DropdownMenuGroup>
                   <DropdownMenuItem
                     disabled={!canEdit}
-                    className="cursor-pointer rounded-lg text-text-primary hover:bg-surface-hover focus:bg-surface-hover disabled:cursor-not-allowed"
+                    className="text-text-primary hover:bg-surface-hover focus:bg-surface-hover cursor-pointer rounded-lg disabled:cursor-not-allowed"
                     asChild
                   >
                     <Link to={`/d/prompts/${group._id}`}>
-                      <EditIcon className="mr-2 h-4 w-4 text-text-primary" aria-hidden="true" />
+                      <EditIcon className="text-text-primary mr-2 h-4 w-4" aria-hidden="true" />
                       <span>{localize('com_ui_edit')}</span>
                     </Link>
                   </DropdownMenuItem>

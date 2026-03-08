@@ -37,7 +37,7 @@ export default function VersionItem({
   };
 
   return (
-    <div className="rounded-md border border-border-light p-3">
+    <div className="border-border-light rounded-md border p-3">
       <div className="flex items-center justify-between font-medium">
         <span>
           {localize('com_ui_agent_version_title', { versionNumber: versionsLength - index })}
@@ -48,7 +48,7 @@ export default function VersionItem({
           </span>
         )}
       </div>
-      <div className="text-sm text-text-secondary">{getVersionTimestamp(version)}</div>
+      <div className="text-text-secondary text-sm">{getVersionTimestamp(version)}</div>
       {!isActive && (
         <button
           className="mt-2 text-sm text-blue-500 hover:text-blue-600"

@@ -133,7 +133,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
         <Table className="w-full min-w-[300px] border-separate border-spacing-0">
           <TableHeader className="sticky top-0 z-50">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b border-border-light">
+              <TableRow key={headerGroup.id} className="border-border-light border-b">
                 {headerGroup.headers.map((header, _index) => {
                   const size = header.getSize();
                   const style: Style = {
@@ -143,7 +143,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
                   return (
                     <TableHead
                       key={header.id}
-                      className="whitespace-nowrap bg-surface-secondary px-2 py-2 text-left text-sm font-medium text-text-secondary sm:px-4"
+                      className="bg-surface-secondary text-text-secondary px-2 py-2 text-left text-sm font-medium whitespace-nowrap sm:px-4"
                       style={{ ...style }}
                     >
                       {header.isPlaceholder
@@ -161,7 +161,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="border-b border-border-light transition-colors hover:bg-surface-secondary [tr:last-child_&]:border-b-0"
+                  className="border-border-light hover:bg-surface-secondary border-b transition-colors [tr:last-child_&]:border-b-0"
                 >
                   {row.getVisibleCells().map((cell, _index) => {
                     const size = cell.column.getSize();
@@ -196,7 +196,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
       </div>
 
       <div className="flex items-center justify-end gap-2 py-4">
-        <div className="ml-2 flex-1 truncate text-xs text-muted-foreground sm:ml-4 sm:text-sm">
+        <div className="text-muted-foreground ml-2 flex-1 truncate text-xs sm:ml-4 sm:text-sm">
           <span className="hidden sm:inline">
             {localize('com_files_number_selected', {
               0: `${table.getFilteredSelectedRowModel().rows.length}`,
@@ -209,7 +209,7 @@ export default function DataTable<TData, TValue>({ columns, data }: DataTablePro
             }`}
           </span>
         </div>
-        <div className="flex items-center space-x-1 pr-2 text-xs font-bold text-text-primary sm:text-sm">
+        <div className="text-text-primary flex items-center space-x-1 pr-2 text-xs font-bold sm:text-sm">
           <span className="hidden sm:inline">{localize('com_ui_page')}</span>
           <span>{table.getState().pagination.pageIndex + 1}</span>
           <span>/</span>

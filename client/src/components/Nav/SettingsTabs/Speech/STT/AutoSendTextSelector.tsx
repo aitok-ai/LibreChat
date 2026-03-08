@@ -69,7 +69,7 @@ export default function AutoSendTextSelector() {
       {isEnabled && (
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center justify-between">
-            <div id="auto-send-delay-label" className="text-sm text-text-secondary">
+            <div id="auto-send-delay-label" className="text-text-secondary text-sm">
               {localize('com_nav_setting_delay')}
             </div>
           </div>

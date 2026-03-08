@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import type { TMessageProps } from '~/common';
-// eslint-disable-next-line import/no-cycle
+
 import Message from './Message';
 import store from '~/store';
 
@@ -44,20 +44,20 @@ export default function MultiMessage({
       <>
         {messagesTree
           ? messagesTree.map((message) => (
-            <Message
-              key={message.messageId}
-              conversation={conversation}
-              message={message}
-              scrollToBottom={scrollToBottom}
-              currentEditId={currentEditId}
-              setCurrentEditId={null}
-              siblingIdx={1}
-              siblingCount={1}
-              setSiblingIdx={null}
-              name={name}
-              userId={userId}
-            />
-          ))
+              <Message
+                key={message.messageId}
+                conversation={conversation}
+                message={message}
+                scrollToBottom={scrollToBottom}
+                currentEditId={currentEditId}
+                setCurrentEditId={null}
+                siblingIdx={1}
+                siblingCount={1}
+                setSiblingIdx={null}
+                name={name}
+                userId={userId}
+              />
+            ))
           : null}
       </>
     );

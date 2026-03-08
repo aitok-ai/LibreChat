@@ -32,7 +32,7 @@ export default function AdvancedPanel() {
             labelClass="w-fit"
             labelAdjacent={
               <HoverCardTrigger>
-                <CircleHelpIcon className="h-4 w-4 text-text-tertiary" />
+                <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
               </HoverCardTrigger>
             }
           />
@@ -41,7 +41,7 @@ export default function AdvancedPanel() {
       <HoverCardPortal>
         <HoverCardContent side={ESide.Top} className="w-80">
           <div className="space-y-2">
-            <p className="text-sm text-text-secondary">
+            <p className="text-text-secondary text-sm">
               {localize('com_ui_agent_recursion_limit_info')}
             </p>
           </div>

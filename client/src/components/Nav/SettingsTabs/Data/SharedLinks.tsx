@@ -180,7 +180,7 @@ export default function SharedLinks() {
                 <Button
                   variant="ghost"
                   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                  className="px-2 py-0 text-xs hover:bg-surface-hover sm:px-2 sm:py-2 sm:text-sm"
+                  className="hover:bg-surface-hover px-2 py-0 text-xs sm:px-2 sm:py-2 sm:text-sm"
                   aria-sort={ariaSort}
                   aria-label={localize('com_ui_name_sort')}
                   aria-current={sortState ? 'true' : 'false'}
@@ -200,7 +200,7 @@ export default function SharedLinks() {
                 to={`/share/${shareId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-1 truncate rounded-sm text-blue-600 underline decoration-1 underline-offset-2 hover:decoration-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                className="group focus:ring-ring flex items-center gap-1 truncate rounded-sm text-blue-600 underline decoration-1 underline-offset-2 hover:decoration-2 focus:ring-2 focus:outline-none"
                 title={title}
               >
                 <span className="truncate">{title}</span>
@@ -238,7 +238,7 @@ export default function SharedLinks() {
                 <Button
                   variant="ghost"
                   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                  className="px-2 py-0 text-xs hover:bg-surface-hover sm:px-2 sm:py-2 sm:text-sm"
+                  className="hover:bg-surface-hover px-2 py-0 text-xs sm:px-2 sm:py-2 sm:text-sm"
                   aria-sort={ariaSort}
                   aria-label={localize('com_ui_date_sort')}
                   aria-current={sortState ? 'true' : 'false'}
@@ -276,7 +276,7 @@ export default function SharedLinks() {
                   href={`/c/${row.original.conversationId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-8 w-8 items-center justify-center rounded-md p-0 transition-colors hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="hover:bg-surface-hover focus:ring-ring flex h-8 w-8 items-center justify-center rounded-md p-0 transition-colors focus:ring-2 focus:outline-none"
                   aria-label={localize('com_ui_open_source_chat_new_tab_title', {
                     title: row.original.title || localize('com_ui_untitled'),
                   })}
@@ -290,7 +290,7 @@ export default function SharedLinks() {
               render={
                 <Button
                   variant="ghost"
-                  className="h-8 w-8 p-0 hover:bg-surface-hover"
+                  className="hover:bg-surface-hover h-8 w-8 p-0"
                   onClick={() => {
                     setDeleteRow(row.original);
                     setIsDeleteOpen(true);
@@ -325,7 +325,7 @@ export default function SharedLinks() {
 
         <OGDialogContent
           title={localize('com_nav_shared_links')}
-          className="w-11/12 max-w-5xl bg-background text-text-primary shadow-2xl"
+          className="bg-background text-text-primary w-11/12 max-w-5xl shadow-2xl"
         >
           <OGDialogHeader>
             <OGDialogTitle>{localize('com_nav_shared_links')}</OGDialogTitle>
