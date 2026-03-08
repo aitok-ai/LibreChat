@@ -24,9 +24,8 @@ jobs:
         run: |
           npm run lint
       - name: Type check (TS)
-        if: ${{ exists('tsconfig.json') }}
         run: |
-          npm run typecheck
+          npm run typecheck --if-present
       - name: Run unit tests
         run: |
           npm test -- -t "" || true
