@@ -14,7 +14,7 @@ const { duplicateMessages } = require('../../models/Message');
 const crypto = require('crypto');
 const Conversation = require('~/db/models');
 const { sleep } = require('@librechat/agents');
-const { isEnabled } = require('@librechat/api');
+const { isEnabled, resolveImportMaxFileSize } = require('@librechat/api');
 const { logger } = require('@librechat/data-schemas');
 const { CacheKeys, EModelEndpoint } = require('librechat-data-provider');
 const {
@@ -358,8 +358,27 @@ router.post('/:conversationId/viewcount/increment', async (req, res) => {
 });
 
 const { importIpLimiter, importUserLimiter } = createImportLimiters();
+/** Fork and duplicate share one rate-limit budget (same "clone" operation class) */
 const { forkIpLimiter, forkUserLimiter } = createForkLimiters();
-const upload = multer({ storage: storage, fileFilter: importFileFilter });
+const importMaxFileSize = resolveImportMaxFileSize();
+const upload = multer({
+  storage,
+  fileFilter: importFileFilter,
+  limits: { fileSize: importMaxFileSize },
+});
+const uploadSingle = upload.single('file');
+
+function handleUpload(req, res, next) {
+  uploadSingle(req, res, (err) => {
+    if (err && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ message: 'File exceeds the maximum allowed size' });
+    }
+    if (err) {
+      return next(err);
+    }
+    next();
+  });
+}
 
 /**
  * Imports a conversation from a JSON file and saves it to the database.
@@ -372,7 +391,7 @@ router.post(
   importIpLimiter,
   importUserLimiter,
   configMiddleware,
-  upload.single('file'),
+  handleUpload,
   async (req, res) => {
     try {
       /* TODO: optimize to return imported conversations and add manually */
@@ -414,7 +433,7 @@ router.post('/fork', forkIpLimiter, forkUserLimiter, async (req, res) => {
   }
 });
 
-router.post('/duplicate', async (req, res) => {
+router.post('/duplicate', forkIpLimiter, forkUserLimiter, async (req, res) => {
   const { conversationId, title } = req.body;
 
   try {
