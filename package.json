@@ -233,6 +233,7 @@
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.3",
     "input-otp": "^1.4.2",
+    "mermaid": "^11.13.0",
     "module-alias": "^2.2.3",
     "okapibm25": "^1.4.1",
     "postcss-preset-env": "^11.2.0",

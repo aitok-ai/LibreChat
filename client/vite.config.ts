@@ -297,6 +297,7 @@ export default defineConfig(({ command }) => ({
     alias: {
       '~': path.join(__dirname, 'src/'),
       $fonts: path.resolve(__dirname, 'public/fonts'),
+      mermaid: require.resolve('mermaid/dist/mermaid.core.mjs'),
       'micromark-extension-math': 'micromark-extension-llm-math',
     },
   },

@@ -1562,6 +1562,10 @@ export enum ErrorTypes {
    */
   NO_BASE_URL = 'no_base_url',
   /**
+   * Base URL targets a restricted or invalid address (SSRF protection).
+   */
+  INVALID_BASE_URL = 'invalid_base_url',
+  /**
    * Moderation error
    */
   MODERATION = 'moderation',
