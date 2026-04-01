@@ -1,30 +1,24 @@
 import { GripVertical } from 'lucide-react';
-import * as ResizablePrimitive from 'react-resizable-panels';
-
+import { Group, Panel, Separator } from 'react-resizable-panels';
+import type { ComponentProps } from 'react';
 import { cn } from '~/utils';
 
-const ResizablePanelGroup = ({
-  className = '',
-  ...props
-}: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => (
-  <ResizablePrimitive.PanelGroup
-    className={cn('flex h-full w-full data-[panel-group-direction=vertical]:flex-col', className)}
-    {...props}
-  />
+const ResizablePanelGroup = ({ className = '', ...props }: ComponentProps<typeof Group>) => (
+  <Group className={cn('h-full w-full', className)} {...props} />
 );
 
-const ResizablePanel = ResizablePrimitive.Panel;
+const ResizablePanel = Panel;
 
 const ResizableHandle = ({
   withHandle,
   className = '',
   ...props
-}: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & {
+}: ComponentProps<typeof Separator> & {
   withHandle?: boolean;
 }) => (
-  <ResizablePrimitive.PanelResizeHandle
+  <Separator
     className={cn(
-      'bg-border focus-visible:ring-ring relative flex w-px items-center justify-center after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-none data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:translate-x-0 data-[panel-group-direction=vertical]:after:-translate-y-1/2 [&[data-panel-group-direction=vertical]>div]:rotate-90',
+      'bg-border focus-visible:ring-ring relative flex w-px items-center justify-center after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-none',
       className,
     )}
     {...props}
@@ -34,29 +28,29 @@ const ResizableHandle = ({
         <GripVertical className="h-2.5 w-2.5" />
       </div>
     )}
-  </ResizablePrimitive.PanelResizeHandle>
+  </Separator>
 );
 
 const ResizableHandleAlt = ({
   withHandle,
   className = '',
   ...props
-}: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & {
+}: ComponentProps<typeof Separator> & {
   withHandle?: boolean;
 }) => (
-  <ResizablePrimitive.PanelResizeHandle
+  <Separator
     className={cn(
-      'group bg-border focus-visible:ring-ring relative flex w-px items-center justify-center after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-none data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:translate-x-0 data-[panel-group-direction=vertical]:after:-translate-y-1/2 [&[data-panel-group-direction=vertical]>div]:rotate-90',
+      'group bg-border focus-visible:ring-ring relative flex w-px items-center justify-center after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-none',
       className,
     )}
     {...props}
   >
     {withHandle && (
-      <div className="bg-border invisible z-10 flex h-4 w-3 items-center justify-center rounded-sm border group-hover:visible group-active:visible group-data-[resize-handle-active]:visible">
+      <div className="bg-border invisible z-10 flex h-4 w-3 items-center justify-center rounded-sm border group-hover:visible group-active:visible group-data-[separator=active]:visible">
         <GripVertical className="h-2.5 w-2.5" />
       </div>
     )}
-  </ResizablePrimitive.PanelResizeHandle>
+  </Separator>
 );
 
 export { ResizablePanelGroup, ResizablePanel, ResizableHandle, ResizableHandleAlt };

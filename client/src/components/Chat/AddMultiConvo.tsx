@@ -44,9 +44,9 @@ function AddMultiConvo() {
       aria-label={localize('com_ui_add_multi_conversation')}
       onClick={clickHandler}
       data-testid="add-multi-convo-button"
-      className="border-border-light bg-presentation text-text-primary hover:bg-surface-tertiary radix-state-open:bg-surface-tertiary inline-flex size-10 flex-shrink-0 items-center justify-center rounded-xl border transition-all ease-in-out disabled:pointer-events-none disabled:opacity-50"
+      className="border-border-light bg-presentation text-text-primary hover:bg-surface-tertiary radix-state-open:bg-surface-tertiary inline-flex size-9 flex-shrink-0 items-center justify-center rounded-xl border transition-all ease-in-out disabled:pointer-events-none disabled:opacity-50"
     >
-      <PlusCircle className="icon-lg" aria-hidden="true" />
+      <PlusCircle className="icon-sm" aria-hidden="true" />
     </TooltipAnchor>
   );
 }

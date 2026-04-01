@@ -110,7 +110,7 @@ function DynamicTags({
           <div className="flex w-full justify-between">
             <Label
               htmlFor={`${settingKey}-dynamic-input`}
-              className="text-left text-sm font-medium"
+              className="text-left text-xs font-medium"
             >
               {labelCode ? (localize(label as TranslationKeys) ?? label) : label || settingKey}{' '}
               {showDefault && (
@@ -125,7 +125,7 @@ function DynamicTags({
             </Label>
           </div>
           <div>
-            <div className="bg-surface-secondary mb-2 flex flex-wrap rounded-lg break-all">
+            <div className="border-border-light bg-surface-secondary mb-2 flex flex-wrap rounded-lg border break-all">
               {currentTags && currentTags.length > 0 && (
                 <div className="flex w-full gap-1 p-1">
                   {currentTags.map((tag: string, index: number) => (
@@ -165,7 +165,7 @@ function DynamicTags({
                     ? (localize(placeholder as TranslationKeys) ?? placeholder)
                     : placeholder
                 }
-                className={cn('bg-surface-secondary flex h-10 max-h-10 border-none px-3 py-2')}
+                className={cn('bg-surface-secondary flex h-9 max-h-9 border-none px-3 py-2')}
               />
             </div>
           </div>

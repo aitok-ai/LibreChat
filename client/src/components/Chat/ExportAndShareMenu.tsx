@@ -81,10 +81,10 @@ export default function ExportAndShareMenu({
               <Ariakit.MenuButton
                 id="export-menu-button"
                 aria-label="Export options"
-                className="border-border-light bg-presentation text-text-primary hover:bg-surface-tertiary radix-state-open:bg-surface-tertiary inline-flex size-10 flex-shrink-0 items-center justify-center rounded-xl border transition-all ease-in-out disabled:pointer-events-none disabled:opacity-50"
+                className="border-border-light bg-presentation text-text-primary hover:bg-surface-tertiary radix-state-open:bg-surface-tertiary inline-flex size-9 flex-shrink-0 items-center justify-center rounded-xl border transition-all ease-in-out disabled:pointer-events-none disabled:opacity-50"
               >
                 <Share2
-                  className="icon-lg text-text-primary"
+                  className="icon-md text-text-primary"
                   aria-hidden="true"
                   focusable="false"
                 />

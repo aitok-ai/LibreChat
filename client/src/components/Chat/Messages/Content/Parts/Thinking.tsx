@@ -1,11 +1,11 @@
 import { useState, useMemo, memo, useCallback, useRef, useId, type MouseEvent } from 'react';
 import { useAtomValue } from 'jotai';
-import { Clipboard, CheckMark, TooltipAnchor } from '@librechat/client';
 import { Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clipboard, CheckMark, TooltipAnchor } from '@librechat/client';
 import type { FocusEvent, FC } from 'react';
+import { useLocalize, useExpandCollapse } from '~/hooks';
 import { showThinkingAtom } from '~/store/showThinking';
 import { fontSizeAtom } from '~/store/fontSize';
-import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
 /**
@@ -18,7 +18,7 @@ export const ThinkingContent: FC<{
   const fontSize = useAtomValue(fontSizeAtom);
 
   return (
-    <div className="border-border-medium bg-surface-tertiary text-text-secondary relative rounded-3xl border p-4 pb-10">
+    <div className="border-border-light bg-surface-secondary text-text-secondary relative rounded-lg border p-3 pb-8">
       <p className={cn('leading-[26px] whitespace-pre-wrap', fontSize)}>{children}</p>
     </div>
   );
@@ -184,7 +184,7 @@ export const FloatingThinkingBar = memo(
               aria-expanded={isExpanded}
               aria-controls={contentId}
               className={cn(
-                'bg-surface-secondary text-text-secondary-alt flex items-center justify-center rounded-lg p-1.5 shadow-sm',
+                'text-text-tertiary flex items-center justify-center rounded p-1.5',
                 'hover:bg-surface-hover hover:text-text-primary',
                 'focus-visible:ring-border-heavy focus-visible:ring-2 focus-visible:outline-none',
               )}
@@ -207,7 +207,7 @@ export const FloatingThinkingBar = memo(
                 onClick={handleCopy}
                 aria-label={copyTooltip}
                 className={cn(
-                  'bg-surface-secondary text-text-secondary-alt flex items-center justify-center rounded-lg p-1.5 shadow-sm',
+                  'text-text-tertiary flex items-center justify-center rounded p-1.5',
                   'hover:bg-surface-hover hover:text-text-primary',
                   'focus-visible:ring-border-heavy focus-visible:ring-2 focus-visible:outline-none',
                 )}
@@ -248,6 +248,7 @@ const Thinking: React.ElementType = memo(({ children }: { children: React.ReactN
   const [isBarVisible, setIsBarVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentId = useId();
+  const { style: expandStyle, ref: expandRef } = useExpandCollapse(isExpanded);
 
   const handleClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -311,12 +312,10 @@ const Thinking: React.ElementType = memo(({ children }: { children: React.ReactN
         role="group"
         aria-label={label}
         aria-hidden={!isExpanded || undefined}
-        className={cn('grid transition-all duration-300 ease-out', isExpanded && 'mb-8')}
-        style={{
-          gridTemplateRows: isExpanded ? '1fr' : '0fr',
-        }}
+        className={cn(isExpanded && 'mb-8')}
+        style={expandStyle}
       >
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden" ref={expandRef}>
           <ThinkingContent>{children}</ThinkingContent>
           <FloatingThinkingBar
             isVisible={isBarVisible && isExpanded}

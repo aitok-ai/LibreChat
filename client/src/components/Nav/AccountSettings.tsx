@@ -1,23 +1,31 @@
 import { useState, memo, useRef } from 'react';
 import * as Menu from '@ariakit/react/menu';
 import { FileText, LogOut } from 'lucide-react';
-import { LinkIcon, GearIcon, DropdownMenuSeparator, Avatar } from '@librechat/client';
+import {
+  LinkIcon,
+  GearIcon,
+  DropdownMenuSeparator,
+  Avatar,
+  HomeIcon,
+  UserIcon,
+  LeaderboardIcon,
+} from '@librechat/client';
+import { useNavigate } from 'react-router-dom';
 import { MyFilesModal } from '~/components/Chat/Input/Files/MyFilesModal';
 import { useGetStartupConfig, useGetUserBalance } from '~/data-provider';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { useLocalize } from '~/hooks';
 import Settings from './Settings';
-import Profile from '../Profile';
 
-function AccountSettings() {
+function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
   const localize = useLocalize();
+  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuthContext();
   const { data: startupConfig } = useGetStartupConfig();
   const balanceQuery = useGetUserBalance({
     enabled: !!isAuthenticated && startupConfig?.balance?.enabled,
   });
   const [showSettings, setShowSettings] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
   const [showFiles, setShowFiles] = useState(false);
   const accountSettingsButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -31,25 +39,35 @@ function AccountSettings() {
         ref={accountSettingsButtonRef}
         aria-label={localize('com_nav_account_settings')}
         data-testid="nav-user"
-        className="mt-text-sm hover:bg-surface-active-alt aria-[expanded=true]:bg-surface-active-alt flex h-auto w-full items-center gap-2 rounded-xl p-2 text-sm transition-all duration-200 ease-in-out"
+        className={
+          collapsed
+            ? 'hover:bg-surface-active-alt aria-[expanded=true]:bg-surface-active-alt flex h-9 w-9 items-center justify-center rounded-lg transition-colors'
+            : 'mt-text-sm hover:bg-surface-active-alt aria-[expanded=true]:bg-surface-active-alt flex h-auto w-full items-center gap-2 rounded-xl p-2 text-sm transition-all duration-200 ease-in-out'
+        }
       >
-        <div className="-ml-0.9 -mt-0.8 h-8 w-8 flex-shrink-0">
+        <div
+          className={collapsed ? 'size-7 flex-shrink-0' : '-ml-0.9 -mt-0.8 h-8 w-8 flex-shrink-0'}
+        >
           <div className="relative flex">
-            <Avatar user={user} size={32} />
+            <Avatar user={user} size={collapsed ? 28 : 32} />
           </div>
         </div>
-        <div
-          className="text-text-primary mt-2 grow overflow-hidden text-left text-ellipsis whitespace-nowrap"
-          style={{ marginTop: '0', marginLeft: '0' }}
-        >
-          {user.name ?? user.username ?? localize('com_nav_user')}
-        </div>
+        {!collapsed && (
+          <div
+            className="text-text-primary mt-2 grow overflow-hidden text-left text-ellipsis whitespace-nowrap"
+            style={{ marginTop: '0', marginLeft: '0' }}
+          >
+            {user?.name ?? user?.username ?? localize('com_nav_user')}
+          </div>
+        )}
       </Menu.MenuButton>
       <Menu.Menu
+        portal
         className="account-settings-popover popover-ui z-[125] w-[305px] rounded-lg md:w-[244px]"
+        placement={collapsed ? 'right-end' : undefined}
         style={{
-          transformOrigin: 'bottom',
-          translate: '0 -4px',
+          transformOrigin: collapsed ? 'left bottom' : 'bottom',
+          translate: collapsed ? '4px 0' : '0 -4px',
         }}
       >
         <div className="text-token-text-secondary mr-2 ml-3 py-2 text-sm" role="note">
@@ -65,9 +83,29 @@ function AccountSettings() {
             <DropdownMenuSeparator />
           </>
         )}
+        <Menu.MenuItem
+          onClick={() => navigate(`/profile/${user.id}`)}
+          className="select-item text-sm"
+        >
+          <UserIcon className="icon-md" aria-hidden="true" />
+          {localize('com_ui_profile')}
+        </Menu.MenuItem>
+        <Menu.MenuItem onClick={() => navigate('/home')} className="select-item text-sm">
+          <HomeIcon className="icon-md" aria-hidden="true" />
+          {localize('com_ui_hottest')}
+        </Menu.MenuItem>
+        <Menu.MenuItem onClick={() => navigate('/leaderboard')} className="select-item text-sm">
+          <LeaderboardIcon className="icon-md" aria-hidden="true" />
+          {localize('com_ui_referrals_leaderboard')}
+        </Menu.MenuItem>
         <Menu.MenuItem onClick={() => setShowFiles(true)} className="select-item text-sm">
           <FileText className="icon-md" aria-hidden="true" />
           {localize('com_nav_my_files')}
+        </Menu.MenuItem>
+        <DropdownMenuSeparator />
+        <Menu.MenuItem onClick={() => setShowSettings(true)} className="select-item text-sm">
+          <GearIcon className="icon-md" aria-hidden="true" />
+          {localize('com_nav_settings')}
         </Menu.MenuItem>
         {startupConfig?.helpAndFaqURL !== '/' && (
           <Menu.MenuItem
@@ -78,10 +116,6 @@ function AccountSettings() {
             {localize('com_nav_help_faq')}
           </Menu.MenuItem>
         )}
-        <Menu.MenuItem onClick={() => setShowSettings(true)} className="select-item text-sm">
-          <GearIcon className="icon-md" aria-hidden="true" />
-          {localize('com_nav_settings')}
-        </Menu.MenuItem>
         <DropdownMenuSeparator />
         <Menu.MenuItem onClick={() => logout()} className="select-item text-sm">
           <LogOut className="icon-md" aria-hidden="true" />
@@ -96,7 +130,6 @@ function AccountSettings() {
         />
       )}
       {showSettings && <Settings open={showSettings} onOpenChange={setShowSettings} />}
-      {showProfile && <Profile isOpen={showProfile} setIsOpen={setShowProfile} user={user} />}
     </Menu.MenuProvider>
   );
 }

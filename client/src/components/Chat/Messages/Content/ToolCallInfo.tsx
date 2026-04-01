@@ -1,61 +1,125 @@
-import React from 'react';
-import { useLocalize } from '~/hooks';
+import { useState, useMemo } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Tools } from 'librechat-data-provider';
 import { UIResourceRenderer } from '@mcp-ui/client';
-import UIResourceCarousel from './UIResourceCarousel';
 import type { TAttachment, UIResource } from 'librechat-data-provider';
+import { useLocalize, useExpandCollapse } from '~/hooks';
+import UIResourceCarousel from './UIResourceCarousel';
+import { useMessagesOperations } from '~/Providers';
+import { OutputRenderer } from './ToolOutput';
+import { handleUIAction, cn } from '~/utils';
 
-function OptimizedCodeBlock({ text, maxHeight = 320 }: { text: string; maxHeight?: number }) {
+function isSimpleObject(obj: unknown): obj is Record<string, string | number | boolean | null> {
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+    return false;
+  }
+  const entries = Object.entries(obj);
+  if (entries.length === 0 || entries.length > 8) {
+    return false;
+  }
+  return entries.every(
+    ([, v]) =>
+      v === null || typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean',
+  );
+}
+
+function KeyValueInput({ data }: { data: Record<string, string | number | boolean | null> }) {
   return (
-    <div
-      className="bg-surface-tertiary text-text-primary rounded-lg p-2 text-xs"
-      style={{
-        position: 'relative',
-        maxHeight,
-        overflow: 'auto',
-      }}
-    >
-      <pre className="m-0 break-words whitespace-pre-wrap" style={{ overflowWrap: 'break-word' }}>
-        <code>{text}</code>
-      </pre>
+    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+      {Object.entries(data).map(([key, value]) => (
+        <div key={key} className="flex items-baseline gap-1.5">
+          <span className="text-text-secondary font-medium">{key}</span>
+          <span className="bg-surface-tertiary text-text-primary rounded px-1.5 py-0.5">
+            {String(value ?? 'null')}
+          </span>
+        </div>
+      ))}
     </div>
   );
+}
+
+function formatParamValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return value.length > 200 ? value.slice(0, 200) + '...' : value;
+  }
+  if (typeof value !== 'object') {
+    return String(value);
+  }
+  const str = JSON.stringify(value);
+  return str.length > 200 ? str.slice(0, 200) + '...' : str;
+}
+
+function ComplexInput({ data }: { data: Record<string, unknown> }) {
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+      {Object.entries(data).map(([key, value]) => (
+        <div key={key} className="flex items-baseline gap-1.5">
+          <span className="text-text-secondary font-medium">{key}</span>
+          <span className="bg-surface-tertiary text-text-primary max-w-[300px] truncate overflow-hidden rounded px-1.5 py-0.5 font-mono">
+            {formatParamValue(value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function InputRenderer({ input }: { input: string }) {
+  if (!input || input.trim().length === 0) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(input);
+    if (isSimpleObject(parsed)) {
+      return <KeyValueInput data={parsed} />;
+    }
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      return <ComplexInput data={parsed as Record<string, unknown>} />;
+    }
+    // Valid JSON but not a plain object (array, string, number, boolean) — render formatted
+    return (
+      <pre className="text-text-primary text-xs whitespace-pre-wrap">
+        {typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2)}
+      </pre>
+    );
+  } catch {
+    // Not JSON — render as plain text
+    return <pre className="text-text-primary text-xs whitespace-pre-wrap">{input}</pre>;
+  }
 }
 
 export default function ToolCallInfo({
   input,
   output,
-  domain,
-  function_name,
-  pendingAuth,
   attachments,
 }: {
   input: string;
-  function_name: string;
   output?: string | null;
-  domain?: string;
-  pendingAuth?: boolean;
   attachments?: TAttachment[];
 }) {
   const localize = useLocalize();
-  const formatText = (text: string) => {
-    try {
-      return JSON.stringify(JSON.parse(text), null, 2);
-    } catch {
-      return text;
-    }
-  };
+  const { ask } = useMessagesOperations();
+  const [showParams, setShowParams] = useState(false);
+  const { style: paramsExpandStyle, ref: paramsExpandRef } = useExpandCollapse(showParams);
 
-  let title =
-    domain != null && domain
-      ? localize('com_assistants_domain_info', { 0: domain })
-      : localize('com_assistants_function_use', { 0: function_name });
-  if (pendingAuth === true) {
-    title =
-      domain != null && domain
-        ? localize('com_assistants_action_attempt', { 0: domain })
-        : localize('com_assistants_attempt_info');
-  }
+  const hasParams = useMemo(() => {
+    if (!input || input.trim().length === 0) {
+      return false;
+    }
+    try {
+      const parsed = JSON.parse(input);
+      if (typeof parsed === 'object' && parsed !== null) {
+        return Object.keys(parsed).length > 0;
+      }
+    } catch {
+      // Not JSON
+    }
+    return input.trim().length > 0;
+  }, [input]);
 
   const uiResources: UIResource[] =
     attachments
@@ -65,43 +129,51 @@ export default function ToolCallInfo({
       }) ?? [];
 
   return (
-    <div className="w-full p-2">
-      <div style={{ opacity: 1 }}>
-        <div className="text-text-primary mb-2 text-sm font-medium">{title}</div>
-        <div>
-          <OptimizedCodeBlock text={formatText(input)} maxHeight={250} />
-        </div>
-        {output && (
-          <>
-            <div className="text-text-primary my-2 text-sm font-medium">
-              {localize('com_ui_result')}
-            </div>
-            <div>
-              <OptimizedCodeBlock text={formatText(output)} maxHeight={250} />
-            </div>
-            {uiResources.length > 0 && (
-              <div className="text-text-primary my-2 text-sm font-medium">
-                {localize('com_ui_ui_resources')}
-              </div>
+    <div className="w-full px-3 py-3.5">
+      {output && <OutputRenderer text={output} />}
+      {output && hasParams && <div className="border-border-light my-2 border-t" />}
+      {hasParams && (
+        <>
+          <button
+            type="button"
+            className={cn(
+              'text-text-secondary inline-flex items-center gap-1 text-xs',
+              'focus-visible:ring-border-heavy focus-visible:ring-2 focus-visible:outline-none',
             )}
-            <div>
-              {uiResources.length > 1 && <UIResourceCarousel uiResources={uiResources} />}
-
-              {uiResources.length === 1 && (
-                <UIResourceRenderer
-                  resource={uiResources[0]}
-                  onUIAction={async (result) => {
-                    console.log('Action:', result);
-                  }}
-                  htmlProps={{
-                    autoResizeIframe: { width: true, height: true },
-                  }}
-                />
+            onClick={() => setShowParams((prev) => !prev)}
+            aria-expanded={showParams}
+          >
+            <span>{localize('com_ui_parameters')}</span>
+            <ChevronDown
+              className={cn(
+                'size-3 shrink-0 transition-transform duration-200 ease-out',
+                showParams && 'rotate-180',
               )}
+              aria-hidden="true"
+            />
+          </button>
+          <div style={paramsExpandStyle}>
+            <div className="overflow-hidden pt-1" ref={paramsExpandRef}>
+              <InputRenderer input={input} />
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
+      {uiResources.length > 0 && (
+        <>
+          {(hasParams || output) && <div className="border-border-light my-2 border-t" />}
+          {uiResources.length > 1 && <UIResourceCarousel uiResources={uiResources} />}
+          {uiResources.length === 1 && (
+            <UIResourceRenderer
+              resource={uiResources[0]}
+              onUIAction={async (result) => handleUIAction(result, ask)}
+              htmlProps={{
+                autoResizeIframe: { width: true, height: true },
+              }}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

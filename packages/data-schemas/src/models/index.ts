@@ -13,7 +13,6 @@ import { createActionModel } from './action';
 import { createAssistantModel } from './assistant';
 import { createFileModel } from './file';
 import { createBannerModel } from './banner';
-import { createProjectModel } from './project';
 import { createKeyModel } from './key';
 import { createPluginAuthModel } from './pluginAuth';
 import { createTransactionModel } from './transaction';
@@ -26,6 +25,7 @@ import { createToolCallModel } from './toolCall';
 import { createMemoryModel } from './memory';
 import { createAccessRoleModel } from './accessRole';
 import { createAclEntryModel } from './aclEntry';
+import { createSystemGrantModel } from './systemGrant';
 import { createGroupModel } from './group';
 import { createVideoJobModel } from './videoJob';
 
@@ -49,7 +49,6 @@ export function createModels(mongoose: typeof import('mongoose')) {
     Assistant: createAssistantModel(mongoose),
     File: createFileModel(mongoose),
     Banner: createBannerModel(mongoose),
-    Project: createProjectModel(mongoose),
     Key: createKeyModel(mongoose),
     PluginAuth: createPluginAuthModel(mongoose),
     Transaction: createTransactionModel(mongoose),
@@ -62,6 +61,7 @@ export function createModels(mongoose: typeof import('mongoose')) {
     MemoryEntry: createMemoryModel(mongoose),
     AccessRole: createAccessRoleModel(mongoose),
     AclEntry: createAclEntryModel(mongoose),
+    SystemGrant: createSystemGrantModel(mongoose),
     Group: createGroupModel(mongoose),
     VideoJob: createVideoJobModel(mongoose),
   };

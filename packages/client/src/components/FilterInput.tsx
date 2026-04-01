@@ -35,7 +35,7 @@ const FilterInput = React.forwardRef<HTMLInputElement, FilterInputProps>(
           placeholder=" "
           aria-label={label}
           className={cn(
-            'peer border-border-light ring-offset-background placeholder:text-muted-foreground flex h-10 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            'peer border-border-light ring-offset-background placeholder:text-muted-foreground flex h-9 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             className,
           )}
           {...props}

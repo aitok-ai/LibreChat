@@ -65,7 +65,7 @@ function ModelSelectorContent() {
       description={localize('com_ui_select_model')}
       render={
         <button
-          className="border-border-light bg-presentation text-text-primary hover:bg-surface-active-alt my-1 flex h-10 w-full max-w-[70vw] items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm"
+          className="border-border-light bg-presentation text-text-primary hover:bg-surface-active-alt my-1 flex h-9 w-full max-w-[70vw] items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm"
           aria-label={localize('com_ui_select_model')}
         >
           {selectedIcon && React.isValidElement(selectedIcon) && (

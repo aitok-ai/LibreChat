@@ -19,6 +19,7 @@ import SourcesErrorBoundary from './SourcesErrorBoundary';
 import { useFileDownload } from '~/data-provider';
 import { useSearchContext } from '~/Providers';
 import { useLocalize } from '~/hooks';
+import { cn } from '~/utils';
 import store from '~/store';
 
 interface SourceItemProps {
@@ -88,39 +89,45 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
           </Ariakit.HovercardDisclosure>
 
           <Ariakit.Hovercard
+            animated
             gutter={16}
-            className="dark:shadow-lg-dark border-border-medium bg-surface-secondary text-text-primary z-[999] w-[300px] max-w-[calc(100vw-2rem)] rounded-xl border p-3 shadow-lg"
+            className={cn(
+              'border-border-medium bg-surface-secondary text-text-primary z-[999] w-[320px] max-w-[calc(100vw-2rem)] rounded-xl border p-3 shadow-lg',
+              'origin-top-left scale-95 opacity-0 transition-[opacity,transform] duration-150 ease-out',
+              'data-[enter]:scale-100 data-[enter]:opacity-100',
+              'data-[leave]:scale-95 data-[leave]:opacity-0',
+            )}
             portal={true}
             unmountOnHide={true}
           >
             <div className="flex gap-3">
-              <div className="flex-1">
-                <div className="mb-2 flex items-center">
-                  <FaviconImage domain={domain} className="mr-2" />
+              <div className="min-w-0 flex-1">
+                <div className="mb-1.5 overflow-hidden text-sm">
+                  <FaviconImage domain={domain} className="float-left mt-0.5 mr-2" />
+                  <span className="text-text-secondary float-right ml-2 max-w-[40%] truncate text-xs">
+                    {domain}
+                  </span>
                   <a
                     href={source.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="line-clamp-2 cursor-pointer overflow-hidden text-sm font-bold text-[#0066cc] hover:underline md:line-clamp-3 dark:text-blue-400"
+                    className="text-text-primary font-medium hover:underline"
                   >
-                    {source.attribution || domain}
+                    {source.title || source.link}
                   </a>
                 </div>
-                <h4 className="text-text-primary mt-0 mb-1.5 text-xs md:text-sm">
-                  {source.title || source.link}
-                </h4>
                 {'snippet' in source && source.snippet && (
-                  <span className="text-text-secondary my-2 text-xs break-all text-ellipsis md:text-sm">
+                  <p className="text-text-secondary line-clamp-4 text-xs break-words md:text-sm">
                     {source.snippet}
-                  </span>
+                  </p>
                 )}
               </div>
               {'imageUrl' in source && source.imageUrl && (
-                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md">
+                <div className="size-24 shrink-0 overflow-hidden rounded-md">
                   <img
                     src={source.imageUrl}
                     alt={source.title || localize('com_sources_image_alt')}
-                    className="h-full w-full object-cover"
+                    className="size-full object-cover"
                   />
                 </div>
               )}
@@ -298,11 +305,11 @@ const FileItem = React.memo(function FileItem({
           <span className="text-text-secondary truncate text-xs font-medium">
             {localize('com_sources_agent_file')}
           </span>
-          {!isLocalFile && <Download className="ml-auto h-3 w-3" aria-hidden="true" />}
+          {!isLocalFile && <Download className="ml-auto size-3" aria-hidden="true" />}
         </div>
         <div className="mt-1 min-w-0">
-          <span className="text-text-primary line-clamp-2 text-left text-sm font-medium break-all md:line-clamp-3">
-            {file.originalname ?? file.filename}
+          <span className="text-text-primary line-clamp-2 text-left text-sm font-medium break-words md:line-clamp-3">
+            {file.filename}
           </span>
           {file.pages && file.pages.length > 0 && (
             <span className="text-text-secondary mt-1 line-clamp-1 text-left text-xs">
@@ -337,11 +344,11 @@ const FileItem = React.memo(function FileItem({
         <span className="text-text-secondary truncate text-xs font-medium">
           {localize('com_sources_agent_file')}
         </span>
-        {!isLocalFile && <Download className="ml-auto h-3 w-3" aria-hidden="true" />}
+        {!isLocalFile && <Download className="ml-auto size-3" aria-hidden="true" />}
       </div>
       <div className="mt-1 min-w-0">
-        <span className="text-text-primary line-clamp-2 text-left text-sm font-medium break-all md:line-clamp-3">
-          {file.originalname ?? file.filename}
+        <span className="text-text-primary line-clamp-2 text-left text-sm font-medium break-words md:line-clamp-3">
+          {file.filename}
         </span>
         {file.pages && file.pages.length > 0 && (
           <span className="text-text-secondary mt-1 line-clamp-1 text-left text-xs">
@@ -428,7 +435,7 @@ const SourcesGroup = React.memo(function SourcesGroup({
               className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary rounded-full p-1"
               aria-label={localize('com_ui_close')}
             >
-              <X className="h-4 w-4" aria-hidden="true" />
+              <X className="size-4" aria-hidden="true" />
             </OGDialogClose>
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-2">
@@ -506,7 +513,7 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
             <div className="flex items-center gap-2">
               <div className="relative flex">
                 {remainingFiles.slice(0, 3).map((_, i) => (
-                  <File key={`file-icon-${i}`} className={`h-4 w-4 ${i > 0 ? 'ml-[-6px]' : ''}`} />
+                  <File key={`file-icon-${i}`} className={`size-4 ${i > 0 ? 'ml-[-6px]' : ''}`} />
                 ))}
               </div>
               <span className="text-text-secondary truncate text-xs font-medium">
@@ -524,7 +531,7 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
               className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary rounded-full p-1"
               aria-label={localize('com_ui_close')}
             >
-              <X className="h-4 w-4" aria-hidden="true" />
+              <X className="size-4" aria-hidden="true" />
             </OGDialogClose>
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-2">

@@ -18,6 +18,14 @@ import { alternateName } from 'librechat-data-provider';
 import MessagesView from '../Share/MessagesView';
 import { mapFiles } from '~/utils';
 
+function toConversationList(payload: unknown): TConversation[] {
+  return Array.isArray(payload) ? (payload as TConversation[]) : [];
+}
+
+function toMessageList(payload: unknown): TMessage[] {
+  return Array.isArray(payload) ? (payload as TMessage[]) : [];
+}
+
 export default function Recommendations() {
   const [tabValue, setTabValue] = useState<string>(
     window.sessionStorage.getItem('tab') || 'recent',
@@ -153,13 +161,14 @@ export default function Recommendations() {
         },
       });
       const responseObject = await response.json();
+      const conversations = toConversationList(responseObject);
 
       // Cache the conversations in localStorage
-      window.sessionStorage.setItem(`${tabValue}Conversations`, JSON.stringify(responseObject));
+      window.sessionStorage.setItem(`${tabValue}Conversations`, JSON.stringify(conversations));
 
       // Update UI states
-      setConvoData(responseObject);
-      setConvoDataLength(responseObject.length);
+      setConvoData(conversations);
+      setConvoDataLength(conversations.length);
     } catch (error) {
       console.log(error);
     }
@@ -175,7 +184,7 @@ export default function Recommendations() {
     if (conversations && cacheLS && idxLS) {
       setConvoData(null);
       setConvoUser(null);
-      const convoObject = JSON.parse(conversations);
+      const convoObject = toConversationList(JSON.parse(conversations));
       setConvoData(convoObject);
       setConvoDataLength(convoObject.length);
 
@@ -212,7 +221,8 @@ export default function Recommendations() {
 
       const messagesResponseObject = await messagesResponse.json();
       const userResponseObject = await userResponse.json();
-      const cacheObject = { user: userResponseObject, messages: messagesResponseObject };
+      const normalizedMessages = toMessageList(messagesResponseObject);
+      const cacheObject = { user: userResponseObject, messages: normalizedMessages };
 
       // Cache the newly fetched user and messages and maintain the cache size to 5
       if (cacheIdx > cache.length - 1) {
@@ -234,7 +244,7 @@ export default function Recommendations() {
       saveCache();
       saveIdx();
 
-      setMsgTree(buildTree({ messages: messagesResponseObject, fileMap }) || null);
+      setMsgTree(buildTree({ messages: normalizedMessages, fileMap }) || null);
       setConvoUser(userResponseObject);
     } catch (error) {
       console.log(error);
@@ -338,8 +348,9 @@ export default function Recommendations() {
       // Get from cache if possible
       if (cache[cacheIdx]) {
         const { user, messages } = cache[cacheIdx];
-        console.log(messages);
-        setMsgTree(buildTree({ messages }) || null);
+        const normalizedMessages = toMessageList(messages);
+        console.log(normalizedMessages);
+        setMsgTree(buildTree({ messages: normalizedMessages }) || null);
         setConvoUser(user);
       } else {
         fetchConvoMessagesAndUser(

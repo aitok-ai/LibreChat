@@ -1,26 +1,25 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 interface StdoutProps {
   output?: string;
 }
 
-const Stdout: React.FC<StdoutProps> = ({ output = '' }) => {
+export default function Stdout({ output = '' }: StdoutProps) {
   const processedContent = useMemo(() => {
     if (!output) {
       return '';
     }
-
     const parts = output.split('Generated files:');
     return parts[0].trim();
   }, [output]);
 
-  return (
-    processedContent && (
-      <pre className="shrink-0">
-        <div className="text-text-primary">{processedContent}</div>
-      </pre>
-    )
-  );
-};
+  if (!processedContent) {
+    return null;
+  }
 
-export default Stdout;
+  return (
+    <pre className="text-text-primary shrink-0 font-mono break-words whitespace-pre-wrap">
+      {processedContent}
+    </pre>
+  );
+}

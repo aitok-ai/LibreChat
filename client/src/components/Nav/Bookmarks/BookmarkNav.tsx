@@ -108,8 +108,8 @@ const BookmarkNav: FC<BookmarkNavProps> = ({ tags, setTags }: BookmarkNavProps) 
               aria-pressed={tags.length > 0}
               className={cn(
                 'flex items-center justify-center',
-                'text-text-primary hover:bg-accent hover:text-accent-foreground size-10 border-none',
-                'hover:bg-surface-active-alt rounded-full border-none p-2 md:rounded-xl',
+                'text-text-primary hover:bg-accent hover:text-accent-foreground size-9 border-none',
+                'hover:bg-surface-active-alt rounded-lg border-none p-2',
                 'outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-white',
                 isMenuOpen ? 'bg-surface-hover' : '',
               )}

@@ -94,7 +94,7 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
       </div>
       <div className="space-y-1">
         {/* Current fixed agent */}
-        <div className="border-border-medium bg-surface-primary-contrast flex h-10 items-center justify-between rounded-md border px-3 py-2">
+        <div className="border-border-medium bg-surface-primary-contrast flex h-9 items-center justify-between rounded-md border px-3 py-2">
           <div className="flex items-center gap-2">
             <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full">
               <MessageIcon
@@ -115,7 +115,7 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
         {<Link2 className="text-text-secondary mx-auto" size={14} />}
         {agentIds.map((agentId, idx) => (
           <React.Fragment key={agentId}>
-            <div className="border-border-medium bg-surface-tertiary flex h-10 items-center gap-2 rounded-md border pr-2">
+            <div className="border-border-medium bg-surface-tertiary flex h-9 items-center gap-2 rounded-md border pr-2">
               <ControlCombobox
                 isCollapsed={false}
                 ariaLabel={localize('com_ui_agent_var', { 0: localize('com_ui_select') })}
@@ -170,7 +170,7 @@ const AgentChain: React.FC<AgentChainProps> = ({ field, currentAgentId }) => {
               selectPlaceholder={localize('com_ui_agent_var', { 0: localize('com_ui_add') })}
               searchPlaceholder={localize('com_ui_agent_var', { 0: localize('com_ui_search') })}
               items={selectableAgents}
-              className="border-border-heavy text-text-secondary hover:text-text-primary h-10 w-full border-dashed text-center"
+              className="border-border-heavy text-text-secondary hover:text-text-primary h-9 w-full border-dashed text-center"
               containerClassName="px-0"
               SelectIcon={<PlusCircle size={16} className="text-text-secondary" />}
             />

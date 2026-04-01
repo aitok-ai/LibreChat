@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback, useRef } from 'react';
+import React, { memo, useMemo } from 'react';
 import * as Ariakit from '@ariakit/react';
 import { ChevronDown } from 'lucide-react';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
@@ -29,23 +29,8 @@ function MCPSelectContent() {
   const fallbackMenuStore = Ariakit.useMenuStore({ focusLoop: true });
   const menuStore = mcpMenuStore ?? fallbackMenuStore;
   const isOpen = menuStore.useState('open');
-  const focusedElementRef = useRef<HTMLElement | null>(null);
 
   const selectedCount = mcpValues?.length ?? 0;
-
-  // Wrap toggleServerSelection to preserve focus after state update
-  const handleToggle = useCallback(
-    (serverName: string) => {
-      // Save currently focused element
-      focusedElementRef.current = document.activeElement as HTMLElement;
-      toggleServerSelection(serverName);
-      // Restore focus after React re-renders
-      requestAnimationFrame(() => {
-        focusedElementRef.current?.focus();
-      });
-    },
-    [toggleServerSelection],
-  );
 
   const selectedServers = useMemo(() => {
     if (!mcpValues || mcpValues.length === 0) {
@@ -105,6 +90,8 @@ function MCPSelectContent() {
         <Ariakit.Menu
           portal={true}
           gutter={8}
+          modal={true}
+          unmountOnHide={true}
           aria-label={localize('com_ui_mcp_servers')}
           className={cn(
             'z-50 flex max-w-[320px] min-w-[260px] flex-col rounded-xl',
@@ -123,7 +110,7 @@ function MCPSelectContent() {
                 connectionStatus={connectionStatus}
                 isInitializing={isInitializing}
                 statusIconProps={getServerStatusIconProps(server.serverName)}
-                onToggle={handleToggle}
+                onToggle={toggleServerSelection}
               />
             ))}
           </div>

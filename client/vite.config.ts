@@ -267,8 +267,17 @@ export default defineConfig(({ command }) => ({
             if (normalizedId.includes('/src/locales/')) {
               return 'locales';
             }
-            // Let Rollup decide automatically for any other files.
-            return null;
+
+            if (normalizedId.includes('@icons-pack/react-simple-icons/icons/')) {
+              return;
+            }
+
+            // Everything else falls into a generic vendor chunk.
+            return 'vendor';
+          }
+          // Create a separate chunk for all locale files under src/locales.
+          if (normalizedId.includes('/src/locales/')) {
+            return 'locales';
           }
         },
         entryFileNames: 'assets/[name].[hash].js',

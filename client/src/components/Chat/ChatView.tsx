@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { Constants, buildTree } from 'librechat-data-provider';
 import type { TMessage } from 'librechat-data-provider';
 import type { ChatFormValues } from '~/common';
-import { ChatContext, AddedChatContext, useFileMapContext, ChatFormProvider } from '~/Providers';
+import { ChatContext, AddedChatContext, ChatFormProvider, useFileMapContext } from '~/Providers';
 import { useAddedResponse, useResumeOnLoad, useAdaptiveSSE, useChatHelpers } from '~/hooks';
 import ConversationStarters from './Input/ConversationStarters';
 import { useGetMessagesByConvoId } from '~/data-provider';
@@ -19,7 +19,6 @@ import Footer from './Footer';
 import { cn } from '~/utils';
 import store from '~/store';
 import ChatWidget from '../Input/ChatWidgetMenu';
-import MessageHeaderButtons from '../Messages/MessageHeaderButtons';
 
 function LoadingSpinner() {
   return (
@@ -35,6 +34,10 @@ function ChatView({ index = 0 }: { index?: number }) {
   const { conversationId } = useParams();
   const rootSubmission = useRecoilValue(store.submissionByIndex(index));
   const centerFormOnLanding = useRecoilValue(store.centerFormOnLanding);
+
+  const methods = useForm<ChatFormValues>({
+    defaultValues: { text: '' },
+  });
 
   const fileMap = useFileMapContext();
 
@@ -58,11 +61,7 @@ function ChatView({ index = 0 }: { index?: number }) {
   // Wait for messages to load before resuming to avoid race condition
   useResumeOnLoad(conversationId, chatHelpers.getMessages, index, !isLoading);
 
-  const methods = useForm<ChatFormValues>({
-    defaultValues: { text: '' },
-  });
-
-  let content, content_message_header: JSX.Element | null | undefined;
+  let content: JSX.Element | null | undefined;
   const isLandingPage =
     (!messagesTree || messagesTree.length === 0) &&
     (conversationId === Constants.NEW_CONVO || !conversationId);
@@ -73,12 +72,7 @@ function ChatView({ index = 0 }: { index?: number }) {
   } else if ((isLoading || isNavigating) && !isLandingPage) {
     content = <LoadingSpinner />;
   } else if (!isLandingPage) {
-    content = (
-      <>
-        <MessagesView messagesTree={messagesTree} />
-      </>
-    );
-    content_message_header = <MessageHeaderButtons conversationId={conversationId} index={index} />;
+    content = <MessagesView messagesTree={messagesTree} />;
   } else {
     content = <Landing centerFormOnLanding={centerFormOnLanding} />;
   }
@@ -89,8 +83,8 @@ function ChatView({ index = 0 }: { index?: number }) {
         <AddedChatContext.Provider value={addedChatHelpers}>
           <Presentation>
             <div className="relative flex h-full w-full flex-col">
-              {!isLoading && <Header />}
-              <div className="flex flex-1 flex-col overflow-hidden">
+              <Header />
+              <div className="flex min-h-0 flex-1 flex-col">
                 <div
                   className={cn(
                     'flex flex-1 flex-col overflow-y-auto',
@@ -99,7 +93,7 @@ function ChatView({ index = 0 }: { index?: number }) {
                 >
                   {content}
                 </div>
-                <div className="relative flex w-full flex-col items-center">
+                <div className="relative mt-auto flex w-full flex-col items-center">
                   <div className="relative w-full">
                     <ChatWidget />
                   </div>

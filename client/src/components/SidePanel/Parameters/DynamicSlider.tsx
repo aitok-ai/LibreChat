@@ -160,7 +160,7 @@ function DynamicSlider({
           <div className="flex w-full items-center justify-between">
             <Label
               htmlFor={`${settingKey}-dynamic-setting`}
-              className="text-left text-sm font-medium break-words"
+              className="text-left text-xs font-medium break-words"
             >
               {labelCode ? (localize(label as TranslationKeys) ?? label) : label || settingKey}{' '}
               {showDefault && (
