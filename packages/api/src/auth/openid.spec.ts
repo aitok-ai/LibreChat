@@ -1,7 +1,12 @@
+import { Types } from 'mongoose';
 import { ErrorTypes } from 'librechat-data-provider';
 import { logger } from '@librechat/data-schemas';
 import type { IUser, UserMethods } from '@librechat/data-schemas';
 import { findOpenIDUser } from './openid';
+
+function newId() {
+  return new Types.ObjectId();
+}
 
 jest.mock('@librechat/data-schemas', () => ({
   ...jest.requireActual('@librechat/data-schemas'),
@@ -24,7 +29,7 @@ describe('findOpenIDUser', () => {
   describe('Primary condition searches', () => {
     it('should find user by openidId', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         openidId: 'openid_123',
         email: 'user@example.com',
@@ -51,7 +56,7 @@ describe('findOpenIDUser', () => {
 
     it('should find user by idOnTheSource', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         idOnTheSource: 'source_123',
         email: 'user@example.com',
@@ -78,7 +83,7 @@ describe('findOpenIDUser', () => {
 
     it('should find user by both openidId and idOnTheSource', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         openidId: 'openid_123',
         idOnTheSource: 'source_123',
@@ -109,7 +114,7 @@ describe('findOpenIDUser', () => {
   describe('Email-based searches', () => {
     it('should find user by email when primary conditions fail and openidId matches', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         openidId: 'openid_123',
         email: 'user@example.com',
@@ -177,7 +182,7 @@ describe('findOpenIDUser', () => {
   describe('Provider conflict handling', () => {
     it('should return error when user has different provider', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'google',
         email: 'user@example.com',
         username: 'testuser',
@@ -202,7 +207,7 @@ describe('findOpenIDUser', () => {
 
     it('should reject email fallback when existing openidId does not match token sub', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         openidId: 'openid_456',
         email: 'user@example.com',
@@ -226,7 +231,7 @@ describe('findOpenIDUser', () => {
 
     it('should allow email fallback when existing openidId matches token sub', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         openidId: 'openid_123',
         email: 'user@example.com',
@@ -252,7 +257,7 @@ describe('findOpenIDUser', () => {
   describe('User migration scenarios', () => {
     it('should prepare user for migration when email exists without openidId', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         email: 'user@example.com',
         username: 'testuser',
         // No provider and no openidId - needs migration
@@ -281,7 +286,7 @@ describe('findOpenIDUser', () => {
 
     it('should reject when user already has a different openidId', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         openidId: 'existing_openid',
         email: 'user@example.com',
@@ -305,7 +310,7 @@ describe('findOpenIDUser', () => {
 
     it('should reject when user has no provider but a different openidId', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         openidId: 'existing_openid',
         email: 'user@example.com',
         username: 'testuser',
@@ -412,7 +417,7 @@ describe('findOpenIDUser', () => {
 
     it('should pass email to findUser for case-insensitive lookup (findUser handles normalization)', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         openidId: 'openid_123',
         email: 'user@example.com',
@@ -448,7 +453,7 @@ describe('findOpenIDUser', () => {
 
     it('should reject email fallback when openidId is empty and user has a stored openidId', async () => {
       const mockUser: IUser = {
-        _id: 'user123',
+        _id: newId(),
         provider: 'openid',
         openidId: 'existing-real-id',
         email: 'user@example.com',

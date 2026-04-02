@@ -26,47 +26,30 @@ const { getLogStores } = require('~/cache');
 const db = require('~/models');
 
 const getUserController = async (req, res) => {
-  const appConfig = await getAppConfig({ role: req.user?.role });
-  const { userId } = req.params;
-
-  if (userId === undefined || userId === req.user.id) {
-    /** @type {IUser} */
-    const userData = req.user.toObject != null ? req.user.toObject() : { ...req.user };
-    /**
-     * These fields should not exist due to secure field selection, but deletion
-     * is done in case of alternate database incompatibility with Mongo API
-     * */
-    delete userData.password;
-    delete userData.totpSecret;
-    delete userData.backupCodes;
-    if (appConfig.fileStrategy === FileSources.s3 && userData.avatar) {
-      const avatarNeedsRefresh = needsRefresh(userData.avatar, 3600);
-      if (!avatarNeedsRefresh) {
-        return res.status(200).send(userData);
-      }
-      const originalAvatar = userData.avatar;
-      try {
-        userData.avatar = await getNewS3URL(userData.avatar);
-        await db.updateUser(userData.id, { avatar: userData.avatar });
-      } catch (error) {
-        userData.avatar = originalAvatar;
-        logger.error('Error getting new S3 URL for avatar:', error);
-      }
+  const appConfig = await getAppConfig({ role: req.user?.role, tenantId: req.user?.tenantId });
+  /** @type {IUser} */
+  const userData = req.user.toObject != null ? req.user.toObject() : { ...req.user };
+  /**
+   * These fields should not exist due to secure field selection, but deletion
+   * is done in case of alternate database incompatibility with Mongo API
+   * */
+  delete userData.password;
+  delete userData.totpSecret;
+  delete userData.backupCodes;
+  if (appConfig.fileStrategy === FileSources.s3 && userData.avatar) {
+    const avatarNeedsRefresh = needsRefresh(userData.avatar, 3600);
+    if (!avatarNeedsRefresh) {
+      return res.status(200).send(userData);
     }
-    return res.status(200).send(userData);
-  } else {
     try {
-      const userData = await db.getUserById(userId);
-      if (!userData) {
-        return res.status(404).json({ message: 'User not found' });
-      }
       userData.avatar = await getNewS3URL(userData.avatar);
       await db.updateUser(userData.id, { avatar: userData.avatar });
     } catch (error) {
-      logger.error(error);
-      return res.status(500).json({ message: 'Error getting user' });
+      logger.error('[UserController.js] Failed to refresh S3 avatar:', error);
+      return res.status(500).json({ message: 'Error refreshing avatar' });
     }
   }
+  return res.status(200).send(userData);
 };
 
 // update biography
@@ -91,7 +74,7 @@ const postBiographyController = async (req, res) => {
     }
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.error(error);
+    logger.error('[UserController.js] Failed to update biography:', error);
     res.status(500).json({ message: 'Error updating biography' });
   }
 };
@@ -120,8 +103,8 @@ const usernameController = async (req, res) => {
 
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error updating biography' });
+    logger.error('[UserController.js] Failed to update username:', error);
+    res.status(500).json({ message: 'Error updating username' });
   }
 };
 
@@ -237,7 +220,7 @@ const deleteUserMcpServers = async (userId) => {
 };
 
 const updateUserPluginsController = async (req, res) => {
-  const appConfig = await getAppConfig({ role: req.user?.role });
+  const appConfig = await getAppConfig({ role: req.user?.role, tenantId: req.user?.tenantId });
   const { user } = req;
   const { pluginKey, action, auth, isEntityTool } = req.body;
   try {
@@ -407,7 +390,7 @@ const followUserController = async (req, res) => {
     const following = dbResponse.following;
     res.status(200).send({ id, name, username, followers, following });
   } catch (err) {
-    console.log(err);
+    logger.error('[UserController.js] Error updating follow:', err);
     res.status(500).json({ message: err.message });
   }
 };

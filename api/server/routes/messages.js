@@ -421,8 +421,8 @@ router.post('/like', async (req, res) => {
     });
     res.status(201).send(dbResponse);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[messages.js] Failed to update message feedback:', error);
+    res.status(500).json({ message: 'Failed to update message feedback' });
   }
 });
 module.exports = router;

@@ -74,8 +74,8 @@ router.get('/hottest', requireJwtAuth, async (req, res) => {
     const allConvos = await getHottestConvo(userId);
     res.status(200).send(allConvos);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[convos.js] Failed to fetch hottest conversations:', error);
+    res.status(500).json({ message: 'Failed to fetch hottest conversations' });
   }
 });
 
@@ -85,8 +85,8 @@ router.get('/recent', requireJwtAuth, async (req, res) => {
     const recentConvos = await getRecentConvos(userId);
     res.status(200).send(recentConvos);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[convos.js] Failed to fetch recent conversations:', error);
+    res.status(500).json({ message: 'Failed to fetch recent conversations' });
   }
 });
 
@@ -96,8 +96,8 @@ router.get('/following', requireJwtAuth, async (req, res) => {
     const followingConvos = await getFollowingConvos(Object.keys(following));
     res.status(200).send(followingConvos);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[convos.js] Failed to fetch following conversations:', error);
+    res.status(500).json({ message: 'Failed to fetch following conversations' });
   }
 });
 
@@ -107,8 +107,8 @@ router.get('/likedConvos/:userId', requireJwtAuth, async (req, res) => {
     const likedConvos = await getLikedConvos(userId);
     res.status(200).send(likedConvos);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[convos.js] Failed to fetch liked conversations:', error);
+    res.status(500).json({ message: 'Failed to fetch liked conversations' });
   }
 });
 
@@ -118,8 +118,8 @@ router.get('/publicConvos/:userId', requireJwtAuth, async (req, res) => {
     const likedConvos = await getPublicConvos(userId);
     res.status(200).send(likedConvos);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[convos.js] Failed to fetch public conversations:', error);
+    res.status(500).json({ message: 'Failed to fetch public conversations' });
   }
 });
 
@@ -328,8 +328,8 @@ router.post('/duplicate', requireJwtAuth, async (req, res) => {
     const dbResponse = await newConvo.save();
     res.status(201).send(dbResponse);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[convos.js] Failed to duplicate conversation:', error);
+    res.status(500).json({ message: 'Failed to duplicate conversation' });
   }
 });
 
@@ -342,8 +342,8 @@ router.post('/like', async (req, res) => {
 
     res.status(201).send(dbResponse);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[convos.js] Failed to like conversation:', error);
+    res.status(500).json({ message: 'Failed to like conversation' });
   }
 });
 
@@ -358,8 +358,8 @@ router.post('/:conversationId/viewcount/increment', async (req, res) => {
 
     res.status(200).send(dbResponse);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
+    logger.error('[convos.js] Failed to increment view count:', error);
+    res.status(500).json({ message: 'Failed to increment view count' });
   }
 });
 
@@ -401,7 +401,11 @@ router.post(
   async (req, res) => {
     try {
       /* TODO: optimize to return imported conversations and add manually */
-      await importConversations({ filepath: req.file.path, requestUserId: req.user.id });
+      await importConversations({
+        filepath: req.file.path,
+        requestUserId: req.user.id,
+        userRole: req.user.role,
+      });
       res.status(201).json({ message: 'Conversation(s) imported successfully' });
     } catch (error) {
       logger.error('Error processing file', error);

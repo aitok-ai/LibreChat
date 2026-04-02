@@ -17,6 +17,8 @@ import {
   isAssistantsEndpoint,
   isAgentsEndpoint,
 } from 'librechat-data-provider';
+import type { TConversation } from 'librechat-data-provider';
+import type { ExtendedFile, FileSetter, ConvoGenerator } from '~/common';
 import {
   useChatContext,
   useChatFormContext,
@@ -34,7 +36,7 @@ import {
   useFocusChatEffect,
 } from '~/hooks';
 import { useCreateVideoJobMutation } from '~/data-provider';
-import { mainTextareaId, BadgeItem, ExtendedFile } from '~/common';
+import { mainTextareaId, BadgeItem } from '~/common';
 import AttachFileChat from './Files/AttachFileChat';
 import FileFormChat from './Files/FileFormChat';
 import { cn, removeFocusRings } from '~/utils';
@@ -52,7 +54,30 @@ type MenuStore = ReturnType<typeof Ariakit.useMenuStore>;
 import Mention from './Mention';
 import store from '~/store';
 
-const ChatForm = memo(({ index = 0 }: { index?: number }) => {
+interface ChatFormProps {
+  index: number;
+  /** From ChatContext — individual values so memo can compare them */
+  files: Map<string, ExtendedFile>;
+  setFiles: FileSetter;
+  conversation: TConversation | null;
+  isSubmitting: boolean;
+  filesLoading: boolean;
+  setFilesLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  newConversation: ConvoGenerator;
+  handleStopGenerating: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+const ChatForm = memo(function ChatForm({
+  index,
+  files,
+  setFiles,
+  conversation,
+  isSubmitting,
+  filesLoading,
+  setFilesLoading,
+  newConversation,
+  handleStopGenerating,
+}: ChatFormProps) {
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   useFocusChatEffect(textAreaRef);
@@ -83,15 +108,6 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
 
   const { requiresKey } = useRequiresKey();
   const methods = useChatFormContext();
-  const {
-    files,
-    setFiles,
-    conversation,
-    isSubmitting,
-    filesLoading,
-    newConversation,
-    handleStopGenerating,
-  } = useChatContext();
   const {
     generateConversation,
     conversation: addedConvo,
@@ -168,6 +184,15 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     badgeMenuStoresRef.current.mcpMenuStore?.setOpen(false);
     badgeMenuStoresRef.current.videoMenuStore?.setOpen(false);
   }, [isCollapsed]);
+
+  const handleTextareaFocus = useCallback(() => {
+    handleFocusOrClick();
+    setIsTextAreaFocused(true);
+  }, [handleFocusOrClick]);
+
+  const handleTextareaBlur = useCallback(() => {
+    setIsTextAreaFocused(false);
+  }, []);
 
   useAutoSave({
     files,
@@ -607,7 +632,12 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
               handleSaveBadges={handleSaveBadges}
               setBadges={setBadges}
             />
-            <FileFormChat conversation={conversation} />
+            <FileFormChat
+              conversation={conversation}
+              files={files}
+              setFiles={setFiles}
+              setFilesLoading={setFilesLoading}
+            />
             {endpoint && (
               <div className={cn('flex', isRTL ? 'flex-row-reverse' : 'flex-row')}>
                 <div
@@ -638,11 +668,8 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                     tabIndex={0}
                     data-testid="text-input"
                     rows={1}
-                    onFocus={() => {
-                      handleFocusOrClick();
-                      setIsTextAreaFocused(true);
-                    }}
-                    onBlur={setIsTextAreaFocused.bind(null, false)}
+                    onFocus={handleTextareaFocus}
+                    onBlur={handleTextareaBlur}
                     aria-label={localize('com_ui_message_input')}
                     onClick={handleFocusOrClick}
                     style={{ height: 44, overflowY: 'auto' }}
@@ -670,7 +697,13 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
               data-chat-input-controls
             >
               <div className={`${isRTL ? 'mr-2' : 'ml-2'}`}>
-                <AttachFileChat conversation={conversation} disableInputs={disableInputs} />
+                <AttachFileChat
+                  conversation={conversation}
+                  disableInputs={disableInputs}
+                  files={files}
+                  setFiles={setFiles}
+                  setFilesLoading={setFilesLoading}
+                />
               </div>
               <BadgeRow
                 showEphemeralBadges={
@@ -759,5 +792,77 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     </form>
   );
 });
+ChatForm.displayName = 'ChatForm';
 
-export default ChatForm;
+/**
+ * Wrapper that subscribes to ChatContext and passes stable individual values
+ * to the memo'd ChatForm. This prevents ChatForm from re-rendering on every
+ * streaming chunk — it only re-renders when the specific values it uses change.
+ */
+function ChatFormWrapper({ index = 0 }: { index?: number }) {
+  const {
+    files,
+    setFiles,
+    conversation,
+    isSubmitting,
+    filesLoading,
+    setFilesLoading,
+    newConversation,
+    handleStopGenerating,
+  } = useChatContext();
+
+  /**
+   * Stabilize conversation reference: only update when rendering-relevant fields change,
+   * not on every metadata update (e.g., title generation during streaming).
+   */
+  const hasMessages = (conversation?.messages?.length ?? 0) > 0;
+  const stableConversation = useMemo(
+    () => conversation,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      conversation?.conversationId,
+      conversation?.endpoint,
+      conversation?.endpointType,
+      conversation?.agent_id,
+      conversation?.assistant_id,
+      conversation?.spec,
+      conversation?.useResponsesApi,
+      conversation?.model,
+      hasMessages,
+    ],
+  );
+
+  /** Stabilize function refs so they never trigger ChatForm re-renders */
+  const handleStopRef = useRef(handleStopGenerating);
+  handleStopRef.current = handleStopGenerating;
+  const stableHandleStop = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => handleStopRef.current(e),
+    [],
+  );
+
+  const newConvoRef = useRef(newConversation);
+  newConvoRef.current = newConversation;
+  const stableNewConversation: ConvoGenerator = useCallback(
+    (...args: Parameters<ConvoGenerator>): ReturnType<ConvoGenerator> =>
+      newConvoRef.current(...args),
+    [],
+  );
+
+  return (
+    <ChatForm
+      index={index}
+      files={files}
+      setFiles={setFiles}
+      conversation={stableConversation}
+      isSubmitting={isSubmitting}
+      filesLoading={filesLoading}
+      setFilesLoading={setFilesLoading}
+      newConversation={stableNewConversation}
+      handleStopGenerating={stableHandleStop}
+    />
+  );
+}
+
+ChatFormWrapper.displayName = 'ChatFormWrapper';
+
+export default ChatFormWrapper;

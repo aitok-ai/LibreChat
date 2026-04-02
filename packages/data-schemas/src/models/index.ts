@@ -28,6 +28,7 @@ import { createAclEntryModel } from './aclEntry';
 import { createSystemGrantModel } from './systemGrant';
 import { createGroupModel } from './group';
 import { createVideoJobModel } from './videoJob';
+import { createConfigModel } from './config';
 
 /**
  * Creates all database models for all collections
@@ -64,5 +65,6 @@ export function createModels(mongoose: typeof import('mongoose')) {
     SystemGrant: createSystemGrantModel(mongoose),
     Group: createGroupModel(mongoose),
     VideoJob: createVideoJobModel(mongoose),
+    Config: createConfigModel(mongoose),
   };
 }

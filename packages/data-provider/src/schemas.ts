@@ -927,6 +927,30 @@ export const tQueryParamsSchema = tConversationSchema
     }),
   );
 
+/** Narrowed preset schema for use in model specs — omits system/DB/deprecated fields */
+export const tModelSpecPresetSchema = tPresetSchema.omit({
+  conversationId: true,
+  presetId: true,
+  title: true,
+  defaultPreset: true,
+  order: true,
+  isArchived: true,
+  user: true,
+  messages: true,
+  tags: true,
+  file_ids: true,
+  expiredAt: true,
+  parentMessageId: true,
+  resendImages: true,
+  chatGptLabel: true,
+  presetOverride: true,
+  greeting: true,
+  iconURL: true,
+  spec: true,
+});
+
+export type TModelSpecPreset = z.infer<typeof tModelSpecPresetSchema>;
+
 export type TPreset = z.infer<typeof tPresetSchema>;
 
 export type TSetOption = (

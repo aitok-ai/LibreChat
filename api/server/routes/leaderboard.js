@@ -1,6 +1,7 @@
 const express = require('express');
 const requireJwtAuth = require('../middleware/requireJwtAuth');
 const { User } = require('~/db/models');
+const { logger } = require('@librechat/data-schemas');
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ async function getNumOfReferrals() {
 
     return finalResponse;
   } catch (error) {
-    console.log(error);
+    logger.error('[leaderboard.js] Error getting referrals:', error);
     return { message: 'Error getting conversations' };
   }
 }

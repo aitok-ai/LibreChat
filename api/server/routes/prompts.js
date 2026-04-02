@@ -150,7 +150,7 @@ router.get('/all', async (req, res) => {
     const groupsWithPublicFlag = markPublicPromptGroups(promptGroups, publiclyAccessibleIds);
     res.status(200).send(groupsWithPublicFlag);
   } catch (error) {
-    logger.error(error);
+    logger.error('[prompts.js] Error getting all prompt groups:', error);
     res.status(500).send({ error: 'Error getting prompt groups' });
   }
 });
@@ -236,7 +236,7 @@ router.get('/groups', async (req, res) => {
 
     res.status(200).send(response);
   } catch (error) {
-    logger.error(error);
+    logger.error('[prompts.js] Error getting paginated prompt groups:', error);
     res.status(500).send({ error: 'Error getting prompt groups' });
   }
 });
@@ -287,7 +287,7 @@ const createNewPromptGroup = async (req, res) => {
 
     res.status(200).send(result);
   } catch (error) {
-    logger.error(error);
+    logger.error('[prompts.js] Error creating prompt group:', error);
     res.status(500).send({ error: 'Error creating prompt group' });
   }
 };
@@ -329,7 +329,7 @@ const addPromptToGroup = async (req, res) => {
     const result = await savePrompt(saveData);
     res.status(200).send(result);
   } catch (error) {
-    logger.error(error);
+    logger.error('[prompts.js] Error adding prompt to group:', error);
     res.status(500).send({ error: 'Error adding prompt to group' });
   }
 };
@@ -403,7 +403,7 @@ const patchPromptGroup = async (req, res) => {
     const promptGroup = await updatePromptGroup(filter, validationResult.data);
     res.status(200).send(promptGroup);
   } catch (error) {
-    logger.error(error);
+    logger.error('[prompts.js] Error updating prompt group:', error);
     res.status(500).send({ error: 'Error updating prompt group' });
   }
 };
@@ -430,7 +430,7 @@ router.patch(
       const result = await makePromptProduction(promptId);
       res.status(200).send(result);
     } catch (error) {
-      logger.error(error);
+      logger.error('[prompts.js] Error updating prompt production:', error);
       res.status(500).send({ error: 'Error updating prompt production' });
     }
   },
@@ -493,7 +493,7 @@ router.get('/', async (req, res) => {
     const prompts = await getPrompts(query);
     res.status(200).send(prompts);
   } catch (error) {
-    logger.error(error);
+    logger.error('[prompts.js] Error getting prompts:', error);
     res.status(500).send({ error: 'Error getting prompts' });
   }
 });
@@ -518,7 +518,7 @@ const deletePromptController = async (req, res) => {
     const result = await deletePrompt(query);
     res.status(200).send(result);
   } catch (error) {
-    logger.error(error);
+    logger.error('[prompts.js] Error deleting prompt:', error);
     res.status(500).send({ error: 'Error deleting prompt' });
   }
 };
