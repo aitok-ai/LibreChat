@@ -55,6 +55,7 @@ export type TEndpointOption = Pick<
   | 'thinkingBudget'
   | 'thinkingLevel'
   | 'effort'
+  | 'thinkingDisplay'
   // Assistant/Agent fields
   | 'assistant_id'
   | 'agent_id'
@@ -549,6 +550,7 @@ export type TPromptGroup = {
   productionPrompt?: Pick<TPrompt, 'prompt'> | null;
   author: string;
   authorName: string;
+  isPublic?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   _id?: string;

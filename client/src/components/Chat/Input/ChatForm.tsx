@@ -105,6 +105,8 @@ const ChatForm = memo(function ChatForm({
   const [showMentionPopover, setShowMentionPopover] = useRecoilState(
     store.showMentionPopoverFamily(index),
   );
+  const plusPopoverAtom = useMemo(() => store.showPlusPopoverFamily(index), [index]);
+  const mentionPopoverAtom = useMemo(() => store.showMentionPopoverFamily(index), [index]);
 
   const { requiresKey } = useRequiresKey();
   const methods = useChatFormContext();
@@ -210,8 +212,6 @@ const ChatForm = memo(function ChatForm({
   const handleKeyUp = useHandleKeyUp({
     index,
     textAreaRef,
-    setShowPlusPopover,
-    setShowMentionPopover,
   });
   const {
     isNotAppendable,
@@ -596,23 +596,21 @@ const ChatForm = memo(function ChatForm({
     >
       <div className="relative flex h-full flex-1 items-stretch md:flex-col">
         <div className={cn('flex w-full items-center', isRTL && 'flex-row-reverse')}>
-          {showPlusPopover && !isAssistantsEndpoint(endpoint) && (
-            <Mention
-              setShowMentionPopover={setShowPlusPopover}
-              newConversation={generateConversation}
-              textAreaRef={textAreaRef}
-              commandChar="+"
-              placeholder="com_ui_add_model_preset"
-              includeAssistants={false}
-            />
-          )}
-          {showMentionPopover && (
-            <Mention
-              setShowMentionPopover={setShowMentionPopover}
-              newConversation={newConversation}
-              textAreaRef={textAreaRef}
-            />
-          )}
+          <Mention
+            index={index}
+            popoverAtom={plusPopoverAtom}
+            newConversation={generateConversation}
+            textAreaRef={textAreaRef}
+            commandChar="+"
+            placeholder="com_ui_add_model_preset"
+            includeAssistants={false}
+          />
+          <Mention
+            index={index}
+            popoverAtom={mentionPopoverAtom}
+            newConversation={newConversation}
+            textAreaRef={textAreaRef}
+          />
           <PromptsCommand index={index} textAreaRef={textAreaRef} submitPrompt={submitPrompt} />
           <div
             onClick={handleContainerClick}

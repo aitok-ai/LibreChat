@@ -24,7 +24,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   const { t } = useTranslation();
   const formContext = useFormContext();
   const [isOpen, setIsOpen] = useState(false);
-  const { hasAccess } = usePromptGroupsContext();
+  const { hasAccess } = usePromptGroupsContext() ?? {};
   const { categories, emptyCategory } = useCategories({ hasAccess });
 
   const control = formContext?.control;
@@ -74,7 +74,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   const trigger = (
     <Ariakit.MenuButton
       className={cn(
-        'focus:ring-offset-ring-offset border-input bg-background text-text-primary hover:bg-accent hover:text-accent-foreground focus:ring-ring-primary relative inline-flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-all duration-200 ease-in-out',
+        'focus:ring-offset-ring-offset border-border-medium text-text-primary hover:bg-accent hover:text-accent-foreground focus:ring-ring-primary relative inline-flex h-9 items-center justify-between rounded-xl border bg-transparent px-3 text-sm transition-all duration-200 ease-in-out',
         'gap-2 sm:w-fit',
         className,
       )}

@@ -1,11 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import { VisuallyHidden } from '@ariakit/react';
 import { CheckCircle2, EarthIcon, Pin, PinOff } from 'lucide-react';
 import { isAgentsEndpoint, isAssistantsEndpoint } from 'librechat-data-provider';
+import type { Endpoint } from '~/common';
+import { useFavorites, useLocalize, useIsActiveItem } from '~/hooks';
 import { useModelSelectorContext } from '../ModelSelectorContext';
 import { CustomMenuItem as MenuItem } from '../CustomMenu';
-import { useFavorites, useLocalize } from '~/hooks';
-import type { Endpoint } from '~/common';
 import { cn } from '~/utils';
 
 interface EndpointModelItemProps {
@@ -26,24 +26,7 @@ export function EndpointModelItem({ modelId, endpoint }: EndpointModelItemProps)
   const { isFavoriteModel, toggleFavoriteModel, isFavoriteAgent, toggleFavoriteAgent } =
     useFavorites();
 
-  const itemRef = useRef<HTMLDivElement>(null);
-  const [isActive, setIsActive] = useState(false);
-
-  useEffect(() => {
-    const element = itemRef.current;
-    if (!element) {
-      return;
-    }
-
-    const observer = new MutationObserver(() => {
-      setIsActive(element.hasAttribute('data-active-item'));
-    });
-
-    observer.observe(element, { attributes: true, attributeFilter: ['data-active-item'] });
-    setIsActive(element.hasAttribute('data-active-item'));
-
-    return () => observer.disconnect();
-  }, []);
+  const { ref: itemRef, isActive } = useIsActiveItem<HTMLDivElement>();
 
   let isGlobal = false;
   let modelName = modelId;
@@ -126,16 +109,19 @@ export function EndpointModelItem({ modelId, endpoint }: EndpointModelItemProps)
         {isGlobal && <EarthIcon className="text-surface-submit ml-1 size-4" />}
       </div>
       <button
+        type="button"
         tabIndex={isActive ? 0 : -1}
         onClick={handleFavoriteClick}
         aria-label={isFavorite ? localize('com_ui_unpin') : localize('com_ui_pin')}
         className={cn(
-          'hover:bg-surface-hover rounded-md p-1',
-          isFavorite ? 'visible' : 'invisible group-hover:visible group-data-[active-item]:visible',
+          'hover:bg-surface-hover focus-visible:ring-ring-primary rounded-md p-1 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset',
+          isFavorite
+            ? 'visible'
+            : 'invisible group-focus-within:visible group-hover:visible group-data-[active-item]:visible',
         )}
       >
         {isFavorite ? (
-          <PinOff className="text-text-secondary h-4 w-4" />
+          <PinOff className="text-text-secondary h-4 w-4" aria-hidden="true" />
         ) : (
           <Pin className="text-text-secondary h-4 w-4" aria-hidden="true" />
         )}

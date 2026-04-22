@@ -42,7 +42,7 @@ const PromptDetails = ({ group, showActions = true, onUsePrompt }: PromptDetails
       <PromptVariables promptText={mainText} />
 
       {group.command && (
-        <div className="border-border-light bg-surface-secondary flex items-center gap-2 rounded-xl border p-3">
+        <div className="border-border-medium flex items-center gap-2 rounded-xl border bg-transparent p-3">
           <SquareSlash className="text-text-secondary h-4 w-4" aria-hidden="true" />
           <span className="text-text-primary font-mono text-sm">/{group.command}</span>
         </div>

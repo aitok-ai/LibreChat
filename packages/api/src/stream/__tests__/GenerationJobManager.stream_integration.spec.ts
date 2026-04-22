@@ -14,6 +14,9 @@ import {
   keyvRedisClientReady,
 } from '~/cache/redisClients';
 
+/** Suppress winston Console transport output (survives jest.resetModules) */
+jest.spyOn(console, 'log').mockImplementation();
+
 /**
  * Integration tests for GenerationJobManager.
  *

@@ -24,39 +24,11 @@ interface ToolsDropdownProps {
 
 const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
   const localize = useLocalize();
-  const isDisabled = disabled ?? false;
-  const [isPopoverActive, setIsPopoverActive] = useState(false);
-  const {
-    webSearch,
-    artifacts,
-    fileSearch,
-    agentsConfig,
-    mcpServerManager,
-    codeApiKeyForm,
-    codeInterpreter,
-    searchApiKeyForm,
-  } = useBadgeRowContext();
+  const context = useBadgeRowContext();
   const { data: startupConfig } = useGetStartupConfig();
 
   const { codeEnabled, webSearchEnabled, artifactsEnabled, fileSearchEnabled } =
-    useAgentCapabilities(agentsConfig?.capabilities ?? defaultAgentCapabilities);
-
-  const { setIsDialogOpen: setIsCodeDialogOpen, menuTriggerRef: codeMenuTriggerRef } =
-    codeApiKeyForm;
-  const { setIsDialogOpen: setIsSearchDialogOpen, menuTriggerRef: searchMenuTriggerRef } =
-    searchApiKeyForm;
-  const {
-    isPinned: isSearchPinned,
-    setIsPinned: setIsSearchPinned,
-    authData: webSearchAuthData,
-  } = webSearch;
-  const {
-    isPinned: isCodePinned,
-    setIsPinned: setIsCodePinned,
-    authData: codeAuthData,
-  } = codeInterpreter;
-  const { isPinned: isFileSearchPinned, setIsPinned: setIsFileSearchPinned } = fileSearch;
-  const { isPinned: isArtifactsPinned, setIsPinned: setIsArtifactsPinned } = artifacts;
+    useAgentCapabilities(context?.agentsConfig?.capabilities ?? defaultAgentCapabilities);
 
   const canUseWebSearch = useHasAccess({
     permissionType: PermissionTypes.WEB_SEARCH,
@@ -78,6 +50,35 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     permission: Permissions.USE,
   });
 
+  const [isPopoverActive, setIsPopoverActive] = useState(false);
+  const isDisabled = disabled ?? false;
+  const {
+    webSearch,
+    artifacts,
+    fileSearch,
+    mcpServerManager,
+    codeApiKeyForm,
+    codeInterpreter,
+    searchApiKeyForm,
+  } = context ?? {};
+
+  const { setIsDialogOpen: setIsCodeDialogOpen, menuTriggerRef: codeMenuTriggerRef } =
+    codeApiKeyForm ?? {};
+  const { setIsDialogOpen: setIsSearchDialogOpen, menuTriggerRef: searchMenuTriggerRef } =
+    searchApiKeyForm ?? {};
+  const {
+    isPinned: isSearchPinned,
+    setIsPinned: setIsSearchPinned,
+    authData: webSearchAuthData,
+  } = webSearch ?? {};
+  const {
+    isPinned: isCodePinned,
+    setIsPinned: setIsCodePinned,
+    authData: codeAuthData,
+  } = codeInterpreter ?? {};
+  const { isPinned: isFileSearchPinned, setIsPinned: setIsFileSearchPinned } = fileSearch ?? {};
+  const { isPinned: isArtifactsPinned, setIsPinned: setIsArtifactsPinned } = artifacts ?? {};
+
   const showWebSearchSettings = useMemo(() => {
     const authTypes = webSearchAuthData?.authTypes ?? [];
     if (authTypes.length === 0) return true;
@@ -90,44 +91,44 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
   );
 
   const handleWebSearchToggle = useCallback(() => {
-    const newValue = !webSearch.toggleState;
-    webSearch.debouncedChange({ value: newValue });
+    const newValue = !webSearch?.toggleState;
+    webSearch?.debouncedChange({ value: newValue });
   }, [webSearch]);
 
   const handleCodeInterpreterToggle = useCallback(() => {
-    const newValue = !codeInterpreter.toggleState;
-    codeInterpreter.debouncedChange({ value: newValue });
+    const newValue = !codeInterpreter?.toggleState;
+    codeInterpreter?.debouncedChange({ value: newValue });
   }, [codeInterpreter]);
 
   const handleFileSearchToggle = useCallback(() => {
-    const newValue = !fileSearch.toggleState;
-    fileSearch.debouncedChange({ value: newValue });
+    const newValue = !fileSearch?.toggleState;
+    fileSearch?.debouncedChange({ value: newValue });
   }, [fileSearch]);
 
   const handleArtifactsToggle = useCallback(() => {
-    const currentState = artifacts.toggleState;
+    const currentState = artifacts?.toggleState;
     if (!currentState || currentState === '') {
-      artifacts.debouncedChange({ value: ArtifactModes.DEFAULT });
+      artifacts?.debouncedChange({ value: ArtifactModes.DEFAULT });
     } else {
-      artifacts.debouncedChange({ value: '' });
+      artifacts?.debouncedChange({ value: '' });
     }
   }, [artifacts]);
 
   const handleShadcnToggle = useCallback(() => {
-    const currentState = artifacts.toggleState;
+    const currentState = artifacts?.toggleState;
     if (currentState === ArtifactModes.SHADCNUI) {
-      artifacts.debouncedChange({ value: ArtifactModes.DEFAULT });
+      artifacts?.debouncedChange({ value: ArtifactModes.DEFAULT });
     } else {
-      artifacts.debouncedChange({ value: ArtifactModes.SHADCNUI });
+      artifacts?.debouncedChange({ value: ArtifactModes.SHADCNUI });
     }
   }, [artifacts]);
 
   const handleCustomToggle = useCallback(() => {
-    const currentState = artifacts.toggleState;
+    const currentState = artifacts?.toggleState;
     if (currentState === ArtifactModes.CUSTOM) {
-      artifacts.debouncedChange({ value: ArtifactModes.DEFAULT });
+      artifacts?.debouncedChange({ value: ArtifactModes.DEFAULT });
     } else {
-      artifacts.debouncedChange({ value: ArtifactModes.CUSTOM });
+      artifacts?.debouncedChange({ value: ArtifactModes.CUSTOM });
     }
   }, [artifacts]);
 
@@ -149,7 +150,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              setIsFileSearchPinned(!isFileSearchPinned);
+              setIsFileSearchPinned?.(!isFileSearchPinned);
             }}
             className={cn(
               'rounded p-1 transition-all duration-200',
@@ -183,7 +184,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsSearchDialogOpen(true);
+                  setIsSearchDialogOpen?.(true);
                 }}
                 className={cn(
                   'rounded p-1 transition-all duration-200',
@@ -202,7 +203,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsSearchPinned(!isSearchPinned);
+                setIsSearchPinned?.(!isSearchPinned);
               }}
               className={cn(
                 'rounded p-1 transition-all duration-200',
@@ -237,7 +238,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsCodeDialogOpen(true);
+                  setIsCodeDialogOpen?.(true);
                 }}
                 ref={codeMenuTriggerRef}
                 className={cn(
@@ -256,7 +257,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsCodePinned(!isCodePinned);
+                setIsCodePinned?.(!isCodePinned);
               }}
               className={cn(
                 'rounded p-1 transition-all duration-200',
@@ -275,15 +276,15 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
-  if (artifactsEnabled) {
+  if (artifactsEnabled && setIsArtifactsPinned != null) {
     dropdownItems.push({
       hideOnClick: false,
       render: (props) => (
         <ArtifactsSubMenu
           {...props}
-          isArtifactsPinned={isArtifactsPinned}
+          isArtifactsPinned={isArtifactsPinned ?? false}
           setIsArtifactsPinned={setIsArtifactsPinned}
-          artifactsMode={artifacts.toggleState as string}
+          artifactsMode={artifacts?.toggleState as string}
           handleArtifactsToggle={handleArtifactsToggle}
           handleShadcnToggle={handleShadcnToggle}
           handleCustomToggle={handleCustomToggle}
@@ -292,7 +293,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
-  const { availableMCPServers } = mcpServerManager;
+  const { availableMCPServers } = mcpServerManager ?? {};
   if (canUseMcp && availableMCPServers && availableMCPServers.length > 0) {
     dropdownItems.push({
       hideOnClick: false,

@@ -37,7 +37,7 @@ const DropdownVariableCard = ({ parsed }: { parsed: ParsedVariable }) => {
 
   return (
     <div
-      className="bg-surface-secondary/50 border-border-light hover:bg-surface-secondary rounded-lg border p-2.5"
+      className="bg-surface-secondary/50 border-border-medium hover:bg-surface-secondary rounded-lg border p-2.5"
       role="listitem"
       aria-label={localize('com_ui_variable_with_options', {
         name: parsed.name,
@@ -61,7 +61,7 @@ const DropdownVariableCard = ({ parsed }: { parsed: ParsedVariable }) => {
         {parsed.options.map((option, index) => (
           <span
             key={index}
-            className="border-border-light bg-surface-primary text-text-secondary hover:bg-surface-secondary rounded-md border px-2 py-0.5 text-xs transition-colors"
+            className="border-border-medium text-text-secondary hover:bg-surface-secondary rounded-md border bg-transparent px-2 py-0.5 text-xs transition-colors"
             role="listitem"
           >
             {option}
@@ -82,7 +82,7 @@ const SpecialVariableChip = ({ parsed }: { parsed: ParsedVariable }) => {
 
   return (
     <div
-      className="group border-border-light hover:bg-surface-secondary flex items-start gap-2 rounded-lg border bg-transparent p-2"
+      className="group border-border-medium hover:bg-surface-secondary flex items-start gap-2 rounded-lg border bg-transparent p-2"
       role="listitem"
       aria-label={displayLabel}
     >
@@ -99,7 +99,7 @@ const SpecialVariableChip = ({ parsed }: { parsed: ParsedVariable }) => {
 
 const SimpleVariableChip = ({ parsed }: { parsed: ParsedVariable }) => (
   <span
-    className="bg-surface-secondary/50 border-border-light text-text-primary hover:bg-surface-tertiary inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium"
+    className="bg-surface-secondary/50 border-border-medium text-text-primary hover:bg-surface-tertiary inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium"
     role="listitem"
   >
     <Variable className="text-text-secondary size-3" aria-hidden="true" />
@@ -138,8 +138,8 @@ const PromptVariables = ({ promptText }: { promptText: string }) => {
   }
 
   return (
-    <div className="border-border-light overflow-hidden rounded-xl border">
-      <header className="border-border-light flex items-center justify-between border-b p-3">
+    <div className="border-border-medium overflow-hidden rounded-xl border">
+      <header className="border-border-medium flex items-center justify-between border-b p-3">
         <div className="flex items-center gap-2">
           <Variable className="text-text-secondary size-4" aria-hidden="true" />
           <h4 className="text-text-primary text-sm font-semibold">

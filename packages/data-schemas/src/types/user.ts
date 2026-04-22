@@ -1,4 +1,5 @@
 import type { Document, Types } from 'mongoose';
+import type { TUserFavorite } from 'librechat-data-provider';
 import { CursorPaginationParams } from '~/common';
 
 export interface IUser extends Document {
@@ -47,11 +48,7 @@ export interface IUser extends Document {
   personalization?: {
     memories?: boolean;
   };
-  favorites?: Array<{
-    agentId?: string;
-    model?: string;
-    endpoint?: string;
-  }>;
+  favorites?: TUserFavorite[];
   createdAt?: Date;
   updatedAt?: Date;
   /** Field for external source identification (for consistency with TPrincipal schema) */

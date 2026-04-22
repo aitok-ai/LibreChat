@@ -44,7 +44,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
   return (
     <div className="flex max-h-[85vh] flex-col sm:max-h-[85vh]">
       <h2 className="sr-only">{localize('com_ui_control_bar')}</h2>
-      <header className="border-border-light flex items-center justify-between rounded-t-xl border bg-transparent p-2">
+      <header className="border-border-medium flex items-center justify-between rounded-t-xl border bg-transparent px-2 py-1.5">
         <div className="ml-1 flex items-center gap-2">
           <FileText className="text-text-secondary size-4" aria-hidden="true" />
           <h3 className="text-text-primary text-sm font-semibold">
@@ -73,10 +73,8 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
       </header>
       <div
         className={cn(
-          'border-border-light relative w-full flex-1 overflow-auto rounded-b-xl border border-t-0 p-3 text-left transition-all duration-200 sm:p-4',
-          isEditing
-            ? 'bg-surface-primary'
-            : 'bg-surface-primary hover:bg-surface-secondary cursor-pointer',
+          'border-border-medium relative w-full flex-1 overflow-auto rounded-b-xl border border-t-0 p-3 text-left transition-all duration-200 sm:p-4',
+          isEditing ? '' : 'hover:bg-surface-tertiary cursor-pointer',
         )}
       >
         {!isEditing && (
@@ -134,10 +132,10 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
                     {field.value}
                   </ReactMarkdown>
                 )}
-                <div className="bg-surface-secondary/0 group-hover/preview:bg-surface-secondary/50 pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-200 group-hover/preview:opacity-100">
-                  <div className="bg-surface-primary flex items-center gap-2 rounded-lg px-3 py-1.5 shadow-md">
+                <div className="pointer-events-none sticky bottom-1/2 z-10 flex translate-y-1/2 items-center justify-center opacity-0 transition-all duration-200 group-hover/preview:opacity-100">
+                  <div className="border-border-light bg-surface-primary flex items-center gap-2 rounded-lg border px-3 py-1.5 shadow-md">
                     <EditIcon className="text-text-secondary size-4" aria-hidden="true" />
-                    <span className="text-text-secondary text-sm font-medium">
+                    <span className="text-text-primary text-sm font-medium">
                       {localize('com_ui_click_to_edit')}
                     </span>
                   </div>

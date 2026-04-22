@@ -202,7 +202,7 @@ export default function ActionsInput({
 
   return (
     <>
-      <div className="">
+      <div className="flex min-h-0 flex-1 flex-col">
         <div className="mb-1 flex flex-wrap items-center justify-between gap-4">
           <label
             htmlFor="schemaInput"
@@ -210,31 +210,17 @@ export default function ActionsInput({
           >
             {localize('com_ui_schema')}
           </label>
-          {/* TODO: Implement examples functionality
-          <div className="flex items-center gap-2">
-            <select
-              onChange={(e) => logger.log('actions', 'selecting example action', e.target.value)}
-              className="border-token-border-medium h-8 min-w-[100px] rounded-lg border bg-transparent px-2 py-0 text-sm"
-            >
-              <option value="label">{localize('com_ui_examples')}</option>
-              <option value="0">{localize('com_ui_weather_json')}</option>
-              <option value="1">{localize('com_ui_pet_store_yaml')}</option>
-              <option value="2">{localize('com_ui_blank_template')}</option>
-            </select>
-          </div>
-          */}
         </div>
-        <div className="border-token-border-medium bg-token-surface-primary hover:border-token-border-hover mb-4 w-full overflow-hidden rounded-lg border ring-0">
-          <div className="relative">
+        <div className="border-token-border-medium bg-token-surface-primary hover:border-token-border-hover mb-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border ring-0">
+          <div className="relative flex min-h-0 flex-1 flex-col">
             <textarea
               id="schemaInput"
               value={inputValue}
               onChange={handleInputChange}
               spellCheck="false"
               placeholder={localize('com_ui_enter_openapi_schema')}
-              className="text-token-text-primary focus:ring-border-light block h-96 w-full bg-transparent p-2 font-mono text-xs outline-none focus:ring-1"
+              className="text-token-text-primary focus:ring-border-light block min-h-[12rem] flex-1 resize-y bg-transparent p-2 font-mono text-xs outline-none focus:ring-1"
             />
-            {/* TODO: format input button */}
           </div>
           {validationResult && validationResult.message !== 'OpenAPI spec is valid.' && (
             <div className="border-token-border-light border-t p-2 text-red-500">
@@ -270,11 +256,11 @@ export default function ActionsInput({
           />
         </div>
       </div>
-      <div className="flex items-center justify-end">
+      <div className="mt-auto flex items-center justify-end pt-2">
         <button
           disabled={!functions || !functions.length}
           onClick={saveAction}
-          className="focus:shadow-outline mt-1 flex min-w-[100px] items-center justify-center rounded bg-green-500 px-4 py-2 font-semibold text-white hover:bg-green-400 focus:border-green-500 focus:ring-0 focus:outline-none disabled:bg-green-400"
+          className="focus:shadow-outline flex min-w-[100px] items-center justify-center rounded bg-green-500 px-4 py-2 font-semibold text-white hover:bg-green-400 focus:border-green-500 focus:ring-0 focus:outline-none disabled:bg-green-400"
           type="button"
         >
           {getButtonContent()}
