@@ -1,17 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const User = require('~/db/models');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
+let stripe;
+let endpointSecret;
+
+function getStripe() {
+  if (!stripe) {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+    }
+    stripe = require('stripe')(secretKey);
+    endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
+  }
+  return { stripe, endpointSecret };
+}
 
 // Modified endpoint using async/await
 router.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
 
   let event;
+  let stripeInstance;
+  let secret;
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    ({ stripe: stripeInstance, endpointSecret: secret } = getStripe());
+    event = stripeInstance.webhooks.constructEvent(req.body, sig, secret);
   } catch (err) {
     console.error(`Webhook signature verification failed, Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
