@@ -23,6 +23,7 @@ import Artifacts from './Artifacts';
 import MCPSelect from './MCPSelect';
 import VideoSelect from './VideoSelect';
 import WebSearch from './WebSearch';
+import Skills from './Skills';
 import store from '~/store';
 import { atom } from 'recoil'; // Import atom if not already imported
 import useVideoPinned from '~/hooks/Video/useVideoPinned';
@@ -389,6 +390,7 @@ function BadgeRow({
             <WebSearch />
             <CodeInterpreter />
             <FileSearch />
+            <Skills />
             <Artifacts />
             <MCPSelect />
             {isVideoPinned && <VideoSelect />}

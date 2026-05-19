@@ -5,7 +5,7 @@ import rehypeKatex from 'rehype-katex';
 import supersub from 'remark-supersub';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
-import { EditIcon, FileText, Check } from 'lucide-react';
+import { EditIcon, Check } from 'lucide-react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { TextareaAutosize, Button, TooltipAnchor } from '@librechat/client';
 import type { PluggableList } from 'unified';
@@ -44,14 +44,13 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
   return (
     <div className="flex max-h-[85vh] flex-col sm:max-h-[85vh]">
       <h2 className="sr-only">{localize('com_ui_control_bar')}</h2>
-      <header className="border-border-medium flex items-center justify-between rounded-t-xl border bg-transparent px-2 py-1.5">
-        <div className="ml-1 flex items-center gap-2">
-          <FileText className="text-text-secondary size-4" aria-hidden="true" />
-          <h3 className="text-text-primary text-sm font-semibold">
-            {localize('com_ui_prompt_text')}
-          </h3>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
+      <div
+        className={cn(
+          'border-border-medium relative w-full flex-1 overflow-auto rounded-xl border p-3 text-left transition-all duration-200 sm:p-4',
+          isEditing ? '' : 'hover:bg-surface-tertiary cursor-pointer',
+        )}
+      >
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
           <VariablesDropdown fieldName={name} />
           <TooltipAnchor
             description={isEditing ? localize('com_ui_save') : localize('com_ui_edit')}
@@ -70,18 +69,11 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
             }
           />
         </div>
-      </header>
-      <div
-        className={cn(
-          'border-border-medium relative w-full flex-1 overflow-auto rounded-b-xl border border-t-0 p-3 text-left transition-all duration-200 sm:p-4',
-          isEditing ? '' : 'hover:bg-surface-tertiary cursor-pointer',
-        )}
-      >
         {!isEditing && (
           <button
             type="button"
             aria-label={localize('com_ui_edit')}
-            className="focus-visible:ring-ring-primary absolute inset-0 z-0 rounded-b-xl focus:outline-none focus-visible:ring-2"
+            className="focus-visible:ring-ring-primary absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2"
             onClick={() => setIsEditing(true)}
           />
         )}

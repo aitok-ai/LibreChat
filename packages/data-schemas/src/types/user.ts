@@ -49,6 +49,8 @@ export interface IUser extends Document {
     memories?: boolean;
   };
   favorites?: TUserFavorite[];
+  /** Per-skill active/inactive overrides. Key = skillId, value = active state. */
+  skillStates?: Record<string, boolean>;
   createdAt?: Date;
   updatedAt?: Date;
   /** Field for external source identification (for consistency with TPrincipal schema) */
@@ -91,6 +93,7 @@ export interface UpdateUserRequest {
   personalization?: {
     memories?: boolean;
   };
+  skillStates?: Record<string, boolean>;
 }
 
 export interface UserDeleteResult {

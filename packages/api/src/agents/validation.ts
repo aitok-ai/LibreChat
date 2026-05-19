@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ViolationTypes, ErrorTypes } from 'librechat-data-provider';
+import { MAX_SUBAGENTS, ViolationTypes, ErrorTypes } from 'librechat-data-provider';
 import type { Agent, TModelsConfig } from 'librechat-data-provider';
 import type { Request, Response } from 'express';
 
@@ -76,6 +76,20 @@ export const toolOptionsSchema = z.object({
 /** Agent tool options - map of tool_id to tool options */
 export const agentToolOptionsSchema = z.record(z.string(), toolOptionsSchema).optional();
 
+/**
+ * Subagent spawning configuration for an agent. `agent_ids` is capped at
+ * `Constants.MAX_SUBAGENTS` so a crafted API request cannot trigger hundreds
+ * of `processAgent` calls (DB lookup + permission check + tool loading).
+ * The UI enforces the same cap, so legitimate payloads never hit the bound.
+ */
+export const agentSubagentsSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    allowSelf: z.boolean().optional(),
+    agent_ids: z.array(z.string()).max(MAX_SUBAGENTS).optional(),
+  })
+  .optional();
+
 /** Base agent schema with all common fields */
 export const agentBaseSchema = z.object({
   name: z.string().nullable().optional(),
@@ -84,6 +98,8 @@ export const agentBaseSchema = z.object({
   avatar: agentAvatarSchema.nullable().optional(),
   model_parameters: z.record(z.unknown()).optional(),
   tools: z.array(z.string()).optional(),
+  skills: z.array(z.string()).optional(),
+  skills_enabled: z.boolean().optional(),
   /** @deprecated Use edges instead */
   agent_ids: z.array(z.string()).optional(),
   edges: z.array(graphEdgeSchema).optional(),
@@ -94,6 +110,7 @@ export const agentBaseSchema = z.object({
   conversation_starters: z.array(z.string()).optional(),
   tool_resources: agentToolResourcesSchema,
   tool_options: agentToolOptionsSchema,
+  subagents: agentSubagentsSchema,
   support_contact: agentSupportContactSchema,
   category: z.string().optional(),
 });

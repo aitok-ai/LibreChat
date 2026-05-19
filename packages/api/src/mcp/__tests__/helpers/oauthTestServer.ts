@@ -1,7 +1,6 @@
 import * as http from 'http';
 import * as net from 'net';
 import { randomUUID, createHash } from 'crypto';
-import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { FlowState } from '~/flow/types';
@@ -340,8 +339,8 @@ export async function createOAuthMCPServer(
         sessionIdGenerator: () => randomUUID(),
       });
       const mcp = new McpServer({ name: 'oauth-test-server', version: '0.0.1' });
-      mcp.tool('echo', { message: z.string() }, async (args) => ({
-        content: [{ type: 'text' as const, text: `echo: ${args.message}` }],
+      mcp.tool('echo', 'Echo tool for testing', {}, async () => ({
+        content: [{ type: 'text' as const, text: 'echo: ok' }],
       }));
       await mcp.connect(transport);
     }

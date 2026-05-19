@@ -1,0 +1,192 @@
+import React, { useState, useMemo } from 'react';
+import { format } from 'date-fns';
+import { Eye, Code, User, Calendar, EarthIcon, ScrollText } from 'lucide-react';
+import { TooltipAnchor } from '@librechat/client';
+import type { TSkill } from 'librechat-data-provider';
+import { useLocalize, useAuthContext, useSkillPermissions, useSkillActiveState } from '~/hooks';
+import { ShareSkill, SkillToggle } from '../buttons';
+import SkillMarkdownRenderer from './SkillMarkdownRenderer';
+import { parseFrontmatter } from '../utils';
+import DeleteSkill from '../dialogs/DeleteSkill';
+import { cn } from '~/utils';
+
+interface SkillDetailProps {
+  skill: TSkill;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}
+
+const SKIP_KEYS = new Set(['name', 'description']);
+
+function ViewToggle({
+  viewMode,
+  setViewMode,
+  localize,
+}: {
+  viewMode: 'rendered' | 'source';
+  setViewMode: (mode: 'rendered' | 'source') => void;
+  localize: ReturnType<typeof useLocalize>;
+}) {
+  return (
+    <div
+      role="group"
+      className="bg-surface-tertiary inline-flex h-7 rounded-lg p-0.5 text-sm font-medium"
+    >
+      <button
+        type="button"
+        onClick={() => setViewMode('rendered')}
+        className={cn(
+          'flex items-center justify-center rounded-md px-1.5 transition-colors',
+          viewMode === 'rendered'
+            ? 'bg-surface-primary text-text-primary shadow-sm'
+            : 'text-text-secondary hover:text-text-primary',
+        )}
+        aria-label={localize('com_ui_skill_view_rendered')}
+        aria-pressed={viewMode === 'rendered'}
+      >
+        <Eye className="size-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => setViewMode('source')}
+        className={cn(
+          'flex items-center justify-center rounded-md px-1.5 transition-colors',
+          viewMode === 'source'
+            ? 'bg-surface-primary text-text-primary shadow-sm'
+            : 'text-text-secondary hover:text-text-primary',
+        )}
+        aria-label={localize('com_ui_skill_view_source')}
+        aria-pressed={viewMode === 'source'}
+      >
+        <Code className="size-4" />
+      </button>
+    </div>
+  );
+}
+
+export default function SkillDetail({ skill, onEdit, onDelete }: SkillDetailProps) {
+  const localize = useLocalize();
+  const { user } = useAuthContext();
+  const permissions = useSkillPermissions(skill);
+  const { isActive, toggle } = useSkillActiveState();
+  const [viewMode, setViewMode] = useState<'rendered' | 'source'>('rendered');
+  const skillEnabled = isActive(skill);
+
+  const isPublic = skill.isPublic === true;
+  const isShared = skill.author !== user?.id && Boolean(skill.authorName);
+  const addedBy = isShared ? skill.authorName : localize('com_ui_you');
+  const updatedDate = skill.updatedAt
+    ? format(new Date(skill.updatedAt), 'MMM d, yyyy')
+    : undefined;
+
+  const { fields: frontmatterFields, body: cleanBody } = useMemo(
+    () => parseFrontmatter(skill.body ?? '', SKIP_KEYS),
+    [skill.body],
+  );
+
+  return (
+    <article
+      className="flex h-full min-w-0 flex-col gap-2 overflow-y-auto px-5 pb-5"
+      aria-label={skill.name}
+    >
+      {/* Header row */}
+      <div className="flex flex-col gap-3 pb-1 sm:flex-row sm:items-center sm:gap-4">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="bg-surface-secondary flex h-12 w-12 shrink-0 items-center justify-center rounded-full">
+              <ScrollText className="text-text-secondary size-6" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 items-center gap-2">
+                <h2 className="text-text-primary truncate text-xl font-bold" title={skill.name}>
+                  {skill.name}
+                </h2>
+                {isPublic && (
+                  <TooltipAnchor
+                    description={localize('com_ui_skill_sr_public')}
+                    side="top"
+                    render={
+                      <EarthIcon
+                        className="size-5 shrink-0 text-green-400"
+                        aria-label={localize('com_ui_skill_sr_public')}
+                      />
+                    }
+                  />
+                )}
+              </div>
+              <div className="text-text-secondary mt-0.5 flex flex-wrap items-center gap-3 text-xs">
+                <span className="flex items-center gap-1">
+                  <User className="size-3" aria-hidden="true" />
+                  {addedBy}
+                </span>
+                {updatedDate && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="size-3" aria-hidden="true" />
+                    {updatedDate}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex shrink-0 items-center gap-2">
+          <SkillToggle
+            enabled={skillEnabled}
+            onChange={() => toggle(skill)}
+            ariaLabel={localize('com_ui_skill_toggle_active')}
+          />
+          <ShareSkill skill={skill} />
+          {permissions.canEdit && onEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="border-border-medium text-text-primary hover:bg-surface-hover inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-semibold transition-colors"
+            >
+              {localize('com_ui_edit')}
+            </button>
+          )}
+          {permissions.canDelete && onDelete && (
+            <DeleteSkill skillId={skill._id} skillName={skill.name} onDelete={onDelete} />
+          )}
+        </div>
+      </div>
+
+      {/* Description */}
+      <div className="flex flex-col gap-1">
+        <h3 className="text-text-secondary text-xs leading-4">{localize('com_ui_description')}</h3>
+        <p className="text-text-secondary text-sm whitespace-pre-wrap">{skill.description}</p>
+      </div>
+
+      {/* Divider with view toggle */}
+      <div className="flex items-center gap-3 py-1">
+        <hr className="border-border-medium flex-1" />
+        <ViewToggle viewMode={viewMode} setViewMode={setViewMode} localize={localize} />
+      </div>
+
+      {/* Frontmatter metadata */}
+      {viewMode === 'rendered' && frontmatterFields.length > 0 && (
+        <div className="grid grid-cols-[max-content_1fr] items-baseline gap-x-8 gap-y-2 pb-2">
+          {frontmatterFields.map(({ key, value }) => (
+            <React.Fragment key={key}>
+              <span className="text-text-secondary text-xs">{key}</span>
+              <span className="text-text-primary text-sm">{value}</span>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
+      {/* Content — fills remaining space, no card wrapper */}
+      <div className="min-h-0 flex-1 overflow-auto">
+        {viewMode === 'rendered' ? (
+          <SkillMarkdownRenderer content={cleanBody} />
+        ) : (
+          <pre className="text-text-primary font-mono text-sm leading-relaxed whitespace-pre-wrap">
+            {skill.body ?? ''}
+          </pre>
+        )}
+      </div>
+    </article>
+  );
+}
