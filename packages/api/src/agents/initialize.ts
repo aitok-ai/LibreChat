@@ -65,12 +65,64 @@ function appendAdditionalInstructions(agent: Agent, text?: string | null): void 
     .join('\n\n');
 }
 
+function getToolName(tool: unknown): string | undefined {
+  if (tool == null || typeof tool !== 'object') {
+    return undefined;
+  }
+  const { name } = tool as { name?: unknown };
+  return typeof name === 'string' ? name : undefined;
+}
+
+function hasToolDefinition(toolDefinitions: LCTool[] | undefined, name: string): boolean {
+  return toolDefinitions?.some((toolDefinition) => toolDefinition.name === name) === true;
+}
+
+function resolveAnthropicToolConflicts({
+  provider,
+  tools,
+  toolDefinitions,
+}: {
+  provider?: string;
+  tools?: unknown[];
+  toolDefinitions?: LCTool[];
+}): unknown[] | undefined {
+  if (provider !== Providers.ANTHROPIC || !tools?.length) {
+    return tools;
+  }
+
+  if (!hasToolDefinition(toolDefinitions, Tools.web_search)) {
+    return tools;
+  }
+
+  let removed = 0;
+  const resolvedTools = tools.filter((tool) => {
+    const shouldRemove = getToolName(tool) === Tools.web_search;
+    if (shouldRemove) {
+      removed += 1;
+    }
+    return !shouldRemove;
+  });
+
+  if (removed > 0) {
+    logger.debug(
+      `[initializeAgent] Removed ${removed} Anthropic native web_search tool(s); LibreChat web_search is enabled.`,
+    );
+  }
+
+  return resolvedTools;
+}
+
 /**
  * Extended agent type with additional fields needed after initialization
  */
 export type InitializedAgent = Agent & {
   tools: GenericTool[];
+  /** @deprecated use requestAttachments or agentContextAttachments based on sharing semantics. */
   attachments: IMongoFile[];
+  /** Files attached to the current user message/run and safe to share across run agents. */
+  requestAttachments: IMongoFile[];
+  /** Files attached to this agent's permanent context via tool_resources. */
+  agentContextAttachments: IMongoFile[];
   toolContextMap: Record<string, unknown>;
   dynamicToolContextMap?: Record<string, unknown>;
   maxContextTokens: number;
@@ -233,8 +285,10 @@ export interface InitializeAgentDbMethods extends EndpointDbMethods {
   getToolFilesByIds: (fileIds: string[], toolSet: Set<EToolResources>) => Promise<unknown[]>;
   /** Get conversation file IDs */
   getConvoFiles: (conversationId: string) => Promise<string[] | null>;
-  /** Get code-generated files by conversation ID and optional message IDs */
-  getCodeGeneratedFiles?: (conversationId: string, messageIds?: string[]) => Promise<unknown[]>;
+  /** Get code-generated files by conversation ID and the file_ids
+   *  referenced from messages in the current thread (collected via
+   *  `messages.files[].file_id` during thread walk). */
+  getCodeGeneratedFiles?: (conversationId: string, threadFileIds?: string[]) => Promise<unknown[]>;
   /** Get user-uploaded execute_code files by file IDs (from message.files in thread) */
   getUserCodeFiles?: (fileIds: string[]) => Promise<unknown[]>;
   /** Get messages for a conversation (supports select for field projection) */
@@ -423,32 +477,43 @@ export async function initializeAgent(
     let userCodeFiles: IMongoFile[] = [];
 
     if (toolResourceSet.has(EToolResources.execute_code)) {
-      let threadMessageIds: string[] | undefined;
       let threadFileIds: string[] | undefined;
 
       if (parentMessageId && parentMessageId !== Constants.NO_PARENT && db.getMessages) {
-        /** Only select fields needed for thread traversal */
+        /** Only select fields needed for thread traversal. Both
+         *  `files` (user uploads) and `attachments` (code-execution
+         *  outputs from `processCodeOutput`) carry the `file_id`
+         *  refs the next turn must prime — selecting only `files`
+         *  silently drops every code-output ref. */
         const messages = await db.getMessages(
           { conversationId },
-          'messageId parentMessageId files',
+          'messageId parentMessageId files attachments',
         );
         if (messages && messages.length > 0) {
-          /** Single O(n) pass: build Map, traverse thread, collect both IDs */
-          const threadData = getThreadData(messages, parentMessageId);
-          threadMessageIds = threadData.messageIds;
-          threadFileIds = threadData.fileIds;
+          /** Walk the parent chain and collect file_ids referenced by
+           *  any message in the thread (`messages.files[].file_id` +
+           *  `messages.attachments[].file_id`). Used as the primary
+           *  anchor for both `getCodeGeneratedFiles` and
+           *  `getUserCodeFiles` — message ids no longer needed at
+           *  this layer. */
+          threadFileIds = getThreadData(messages, parentMessageId).fileIds;
         }
       }
 
-      /** Code-generated files (context: execute_code) filtered by messageId */
+      /** Code-generated and user-uploaded execute_code files share the
+       *  same primary anchor: file_ids referenced by messages in the
+       *  current thread. The two queries differ only by `context`
+       *  (`execute_code` for generated outputs, others for uploads).
+       *  Anchoring both on `threadFileIds` reaches files regardless of
+       *  which sibling first generated them — see `getCodeGeneratedFiles`
+       *  for the branched-conversation rationale. */
       if (db.getCodeGeneratedFiles) {
         codeGeneratedFiles = (await db.getCodeGeneratedFiles(
           conversationId,
-          threadMessageIds,
+          threadFileIds,
         )) as IMongoFile[];
       }
 
-      /** User-uploaded execute_code files (context: agents/message_attachment) from thread messages */
       if (db.getUserCodeFiles && threadFileIds && threadFileIds.length > 0) {
         userCodeFiles = (await db.getUserCodeFiles(threadFileIds)) as IMongoFile[];
       }
@@ -475,7 +540,12 @@ export async function initializeAgent(
     });
   }
 
-  const { attachments: primedAttachments, tool_resources } = await primeResources({
+  const {
+    attachments: primedAttachments,
+    requestAttachments: primedRequestAttachments,
+    agentContextAttachments: primedAgentContextAttachments,
+    tool_resources,
+  } = await primeResources({
     req: req as never,
     getFiles: db.getFiles as never,
     filterFiles: db.filterFilesByAgentAccess,
@@ -764,7 +834,9 @@ export async function initializeAgent(
    * (backed by `CodeExecutionToolDefinition` + `primeCodeFiles`) is no
    * longer registered; the string `execute_code` on the agent document
    * stays as the capability-trigger marker but expands into the
-   * skill-flavored tool pair here.
+   * `bash_tool` + `read_file` pair here. The initial `read_file`
+   * definition is code-only; `injectSkillCatalog` upgrades it later in
+   * this initializer when skill files are actually available.
    *
    * `effectiveCodeEnvAvailable` is the per-agent truth: the admin-level
    * `params.codeEnvAvailable` AND the agent actually asking for code
@@ -779,8 +851,9 @@ export async function initializeAgent(
    * execute-code-only agents on Google/Vertex still trip the conflict
    * guard when provider-specific tools are also configured. Also before
    * `injectSkillCatalog` so the skill path's own
-   * `registerCodeExecutionTools` call becomes a no-op via the registry
-   * `.has()` dedupe — exactly one copy of each tool reaches the LLM.
+   * `registerCodeExecutionTools` call upgrades `read_file` from the
+   * code-only description to the skill-aware description without adding a
+   * duplicate — exactly one copy of each tool reaches the LLM.
    */
   const agentRequestsCodeExec = (agent.tools ?? []).includes(Tools.execute_code);
   const effectiveCodeEnvAvailable = params.codeEnvAvailable === true && agentRequestsCodeExec;
@@ -789,6 +862,7 @@ export async function initializeAgent(
       toolRegistry,
       toolDefinitions,
       includeBash: true,
+      includeSkillFileInstructions: false,
       enableToolOutputReferences: effectiveCodeEnvAvailable,
     });
     toolDefinitions = codeExecResult.toolDefinitions;
@@ -808,14 +882,20 @@ export async function initializeAgent(
 
   /** Check for tool presence from either full instances or definitions (event-driven mode) */
   const hasAgentTools = (structuredTools?.length ?? 0) > 0 || (toolDefinitions?.length ?? 0) > 0;
+  const providerTools = resolveAnthropicToolConflicts({
+    provider: agent.provider,
+    tools: options.tools,
+    toolDefinitions,
+  });
+  const hasProviderTools = (providerTools?.length ?? 0) > 0;
 
-  let tools: GenericTool[] = options.tools?.length
-    ? (options.tools as GenericTool[])
+  let tools: GenericTool[] = hasProviderTools
+    ? (providerTools as GenericTool[])
     : (structuredTools ?? []);
 
   if (
     (agent.provider === Providers.GOOGLE || agent.provider === Providers.VERTEXAI) &&
-    options.tools?.length &&
+    hasProviderTools &&
     hasAgentTools
   ) {
     throw new Error(`{ "type": "${ErrorTypes.GOOGLE_TOOL_CONFLICT}"}`);
@@ -823,10 +903,10 @@ export async function initializeAgent(
     (agent.provider === Providers.OPENAI ||
       agent.provider === Providers.AZURE ||
       agent.provider === Providers.ANTHROPIC) &&
-    options.tools?.length &&
+    hasProviderTools &&
     structuredTools?.length
   ) {
-    tools = structuredTools.concat(options.tools as GenericTool[]);
+    tools = structuredTools.concat(providerTools as GenericTool[]);
   }
 
   agent.model_parameters = { ...options.llmConfig } as Agent['model_parameters'];
@@ -889,9 +969,17 @@ export async function initializeAgent(
   const maxOutputTokensNum = Number(maxOutputTokens) || 0;
   const baseContextTokens = Math.max(0, agentMaxContextNum - maxOutputTokensNum);
 
-  const finalAttachments: IMongoFile[] = (primedAttachments ?? [])
-    .filter((a): a is TFile => a != null)
-    .map((a) => a as unknown as IMongoFile);
+  const toMongoFiles = (files: Array<TFile | undefined> | undefined): IMongoFile[] =>
+    (files ?? []).filter((a): a is TFile => a != null).map((a) => a as unknown as IMongoFile);
+
+  const finalAttachments: IMongoFile[] = toMongoFiles(primedAttachments);
+  const requestAttachments: IMongoFile[] = toMongoFiles(primedRequestAttachments);
+  const agentContextAttachments: IMongoFile[] = toMongoFiles(primedAgentContextAttachments);
+
+  const compatibilityAttachments =
+    finalAttachments.length > 0
+      ? finalAttachments
+      : requestAttachments.concat(agentContextAttachments);
 
   const endpointConfigs = req.config?.endpoints;
   const providerConfig =
@@ -922,7 +1010,9 @@ export async function initializeAgent(
     activeSkillNames,
     manualSkillPrimes,
     alwaysApplySkillPrimes,
-    attachments: finalAttachments,
+    attachments: compatibilityAttachments,
+    requestAttachments,
+    agentContextAttachments,
     toolContextMap: toolContextMap ?? {},
     dynamicToolContextMap: dynamicToolContextMap ?? {},
     useLegacyContent: !!options.useLegacyContent,

@@ -11,6 +11,15 @@ jest.mock('~/hooks', () => ({
     () =>
     (key: string): string =>
       key,
+  /* `FileAttachment` calls this hook unconditionally to bridge the
+   * deferred-preview lifecycle into the attachment cache. The
+   * routing tests don't exercise the preview flow itself — stub it
+   * to a no-op so it doesn't blow up jsdom rendering. */
+  useAttachmentPreviewSync: () => ({ status: 'ready', previewError: undefined, isPolling: false }),
+  useExpandCollapse: (isExpanded: boolean) => ({
+    style: { display: 'grid', gridTemplateRows: isExpanded ? '1fr' : '0fr' },
+    ref: { current: null },
+  }),
 }));
 
 jest.mock('../LogLink', () => ({
@@ -183,14 +192,39 @@ describe('Attachment routing for tool artifacts', () => {
     expect(screen.queryByText('com_ui_artifact_click')).not.toBeInTheDocument();
   });
 
-  it('falls through to the inline <pre> for unsupported text types (CSV)', () => {
-    const csv = baseAttachment({
-      filename: 'data.csv',
-      text: 'a,b,c\n1,2,3',
+  it('falls through to the inline <pre> for unsupported text types (JSON)', () => {
+    /* CSV used to fall through here, but now routes to the SPREADSHEET
+     * preview bucket. JSON is still inline-only (no dedicated viewer
+     * yet); use it as the canonical "unrouted text" example. */
+    const json = baseAttachment({
+      filename: 'data.json',
+      type: 'application/json',
+      text: '{"a":1,"b":2}',
     } as Partial<TAttachment>);
-    const { container } = renderWith(<Attachment attachment={csv} />);
+    const { container } = renderWith(<Attachment attachment={json} />);
     expect(container.querySelector('pre')).not.toBeNull();
     expect(screen.queryByTestId('mermaid-render')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['data.csv', 'text/csv'],
+    ['workbook.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    ['report.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    ['deck.pptx', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+  ])('routes %s through the office preview panel (panel artifact)', (filename, type) => {
+    const att = baseAttachment({
+      file_id: `office-${filename}`,
+      filename,
+      type,
+      text: '<!DOCTYPE html><body><table><tr><td>x</td></tr></table></body>',
+    } as Partial<TAttachment>);
+    renderWith(<Attachment attachment={att} />);
+    expect(screen.getByText(filename)).toBeInTheDocument();
+    /* Auto-pressed open button (streaming + non-CODE bucket) — same UX as
+     * the HTML panel artifact above. */
+    expect(screen.getByRole('button', { pressed: true })).toBeInTheDocument();
+    const downloadPattern = new RegExp(`com_ui_download.*${filename.replace('.', '\\.')}`, 'i');
+    expect(screen.getByRole('button', { name: downloadPattern })).toBeInTheDocument();
   });
 });
 
@@ -496,6 +530,106 @@ describe('ToolArtifactCard click behaviour', () => {
     expect(snapshot.currentArtifactId).toBeNull();
   });
 
+  it('auto-opens a non-streaming card when the deferred preview just resolved', () => {
+    /* Regression for the deferred-preview UX gap: when an office file's
+     * background HTML extraction lands AFTER the SSE stream has closed
+     * (`isSubmitting=false`), the freshly resolved chip would render in
+     * place but never auto-open the panel — the legacy auto-open path
+     * is gated only on streaming. `useAttachmentPreviewSync` flips the
+     * `previewJustResolved(file_id)` flag on the pending→ready edge to
+     * bridge that gap; `ToolArtifactCard` consumes it on mount and
+     * auto-opens regardless of submission state. The flag is one-shot:
+     * a subsequent re-mount (panel close/reopen, history scroll) must
+     * NOT fire again — covered by the next test. */
+    const xlsx = baseAttachment({
+      file_id: 'just-resolved-xlsx',
+      filename: 'data.xlsx',
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      text: '<table>resolved</table>',
+      textFormat: 'html',
+    } as Partial<TAttachment>);
+    const initializeState = (snap: MutableSnapshot) => {
+      snap.set(store.isSubmittingFamily(0), false);
+      snap.set(store.artifactsVisibility, false);
+      snap.set(store.previewJustResolved('just-resolved-xlsx'), true);
+    };
+    let snapshot: ArtifactsSnapshot = {
+      visibility: false,
+      currentArtifactId: null,
+      artifactIds: [],
+    };
+    render(
+      <RecoilRoot initializeState={initializeState}>
+        <StateProbe
+          onSnapshot={(snap) => {
+            snapshot = snap;
+          }}
+        />
+        <Attachment attachment={xlsx} />
+      </RecoilRoot>,
+    );
+    expect(snapshot.currentArtifactId).toBe('tool-artifact-just-resolved-xlsx');
+    expect(snapshot.visibility).toBe(true);
+  });
+
+  it('does NOT re-auto-open on a second mount after the just-resolved flag is consumed', () => {
+    /* The flag is one-shot — first card to mount consumes it. A second
+     * mount of the same file_id (panel close + reopen, history scroll
+     * onto the same card) must NOT re-steal focus, otherwise the user
+     * could never close the panel without it popping back open. */
+    const xlsx = baseAttachment({
+      file_id: 'one-shot-xlsx',
+      filename: 'data.xlsx',
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      text: '<table>resolved</table>',
+      textFormat: 'html',
+    } as Partial<TAttachment>);
+    const initializeState = (snap: MutableSnapshot) => {
+      snap.set(store.isSubmittingFamily(0), false);
+      snap.set(store.artifactsVisibility, false);
+      snap.set(store.previewJustResolved('one-shot-xlsx'), true);
+    };
+    let snapshot: ArtifactsSnapshot = {
+      visibility: false,
+      currentArtifactId: null,
+      artifactIds: [],
+    };
+    const { unmount } = render(
+      <RecoilRoot initializeState={initializeState}>
+        <StateProbe
+          onSnapshot={(snap) => {
+            snapshot = snap;
+          }}
+        />
+        <Attachment attachment={xlsx} />
+      </RecoilRoot>,
+    );
+    /* First mount auto-opened. Now simulate a fresh Recoil tree with the
+     * flag in the post-consume state (false) and assert the second
+     * mount stays closed. We use a fresh RecoilRoot to mirror what a
+     * real "panel was closed and the user then revealed the chip
+     * again" pathway would look like at the state level. */
+    unmount();
+    snapshot = { visibility: false, currentArtifactId: null, artifactIds: [] };
+    const secondInit = (snap: MutableSnapshot) => {
+      snap.set(store.isSubmittingFamily(0), false);
+      snap.set(store.artifactsVisibility, false);
+      // flag stays at default (false) — already consumed
+    };
+    render(
+      <RecoilRoot initializeState={secondInit}>
+        <StateProbe
+          onSnapshot={(snap) => {
+            snapshot = snap;
+          }}
+        />
+        <Attachment attachment={xlsx} />
+      </RecoilRoot>,
+    );
+    expect(snapshot.currentArtifactId).toBeNull();
+    expect(snapshot.visibility).toBe(false);
+  });
+
   it('clicking a CODE artifact focuses it even though it skipped auto-open', () => {
     // Counterpart to the streaming-CODE no-auto-open test: confirm the
     // click path still surfaces a `.py` chip in the panel. Even on a
@@ -586,12 +720,57 @@ describe('AttachmentGroup routing', () => {
       bytes: 1024,
     } as Partial<TAttachment>);
     const { container } = renderWith(<AttachmentGroup attachments={[empty, real]} />);
+    fireEvent.click(screen.getByRole('button', { name: 'com_ui_show_n_files' }));
     const chips = Array.from(container.querySelectorAll('[data-testid="file-container"]'));
     expect(chips.length).toBe(2);
     const filenames = chips.map((c) => c.textContent ?? '');
     // Real chip must render before the empty placeholder.
     expect(filenames[0]).toMatch(/archive\.zip/);
     expect(filenames[1]).toMatch(/placeholder\.zip/);
+  });
+
+  it('keeps multiple downloadable files in their own collapsed group while images render outwardly', () => {
+    const first = baseAttachment({
+      file_id: 'file-a',
+      filename: 'a.zip',
+      type: 'application/zip',
+    } as Partial<TAttachment>);
+    const second = baseAttachment({
+      file_id: 'file-b',
+      filename: 'b.zip',
+      type: 'application/zip',
+    } as Partial<TAttachment>);
+    const json = baseAttachment({
+      file_id: 'file-c',
+      filename: 'c.json',
+      type: 'application/json',
+      text: '{"c":true}',
+    } as Partial<TAttachment>);
+    const image = baseAttachment({
+      file_id: 'image-a',
+      filename: 'preview.png',
+      type: 'image/png',
+      width: 16,
+      height: 16,
+    } as Partial<TAttachment>);
+
+    const { container } = renderWith(
+      <AttachmentGroup attachments={[first, second, json, image]} />,
+    );
+
+    const toggle = screen.getByRole('button', { name: 'com_ui_show_n_files' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    const panel = document.getElementById(toggle.getAttribute('aria-controls') ?? '');
+    expect(panel?.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByTestId('image')).toBeInTheDocument();
+    expect(screen.getAllByTestId('file-container').map((chip) => chip.textContent)).not.toContain(
+      'c.json',
+    );
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('c.json')).toBeInTheDocument();
+    expect(container.querySelector('pre')?.textContent).toBe('{"c":true}');
   });
 
   it('passes a non-dotfile filename through to FileContainer unchanged', () => {
@@ -631,6 +810,40 @@ describe('AttachmentGroup routing', () => {
     expect(chip?.textContent).toBe('.config.zip');
   });
 
+  it('renders pending-preview chips in the panel-artifact row alongside resolved siblings', () => {
+    /* A pending preview is a future panel artifact — render it in the
+     * same row so when it resolves the chip stays put instead of
+     * jumping between rows. Plain files keep their own row. */
+    const attachments = [
+      baseAttachment({
+        file_id: 'resolved',
+        filename: 'index.html',
+        text: '<h1>hi</h1>',
+      } as Partial<TAttachment>),
+      baseAttachment({
+        file_id: 'pending-1',
+        filename: 'data.xlsx',
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        status: 'pending',
+      } as Partial<TAttachment>),
+      baseAttachment({
+        file_id: 'plain',
+        filename: 'archive.zip',
+        text: undefined as unknown as string,
+      } as Partial<TAttachment>),
+    ] as TAttachment[];
+
+    const { container } = renderWith(<AttachmentGroup attachments={attachments} />);
+
+    /* Two rows: file row (plain.zip) + panel row (resolved + pending). */
+    const rows = container.querySelectorAll('div.flex.flex-wrap');
+    expect(rows.length).toBe(2);
+    /* Resolved artifact card title visible. */
+    expect(screen.getByText('index.html')).toBeInTheDocument();
+    /* Pending placeholder is a FileContainer rendering. */
+    expect(screen.getAllByTestId('file-container').length).toBeGreaterThanOrEqual(1);
+  });
+
   it('renders separate buckets for panel artifacts, mermaid, text, and plain files', () => {
     const attachments = [
       baseAttachment({
@@ -645,8 +858,9 @@ describe('AttachmentGroup routing', () => {
       } as Partial<TAttachment>),
       baseAttachment({
         file_id: 'c',
-        filename: 'data.csv',
-        text: 'a,b,c\n1,2,3',
+        filename: 'data.json',
+        type: 'application/json',
+        text: '{"a":1}',
       } as Partial<TAttachment>),
       baseAttachment({
         file_id: 'd',
@@ -661,9 +875,15 @@ describe('AttachmentGroup routing', () => {
     expect(screen.getByText('index.html')).toBeInTheDocument();
     // Mermaid render
     expect(screen.getByTestId('mermaid-render')).toBeInTheDocument();
-    // Inline text fallback for CSV
-    expect(container.querySelector('pre')).not.toBeNull();
-    // FileContainer for the plain zip (and potentially others)
-    expect(screen.getAllByTestId('file-container').length).toBeGreaterThan(0);
+    // JSON and plain zip are both downloadable file outputs, so they collapse together.
+    const toggle = screen.getByRole('button', { name: 'com_ui_show_n_files' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    const chipLabels = screen.getAllByTestId('file-container').map((chip) => chip.textContent);
+    expect(chipLabels).toContain('archive.zip');
+    expect(chipLabels).not.toContain('data.json');
+
+    fireEvent.click(toggle);
+    expect(screen.getByText('data.json')).toBeInTheDocument();
+    expect(container.querySelector('pre')?.textContent).toBe('{"a":1}');
   });
 });

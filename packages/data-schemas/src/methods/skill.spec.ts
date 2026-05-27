@@ -1318,6 +1318,88 @@ describe('SkillFile methods', () => {
     expect(files[0].file_id).toBe('file-2');
   });
 
+  it('upsertSkillFile persists storage metadata', async () => {
+    const { skill } = await methods.createSkill(makeSkillInput());
+    await methods.upsertSkillFile({
+      skillId: skill._id,
+      relativePath: 'scripts/parse.sh',
+      file_id: 'file-1',
+      filename: 'parse.sh',
+      filepath: '/tmp/v1',
+      storageKey: 'r/us-east-2/uploads/user123/parse.sh',
+      storageRegion: 'us-east-2',
+      source: 's3',
+      mimeType: 'text/plain',
+      bytes: 10,
+      author: owner._id,
+    });
+
+    const files = await methods.listSkillFiles(skill._id);
+    expect(files[0].storageKey).toBe('r/us-east-2/uploads/user123/parse.sh');
+    expect(files[0].storageRegion).toBe('us-east-2');
+  });
+
+  it('clears codeEnvRef when a skill file is upserted (replacement)', async () => {
+    /* A re-upload of a skill file replaces the row's contents — but the
+     * cached `codeEnvRef` refers to the OLD bytes living in codeapi.
+     * Leaving it populated would make the next prime resolve a stale
+     * pointer. The upsert MUST $unset codeEnvRef. */
+    const { skill } = await methods.createSkill(makeSkillInput());
+    await methods.upsertSkillFile({
+      skillId: skill._id,
+      relativePath: 'scripts/parse.sh',
+      file_id: 'file-1',
+      filename: 'parse.sh',
+      filepath: '/tmp/v1',
+      source: 'local',
+      mimeType: 'text/plain',
+      bytes: 10,
+      author: owner._id,
+    });
+
+    const entityId = skill._id.toString();
+    await methods.updateSkillFileCodeEnvIds([
+      {
+        skillId: skill._id,
+        relativePath: 'scripts/parse.sh',
+        codeEnvRef: {
+          kind: 'skill',
+          id: entityId,
+          storage_session_id: 'sess-old',
+          file_id: 'file-old',
+          version: 1,
+        },
+      },
+    ]);
+
+    /* Sanity: ref is persisted before the replacement. */
+    const before = await methods.listSkillFiles(skill._id);
+    expect(before[0].codeEnvRef).toMatchObject({
+      kind: 'skill',
+      storage_session_id: 'sess-old',
+      file_id: 'file-old',
+      version: 1,
+    });
+
+    /* Replace the row with new bytes. */
+    await methods.upsertSkillFile({
+      skillId: skill._id,
+      relativePath: 'scripts/parse.sh',
+      file_id: 'file-2',
+      filename: 'parse.sh',
+      filepath: '/tmp/v2',
+      source: 'local',
+      mimeType: 'text/plain',
+      bytes: 20,
+      author: owner._id,
+    });
+
+    const after = await methods.listSkillFiles(skill._id);
+    expect(after).toHaveLength(1);
+    expect(after[0].file_id).toBe('file-2');
+    expect(after[0].codeEnvRef).toBeUndefined();
+  });
+
   it('deleteSkillFile recounts and bumps version', async () => {
     const { skill } = await methods.createSkill(makeSkillInput());
     await methods.upsertSkillFile({
@@ -1364,6 +1446,81 @@ describe('SkillFile methods', () => {
         author: owner._id,
       }),
     ).rejects.toMatchObject({ code: 'SKILL_FILE_VALIDATION_FAILED' });
+  });
+
+  describe('updateSkillFileCodeEnvIds (skill-bundle cache pointer)', () => {
+    /**
+     * The returned `{matchedCount, modifiedCount}` shape is the diagnostic
+     * contract `primeSkillFiles` relies on — a silently-dropped write
+     * turns every subsequent prime into a fresh codeapi upload (N×M
+     * egress per chat load). Pinning the contract here so the caller
+     * can warn-log on partial writes instead of failing closed.
+     */
+    it('persists codeEnvRef and reports matched/modified counts', async () => {
+      const { skill } = await methods.createSkill(makeSkillInput());
+      await methods.upsertSkillFile({
+        skillId: skill._id,
+        relativePath: 'scripts/a.sh',
+        file_id: 'f1',
+        filename: 'a.sh',
+        filepath: '/a',
+        source: 'local',
+        mimeType: 'text/plain',
+        bytes: 1,
+        author: owner._id,
+      });
+
+      const entityId = skill._id.toString();
+      const result = await methods.updateSkillFileCodeEnvIds([
+        {
+          skillId: skill._id,
+          relativePath: 'scripts/a.sh',
+          codeEnvRef: {
+            kind: 'skill',
+            id: entityId,
+            storage_session_id: 'session-1',
+            file_id: 'file-1',
+            version: 1,
+          },
+        },
+      ]);
+
+      expect(result.matchedCount).toBe(1);
+      expect(result.modifiedCount).toBe(1);
+
+      const files = await methods.listSkillFiles(skill._id);
+      expect(files[0].codeEnvRef).toMatchObject({
+        kind: 'skill',
+        id: entityId,
+        storage_session_id: 'session-1',
+        file_id: 'file-1',
+        version: 1,
+      });
+    });
+
+    it('reports modifiedCount=0 when no SkillFile rows match the (skillId, relativePath) filter', async () => {
+      const { skill } = await methods.createSkill(makeSkillInput());
+      const result = await methods.updateSkillFileCodeEnvIds([
+        {
+          skillId: skill._id,
+          relativePath: 'does/not/exist.sh',
+          codeEnvRef: {
+            kind: 'skill',
+            id: 'x',
+            storage_session_id: 'sid',
+            file_id: 'fid',
+            version: 1,
+          },
+        },
+      ]);
+      expect(result.modifiedCount).toBe(0);
+      expect(result.matchedCount).toBe(0);
+    });
+
+    it('returns zero counts when called with an empty update list', async () => {
+      const result = await methods.updateSkillFileCodeEnvIds([]);
+      expect(result).toEqual({ matchedCount: 0, modifiedCount: 0 });
+    });
   });
 });
 

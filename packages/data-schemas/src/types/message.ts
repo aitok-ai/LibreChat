@@ -20,6 +20,7 @@ export interface IMessage extends Document {
   text?: string;
   summary?: string;
   isCreatedByUser: boolean;
+  isTemporary?: boolean;
   unfinished?: boolean;
   error?: boolean;
   finish_reason?: string;

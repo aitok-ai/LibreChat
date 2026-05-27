@@ -13,6 +13,14 @@ jest.mock('~/hooks', () => ({
       };
       return translations[key] ?? key;
     },
+  /* `FileAttachment` calls this hook unconditionally to bridge the
+   * deferred-preview lifecycle. Stub to a no-op for tests that
+   * don't exercise the preview flow. */
+  useAttachmentPreviewSync: () => ({ status: 'ready', previewError: undefined, isPolling: false }),
+  useExpandCollapse: (isExpanded: boolean) => ({
+    style: { display: 'grid', gridTemplateRows: isExpanded ? '1fr' : '0fr' },
+    ref: { current: null },
+  }),
 }));
 
 const mockHandleDownload = jest.fn();
@@ -56,10 +64,15 @@ jest.mock('~/utils', () => ({
 const textAttachment = (overrides: Partial<TAttachment> = {}): TAttachment =>
   ({
     file_id: 'file-1',
-    filename: 'output.csv',
-    filepath: '/files/output.csv',
-    type: 'text/csv',
-    text: 'a,b,c\n1,2,3',
+    /* JSON stays on the inline `<pre>` rendering path. CSV used to live
+     * here too but now routes through the SPREADSHEET artifact panel
+     * (Recoil-bound), so a CSV fixture would force every test in this
+     * file to add a `RecoilRoot` wrapper. JSON has the same shape (text-
+     * bearing, downloadable, expandable) without the panel coupling. */
+    filename: 'output.json',
+    filepath: '/files/output.json',
+    type: 'application/json',
+    text: '{"a":1,"b":2,"c":3}',
     ...overrides,
   }) as TAttachment;
 
@@ -102,7 +115,7 @@ describe('TextAttachment (via Attachment default export)', () => {
     const { container } = render(<Attachment attachment={textAttachment()} />);
     const pre = container.querySelector('pre');
     expect(pre).not.toBeNull();
-    expect(pre!.textContent).toBe('a,b,c\n1,2,3');
+    expect(pre!.textContent).toBe('{"a":1,"b":2,"c":3}');
   });
 
   it('renders a download chip when filepath is present', () => {
@@ -163,10 +176,11 @@ describe('AttachmentGroup', () => {
   });
 
   it('routes text-bearing attachments through the text rendering path', () => {
-    // `.csv` is text-bearing but not artifact-eligible (CSV gets a
-    // dedicated viewer in a follow-up), so it falls through to the
-    // inline <pre> renderer rather than the side panel card.
-    const attachments = [textAttachment({ file_id: 'a', filename: 'a.csv' })] as TAttachment[];
+    /* `.json` is text-bearing but not artifact-eligible (JSON has no
+     * dedicated viewer yet), so it falls through to the inline <pre>
+     * renderer rather than the side panel card. CSV used to live here
+     * too but now routes through the SPREADSHEET artifact panel. */
+    const attachments = [textAttachment({ file_id: 'a', filename: 'a.json' })] as TAttachment[];
     const { container } = render(<AttachmentGroup attachments={attachments} />);
     expect(container.querySelector('pre')).not.toBeNull();
   });
@@ -183,5 +197,65 @@ describe('AttachmentGroup', () => {
     const { container } = render(<AttachmentGroup attachments={attachments} />);
     expect(container.querySelector('pre')).toBeNull();
     expect(screen.getAllByTestId('file-container').length).toBeGreaterThan(0);
+  });
+
+  it('does not collapse a single downloadable text preview with a non-downloadable placeholder', () => {
+    const attachments = [
+      textAttachment({
+        file_id: 'placeholder',
+        filename: 'placeholder.zip',
+        filepath: '',
+        type: 'application/zip',
+        text: undefined as unknown as string,
+      }),
+      textAttachment({
+        file_id: 'json',
+        filename: 'output.json',
+        filepath: '/files/output.json',
+        text: '{"ok":true}',
+      }),
+    ] as TAttachment[];
+
+    const { container } = render(<AttachmentGroup attachments={attachments} />);
+
+    expect(screen.queryByRole('button', { name: 'com_ui_show_n_files' })).not.toBeInTheDocument();
+    expect(container.querySelector('pre')?.textContent).toBe('{"ok":true}');
+    expect(screen.getByTestId('file-container')).toHaveTextContent('output.json');
+  });
+
+  it('keeps long grouped text previews clamped until the nested preview is expanded', () => {
+    setScrollHeight(800);
+    const longJson = Array.from({ length: 1000 }, (_, index) => `{"line":${index}}`).join('\n');
+    const attachments = [
+      textAttachment({
+        file_id: 'archive',
+        filename: 'archive.zip',
+        type: 'application/zip',
+        text: undefined as unknown as string,
+      }),
+      textAttachment({
+        file_id: 'json',
+        filename: 'output.json',
+        filepath: '/files/output.json',
+        text: longJson,
+      }),
+    ] as TAttachment[];
+
+    const { container } = render(<AttachmentGroup attachments={attachments} />);
+    const groupToggle = screen.getByRole('button', { name: 'com_ui_show_n_files' });
+    fireEvent.click(groupToggle);
+
+    expect(screen.getByText('output.json')).toBeInTheDocument();
+    const pre = container.querySelector('pre');
+    expect(pre).not.toBeNull();
+    expect(pre).toHaveStyle({ maxHeight: '320px' });
+    const previewToggle = screen.getByRole('button', { name: 'Show all' });
+    expect(previewToggle).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(previewToggle);
+    expect(screen.getByRole('button', { name: 'Collapse' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
   });
 });

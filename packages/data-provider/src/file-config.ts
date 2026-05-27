@@ -434,6 +434,7 @@ export const megabyte = 1024 * 1024;
 export const mbToBytes = (mb: number): number => mb * megabyte;
 
 const defaultSizeLimit = mbToBytes(512);
+const defaultSkillImportSizeLimit = mbToBytes(50);
 const defaultTokenLimit = 100000;
 const assistantsFileConfig = {
   fileLimit: 10,
@@ -462,6 +463,9 @@ export const fileConfig = {
       supportedMimeTypes,
       disabled: false,
     },
+  },
+  skills: {
+    fileSizeLimit: defaultSkillImportSizeLimit,
   },
   serverFileSizeLimit: defaultSizeLimit,
   avatarSizeLimit: mbToBytes(2),
@@ -496,8 +500,13 @@ export const endpointFileConfigSchema = z.object({
   supportedMimeTypes: supportedMimeTypesSchema.optional(),
 });
 
+const skillFileConfigSchema = z.object({
+  fileSizeLimit: z.number().min(0).optional(),
+});
+
 export const fileConfigSchema = z.object({
   endpoints: z.record(endpointFileConfigSchema).optional(),
+  skills: skillFileConfigSchema.optional(),
   serverFileSizeLimit: z.number().min(0).optional(),
   avatarSizeLimit: z.number().min(0).optional(),
   fileTokenLimit: z.number().min(0).optional(),
@@ -689,6 +698,9 @@ export function mergeFileConfig(dynamic: z.infer<typeof fileConfigSchema> | unde
     endpoints: {
       ...fileConfig.endpoints,
     },
+    skills: {
+      ...fileConfig.skills,
+    },
     ocr: {
       ...fileConfig.ocr,
       supportedMimeTypes: fileConfig.ocr?.supportedMimeTypes || [],
@@ -716,6 +728,13 @@ export function mergeFileConfig(dynamic: z.infer<typeof fileConfigSchema> | unde
 
   if (dynamic.fileTokenLimit !== undefined) {
     mergedConfig.fileTokenLimit = dynamic.fileTokenLimit;
+  }
+
+  if (dynamic.skills?.fileSizeLimit !== undefined) {
+    mergedConfig.skills = {
+      ...mergedConfig.skills,
+      fileSizeLimit: mbToBytes(dynamic.skills.fileSizeLimit),
+    };
   }
 
   // Merge clientImageResize configuration

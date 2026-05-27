@@ -12,6 +12,7 @@ const {
   resolveHeaders,
   createSafeUser,
   initializeAgent,
+  countTokens,
   getBalanceConfig,
   omitTitleOptions,
   getProviderConfig,
@@ -31,6 +32,8 @@ const {
   hydrateMissingIndexTokenCounts,
   injectSkillPrimes,
   isSkillPrimeMessage,
+  collectFileIds,
+  buildAgentScopedContext,
   buildSkillPrimeContentParts,
   buildInitialToolSessions,
 } = require('@librechat/api');
@@ -82,6 +85,7 @@ class AgentClient extends BaseClient {
       agentConfigs,
       contentParts,
       collectedUsage,
+      collectedThoughtSignatures,
       artifactPromises,
       maxContextTokens,
       subagentAggregatorsByToolCallId,
@@ -94,6 +98,12 @@ class AgentClient extends BaseClient {
     this.contentParts = contentParts;
     /** @type {Array<UsageMetadata>} */
     this.collectedUsage = collectedUsage;
+    /** Vertex Gemini 3 thought signatures captured during the run, keyed by
+     *  `tool_call_id`. Persisted on `responseMessage.metadata.thoughtSignatures`
+     *  and restored as `additional_kwargs.signatures` on subsequent turns to
+     *  keep tool round-trips valid across DB reconstruction.
+     *  @type {Record<string, string> | undefined} */
+    this.collectedThoughtSignatures = collectedThoughtSignatures;
     /** @type {ArtifactPromises} */
     this.artifactPromises = artifactPromises;
     /** Per-request map of `createContentAggregator` instances keyed by
@@ -263,9 +273,14 @@ class AgentClient extends BaseClient {
           }))
         : []),
     ];
+    const sharedRunAttachmentIds = new Set();
     if (this.options.attachments) {
       const attachments = await this.options.attachments;
       const latestMessage = orderedMessages[orderedMessages.length - 1];
+
+      for (const fileId of collectFileIds(attachments)) {
+        sharedRunAttachmentIds.add(fileId);
+      }
 
       if (this.message_file_map) {
         this.message_file_map[latestMessage.messageId] = attachments;
@@ -331,7 +346,7 @@ class AgentClient extends BaseClient {
             this.contextHandlers?.processFile(file);
             continue;
           }
-          if (file.metadata?.fileIdentifier) {
+          if (file.metadata?.codeEnvRef) {
             continue;
           }
         }
@@ -395,6 +410,14 @@ class AgentClient extends BaseClient {
     const sharedRunContext = sharedRunContextParts.join('\n\n');
     const memoryAgentEnabled = isMemoryAgentEnabled(this.options.req.config?.memory);
 
+    const agentScopedContext = await buildAgentScopedContext({
+      agentIds: allAgents.map(({ agentId }) => agentId),
+      attachmentsByAgentId: this.options.agentContextAttachmentsByAgentId,
+      sharedRunAttachmentIds,
+      req: this.options.req,
+      tokenCountFn: (text) => countTokens(text),
+    });
+
     /** Preserve canonical pre-format token counts for all history entering graph formatting */
     this.indexTokenCountMap = canonicalTokenCountMap;
 
@@ -432,10 +455,14 @@ class AgentClient extends BaseClient {
 
     await Promise.all(
       allAgents.map(({ agent, agentId }) => {
-        const agentRunContext =
-          memoryContext && (agentId === this.options.agent.id || memoryAgentEnabled)
-            ? [sharedRunContext, memoryContext].filter(Boolean).join('\n\n')
-            : sharedRunContext;
+        const agentRunContextParts = [sharedRunContext];
+        if (memoryContext && (agentId === this.options.agent.id || memoryAgentEnabled)) {
+          agentRunContextParts.push(memoryContext);
+        }
+        const scopedContext = agentScopedContext.get(agentId);
+        if (scopedContext) {
+          agentRunContextParts.push(scopedContext);
+        }
 
         return applyContextToAgent({
           agent,
@@ -443,7 +470,7 @@ class AgentClient extends BaseClient {
           logger,
           mcpManager,
           configServers,
-          sharedRunContext: agentRunContext,
+          sharedRunContext: agentRunContextParts.filter(Boolean).join('\n\n'),
           ephemeralAgent: agentId === this.options.agent.id ? ephemeralAgent : undefined,
         });
       }),
@@ -722,7 +749,11 @@ class AgentClient extends BaseClient {
     });
 
     const completion = filterMalformedContentParts(this.contentParts);
-    return { completion };
+    const signatures = this.collectedThoughtSignatures;
+    if (!signatures || Object.keys(signatures).length === 0) {
+      return { completion };
+    }
+    return { completion, metadata: { thoughtSignatures: signatures } };
   }
 
   /**

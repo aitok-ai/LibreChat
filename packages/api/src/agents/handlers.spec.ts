@@ -1,4 +1,5 @@
 import { Constants } from '@librechat/agents';
+import { logger } from '@librechat/data-schemas';
 import type {
   ToolExecuteBatchRequest,
   ToolExecuteResult,
@@ -72,8 +73,20 @@ describe('createToolExecuteHandler', () => {
           codeSessionContext: {
             session_id: 'prev-session-abc',
             files: [
-              { session_id: 'prev-session-abc', id: 'f1', name: 'data.parquet' },
-              { session_id: 'prev-session-abc', id: 'f2', name: 'chart.png' },
+              {
+                storage_session_id: 'prev-session-abc',
+                id: 'f1',
+                resource_id: 'user_alice',
+                name: 'data.parquet',
+                kind: 'user',
+              },
+              {
+                storage_session_id: 'prev-session-abc',
+                id: 'f2',
+                resource_id: 'user_alice',
+                name: 'chart.png',
+                kind: 'user',
+              },
             ],
           },
         },
@@ -84,8 +97,20 @@ describe('createToolExecuteHandler', () => {
       expect(capturedConfigs).toHaveLength(1);
       expect(capturedConfigs[0].session_id).toBe('prev-session-abc');
       expect(capturedConfigs[0]._injected_files).toEqual([
-        { session_id: 'prev-session-abc', id: 'f1', name: 'data.parquet' },
-        { session_id: 'prev-session-abc', id: 'f2', name: 'chart.png' },
+        {
+          storage_session_id: 'prev-session-abc',
+          id: 'f1',
+          resource_id: 'user_alice',
+          name: 'data.parquet',
+          kind: 'user',
+        },
+        {
+          storage_session_id: 'prev-session-abc',
+          id: 'f2',
+          resource_id: 'user_alice',
+          name: 'chart.png',
+          kind: 'user',
+        },
       ]);
     });
 
@@ -141,7 +166,15 @@ describe('createToolExecuteHandler', () => {
           args: { lang: 'python', code: 'step_1()' },
           codeSessionContext: {
             session_id: 'session-A',
-            files: [{ session_id: 'session-A', id: 'fa', name: 'a.csv' }],
+            files: [
+              {
+                storage_session_id: 'session-A',
+                id: 'fa',
+                resource_id: 'user_alice',
+                name: 'a.csv',
+                kind: 'user',
+              },
+            ],
           },
         },
         {
@@ -150,7 +183,15 @@ describe('createToolExecuteHandler', () => {
           args: { lang: 'python', code: 'step_2()' },
           codeSessionContext: {
             session_id: 'session-A',
-            files: [{ session_id: 'session-A', id: 'fa', name: 'a.csv' }],
+            files: [
+              {
+                storage_session_id: 'session-A',
+                id: 'fa',
+                resource_id: 'user_alice',
+                name: 'a.csv',
+                kind: 'user',
+              },
+            ],
           },
         },
       ];
@@ -161,7 +202,13 @@ describe('createToolExecuteHandler', () => {
       for (const config of capturedConfigs) {
         expect(config.session_id).toBe('session-A');
         expect(config._injected_files).toEqual([
-          { session_id: 'session-A', id: 'fa', name: 'a.csv' },
+          {
+            storage_session_id: 'session-A',
+            id: 'fa',
+            resource_id: 'user_alice',
+            name: 'a.csv',
+            kind: 'user',
+          },
         ]);
       }
     });
@@ -177,7 +224,15 @@ describe('createToolExecuteHandler', () => {
           args: { query: 'test' },
           codeSessionContext: {
             session_id: 'should-be-ignored',
-            files: [{ session_id: 'x', id: 'y', name: 'z' }],
+            files: [
+              {
+                storage_session_id: 'x',
+                id: 'y',
+                resource_id: 'user_alice',
+                name: 'z',
+                kind: 'user',
+              },
+            ],
           },
         },
       ];
@@ -187,6 +242,162 @@ describe('createToolExecuteHandler', () => {
       expect(capturedConfigs).toHaveLength(1);
       expect(capturedConfigs[0].session_id).toBeUndefined();
       expect(capturedConfigs[0]._injected_files).toBeUndefined();
+    });
+  });
+
+  describe('programmatic tool config', () => {
+    it('injects tool definitions for the legacy PTC tool name', async () => {
+      const capturedConfigs: Record<string, unknown>[] = [];
+      const legacyPtcTool = createMockTool(Constants.PROGRAMMATIC_TOOL_CALLING, capturedConfigs);
+      const toolRegistry = new Map([
+        ['custom_tool', { name: 'custom_tool' }],
+        [Constants.PROGRAMMATIC_TOOL_CALLING, { name: Constants.PROGRAMMATIC_TOOL_CALLING }],
+        [
+          Constants.BASH_PROGRAMMATIC_TOOL_CALLING,
+          { name: Constants.BASH_PROGRAMMATIC_TOOL_CALLING },
+        ],
+        [Constants.TOOL_SEARCH, { name: Constants.TOOL_SEARCH }],
+      ]);
+      const ptcToolMap = new Map([['custom_tool', createMockTool('custom_tool', [])]]);
+      const loadTools: ToolExecuteOptions['loadTools'] = jest.fn(async () => ({
+        loadedTools: [legacyPtcTool] as never[],
+        configurable: { toolRegistry, ptcToolMap },
+      }));
+      const handler = createToolExecuteHandler({ loadTools });
+
+      await invokeHandler(handler, [
+        {
+          id: 'call_1',
+          name: Constants.PROGRAMMATIC_TOOL_CALLING,
+          args: { code: 'custom_tool "{}"' },
+        },
+      ]);
+
+      expect(capturedConfigs).toHaveLength(1);
+      expect(capturedConfigs[0].toolDefs).toEqual([{ name: 'custom_tool' }]);
+      expect(capturedConfigs[0].toolMap).toBe(ptcToolMap);
+    });
+  });
+
+  describe('tool error handling', () => {
+    it('truncates oversized tool errors in the result and log context', async () => {
+      const oversizedMessage = `tool failed: ${'x'.repeat(15_000)}`;
+      const thrown = new Error(oversizedMessage);
+      thrown.stack = `Error: ${oversizedMessage}\n${'stack-line\n'.repeat(600)}`;
+      const loadTools: ToolExecuteOptions['loadTools'] = jest.fn(async () => ({
+        loadedTools: [
+          {
+            name: 'bad_tool',
+            invoke: jest.fn(async () => {
+              throw thrown;
+            }),
+          },
+        ] as never[],
+      }));
+      const errorSpy = jest.spyOn(logger, 'error').mockReturnValue(logger);
+      try {
+        const handler = createToolExecuteHandler({ loadTools });
+        const [result] = await invokeHandler(handler, [
+          {
+            id: 'call_bad',
+            name: 'bad_tool',
+            args: {},
+          },
+        ]);
+
+        expect(result.status).toBe('error');
+        expect(result.errorMessage).toContain('truncated');
+        expect(result.errorMessage!.length).toBeLessThanOrEqual(12_000);
+        expect(errorSpy).toHaveBeenCalledWith(
+          '[ON_TOOL_EXECUTE] Tool bad_tool error',
+          expect.objectContaining({
+            messageTruncated: true,
+            messageLength: oversizedMessage.length,
+          }),
+        );
+        const [, logContext] = errorSpy.mock.calls[0] as unknown as [string, { stack?: string }];
+        expect(logContext.stack!.length).toBeLessThanOrEqual(4_000);
+      } finally {
+        errorSpy.mockRestore();
+      }
+    });
+
+    it('returns a per-tool error when thrown value stringification fails', async () => {
+      const thrown = {
+        toString() {
+          throw new Error('toString failed');
+        },
+      };
+      const loadTools: ToolExecuteOptions['loadTools'] = jest.fn(async () => ({
+        loadedTools: [
+          {
+            name: 'bad_to_string_tool',
+            invoke: jest.fn(async () => {
+              throw thrown;
+            }),
+          },
+        ] as never[],
+      }));
+      const errorSpy = jest.spyOn(logger, 'error').mockReturnValue(logger);
+      try {
+        const handler = createToolExecuteHandler({ loadTools });
+        const [result] = await invokeHandler(handler, [
+          {
+            id: 'call_bad_to_string',
+            name: 'bad_to_string_tool',
+            args: {},
+          },
+        ]);
+
+        expect(result.status).toBe('error');
+        expect(result.errorMessage).toBe('[Thrown value could not be converted to string]');
+        expect(errorSpy).toHaveBeenCalledWith(
+          '[ON_TOOL_EXECUTE] Tool bad_to_string_tool error',
+          expect.objectContaining({
+            name: 'object',
+            messageTruncated: false,
+          }),
+        );
+      } finally {
+        errorSpy.mockRestore();
+      }
+    });
+
+    it('preserves message from thrown plain objects', async () => {
+      const thrown = { message: 'plain object timeout' };
+      const loadTools: ToolExecuteOptions['loadTools'] = jest.fn(async () => ({
+        loadedTools: [
+          {
+            name: 'plain_object_tool',
+            invoke: jest.fn(async () => {
+              throw thrown;
+            }),
+          },
+        ] as never[],
+      }));
+      const errorSpy = jest.spyOn(logger, 'error').mockReturnValue(logger);
+      try {
+        const handler = createToolExecuteHandler({ loadTools });
+        const [result] = await invokeHandler(handler, [
+          {
+            id: 'call_plain_object',
+            name: 'plain_object_tool',
+            args: {},
+          },
+        ]);
+
+        expect(result.status).toBe('error');
+        expect(result.errorMessage).toBe('plain object timeout');
+        expect(errorSpy).toHaveBeenCalledWith(
+          '[ON_TOOL_EXECUTE] Tool plain_object_tool error',
+          expect.objectContaining({
+            message: 'plain object timeout',
+            messageTruncated: false,
+          }),
+        );
+      } finally {
+        errorSpy.mockRestore();
+      }
     });
   });
 
@@ -205,6 +416,7 @@ describe('createToolExecuteHandler', () => {
         name: 'pii-redactor',
         body: 'restricted body',
         fileCount: 0,
+        version: 1,
         disableModelInvocation: true,
       }));
       const handler = createSkillHandler(getSkillByName);
@@ -247,6 +459,7 @@ describe('createToolExecuteHandler', () => {
         name: 'normal-skill',
         body: 'body',
         fileCount: 0,
+        version: 1,
       }));
       const handler = createSkillHandler(getSkillByName);
 
@@ -276,6 +489,7 @@ describe('createToolExecuteHandler', () => {
         name: 'maybe-disabled',
         body: 'body',
         fileCount: 0,
+        version: 1,
       }));
       const handler = createSkillHandler(getSkillByName);
 
@@ -302,6 +516,7 @@ describe('createToolExecuteHandler', () => {
         name: 'maybe-disabled-read',
         body: '# Body',
         fileCount: 0,
+        version: 1,
       }));
       const handler = createToolExecuteHandler({
         loadTools: jest.fn(async () => ({
@@ -342,6 +557,7 @@ describe('createToolExecuteHandler', () => {
         name: 'manually-primed',
         body: '# Body',
         fileCount: 0,
+        version: 1,
       }));
       const handler = createToolExecuteHandler({
         loadTools: jest.fn(async () => ({
@@ -391,6 +607,7 @@ describe('createToolExecuteHandler', () => {
         name: 'pii-redactor',
         body: 'restricted body',
         fileCount: 0,
+        version: 1,
         disableModelInvocation: true,
       }));
       const handler = createToolExecuteHandler({
@@ -421,6 +638,7 @@ describe('createToolExecuteHandler', () => {
         name: 'normal-skill',
         body: '# Body',
         fileCount: 0,
+        version: 1,
       }));
       const handler = createToolExecuteHandler({
         loadTools: jest.fn(async () => ({
@@ -454,6 +672,7 @@ describe('createToolExecuteHandler', () => {
         name: 'manual-only-skill',
         body: '# Use references/docs.md for details',
         fileCount: 0,
+        version: 1,
         disableModelInvocation: true,
       }));
       const handler = createToolExecuteHandler({
@@ -489,6 +708,7 @@ describe('createToolExecuteHandler', () => {
         name: 'other-disabled-skill',
         body: 'restricted',
         fileCount: 0,
+        version: 1,
         disableModelInvocation: true,
       }));
       const handler = createToolExecuteHandler({
@@ -526,6 +746,7 @@ describe('createToolExecuteHandler', () => {
         name: 'always-applied-legal',
         body: '# Cite references/policy.md when advising',
         fileCount: 0,
+        version: 1,
         disableModelInvocation: true,
       }));
       const handler = createToolExecuteHandler({
@@ -566,6 +787,7 @@ describe('createToolExecuteHandler', () => {
         name: 'collides',
         body: '# primed body',
         fileCount: 0,
+        version: 1,
       }));
       const handler = createToolExecuteHandler({
         loadTools: jest.fn(async () => ({
@@ -615,6 +837,7 @@ describe('createToolExecuteHandler', () => {
         name: 'brand-guidelines',
         body: 'skill body',
         fileCount: 2,
+        version: 1,
       }));
       /* `loadTools` injects `codeEnvAvailable` into the returned
          `configurable`, which mirrors production flow through
@@ -789,6 +1012,7 @@ describe('createToolExecuteHandler', () => {
         name: 'primed-only-skill',
         body: '# Primed skill body',
         fileCount: 1,
+        version: 1,
       }));
       const readSandboxFile = jest.fn();
       const getSkillFileByPath = jest.fn(async () => ({
@@ -888,6 +1112,7 @@ describe('createToolExecuteHandler', () => {
         name: 'real-skill',
         body: '# Real Body',
         fileCount: 0,
+        version: 1,
       }));
       const readSandboxFile = jest.fn();
       const handler = makeReadFileHandler({

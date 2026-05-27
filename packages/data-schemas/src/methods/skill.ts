@@ -7,6 +7,7 @@ import {
   SKILL_BODY_MAX_LENGTH,
   SKILL_NAME_PATTERN as SKILL_NAME_PATTERN_SHARED,
 } from 'librechat-data-provider';
+import type { CodeEnvRef } from 'librechat-data-provider';
 import type { Model, Types, FilterQuery } from 'mongoose';
 import type {
   ISkill,
@@ -587,6 +588,8 @@ export type UpsertSkillFileInput = {
   file_id: string;
   filename: string;
   filepath: string;
+  storageKey?: string;
+  storageRegion?: string;
   source: string;
   mimeType: string;
   bytes: number;
@@ -1424,6 +1427,8 @@ export function createSkillMethods(mongoose: typeof import('mongoose'), deps: Sk
           file_id: row.file_id,
           filename: row.filename,
           filepath: row.filepath,
+          storageKey: row.storageKey,
+          storageRegion: row.storageRegion,
           source: row.source,
           mimeType: row.mimeType,
           bytes: row.bytes,
@@ -1432,7 +1437,7 @@ export function createSkillMethods(mongoose: typeof import('mongoose'), deps: Sk
           author: row.author,
           tenantId: row.tenantId,
         },
-        $unset: { content: '', isBinary: '', codeEnvIdentifier: '' },
+        $unset: { content: '', isBinary: '', codeEnvRef: '' },
       },
       { new: false, upsert: true },
     ).lean();
@@ -1489,18 +1494,32 @@ export function createSkillMethods(mongoose: typeof import('mongoose'), deps: Sk
     updates: Array<{
       skillId: Types.ObjectId | string;
       relativePath: string;
-      codeEnvIdentifier: string;
+      codeEnvRef: CodeEnvRef;
     }>,
-  ): Promise<void> {
-    if (updates.length === 0) return;
+  ): Promise<{ matchedCount: number; modifiedCount: number }> {
+    if (updates.length === 0) return { matchedCount: 0, modifiedCount: 0 };
     const SkillFile = mongoose.models.SkillFile as Model<ISkillFileDocument>;
     const ops = updates.map((u) => ({
       updateOne: {
         filter: { skillId: u.skillId, relativePath: u.relativePath },
-        update: { $set: { codeEnvIdentifier: u.codeEnvIdentifier } },
+        update: { $set: { codeEnvRef: u.codeEnvRef } },
       },
     }));
-    await tenantSafeBulkWrite(SkillFile, ops);
+
+    /**
+     * The returned `{matchedCount, modifiedCount}` lets callers warn on
+     * partial writes — a silent miss here turns every subsequent prime
+     * into a fresh upload (massive egress at scale). If the wrapper's
+     * tenant injection ends up dropping rows, the warn log makes it
+     * visible instead of failing closed.
+     */
+    const result = await tenantSafeBulkWrite(SkillFile, ops);
+    if (result.modifiedCount < updates.length) {
+      logger.warn(
+        `[updateSkillFileCodeEnvIds] Persisted ${result.modifiedCount}/${updates.length} codeEnvRefs (matched ${result.matchedCount}). Subsequent primes for unmatched files will re-upload.`,
+      );
+    }
+    return { matchedCount: result.matchedCount, modifiedCount: result.modifiedCount };
   }
 
   return {

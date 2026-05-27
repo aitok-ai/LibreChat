@@ -49,7 +49,7 @@ export default function Action() {
             <button
               type="button"
               className="inline-flex items-center"
-              aria-label={localize('com_agents_code_interpreter')}
+              aria-label={localize('com_ui_run_code')}
             >
               <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
             </button>
@@ -58,9 +58,7 @@ export default function Action() {
         <HoverCardPortal>
           <HoverCardContent side={ESide.Top} className="w-80">
             <div className="space-y-2">
-              <p className="text-text-secondary text-sm">
-                {localize('com_agents_code_interpreter')}
-              </p>
+              <p className="text-text-secondary text-sm">{localize('com_agents_run_code_info')}</p>
             </div>
           </HoverCardContent>
         </HoverCardPortal>

@@ -15,18 +15,30 @@ const {
   createToolExecuteHandler,
 } = require('@librechat/api');
 const { processFileCitations } = require('~/server/services/Files/Citations');
-const { processCodeOutput } = require('~/server/services/Files/Code/process');
+const { processCodeOutput, runPreviewFinalize } = require('~/server/services/Files/Code/process');
 const { saveBase64Image } = require('~/server/services/Files/process');
 
 class ModelEndHandler {
   /**
    * @param {Array<UsageMetadata>} collectedUsage
+   * @param {Record<string, string> | null} [collectedThoughtSignatures] Map of
+   *   `tool_call_id → thoughtSignature` accumulated across `chat_model_end`
+   *   events. Used to persist Vertex Gemini 3 thought signatures across DB
+   *   round-trips so resumed conversations don't 400 on the next API call.
+   *   Each `model_end` may emit multiple tool calls (one per LLM cycle in a
+   *   tool-using turn); per-id storage preserves the mapping so each tool
+   *   call's signature can be restored onto the right reconstructed
+   *   AIMessage rather than being concentrated on the last one.
+   *   Optional; when `null`, the handler is a no-op for signatures. Non-Vertex
+   *   providers don't emit `additional_kwargs.signatures`, so capture is also
+   *   a no-op for them even when the map is provided.
    */
-  constructor(collectedUsage) {
+  constructor(collectedUsage, collectedThoughtSignatures = null) {
     if (!Array.isArray(collectedUsage)) {
       throw new Error('collectedUsage must be an array');
     }
     this.collectedUsage = collectedUsage;
+    this.collectedThoughtSignatures = collectedThoughtSignatures;
   }
 
   finalize(errorMessage) {
@@ -82,6 +94,30 @@ class ModelEndHandler {
       const taggedUsage = markSummarizationUsage(usage, metadata);
 
       this.collectedUsage.push(taggedUsage);
+
+      /**
+       * `additional_kwargs.signatures` is a flat array indexed by response
+       * part position (text + functionCall interleaved). `tool_calls` is
+       * just the function calls in their original order. Non-empty
+       * signatures correspond 1:1 with `tool_calls` in order — see
+       * `partsToSignatures` in `@langchain/google-common`. Walk both in a
+       * single pass to map each signature onto the right `tool_call.id`.
+       */
+      const signatures = data?.output?.additional_kwargs?.signatures;
+      const toolCalls = data?.output?.tool_calls;
+      if (
+        this.collectedThoughtSignatures &&
+        Array.isArray(signatures) &&
+        Array.isArray(toolCalls)
+      ) {
+        let toolIdx = 0;
+        for (const sig of signatures) {
+          if (typeof sig !== 'string' || sig.length === 0) continue;
+          if (toolIdx >= toolCalls.length) break;
+          const id = toolCalls[toolIdx++]?.id;
+          if (id) this.collectedThoughtSignatures[id] = sig;
+        }
+      }
     } catch (error) {
       logger.error('Error handling model end event:', error);
       return this.finalize(errorMessage);
@@ -183,6 +219,7 @@ function getDefaultHandlers({
   aggregateContent,
   toolEndCallback,
   collectedUsage,
+  collectedThoughtSignatures = null,
   streamId = null,
   toolExecuteOptions = null,
   summarizationOptions = null,
@@ -194,7 +231,7 @@ function getDefaultHandlers({
     );
   }
   const handlers = {
-    [GraphEvents.CHAT_MODEL_END]: new ModelEndHandler(collectedUsage),
+    [GraphEvents.CHAT_MODEL_END]: new ModelEndHandler(collectedUsage, collectedThoughtSignatures),
     [GraphEvents.TOOL_END]: new ToolEndHandler(toolEndCallback, logger),
     [GraphEvents.ON_RUN_STEP]: {
       /**
@@ -398,6 +435,55 @@ function writeAttachment(res, streamId, attachment) {
 }
 
 /**
+ * Predicate: is it safe to push an SSE write to the caller right now?
+ *
+ * In `streamId` (resumable) mode, writes go to the job emitter and the
+ * `res` state is irrelevant — always writable.
+ *
+ * In standard mode, the caller's `res` must have headers sent (the
+ * stream has been opened) and not yet be `writableEnded` (the response
+ * hasn't closed). Writing to a closed stream raises
+ * `ERR_STREAM_WRITE_AFTER_END`.
+ *
+ * Used by deferred preview emits in both `createToolEndCallback`
+ * (chat-completions) and `createResponsesToolEndCallback` (Open
+ * Responses) so the gate logic stays in one place. (Comprehensive
+ * review #3 on PR #12957.)
+ */
+function isStreamWritable(res, streamId) {
+  if (streamId) {
+    return true;
+  }
+  return !!res && res.headersSent && !res.writableEnded;
+}
+
+/**
+ * Emit an update for an attachment that was previously sent with
+ * `status: 'pending'`. Fire-and-forget: if the response stream has
+ * already closed (the agent finished generating before the deferred
+ * preview resolved) the frontend's React Query polling on
+ * `/api/files/:file_id/preview` picks up the resolved record on its
+ * next tick. Skipping the write in that case avoids
+ * `ERR_STREAM_WRITE_AFTER_END`.
+ *
+ * Reuses the `attachment` SSE event name with a discriminated payload:
+ * the frontend's `useAttachmentHandler` upserts by `file_id`, so a
+ * second event with the same id and `status: 'ready' | 'failed'`
+ * overwrites the pending placeholder in place. No new event type, no
+ * new client listener.
+ *
+ * @param {ServerResponse} res
+ * @param {string | null} streamId
+ * @param {Object} attachment - Updated attachment payload (must carry `file_id`).
+ */
+function writeAttachmentUpdate(res, streamId, attachment) {
+  if (!isStreamWritable(res, streamId)) {
+    return;
+  }
+  writeAttachment(res, streamId, attachment);
+}
+
+/**
  *
  * @param {Object} params
  * @param {ServerRequest} params.req
@@ -556,42 +642,83 @@ function createToolEndCallback({ req, res, artifactPromises, streamId = null }) 
         continue;
       }
       const { id, name } = file;
+      const toolCallId = output.tool_call_id;
       artifactPromises.push(
         (async () => {
-          const fileMetadata = await processCodeOutput({
+          const result = await processCodeOutput({
             req,
             id,
             name,
             messageId: metadata.run_id,
-            toolCallId: output.tool_call_id,
+            toolCallId,
             conversationId: metadata.thread_id,
             /**
-             * Use the FILE's session_id (storage session), not the
-             * top-level artifact session_id (exec session). The codeapi
-             * worker reports two distinct ids on a tool result:
+             * Use the FILE's `storage_session_id` (storage session),
+             * not the top-level artifact `session_id` (exec session).
+             * The codeapi worker reports two distinct ids on a tool
+             * result:
              *   - `artifact.session_id` is the EXEC session — the
              *     sandbox VM that ran the bash command. Files don't
              *     live there; it's torn down post-execution.
-             *   - `file.session_id` is the STORAGE session — the
-             *     file-server bucket prefix where artifacts actually
-             *     live and are served from.
+             *   - `file.storage_session_id` is the STORAGE session —
+             *     the file-server bucket prefix where artifacts
+             *     actually live and are served from.
              * `processCodeOutput` builds `/download/{session_id}/{id}`,
              * so passing the exec id resolves to a path the file-server
              * doesn't know about and 404s. Fall back to artifact-level
              * for older worker payloads that may not populate per-file
              * ids.
              */
-            session_id: file.session_id ?? output.artifact.session_id,
+            session_id: file.storage_session_id ?? output.artifact.session_id,
           });
-          if (!streamId && !res.headersSent) {
-            return fileMetadata;
-          }
-
+          const fileMetadata = result?.file ?? null;
+          const finalize = result?.finalize;
           if (!fileMetadata) {
             return null;
           }
-
-          writeAttachment(res, streamId, fileMetadata);
+          /* Initial emit: ship the attachment to the client immediately
+           * (carries `status: 'pending'` for office buckets so the UI
+           * shows "preparing preview…"). The agent's response stops
+           * blocking on extraction here.
+           *
+           * Use the shared `isStreamWritable` predicate rather than the
+           * narrower `streamId || res.headersSent` check that lived
+           * here before — a client disconnect mid-stream
+           * (`res.writableEnded`) would otherwise hit `res.write` and
+           * raise `ERR_STREAM_WRITE_AFTER_END` (caught by the outer
+           * IIFE catch but logged as noise). Same gate the Responses
+           * path uses below. */
+          if (isStreamWritable(res, streamId)) {
+            writeAttachment(res, streamId, fileMetadata);
+          }
+          /* Deferred preview rendering: extraction continues running
+           * even after the HTTP response closes. If the stream is still
+           * open when the preview resolves, push an `attachment`
+           * update event so the UI patches in place; otherwise React
+           * Query polling on `/api/files/:file_id/preview` picks it up.
+           *
+           * Spread the full updated record (mirroring the initial emit
+           * shape) and overlay `messageId`/`toolCallId` from the
+           * current run. The DB record preserves the original
+           * `messageId` across cross-turn filename reuse so
+           * `getCodeGeneratedFiles` can trace the file back to its
+           * original assistant message; routing the update SSE by the
+           * persisted id would land the patch on a stale message
+           * slot — turn-N's pending placeholder would stay stuck while
+           * turn-1's already-resolved attachment got re-merged.
+           * (Codex P1 review on PR #12957.) */
+          runPreviewFinalize({
+            finalize,
+            fileId: fileMetadata.file_id,
+            previewRevision: result?.previewRevision,
+            onResolved: (updated) => {
+              writeAttachmentUpdate(res, streamId, {
+                ...updated,
+                messageId: metadata.run_id,
+                toolCallId,
+              });
+            },
+          });
           return fileMetadata;
         })().catch((error) => {
           logger.error('Error processing code output:', error);
@@ -782,51 +909,73 @@ function createResponsesToolEndCallback({ req, res, tracker, artifactPromises })
         continue;
       }
       const { id, name } = file;
+      const toolCallId = output.tool_call_id;
       artifactPromises.push(
         (async () => {
-          const fileMetadata = await processCodeOutput({
+          const result = await processCodeOutput({
             req,
             id,
             name,
             messageId: metadata.run_id,
-            toolCallId: output.tool_call_id,
+            toolCallId,
             conversationId: metadata.thread_id,
             /**
-             * Use the FILE's session_id (storage session), not the
-             * top-level artifact session_id (exec session). The codeapi
-             * worker reports two distinct ids on a tool result:
+             * Use the FILE's `storage_session_id` (storage session),
+             * not the top-level artifact `session_id` (exec session).
+             * The codeapi worker reports two distinct ids on a tool
+             * result:
              *   - `artifact.session_id` is the EXEC session — the
              *     sandbox VM that ran the bash command. Files don't
              *     live there; it's torn down post-execution.
-             *   - `file.session_id` is the STORAGE session — the
-             *     file-server bucket prefix where artifacts actually
-             *     live and are served from.
+             *   - `file.storage_session_id` is the STORAGE session —
+             *     the file-server bucket prefix where artifacts
+             *     actually live and are served from.
              * `processCodeOutput` builds `/download/{session_id}/{id}`,
              * so passing the exec id resolves to a path the file-server
              * doesn't know about and 404s. Fall back to artifact-level
              * for older worker payloads that may not populate per-file
              * ids.
              */
-            session_id: file.session_id ?? output.artifact.session_id,
+            session_id: file.storage_session_id ?? output.artifact.session_id,
           });
-
+          const fileMetadata = result?.file ?? null;
+          const finalize = result?.finalize;
           if (!fileMetadata) {
             return null;
           }
 
-          // For Responses API, emit attachment during streaming
-          if (res.headersSent && !res.writableEnded) {
-            const attachment = {
-              file_id: fileMetadata.file_id,
-              filename: fileMetadata.filename,
-              type: fileMetadata.type,
-              url: fileMetadata.filepath,
-              width: fileMetadata.width,
-              height: fileMetadata.height,
-              tool_call_id: output.tool_call_id,
-            };
-            writeResponsesAttachment(res, tracker, attachment, metadata);
+          /* Initial emit (Open Responses extension format). The agent's
+           * response no longer blocks on extraction. */
+          if (isStreamWritable(res, null)) {
+            writeResponsesAttachment(
+              res,
+              tracker,
+              buildResponsesAttachment(fileMetadata, toolCallId),
+              metadata,
+            );
           }
+
+          /* Deferred preview rendering: extract HTML in the background
+           * and emit a follow-up `librechat:attachment` with the same
+           * `file_id` so the client merges the resolved record over the
+           * pending placeholder. Fire-and-forget — survives response
+           * close; polling covers the post-close gap. */
+          runPreviewFinalize({
+            finalize,
+            fileId: fileMetadata.file_id,
+            previewRevision: result?.previewRevision,
+            onResolved: (updated) => {
+              if (!isStreamWritable(res, null)) {
+                return;
+              }
+              writeResponsesAttachment(
+                res,
+                tracker,
+                buildResponsesAttachment(updated, toolCallId),
+                metadata,
+              );
+            },
+          });
 
           return fileMetadata;
         })().catch((error) => {
@@ -835,6 +984,28 @@ function createResponsesToolEndCallback({ req, res, tracker, artifactPromises })
         }),
       );
     }
+  };
+}
+
+/**
+ * Project a file metadata record into the Open Responses attachment
+ * shape. Mirrors the legacy inline projection but adds `status` and
+ * `previewError` so deferred preview updates carry the lifecycle
+ * signal the client uses to upsert by `file_id`.
+ */
+function buildResponsesAttachment(fileMetadata, toolCallId) {
+  return {
+    file_id: fileMetadata.file_id,
+    filename: fileMetadata.filename,
+    type: fileMetadata.type,
+    url: fileMetadata.filepath,
+    width: fileMetadata.width,
+    height: fileMetadata.height,
+    tool_call_id: toolCallId,
+    text: fileMetadata.text ?? null,
+    textFormat: fileMetadata.textFormat ?? null,
+    status: fileMetadata.status,
+    previewError: fileMetadata.previewError,
   };
 }
 
@@ -889,10 +1060,12 @@ function buildSummarizationHandlers({ isStreaming, res }) {
 }
 
 module.exports = {
+  ModelEndHandler,
   agentLogHandler,
   agentLogHandlerObj,
   getDefaultHandlers,
   createToolEndCallback,
+  isStreamWritable,
   markSummarizationUsage,
   buildSummarizationHandlers,
   createResponsesToolEndCallback,

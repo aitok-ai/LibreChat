@@ -19,7 +19,7 @@ import SourcesErrorBoundary from './SourcesErrorBoundary';
 import { useFileDownload } from '~/data-provider';
 import { useSearchContext } from '~/Providers';
 import { useLocalize } from '~/hooks';
-import { cn } from '~/utils';
+import { cn, triggerDownload } from '~/utils';
 import store from '~/store';
 
 interface SourceItemProps {
@@ -212,7 +212,9 @@ const FileItem = React.memo(function FileItem({
   const user = useRecoilValue(store.user);
   const { showToast } = useToastContext();
 
-  const { refetch: downloadFile } = useFileDownload(user?.id ?? '', file.file_id);
+  const { refetch: downloadFile } = useFileDownload(user?.id ?? '', file.file_id, {
+    source: file.source,
+  });
 
   // Extract error message logic to avoid duplication
   const getErrorMessage = useCallback(
@@ -255,18 +257,12 @@ const FileItem = React.memo(function FileItem({
           });
           return;
         }
-        const link = document.createElement('a');
-        link.href = stream.data;
-        link.setAttribute('download', file.originalname ?? file.filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(stream.data);
+        triggerDownload(stream.data, file.filename);
       } catch (error) {
         console.error('Error downloading file:', error);
       }
     },
-    [downloadFile, file.filename, file.originalname, isLocalFile, localize, showToast],
+    [downloadFile, file.filename, isLocalFile, localize, showToast],
   );
   const isLoading = false;
 
@@ -284,7 +280,7 @@ const FileItem = React.memo(function FileItem({
 
   // Simple aria label
   const downloadAriaLabel = localize('com_sources_download_aria_label', {
-    filename: file.originalname ?? file.filename,
+    filename: file.filename,
     status: isLoading ? localize('com_sources_downloading_status') : '',
   });
   const error = null;
@@ -409,7 +405,7 @@ const SourcesGroup = React.memo(function SourcesGroup({
   }, [sources, limit]);
 
   return (
-    <div className="scrollbar-none grid w-full grid-cols-4 gap-2 overflow-x-auto">
+    <div className="grid w-full scrollbar-none grid-cols-4 gap-2 overflow-x-auto">
       <OGDialog>
         {visibleSources.map((source, i) => (
           <div key={`source-${i}`} className="w-full min-w-[120px]">
@@ -501,7 +497,7 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
   const hasMoreFiles = remainingFiles.length > 0;
 
   return (
-    <div className="scrollbar-none grid w-full grid-cols-4 gap-2 overflow-x-auto">
+    <div className="grid w-full scrollbar-none grid-cols-4 gap-2 overflow-x-auto">
       <OGDialog>
         {visibleFiles.map((file, i) => (
           <div key={`file-${i}`} className="w-full min-w-[120px]">

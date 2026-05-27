@@ -88,7 +88,10 @@ function onwarn(warning, warn) {
 }
 
 const cjsBuild = {
-  input: 'src/index.ts',
+  input: {
+    index: 'src/index.ts',
+    telemetry: 'src/telemetry/index.ts',
+  },
   output: {
     dir: 'dist',
     format: 'cjs',
