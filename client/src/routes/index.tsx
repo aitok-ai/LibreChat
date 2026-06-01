@@ -14,7 +14,7 @@ import { OAuthSuccess, OAuthError } from '~/components/OAuth';
 import { AuthContextProvider } from '~/hooks/AuthContext';
 import Profile from '../components/Profile';
 import Leaderboard from '~/components/ui/Leaderboard';
-import SharedConvo from '~/components/ui/SharedConvo';
+
 import Recommendations from '~/components/ui/Recommendations';
 import { useEffect } from 'react';
 import RouteErrorBoundary from './RouteErrorBoundary';
@@ -158,6 +158,10 @@ export const router = createBrowserRouter(
             },
             {
               path: 'skills',
+              lazy: loadSkillsView,
+            },
+            {
+              path: 'skills/new',
               lazy: loadSkillsView,
             },
             {

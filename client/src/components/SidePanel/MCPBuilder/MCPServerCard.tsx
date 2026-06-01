@@ -123,7 +123,7 @@ export default function MCPServerCard({
 
         {/* Server Info */}
         <div className="min-w-0 flex-1">
-          <span className="text-text-primary truncate text-sm font-medium">{displayName}</span>
+          <div className="text-text-primary truncate text-sm font-medium">{displayName}</div>
           {description && <p className="text-text-secondary truncate text-xs">{description}</p>}
         </div>
 
