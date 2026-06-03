@@ -1,17 +1,25 @@
+import { useMemo } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
 import { Checkbox, Label } from '@librechat/client';
 import { useLocalize, useLocalizedConfig } from '~/hooks';
 import { useGetStartupConfig } from '~/data-provider';
+import { createConfigHtmlSanitizer } from '~/utils/configHtml';
 import type { MCPServerFormData } from '../hooks/useMCPServerForm';
 
 export default function TrustSection() {
   const localize = useLocalize();
   const { data: startupConfig } = useGetStartupConfig();
   const getLocalizedValue = useLocalizedConfig();
+  const sanitize = useMemo(() => createConfigHtmlSanitizer(), []);
   const {
     control,
     formState: { errors },
   } = useFormContext<MCPServerFormData>();
+  const trustCheckbox = startupConfig?.interface?.mcpServers?.trustCheckbox;
+  const labelHTML = sanitize(getLocalizedValue(trustCheckbox?.label, localize('com_ui_trust_app')));
+  const subLabelHTML = sanitize(
+    getLocalizedValue(trustCheckbox?.subLabel, localize('com_agents_mcp_trust_subtext')),
+  );
 
   return (
     <div className="border-border-light bg-surface-secondary rounded-lg border p-2">
@@ -37,35 +45,13 @@ export default function TrustSection() {
         />
         <Label htmlFor="trust" className="flex cursor-pointer flex-col gap-0.5 text-sm">
           <span id="trust-label" className="text-text-primary font-medium">
-            {startupConfig?.interface?.mcpServers?.trustCheckbox?.label ? (
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: getLocalizedValue(
-                    startupConfig.interface.mcpServers.trustCheckbox.label,
-                    localize('com_ui_trust_app'),
-                  ),
-                }}
-              />
-            ) : (
-              localize('com_ui_trust_app')
-            )}{' '}
+            <span dangerouslySetInnerHTML={{ __html: labelHTML }} />{' '}
             <span aria-hidden="true" className="text-text-secondary">
               *
             </span>
           </span>
           <span id="trust-description" className="text-text-secondary text-xs font-normal">
-            {startupConfig?.interface?.mcpServers?.trustCheckbox?.subLabel ? (
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: getLocalizedValue(
-                    startupConfig.interface.mcpServers.trustCheckbox.subLabel,
-                    localize('com_agents_mcp_trust_subtext'),
-                  ),
-                }}
-              />
-            ) : (
-              localize('com_agents_mcp_trust_subtext')
-            )}
+            <span dangerouslySetInnerHTML={{ __html: subLabelHTML }} />
           </span>
         </Label>
       </div>

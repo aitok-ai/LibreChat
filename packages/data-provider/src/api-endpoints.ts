@@ -1,3 +1,4 @@
+import type { StartupConfigContext } from './config';
 import type { AssistantsEndpoint } from './schemas';
 import * as q from './types/queries';
 import { ResourceType } from './accessPermissions';
@@ -222,7 +223,8 @@ export const mcpOAuthBind = (serverName: string) => `${BASE_URL}/api/mcp/${serve
 export const actionOAuthBind = (actionId: string) =>
   `${BASE_URL}/api/actions/${actionId}/oauth/bind`;
 
-export const config = () => `${BASE_URL}/api/config`;
+export const config = (context?: StartupConfigContext) =>
+  `${BASE_URL}/api/config${buildQuery({ context })}`;
 
 export const recommendations = (type: string) => {
   return `/api/convos/${type}`;

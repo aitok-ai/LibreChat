@@ -7,6 +7,8 @@ import type {
   TAttachment,
   TMessage,
   TBanner,
+  ReasoningResponseKey,
+  ReasoningParameterFormat,
 } from './schemas';
 import type { RefillIntervalUnit } from './balance';
 import type { SettingDefinition } from './generate';
@@ -214,9 +216,7 @@ export type TUser = {
   avatar: string;
   role: string;
   provider: string;
-  refBy: string;
-  referrals: string[];
-  numOfReferrals: number;
+  tenantId?: string;
   plugins?: string[];
   twoFactorEnabled?: boolean;
   backupCodes?: TBackupCode[];
@@ -406,6 +406,8 @@ export type TConfig = {
   capabilities?: string[];
   customParams?: {
     defaultParamsEndpoint?: string;
+    reasoningFormat?: ReasoningParameterFormat;
+    reasoningKey?: ReasoningResponseKey;
     paramDefinitions?: Partial<SettingDefinition>[];
   };
 };

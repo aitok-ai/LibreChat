@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { webcrypto } = require('node:crypto');
 const {
   logger,
+  getTenantId,
   DEFAULT_SESSION_EXPIRY,
   DEFAULT_REFRESH_TOKEN_EXPIRY,
 } = require('@librechat/data-schemas');
@@ -192,13 +193,13 @@ const verifyEmail = async (req) => {
 /**
  * Register a new user.
  * @param {IUser} user <email, password, name, username>
- * @param {Partial<IUser>} [additionalData={}]
+ * @param {Partial<IUser>} [additionalData={}] Trusted server-provided fields, such as CLI overrides.
  * @returns {Promise<{status: number, message: string, user?: IUser}>}
  */
 const registerUser = async (user, additionalData = {}) => {
-  const { error } = registerSchema.safeParse(user);
-  if (error) {
-    const errorMessage = errorsToString(error.errors);
+  const result = registerSchema.safeParse(user);
+  if (!result.success) {
+    const errorMessage = errorsToString(result.error.errors);
     logger.info(
       'Route: register - Validation Error',
       { name: 'Request params:', value: user },
@@ -208,11 +209,13 @@ const registerUser = async (user, additionalData = {}) => {
     return { status: 404, message: errorMessage };
   }
 
-  const { email, password, name, username, refBy, provider } = user;
+  const { email, password, name, username, refBy } = user;
+  const { provider, ...trustedAdditionalData } = additionalData ?? {};
 
   let newUserId;
   try {
-    const appConfig = await getAppConfig({ baseOnly: true });
+    const tenantId = getTenantId();
+    const appConfig = await getAppConfig(tenantId ? { tenantId } : {});
     if (!isEmailDomainAllowed(email, appConfig?.registration?.allowedDomains)) {
       const errorMessage =
         'The email address provided cannot be used. Please use a different email address.';
@@ -248,7 +251,7 @@ const registerUser = async (user, additionalData = {}) => {
       refBy: refBy,
       following: {},
       password: bcrypt.hashSync(password, salt),
-      ...additionalData,
+      ...trustedAdditionalData,
     };
 
     const emailEnabled = checkEmailConfig();

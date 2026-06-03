@@ -238,7 +238,7 @@ function ProfileContent() {
       setNewUsername(getUserByIdQuery.data.username);
       // Set biography from fetched data or use initial value
       // Set biography from fetched data or use initial value
-      if (getUserByIdQuery.data.biography === '') {
+      if (getUserByIdQuery.data.biography === '' || getUserByIdQuery.data.biography == null) {
         setBio(initialBio);
       } else {
         setBio(getUserByIdQuery.data.biography);

@@ -3,21 +3,40 @@ import { useState, useCallback } from 'react';
 import { Eye, EyeOff, Copy, Check } from 'lucide-react';
 import { cn } from '~/utils';
 
-export interface SecretInputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  'type'
-> {
+export interface SecretInputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
   /** Show copy button */
   showCopy?: boolean;
   /** Callback when value is copied */
   onCopy?: () => void;
   /** Duration in ms to show checkmark after copy (default: 2000) */
   copyFeedbackDuration?: number;
+  label?: React.ReactNode;
+  labelClassName?: string;
+  containerClassName?: string;
+  controlsClassName?: string;
+  buttonClassName?: string;
+  controlsOnHover?: boolean;
 }
 
 const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
   (
-    { className, showCopy = false, onCopy, copyFeedbackDuration = 2000, disabled, value, ...props },
+    {
+      id,
+      label,
+      className,
+      showCopy = false,
+      labelClassName,
+      containerClassName,
+      controlsClassName,
+      buttonClassName,
+      controlsOnHover = false,
+      onCopy,
+      copyFeedbackDuration = 2000,
+      disabled,
+      value,
+      ...props
+    },
     ref,
   ) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -51,13 +70,14 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
     }, [value, isCopied, disabled, onCopy, copyFeedbackDuration]);
 
     return (
-      <div className="relative flex items-center">
+      <div className={cn('group/secret-input relative', containerClassName)}>
         <input
+          id={id}
           type={isVisible ? 'text' : 'password'}
           className={cn(
-            'border-input ring-offset-background placeholder:text-muted-foreground flex h-10 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-            showCopy ? 'pr-20' : 'pr-10',
+            'border-border-light placeholder:text-muted-foreground hover:border-border-medium focus-visible:border-border-heavy flex h-10 w-full rounded-lg border bg-transparent py-2 pl-3 text-sm transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             className ?? '',
+            showCopy ? 'pr-20' : 'pr-11',
           )}
           ref={ref}
           disabled={disabled}
@@ -66,17 +86,30 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
           spellCheck={false}
           {...props}
         />
-        <div className="absolute right-1 flex items-center gap-0.5">
+        {label != null && (
+          <label htmlFor={id} className={cn(labelClassName ?? '')}>
+            {label}
+          </label>
+        )}
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-y-0 right-1.5 flex items-center gap-0.5 [&>button]:pointer-events-auto',
+            controlsOnHover &&
+              'opacity-0 transition-opacity duration-150 group-focus-within/secret-input:opacity-100 group-hover/secret-input:opacity-100',
+            controlsClassName,
+          )}
+        >
           {showCopy && (
             <button
               type="button"
               onClick={handleCopy}
               disabled={disabled || !value}
               className={cn(
-                'text-text-secondary flex size-8 items-center justify-center rounded-md transition-colors',
+                'text-text-secondary focus-visible:ring-ring-primary inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none [&>svg]:block',
                 disabled || !value
                   ? 'cursor-not-allowed opacity-50'
                   : 'hover:bg-surface-hover hover:text-text-primary',
+                buttonClassName,
               )}
               aria-label={isCopied ? 'Copied' : 'Copy to clipboard'}
             >
@@ -88,12 +121,13 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
             onClick={toggleVisibility}
             disabled={disabled}
             className={cn(
-              'text-text-secondary flex size-8 items-center justify-center rounded-md transition-colors',
+              'text-text-secondary focus-visible:ring-ring-primary inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none [&>svg]:block',
               disabled
                 ? 'cursor-not-allowed opacity-50'
                 : 'hover:bg-surface-hover hover:text-text-primary',
+              buttonClassName,
             )}
-            aria-label={isVisible ? 'Hide password' : 'Show password'}
+            aria-label={isVisible ? 'Hide secret' : 'Show secret'}
           >
             {isVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>

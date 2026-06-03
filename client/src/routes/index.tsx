@@ -17,6 +17,7 @@ import Leaderboard from '~/components/ui/Leaderboard';
 
 import Recommendations from '~/components/ui/Recommendations';
 import { useEffect } from 'react';
+import WithRum from '~/lib/rum/WithRum';
 import RouteErrorBoundary from './RouteErrorBoundary';
 import StartupLayout from './Layouts/Startup';
 import LoginLayout from './Layouts/Login';
@@ -26,18 +27,14 @@ import ChatRoute from './ChatRoute';
 import Search from './Search';
 import Root from './Root';
 
-const AuthLayout = () => {
-  useEffect(() => {
-    localStorage.setItem('isSharedPage', 'false');
-  }, []);
-
-  return (
-    <AuthContextProvider>
+const AuthLayout = () => (
+  <AuthContextProvider>
+    <WithRum>
       <Outlet />
-      <ApiErrorWatcher />
-    </AuthContextProvider>
-  );
-};
+    </WithRum>
+    <ApiErrorWatcher />
+  </AuthContextProvider>
+);
 
 const loadInlinePromptsView = () =>
   import('~/components/Prompts/layouts/InlinePromptsView').then((m) => ({
