@@ -107,7 +107,12 @@ export default function Message(props: TMessageProps) {
           <div
             id={messageId ?? ''}
             aria-label={getMessageAriaLabel(message, localize)}
-            className={cn(baseClasses.common, baseClasses.chat, 'message-render')}
+            className={cn(
+              baseClasses.common,
+              baseClasses.chat,
+              'focus-visible:ring-border-xheavy focus-visible:ring-2 focus-visible:outline-none',
+              'message-render',
+            )}
           >
             {!hasParallelContent && (
               <div className="relative flex flex-shrink-0 flex-col items-center">
