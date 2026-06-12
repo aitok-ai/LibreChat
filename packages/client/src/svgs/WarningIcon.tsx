@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function WarningIcon() {
+export default function WarningIcon(): JSX.Element {
   return (
     <svg
       width="4em"

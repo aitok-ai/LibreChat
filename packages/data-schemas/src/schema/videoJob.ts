@@ -51,11 +51,16 @@ const outputSchema = new Schema(
   { _id: false },
 );
 
-const videoJobSchema = new Schema<IVideoJob>(
+const videoJobSchema: Schema<IVideoJob> = new Schema<IVideoJob>(
   {
     job_id: { type: String, required: true, unique: true, index: true },
     stream_id: { type: String, index: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
     template_type: { type: String },
     platform_preset: { type: String },
     aspect_ratio: { type: String, default: '9:16' },

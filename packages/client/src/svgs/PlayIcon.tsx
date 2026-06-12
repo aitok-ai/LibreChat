@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PlayIcon() {
+export default function PlayIcon(): JSX.Element {
   return (
     <svg
       fill="grey"

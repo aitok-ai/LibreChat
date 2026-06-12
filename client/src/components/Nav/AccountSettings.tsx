@@ -1,5 +1,6 @@
 import { useState, memo, useRef } from 'react';
 import * as Menu from '@ariakit/react/menu';
+import { useNavigate } from 'react-router-dom';
 import { FileText, LogOut } from 'lucide-react';
 import {
   LinkIcon,
@@ -10,7 +11,6 @@ import {
   UserIcon,
   LeaderboardIcon,
 } from '@librechat/client';
-import { useNavigate } from 'react-router-dom';
 import { MyFilesModal } from '~/components/Chat/Input/Files/MyFilesModal';
 import { useGetStartupConfig, useGetUserBalance } from '~/data-provider';
 import { useAuthContext } from '~/hooks/AuthContext';
@@ -34,7 +34,7 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
   }
 
   return (
-    <Menu.MenuProvider>
+    <Menu.MenuProvider placement={collapsed ? 'right-end' : undefined}>
       <Menu.MenuButton
         ref={accountSettingsButtonRef}
         aria-label={localize('com_nav_account_settings')}
@@ -64,7 +64,6 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
       <Menu.Menu
         portal
         className="account-settings-popover popover-ui z-[125] w-[305px] rounded-lg md:w-[244px]"
-        placement={collapsed ? 'right-end' : undefined}
         style={{
           transformOrigin: collapsed ? 'left bottom' : 'bottom',
           translate: collapsed ? '4px 0' : '0 -4px',

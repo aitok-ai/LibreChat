@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { cn } from '~/utils';
 
-export interface FilterInputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  'placeholder'
-> {
+export interface FilterInputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'placeholder'> {
   /** The label text shown in the floating label */
   label: string;
   /** Unique identifier for the input - used to link label */
@@ -25,7 +23,9 @@ export interface FilterInputProps extends Omit<
  *   onChange={(e) => setSearchQuery(e.target.value)}
  * />
  */
-const FilterInput = React.forwardRef<HTMLInputElement, FilterInputProps>(
+const FilterInput: React.ForwardRefExoticComponent<
+  FilterInputProps & React.RefAttributes<HTMLInputElement>
+> = React.forwardRef<HTMLInputElement, FilterInputProps>(
   ({ className, label, inputId, containerClassName, ...props }, ref) => {
     return (
       <div className={cn('relative', containerClassName)}>

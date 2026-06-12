@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function GoldMedal() {
+export default function GoldMedal(): JSX.Element {
   return (
     <svg
       width="24px"

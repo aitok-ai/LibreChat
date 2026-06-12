@@ -202,6 +202,8 @@ export interface MCPServerStatus {
 export interface MCPConnectionStatusResponse {
   success: boolean;
   connectionStatus: Record<string, MCPServerStatus>;
+  /** Server-configured OAuth completion window in ms (`MCP_OAUTH_HANDLING_TIMEOUT`) */
+  oauthTimeout?: number;
 }
 
 export interface MCPServerConnectionStatusResponse {

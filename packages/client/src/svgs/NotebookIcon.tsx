@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export default function NotebookIcon() {
+export default function NotebookIcon(): JSX.Element {
   return (
     <svg
       width="1em"

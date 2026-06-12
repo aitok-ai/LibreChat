@@ -1,11 +1,6 @@
 import React from 'react';
-
-interface LikeIconProps {
-  filled?: boolean;
-  onClick?: React.MouseEventHandler<SVGSVGElement>;
-}
-
-export default function LikeIcon({ filled, onClick }: LikeIconProps) {
+import { JSX } from 'react/jsx-runtime';
+export default function LikeIcon(): JSX.Element {
   return (
     <div>
       <svg

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function StopIcon() {
+export default function StopIcon(): JSX.Element {
   return (
     <svg
       fill="grey"

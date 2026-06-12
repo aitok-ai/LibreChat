@@ -28,12 +28,8 @@
   "include": [
     "src/**/*",
     "test/**/*",
-    "../e2e/**/*",
-    "setupTests.js",
-    "vite.config.ts",
     "test/setupTests.js",
     "env.d.ts",
-    "../config/translations/**/*.ts",
     "../packages/client/src/hooks/useDelayedRender.tsx",
     "../packages/client/src/components/InfoHoverCard.tsx"
   ]

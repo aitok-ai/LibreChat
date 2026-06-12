@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function EyeIcon() {
+export default function EyeIcon(): JSX.Element {
   return (
     <svg
       className="h-5 w-5"

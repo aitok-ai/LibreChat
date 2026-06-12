@@ -1,14 +1,16 @@
-import type React from 'react';
 import { X, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { JSX } from 'react/jsx-runtime';
 import type { ButtonHTMLAttributes } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import type React from 'react';
 import { cn } from '~/utils';
 
-interface BadgeProps extends Omit<
-  ButtonHTMLAttributes<HTMLButtonElement>,
-  'onAnimationStart' | 'onDragStart' | 'onDragEnd' | 'onDrag'
-> {
+interface BadgeProps
+  extends Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onAnimationStart' | 'onDragStart' | 'onDragEnd' | 'onDrag'
+  > {
   icon?: LucideIcon;
   label: string;
   id?: string;
@@ -34,7 +36,7 @@ export default function Badge({
   onToggle,
   className,
   ...props
-}: BadgeProps) {
+}: BadgeProps): JSX.Element {
   const isMoveable = isEditing && isAvailable;
   const isDisabled = id === '1' && isInChat;
 

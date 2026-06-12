@@ -18,8 +18,8 @@ import { FaviconImage, getCleanDomain } from '~/components/Web/SourceHovercard';
 import SourcesErrorBoundary from './SourcesErrorBoundary';
 import { useFileDownload } from '~/data-provider';
 import { useSearchContext } from '~/Providers';
-import { useLocalize } from '~/hooks';
 import { cn, triggerDownload } from '~/utils';
+import { useLocalize } from '~/hooks';
 import store from '~/store';
 
 interface SourceItemProps {
@@ -89,7 +89,6 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
           </Ariakit.HovercardDisclosure>
 
           <Ariakit.Hovercard
-            animated
             gutter={16}
             className={cn(
               'border-border-medium bg-surface-secondary text-text-primary z-[999] w-[320px] max-w-[calc(100vw-2rem)] rounded-xl border p-3 shadow-lg',
@@ -172,6 +171,7 @@ type AgentFileSource = {
   filename: string;
   bytes?: number;
   type?: string;
+  source?: string;
   pages?: number[];
   relevance?: number;
   pageRelevance?: Record<number, number>;

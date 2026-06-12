@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function LightBulbIcon() {
+export default function LightBulbIcon(): JSX.Element {
   return (
     <svg
       width="1em"

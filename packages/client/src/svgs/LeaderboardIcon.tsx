@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function LeaderboardIcon() {
+export default function LeaderboardIcon(): JSX.Element {
   return (
     <svg
       width="1em"

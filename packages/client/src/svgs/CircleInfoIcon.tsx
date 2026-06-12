@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function CircleInfoIcon() {
+export default function CircleInfoIcon(): JSX.Element {
   return (
     <svg
       width="1em"

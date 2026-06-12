@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function HomeIcon() {
+export default function HomeIcon(): JSX.Element {
   return (
     <svg
       width="1em"

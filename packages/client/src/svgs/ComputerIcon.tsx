@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ComputerIcon() {
+export default function ComputerIcon(): JSX.Element {
   return (
     <svg
       width="1em"

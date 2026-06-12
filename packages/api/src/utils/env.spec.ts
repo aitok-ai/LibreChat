@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
 import { TokenExchangeMethodEnum } from 'librechat-data-provider';
-import { resolveHeaders, resolveNestedObject, processMCPEnv, encodeHeaderValue } from './env';
 import type { MCPOptions } from 'librechat-data-provider';
 import type { IUser } from '@librechat/data-schemas';
+import { resolveHeaders, resolveNestedObject, processMCPEnv, encodeHeaderValue } from './env';
 
 function isStdioOptions(options: MCPOptions): options is Extract<MCPOptions, { type?: 'stdio' }> {
   return !options.type || options.type === 'stdio';
@@ -1125,6 +1125,42 @@ describe('processMCPEnv', () => {
         redirect_uri: 'http://localhost:3000/callback',
         token_exchange_method: TokenExchangeMethodEnum.DefaultPost,
       },
+    });
+  });
+
+  it('should process user placeholders in oauth_headers', () => {
+    const user = createTestUser({ id: 'user-123', email: 'test@example.com' });
+    const options: MCPOptions = {
+      type: 'streamable-http',
+      url: 'https://mcp.example.com/api',
+      oauth_headers: {
+        'X-User-Id': '{{LIBRECHAT_USER_ID}}',
+        'X-Static': 'static-value',
+      },
+    };
+
+    const result = processMCPEnv({ options, user });
+
+    expect('oauth_headers' in result! && result.oauth_headers).toEqual({
+      'X-User-Id': 'user-123',
+      'X-Static': 'static-value',
+    });
+  });
+
+  it('should NOT resolve user placeholders in oauth_headers when dbSourced', () => {
+    const user = createTestUser({ id: 'user-123' });
+    const options: MCPOptions = {
+      type: 'streamable-http',
+      url: 'https://mcp.example.com/api',
+      oauth_headers: {
+        'X-User-Id': '{{LIBRECHAT_USER_ID}}',
+      },
+    };
+
+    const result = processMCPEnv({ options, user, dbSourced: true });
+
+    expect('oauth_headers' in result! && result.oauth_headers).toEqual({
+      'X-User-Id': '{{LIBRECHAT_USER_ID}}',
     });
   });
 

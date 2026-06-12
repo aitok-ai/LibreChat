@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PauseIcon() {
+export default function PauseIcon(): JSX.Element {
   return (
     <svg
       fill="grey"

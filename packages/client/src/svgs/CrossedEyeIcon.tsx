@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function CrossedEyeIcon() {
+export default function CrossedEyeIcon(): JSX.Element {
   return (
     <svg
       className="h-5 w-5"

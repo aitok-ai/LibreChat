@@ -75,8 +75,10 @@
     "test:all": "npm run test:client && npm run test:api && npm run test:packages:api && npm run test:packages:data-provider && npm run test:packages:data-schemas",
     "e2e:update": "npm run e2e:prepare && playwright test --config=e2e/playwright.config.local.ts --update-snapshots",
     "e2e:report": "npx playwright show-report e2e/playwright-report",
-    "lint:fix": "eslint . --fix",
-    "lint": "eslint .",
+    "lint:fix": "eslint --fix \"{,!(node_modules|venv)/**/}*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint \"{,!(node_modules|venv)/**/}*.{js,jsx,ts,tsx}\"",
+    "sort-imports": "node scripts/sort-imports.mts",
+    "sort-imports:check": "node scripts/sort-imports.mts --check",
     "format": "npx prettier --write \"{,!(node_modules|venv)/**/}*.{js,jsx,ts,tsx}\"",
     "b:api": "NODE_ENV=production bun run api/server/index.js",
     "b:api-inspect": "NODE_ENV=production bun --inspect run api/server/index.js",
@@ -148,8 +150,8 @@
     "postcss": "^8.5.13",
     "prettier": "^3.5.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "turbo": "^2.9.14",
-    "typescript-eslint": "^8.24.0"
+    "turbo": "^2.9.17",
+    "typescript-eslint": "^8.60.1"
   },
   "overrides": {
     "@xmldom/xmldom": "^0.8.13",
