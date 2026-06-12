@@ -128,7 +128,7 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
                   </div>
                 </div>
               </div>
-              <Footer />
+              {isLandingPage && <Footer />}
             </div>
           </Presentation>
         </AddedChatContext.Provider>

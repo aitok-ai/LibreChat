@@ -48,13 +48,19 @@ export class ServerConfigsCacheRedis
       throw new Error(
         `Server "${serverName}" does not exist in cache. Use add() to create new configs.`,
       );
-    const success = await this.cache.set(serverName, { ...config, updatedAt: Date.now() });
+    const success = await this.cache.set(serverName, {
+      ...config,
+      updatedAt: Date.now(),
+    });
     this.successCheck(`update ${this.namespace} server "${serverName}"`, success);
   }
 
   public async upsert(serverName: string, config: ParsedServerConfig): Promise<void> {
     if (this.leaderOnly) await this.leaderCheck(`upsert ${this.namespace} MCP servers`);
-    const success = await this.cache.set(serverName, { ...config, updatedAt: Date.now() });
+    const success = await this.cache.set(serverName, {
+      ...config,
+      updatedAt: Date.now(),
+    });
     this.successCheck(`upsert ${this.namespace} server "${serverName}"`, success);
   }
 
@@ -77,11 +83,21 @@ export class ServerConfigsCacheRedis
     const pattern = `*${this.cache.namespace}:*`;
 
     const keys: string[] = [];
-    for await (const key of keyvRedisClient.scanIterator({ MATCH: pattern })) {
-      if (Array.isArray(key)) {
-        keys.push(...(key as string[]));
-      } else {
-        keys.push(key as string);
+
+    if ('scanIterator' in keyvRedisClient && typeof keyvRedisClient.scanIterator === 'function') {
+      // Handle both RedisClient and RedisCluster
+      type RedisClientWithScan = {
+        scanIterator(options?: { MATCH?: string; COUNT?: number }): AsyncIterableIterator<string>;
+      };
+      const scanIterator = (keyvRedisClient as unknown as RedisClientWithScan).scanIterator({
+        MATCH: pattern,
+      });
+      for await (const key of scanIterator) {
+        if (Array.isArray(key)) {
+          keys.push(...(key as string[]));
+        } else {
+          keys.push(key as string);
+        }
       }
     }
 

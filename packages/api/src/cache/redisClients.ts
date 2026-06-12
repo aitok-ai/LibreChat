@@ -125,7 +125,8 @@ if (cacheConfig.USE_REDIS) {
   }
 }
 
-let keyvRedisClient: RedisClientType | RedisClusterType | null = null;
+let keyvRedisClient: ReturnType<typeof createClient> | ReturnType<typeof createCluster> | null =
+  null;
 let keyvRedisClientReady: Promise<unknown> | null = null;
 
 if (cacheConfig.USE_REDIS) {
@@ -173,7 +174,7 @@ if (cacheConfig.USE_REDIS) {
 
   // Add scanIterator method to cluster client for API consistency with standalone client
   if (!('scanIterator' in keyvRedisClient)) {
-    const clusterClient = keyvRedisClient as RedisClusterType;
+    const clusterClient = keyvRedisClient as unknown as RedisClusterType;
     (keyvRedisClient as unknown as RedisClientType).scanIterator = async function* (options?: {
       MATCH?: string;
       COUNT?: number;
