@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Clipboard, CheckMark } from '@librechat/client';
-import type { TMessage, TAttachment, SearchResultData } from 'librechat-data-provider';
+import type { TMessage, SearchResultData } from 'librechat-data-provider';
 import { useLocalize, useCopyToClipboard } from '~/hooks';
 
 type THoverButtons = {
@@ -20,7 +20,7 @@ export default function MinimalHoverButtons({ message, searchResults }: THoverBu
   return (
     <div className="visible mt-1 flex justify-center gap-1 self-end text-gray-400 lg:justify-start">
       <button
-        className="text-text-secondary-alt hover:bg-surface-hover hover:text-text-primary ml-0 flex items-center gap-1.5 rounded-lg p-1.5 text-xs transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 dark:focus-visible:ring-white"
+        className="text-text-secondary-alt hover:bg-surface-hover hover:text-text-primary ml-0 flex items-center gap-1.5 rounded-lg p-1.5 text-xs transition-colors duration-200 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none dark:focus-visible:ring-white [@media(hover:hover)]:opacity-0"
         onClick={() => copyToClipboard(setIsCopied)}
         type="button"
         title={

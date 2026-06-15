@@ -1,8 +1,12 @@
 import { useMemo, useCallback } from 'react';
 import { EModelEndpoint, Constants } from 'librechat-data-provider';
+import {
+  useGetAssistantDocsQuery,
+  useGetEndpointsQuery,
+  useGetStartupConfig,
+} from '~/data-provider';
 import { useChatContext, useAgentsMapContext, useAssistantsMapContext } from '~/Providers';
-import { useGetAssistantDocsQuery, useGetEndpointsQuery } from '~/data-provider';
-import { getIconEndpoint, getEntity } from '~/utils';
+import { getIconEndpoint, getEntity, getModelSpec } from '~/utils';
 import { useSubmitMessage } from '~/hooks';
 
 const ConversationStarters = () => {
@@ -10,6 +14,7 @@ const ConversationStarters = () => {
   const agentsMap = useAgentsMapContext();
   const assistantMap = useAssistantsMapContext();
   const { data: endpointsConfig } = useGetEndpointsQuery();
+  const { data: startupConfig } = useGetStartupConfig();
 
   const endpointType = useMemo(() => {
     let ep = conversation?.endpoint ?? '';
@@ -35,9 +40,18 @@ const ConversationStarters = () => {
     assistant_id: conversation?.assistant_id,
   });
 
+  const modelSpec = useMemo(
+    () => getModelSpec({ specName: conversation?.spec, startupConfig }),
+    [conversation?.spec, startupConfig],
+  );
+
   const conversation_starters = useMemo(() => {
     if (entity?.conversation_starters?.length) {
       return entity.conversation_starters;
+    }
+
+    if (modelSpec?.conversation_starters?.length) {
+      return modelSpec.conversation_starters;
     }
 
     if (isAgent) {
@@ -45,7 +59,7 @@ const ConversationStarters = () => {
     }
 
     return documentsMap.get(entity?.id ?? '')?.conversation_starters ?? [];
-  }, [documentsMap, isAgent, entity]);
+  }, [documentsMap, isAgent, entity, modelSpec]);
 
   const { submitMessage } = useSubmitMessage();
   const sendConversationStarter = useCallback(
@@ -58,18 +72,17 @@ const ConversationStarters = () => {
   }
 
   return (
-    <div className="mt-8 flex flex-wrap justify-center gap-3 px-4">
+    <div className="mt-2 mb-8 flex w-full flex-wrap items-stretch justify-center gap-2 px-4">
       {conversation_starters
         .slice(0, Constants.MAX_CONVO_STARTERS)
         .map((text: string, index: number) => (
           <button
             key={index}
             onClick={() => sendConversationStarter(text)}
-            className="border-border-medium fade-in hover:bg-surface-tertiary relative flex w-40 cursor-pointer flex-col gap-2 rounded-2xl border px-3 pt-3 pb-4 text-start align-top text-[15px] shadow-[0_0_2px_0_rgba(0,0,0,0.05),0_4px_6px_0_rgba(0,0,0,0.02)] transition-colors duration-300 ease-in-out"
+            style={{ animationDelay: `${index * 75}ms`, animationFillMode: 'backwards' }}
+            className="border-border-medium bg-surface-secondary text-text-secondary fade-in hover:border-border-heavy hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-ring-primary flex max-w-[16rem] cursor-pointer items-center justify-center rounded-2xl border px-4 py-2.5 text-center text-sm shadow-sm transition-colors duration-200 focus-visible:ring-2 focus-visible:outline-none"
           >
-            <p className="break-word text-text-secondary line-clamp-3 overflow-hidden text-balance break-all">
-              {text}
-            </p>
+            <span className="line-clamp-2 text-balance break-words">{text}</span>
           </button>
         ))}
     </div>

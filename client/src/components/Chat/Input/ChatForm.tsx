@@ -1,6 +1,13 @@
 import { memo, useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { useWatch } from 'react-hook-form';
 import * as Ariakit from '@ariakit/react';
+import { useWatch } from 'react-hook-form';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import {
+  Constants,
+  apiBaseUrl,
+  isAssistantsEndpoint,
+  isAgentsEndpoint,
+} from 'librechat-data-provider';
 import {
   HoverCard,
   HoverCardContent,
@@ -10,21 +17,8 @@ import {
   TooltipAnchor,
   useToastContext,
 } from '@librechat/client';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import {
-  Constants,
-  apiBaseUrl,
-  isAssistantsEndpoint,
-  isAgentsEndpoint,
-} from 'librechat-data-provider';
 import type { TConversation } from 'librechat-data-provider';
 import type { ExtendedFile, FileSetter, ConvoGenerator } from '~/common';
-import {
-  useChatContext,
-  useChatFormContext,
-  useAddedChatContext,
-  useAssistantsMapContext,
-} from '~/Providers';
 import {
   useTextarea,
   useAutoSave,
@@ -35,19 +29,26 @@ import {
   useSubmitMessage,
   useFocusChatEffect,
 } from '~/hooks';
-import { useCreateVideoJobMutation } from '~/data-provider';
+import {
+  useChatContext,
+  useChatFormContext,
+  useAddedChatContext,
+  useAssistantsMapContext,
+} from '~/Providers';
 import PendingManualSkillsChips from './PendingManualSkillsChips';
 import { cn, getModelSpec, removeFocusRings } from '~/utils';
+import { useCreateVideoJobMutation } from '~/data-provider';
 import { useGetStartupConfig } from '~/data-provider';
 import { mainTextareaId, BadgeItem } from '~/common';
 import AttachFileChat from './Files/AttachFileChat';
 import FileFormChat from './Files/FileFormChat';
 import TextareaHeader from './TextareaHeader';
-import SkillsCommand from './SkillsCommand';
 import PromptsCommand from './PromptsCommand';
+import SkillsCommand from './SkillsCommand';
 import AudioRecorder from './AudioRecorder';
 import CollapseChat from './CollapseChat';
 import StreamAudio from './StreamAudio';
+import TokenUsage from './TokenUsage';
 import StopButton from './StopButton';
 import SendButton from './SendButton';
 import EditBadges from './EditBadges';
@@ -748,6 +749,7 @@ const ChatForm = memo(function ChatForm({
                   {videoJobIndicator}
                 </TooltipAnchor>
               )}
+              <TokenUsage index={index} conversation={conversation} isSubmitting={isSubmitting} />
               {SpeechToText && (
                 <AudioRecorder
                   methods={methods}
@@ -848,6 +850,7 @@ function ChatFormWrapper({ index = 0, placeholder }: { index?: number; placehold
       conversation?.spec,
       conversation?.useResponsesApi,
       conversation?.model,
+      conversation?.maxContextTokens,
       hasMessages,
     ],
   );
