@@ -5,6 +5,7 @@ const multer = require('multer');
 const { sanitizeFilename } = require('@librechat/api');
 const {
   mergeFileConfig,
+  inferMimeType,
   getEndpointFileConfig,
   fileConfig: defaultFileConfig,
 } = require('librechat-data-provider');
@@ -45,6 +46,14 @@ const importFileFilter = (req, file, cb) => {
   }
 };
 
+const normalizeUploadMimeType = (file) => {
+  const mimeType = inferMimeType(file.originalname || '', file.mimetype || '');
+  if (mimeType && file.mimetype !== mimeType) {
+    file.mimetype = mimeType;
+  }
+  return mimeType;
+};
+
 /**
  *
  * @param {import('librechat-data-provider').FileConfig | undefined} customFileConfig
@@ -60,7 +69,9 @@ const createFileFilter = (customFileConfig) => {
       return cb(new Error('No file provided'), false);
     }
 
-    if (req.originalUrl.endsWith('/speech/stt') && file.mimetype.startsWith('audio/')) {
+    const mimeType = normalizeUploadMimeType(file);
+
+    if (req.originalUrl.endsWith('/speech/stt') && mimeType.startsWith('audio/')) {
       return cb(null, true);
     }
 
@@ -72,8 +83,8 @@ const createFileFilter = (customFileConfig) => {
       endpointType,
     });
 
-    if (!defaultFileConfig.checkType(file.mimetype, endpointFileConfig.supportedMimeTypes)) {
-      return cb(new Error('Unsupported file type: ' + file.mimetype), false);
+    if (!defaultFileConfig.checkType(mimeType, endpointFileConfig.supportedMimeTypes)) {
+      return cb(new Error('Unsupported file type: ' + (file.mimetype || mimeType)), false);
     }
 
     cb(null, true);
@@ -93,4 +104,4 @@ const createMulterInstance = async () => {
   });
 };
 
-module.exports = { createMulterInstance, storage, importFileFilter };
+module.exports = { createMulterInstance, storage, importFileFilter, createFileFilter };

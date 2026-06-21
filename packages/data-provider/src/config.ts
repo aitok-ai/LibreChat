@@ -1218,6 +1218,8 @@ export const interfaceSchema = z
       .optional(),
     fileSearch: z.boolean().optional(),
     fileCitations: z.boolean().optional(),
+    /** Tool keys (and `'mcp'` or an MCP server name) pinned to the prompt bar by default */
+    defaultPinnedTools: z.array(z.string()).optional(),
     buildInfo: z.boolean().optional(),
     remoteAgents: z
       .object({
@@ -1274,7 +1276,7 @@ export const interfaceSchema = z
     runCode: true,
     webSearch: true,
     contextUsage: true,
-    contextCost: true,
+    contextCost: false,
     peoplePicker: {
       users: true,
       groups: true,
@@ -2489,7 +2491,7 @@ export enum Constants {
    */
   VERSION = '__LIBRECHAT_VERSION__',
   /** Key for the Custom Config's version (librechat.yaml). */
-  CONFIG_VERSION = '1.3.12',
+  CONFIG_VERSION = '1.3.13',
   /** Standard value for the first message's `parentMessageId` value, to indicate no parent exists. */
   NO_PARENT = '00000000-0000-0000-0000-000000000000',
   /** Standard value to use whatever the submission prelim. `responseMessageId` is */

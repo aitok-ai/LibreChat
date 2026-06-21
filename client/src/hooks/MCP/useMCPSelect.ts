@@ -1,12 +1,16 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAtom } from 'jotai';
 import isEqual from 'lodash/isEqual';
 import { useRecoilState } from 'recoil';
 import { Constants, LocalStorageKeys } from 'librechat-data-provider';
-import { ephemeralAgentByConvoId, mcpValuesAtomFamily } from '~/store';
-import { setTimestamp } from '~/utils/timestamps';
-import useLocalStorage from '~/hooks/useLocalStorageAlt';
+import { ephemeralAgentByConvoId, mcpValuesAtomFamily, mcpPinnedAtom } from '~/store';
 import { MCPServerDefinition } from './useMCPServerManager';
+import { useGetStartupConfig } from '~/data-provider';
+import { setTimestamp } from '~/utils/timestamps';
+import { useLocalStorage } from '~/hooks';
+
+/** Sentinel in `interface.defaultPinnedTools` that pins the MCP dropdown to the prompt bar. */
+const MCP_PIN_KEYWORD = 'mcp';
 
 export function useMCPSelect({
   conversationId,
@@ -50,6 +54,41 @@ export function useMCPSelect({
    */
   const isNewConvo = key === Constants.NEW_CONVO;
   const mcpAtomKey = isNewConvo && storageContextKey ? storageContextKey : key;
+
+  const { data: startupConfig } = useGetStartupConfig();
+  const hasAppliedDefaultPin = useRef(false);
+
+  /**
+   * Seed the MCP dropdown's pinned state from the admin-configured `defaultPinnedTools`:
+   * pin when the array includes the `'mcp'` keyword or any configured server name.
+   * Only applies on first load when the user has no stored preference; when the option
+   * is absent entirely, the legacy default (pinned) is kept.
+   */
+  useEffect(() => {
+    if (hasAppliedDefaultPin.current || !startupConfig) {
+      return;
+    }
+    const defaultPinnedTools = startupConfig.interface?.defaultPinnedTools;
+    if (!Array.isArray(defaultPinnedTools)) {
+      hasAppliedDefaultPin.current = true;
+      return;
+    }
+    if (localStorage.getItem(LocalStorageKeys.PIN_MCP_) != null) {
+      hasAppliedDefaultPin.current = true;
+      return;
+    }
+    const pinnedByKeyword = defaultPinnedTools.includes(MCP_PIN_KEYWORD);
+    /** Wait for servers before deciding so a configured server name isn't missed. */
+    if (!pinnedByKeyword && servers.length === 0) {
+      return;
+    }
+    hasAppliedDefaultPin.current = true;
+    const shouldPin =
+      pinnedByKeyword || servers.some((server) => defaultPinnedTools.includes(server.serverName));
+    if (shouldPin !== isPinned) {
+      setIsPinned(shouldPin);
+    }
+  }, [startupConfig, servers, isPinned, setIsPinned]);
 
   // Sync ephemeral agent MCP → Jotai atom (strip unconfigured servers)
   useEffect(() => {
