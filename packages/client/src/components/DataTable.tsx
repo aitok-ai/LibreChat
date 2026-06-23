@@ -435,7 +435,10 @@ export default function DataTable<TData, TValue>({
           className,
         )}
       >
-        <Table className="w-full min-w-[300px] table-fixed border-separate border-spacing-0">
+        <Table
+          unwrapped
+          className="w-full min-w-[300px] table-fixed border-separate border-spacing-0"
+        >
           <TableHeader className="bg-surface-secondary sticky top-0 z-50">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-border-light border-b">

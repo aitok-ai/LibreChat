@@ -148,7 +148,7 @@ function SharedView() {
     );
 
   return (
-    <ShareContext.Provider value={{ isSharedConvo: true }}>
+    <ShareContext.Provider value={{ isSharedConvo: true, shareId }}>
       <div className="dark:bg-surface-secondary relative flex h-screen w-full overflow-hidden">
         <main className="dark:bg-surface-secondary relative flex w-full grow overflow-hidden">
           {artifactsContainer}

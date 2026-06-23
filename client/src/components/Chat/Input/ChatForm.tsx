@@ -40,6 +40,7 @@ import { cn, getModelSpec, removeFocusRings } from '~/utils';
 import { useCreateVideoJobMutation } from '~/data-provider';
 import { useGetStartupConfig } from '~/data-provider';
 import { mainTextareaId, BadgeItem } from '~/common';
+import PendingQuoteChips from './PendingQuoteChips';
 import AttachFileChat from './Files/AttachFileChat';
 import FileFormChat from './Files/FileFormChat';
 import TextareaHeader from './TextareaHeader';
@@ -47,6 +48,7 @@ import PromptsCommand from './PromptsCommand';
 import SkillsCommand from './SkillsCommand';
 import AudioRecorder from './AudioRecorder';
 import CollapseChat from './CollapseChat';
+import QuoteButton from './QuoteButton';
 import StreamAudio from './StreamAudio';
 import TokenUsage from './TokenUsage';
 import StopButton from './StopButton';
@@ -137,6 +139,12 @@ const ChatForm = memo(function ChatForm({
     () => conversation?.conversationId ?? Constants.NEW_CONVO,
     [conversation?.conversationId],
   );
+  /**
+   * The quote feature merges excerpts server-side in `BaseClient.sendMessage`,
+   * which the Assistants endpoints bypass — so hide the UI there rather than
+   * letting users queue quotes the assistant never receives.
+   */
+  const quotesEnabled = useMemo(() => !isAssistantsEndpoint(endpoint), [endpoint]);
 
   const convoKey = conversationId ?? Constants.NEW_CONVO;
   const videoMode = useRecoilValue(store.videoModeByConvoId(convoKey));
@@ -608,6 +616,8 @@ const ChatForm = memo(function ChatForm({
       )}
     >
       <div className="relative flex h-full flex-1 items-stretch md:flex-col">
+        {/* Primary composer owns the selection popup so split-view doesn't double it. */}
+        {index === 0 && quotesEnabled && <QuoteButton conversationId={conversationId} />}
         <div className={cn('flex w-full items-center', isRTL && 'flex-row-reverse')}>
           <Mention
             index={index}
@@ -643,6 +653,7 @@ const ChatForm = memo(function ChatForm({
           >
             <TextareaHeader addedConvo={addedConvo} setAddedConvo={setAddedConvo} />
             <PendingManualSkillsChips conversationId={conversationId} />
+            {quotesEnabled && <PendingQuoteChips conversationId={conversationId} />}
             {/* WIP */}
             <EditBadges
               isEditingChatBadges={isEditingBadges}

@@ -44,9 +44,9 @@ export {
   getVideoJob,
   cancelVideoJob,
   downloadVideoJobZip,
+  sharedFileDownload,
   buildLoginRedirectUrl,
 } from './api-endpoints';
-
 export { default as request } from './request';
 export { dataService };
 import * as dataService from './data-service';
