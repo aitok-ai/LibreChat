@@ -1,6 +1,14 @@
-import React from 'react';
+import type { JSX } from 'react';
 
-export default function LeaderboardIcon(): JSX.Element {
+interface LeaderboardIconProps {
+  className?: string;
+  'aria-hidden'?: boolean;
+}
+
+export default function LeaderboardIcon({
+  className,
+  'aria-hidden': ariaHidden,
+}: LeaderboardIconProps): JSX.Element {
   return (
     <svg
       width="1em"
@@ -9,6 +17,8 @@ export default function LeaderboardIcon(): JSX.Element {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       transform="matrix(-1, 0, 0, 1, 0, 0)"
+      className={className}
+      aria-hidden={ariaHidden}
     >
       <g id="SVGRepo_bgCarrier" strokeWidth="0" />
       <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />

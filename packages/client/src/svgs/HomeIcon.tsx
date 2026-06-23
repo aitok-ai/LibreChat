@@ -1,6 +1,14 @@
-import React from 'react';
+import type { JSX } from 'react';
 
-export default function HomeIcon(): JSX.Element {
+interface HomeIconProps {
+  className?: string;
+  'aria-hidden'?: boolean;
+}
+
+export default function HomeIcon({
+  className,
+  'aria-hidden': ariaHidden,
+}: HomeIconProps): JSX.Element {
   return (
     <svg
       width="1em"
@@ -8,6 +16,8 @@ export default function HomeIcon(): JSX.Element {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden={ariaHidden}
     >
       <path d="M22 22L2 22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       <path
