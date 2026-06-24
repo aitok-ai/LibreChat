@@ -197,6 +197,7 @@ function ShareHeader({
 }: ShareHeaderProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width: 767px)');
+  const localize = useLocalize();
 
   const handleDialogOutside = useCallback((event: Event) => {
     const target = event.target as HTMLElement | null;
