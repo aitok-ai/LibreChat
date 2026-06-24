@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import PrivateButton from '../Conversations/PrivateButton';
 import { ShareButton } from '~/components/Conversations/ConvoOptions';
-import store from '~/store';
-import { useAuthContext } from '~/hooks/AuthContext';
 import { useUpdateConversationMutation } from '~/data-provider';
+import PrivateButton from '../Conversations/PrivateButton';
+import { useAuthContext } from '~/hooks/AuthContext';
 import { useLocalize } from '~/hooks';
+import store from '~/store';
 
 export default function MessageHeaderButtons({ conversationId, index = 0 }) {
   const { user } = useAuthContext();
@@ -119,11 +119,13 @@ export default function MessageHeaderButtons({ conversationId, index = 0 }) {
               </svg>
             </div>
             <div>
-              {localize('com_ui_number_of_likes', numOfLikes ? numOfLikes.toString() : '0')}
+              {localize('com_ui_number_of_likes', { 0: numOfLikes ? numOfLikes.toString() : '0' })}
             </div>
           </button> */}
           {/*View Count Display*/}
-          <div>{localize('com_ui_number_of_views', viewCount ? viewCount.toString() : '0')}</div>
+          <div>
+            {localize('com_ui_number_of_views', { 0: viewCount ? viewCount.toString() : '0' })}
+          </div>
         </div>
       </div>
       <ShareButton

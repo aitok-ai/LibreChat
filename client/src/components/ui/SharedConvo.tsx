@@ -230,6 +230,7 @@ export default function SharedConvo() {
   // increase view count
   async function incrementViewCount() {
     try {
+      console.log('[SharedConvo] Incrementing view count for:', conversationId);
       const response = await fetch(`/api/convos/${conversationId}/viewcount/increment`, {
         method: 'POST',
         headers: {
@@ -237,21 +238,25 @@ export default function SharedConvo() {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log('[SharedConvo] View count increment response status:', response.status);
       if (!response.ok) {
-        console.error('Failed to increment view count:', response.status);
+        console.error('[SharedConvo] Failed to increment view count:', response.status);
         return;
       }
       const responseObject = await response.json();
+      console.log('[SharedConvo] View count increment response body:', responseObject);
       setViewCount(responseObject?.viewCount);
     } catch (error) {
-      console.error('Error incrementing view count:', error);
+      console.error('[SharedConvo] Error incrementing view count:', error);
     }
   }
 
   // increase view count upon page load
   useEffect(() => {
-    incrementViewCount(); // set viewCount
-  }, []);
+    if (conversationId) {
+      incrementViewCount();
+    }
+  }, [conversationId]);
 
   // Get recommendations on mount
   useEffect(() => {
@@ -274,6 +279,7 @@ export default function SharedConvo() {
           `/chat/share/${conversation.conversationId}`,
       );
       setNumOfLikes(conversation.likes || 0);
+      setViewCount(conversation.viewCount || 0);
 
       // if (user && conversation.likedBy) {
       //   setLiked(conversation.likedBy[user?.id] ? true : false);
@@ -392,10 +398,9 @@ export default function SharedConvo() {
                         </button> */}
                         {/*View Count Display*/}
                         <div>
-                          {localize(
-                            'com_ui_number_of_views',
-                            viewCount ? viewCount.toString() : '0',
-                          )}
+                          {localize('com_ui_number_of_views', {
+                            0: viewCount ? viewCount.toString() : '0',
+                          })}
                         </div>
                       </div>
                     </div>

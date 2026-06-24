@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@librechat/client';
-import { cn } from '~/utils';
-import { CSSTransition } from 'react-transition-group';
-import useDocumentTitle from '~/hooks/useDocumentTitle';
-import OldMultiMessage from '../Messages/MultiMessage';
-import { useGetFiles } from '~/data-provider';
-import { useScreenshot } from '~/hooks/';
-import { TConversation, TMessage, TUser, buildTree } from 'librechat-data-provider';
-import { useLikeConversationMutation } from 'librechat-data-provider/react-query';
-import SwitchPage from './SwitchPage';
-import { useLocalize } from '~/hooks';
-import { useAuthContext } from '~/hooks/AuthContext';
 import { Spinner } from '@librechat/client';
 import { useNavigate } from 'react-router-dom';
+import { CSSTransition } from 'react-transition-group';
+import { Tabs, TabsList, TabsTrigger } from '@librechat/client';
+import { useLikeConversationMutation } from 'librechat-data-provider/react-query';
+import { TConversation, TMessage, TUser, buildTree } from 'librechat-data-provider';
+import useDocumentTitle from '~/hooks/useDocumentTitle';
+import OldMultiMessage from '../Messages/MultiMessage';
+import { useAuthContext } from '~/hooks/AuthContext';
+import { useGetFiles } from '~/data-provider';
+import { useScreenshot } from '~/hooks/';
+import SwitchPage from './SwitchPage';
+import { useLocalize } from '~/hooks';
+import { cn } from '~/utils';
 // import { alternateName } from '~/utils';
 import { alternateName } from 'librechat-data-provider';
 import MessagesView from '../Share/MessagesView';
@@ -528,15 +528,16 @@ export default function Recommendations() {
                         </svg>
                       </div>
                       <div>
-                        {localize(
-                          'com_ui_number_of_likes',
-                          numOfLikes ? numOfLikes.toString() : '0',
-                        )}
+                        {localize('com_ui_number_of_likes', {
+                          0: numOfLikes ? numOfLikes.toString() : '0',
+                        })}
                       </div>
                     </button>
                     {/*View Count Display*/}
                     <div>
-                      {localize('com_ui_number_of_views', viewCount ? viewCount.toString() : '0')}
+                      {localize('com_ui_number_of_views', {
+                        0: viewCount ? viewCount.toString() : '0',
+                      })}
                     </div>
                   </div>
                 </div>

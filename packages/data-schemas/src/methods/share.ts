@@ -485,6 +485,7 @@ export function createShareMethods(mongoose: typeof import('mongoose')): {
         createdAt: share.createdAt,
         updatedAt: share.updatedAt,
         conversationId: newConvoId,
+        realConversationId: share.conversationId,
         messages: anonymizeMessages(
           messagesToShare,
           newConvoId,

@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useContext } from 'react';
+import { memo, useState, useCallback, useContext, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { useRecoilState } from 'recoil';
 import { useParams } from 'react-router-dom';
@@ -37,6 +37,7 @@ function SharedView() {
   const messagesTree = dataTree?.length === 0 ? null : (dataTree ?? null);
 
   const [langcode, setLangcode] = useRecoilState(store.lang);
+  const [viewCount, setViewCount] = useState<number>(0);
 
   // configure document title
   let docTitle = '';
@@ -47,6 +48,20 @@ function SharedView() {
   }
 
   useDocumentTitle(docTitle);
+
+  // increase view count when shared link is opened
+  useEffect(() => {
+    if (data?.realConversationId) {
+      fetch(`/api/convos/${data.realConversationId}/viewcount/increment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).catch((error) => {
+        console.error('Error incrementing view count:', error);
+      });
+    }
+  }, [data?.realConversationId]);
 
   const locale =
     langcode ||
@@ -99,6 +114,7 @@ function SharedView() {
         <ShareHeader
           title={data.title}
           formattedDate={formattedDate}
+          viewCount={viewCount}
           theme={theme}
           langcode={langcode}
           onThemeChange={handleThemeChange}
@@ -161,6 +177,7 @@ function SharedView() {
 interface ShareHeaderProps {
   title?: string;
   formattedDate: string | null;
+  viewCount: number;
   theme: string;
   langcode: string;
   settingsLabel: string;
@@ -171,6 +188,7 @@ interface ShareHeaderProps {
 function ShareHeader({
   title,
   formattedDate,
+  viewCount,
   theme,
   langcode,
   settingsLabel,
@@ -201,6 +219,9 @@ function ShareHeader({
                 <span>{formattedDate}</span>
               </div>
             )}
+            <div className="text-text-secondary flex items-center gap-2 text-sm">
+              {localize('com_ui_number_of_views', { 0: viewCount.toString() })}
+            </div>
           </div>
 
           <OGDialog open={settingsOpen} onOpenChange={setSettingsOpen}>

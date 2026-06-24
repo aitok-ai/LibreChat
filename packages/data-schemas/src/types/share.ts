@@ -105,6 +105,7 @@ export interface SharedLinksResult {
 
 export interface SharedMessagesResult {
   conversationId: string;
+  realConversationId?: string;
   messages: Array<SharedMessage>;
   shareId: string;
   title?: string;

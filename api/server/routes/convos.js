@@ -43,6 +43,18 @@ const assistantClients = {
 };
 
 const router = express.Router();
+
+router.post('/:conversationId/viewcount/increment', async (req, res) => {
+  const { conversationId } = req.params;
+  try {
+    const dbResponse = await increaseConvoViewCount(conversationId);
+    res.status(200).send(dbResponse);
+  } catch (error) {
+    logger.error('[convos.js] Failed to increment view count:', error);
+    res.status(500).json({ message: 'Failed to increment view count' });
+  }
+});
+
 router.use(requireJwtAuth);
 
 const isValidProjectFilter = (projectId) =>
@@ -412,22 +424,6 @@ router.post('/like', async (req, res) => {
   } catch (error) {
     logger.error('[convos.js] Failed to like conversation:', error);
     res.status(500).json({ message: 'Failed to like conversation' });
-  }
-});
-
-router.post('/:conversationId/viewcount/increment', async (req, res) => {
-  const { conversationId } = req.params;
-  // console.log(`routes: hit viewcount increment router for conversationId ${conversationId}`);
-  try {
-    const dbResponse = await increaseConvoViewCount(conversationId);
-    // console.log(
-    //   `routes: viewcount updated for conversationId ${conversationId}: viewCount=${dbResponse?.viewCount}`,
-    // );
-
-    res.status(200).send(dbResponse);
-  } catch (error) {
-    logger.error('[convos.js] Failed to increment view count:', error);
-    res.status(500).json({ message: 'Failed to increment view count' });
   }
 });
 
