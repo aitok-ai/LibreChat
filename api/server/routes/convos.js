@@ -1,4 +1,5 @@
 const multer = require('multer');
+const mongoose = require('mongoose');
 const express = require('express');
 const { likeConvo } = require('../../models');
 const {
@@ -153,15 +154,37 @@ router.get('/:conversationId', async (req, res) => {
 
 router.get('/share/:conversationId', async (req, res) => {
   const { conversationId } = req.params;
-  const convo = await getSharedConvo(conversationId);
+  const Conversation = mongoose.models.Conversation;
+  const convo = await Conversation.findOne({ conversationId }).lean();
 
-  if (convo.isPrivate) {
-    res.status(200).send({ isPrivate: true });
-  } else if (!convo.isPrivate) {
-    res.status(200).send(convo);
-  } else {
-    res.status(404).end();
+  if (!convo) {
+    return res.status(404).end();
   }
+
+  if (!convo.isPrivate) {
+    return res.status(200).send(convo);
+  }
+
+  // Private conversation - check if current user has access via follower/following relationship
+  const currentUserId = req.user?.id?.toString?.() ?? req.user?._id?.toString?.();
+  const convoOwnerId = convo.user?.toString?.() ?? convo.user;
+
+  // Owner can always view
+  if (currentUserId === convoOwnerId) {
+    return res.status(200).send(convo);
+  }
+
+  // Check follower/following relationship
+  const currentUser = req.user;
+  if (currentUser) {
+    const following = currentUser.following || {};
+    const followers = currentUser.followers || {};
+    if (following[convoOwnerId] || followers[convoOwnerId]) {
+      return res.status(200).send(convo);
+    }
+  }
+
+  res.status(200).send({ isPrivate: true });
 });
 
 router.get('/gen_title/:conversationId', async (req, res) => {

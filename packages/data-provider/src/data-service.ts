@@ -76,9 +76,11 @@ export function getSharedStartupConfig(shareId: string): Promise<config.TSharedL
 export const listSharedLinks = async (
   params: q.SharedLinksListParams,
 ): Promise<q.SharedLinksResponse> => {
-  const { pageSize, sortBy, sortDirection, search, cursor } = params;
+  const { pageSize, sortBy, sortDirection, search, cursor, userId } = params;
 
-  return request.get(endpoints.getSharedLinks(pageSize, sortBy, sortDirection, search, cursor));
+  return request.get(
+    endpoints.getSharedLinks(pageSize, sortBy, sortDirection, search, cursor, userId),
+  );
 };
 
 export function getSharedLink(conversationId: string): Promise<t.TSharedLinkGetResponse> {

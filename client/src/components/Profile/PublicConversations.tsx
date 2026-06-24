@@ -1,55 +1,47 @@
-import { useSharedLinksQuery } from '~/data-provider';
-import type { SharedLinkItem } from 'librechat-data-provider';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Spinner } from '@librechat/client';
-import { useNavigate, useParams } from 'react-router-dom';
 import { ConvoIcon } from '@librechat/client';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useGetPublicConversationQuery } from 'librechat-data-provider/react-query';
+import type { TConversation } from 'librechat-data-provider';
 import { useLocalize } from '~/hooks';
 
 function PublicConversations() {
   const navigate = useNavigate();
   const { userId } = useParams();
-  // Default params for shared links
-  const { data, isLoading } = useSharedLinksQuery({
-    pageSize: 50,
-    isPublic: true,
-    sortBy: 'createdAt',
-    sortDirection: 'desc',
-    search: '',
-    userId,
-  });
+  const localize = useLocalize();
+  const { data, isLoading } = useGetPublicConversationQuery(userId || '');
 
-  const conversations = useMemo(() => {
-    if (!data?.pages) {
-      return [];
-    }
-    return data.pages.flatMap((page) => page.links);
-  }, [data]);
+  const conversations = data ?? [];
 
-  // Component to display shared links
-  // Displays title
-  function ListItem({ convo }: { convo: SharedLinkItem }) {
+  function ListItem({ convo }: { convo: TConversation }) {
     const [copied, setCopied] = useState<boolean>(false);
-    const localize = useLocalize();
 
     return (
       <div className="group relative my-2 flex cursor-pointer flex-row items-center">
         <div
           className="flex h-full w-full flex-row items-center gap-2 rounded-lg px-2 py-2 text-base hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
-          onClick={() => navigate(`/share/${convo.shareId}`)}
+          onClick={() => {
+            if (convo.conversationId) {
+              navigate(`/chat/share/${convo.conversationId}`);
+            }
+          }}
         >
           <ConvoIcon />
-          <div className="w-56 truncate">{convo.title}</div>
+          <div className="w-56 truncate">{convo.title || 'New Chat'}</div>
         </div>
         <button
           className="visible absolute right-1 z-10 rounded-md p-1 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
           onClick={() => {
-            if (copied === true) {
+            if (copied === true || !convo.conversationId) {
               return;
             }
 
             navigator.clipboard.writeText(
-              window.location.protocol + '//' + window.location.host + `/share/${convo.shareId}`,
+              window.location.protocol +
+                '//' +
+                window.location.host +
+                `/chat/share/${convo.conversationId}`,
             );
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
@@ -102,17 +94,40 @@ function PublicConversations() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (conversations.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+        <svg
+          className="mb-3 h-16 w-16 opacity-50"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+          />
+        </svg>
+        <p className="text-sm">{localize('com_ui_following_no_convo')}</p>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {isLoading ? (
-        <Spinner />
-      ) : (
-        <>
-          {conversations.map((convo) => (
-            <ListItem key={convo.shareId} convo={convo} />
-          ))}
-        </>
-      )}
+      {conversations.map((convo, index) => (
+        <ListItem key={convo.conversationId ?? index} convo={convo} />
+      ))}
     </div>
   );
 }

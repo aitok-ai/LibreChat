@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const { logger } = require('@librechat/data-schemas');
 const { ContentTypes, isAssistantsEndpoint } = require('librechat-data-provider');
@@ -94,6 +95,40 @@ router.get('/', async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     logger.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/shared/:conversationId', async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const Conversation = mongoose.models.Conversation;
+    const convo = await Conversation.findOne({ conversationId }).lean();
+
+    if (!convo) {
+      return res.status(404).end();
+    }
+
+    if (convo.isPrivate) {
+      const currentUserId = req.user?.id?.toString?.() ?? req.user?._id?.toString?.();
+      const convoOwnerId = convo.user?.toString?.() ?? convo.user;
+
+      if (currentUserId !== convoOwnerId) {
+        const currentUser = req.user;
+        const following = currentUser?.following || {};
+        const followers = currentUser?.followers || {};
+        if (!following[convoOwnerId] && !followers[convoOwnerId]) {
+          return res.status(403).json({ message: 'Unauthorized' });
+        }
+      }
+    }
+
+    const messages = await db.getMessages({ conversationId }, undefined, {
+      sort: { createdAt: 1 },
+    });
+    res.status(200).json(messages);
+  } catch (error) {
+    logger.error('Error fetching shared messages:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

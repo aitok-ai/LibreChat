@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import {
   Login,
@@ -11,17 +12,16 @@ import {
 import { MarketplaceProvider } from '~/components/Agents/MarketplaceContext';
 import AgentMarketplace from '~/components/Agents/Marketplace';
 import { OAuthSuccess, OAuthError } from '~/components/OAuth';
-import { AuthContextProvider } from '~/hooks/AuthContext';
-import Profile from '../components/Profile';
-import Leaderboard from '~/components/ui/Leaderboard';
-
 import Recommendations from '~/components/ui/Recommendations';
-import { useEffect } from 'react';
-import WithRum from '~/lib/rum/WithRum';
+import { AuthContextProvider } from '~/hooks/AuthContext';
+import Leaderboard from '~/components/ui/Leaderboard';
 import RouteErrorBoundary from './RouteErrorBoundary';
+import SharedConvo from '~/components/ui/SharedConvo';
 import StartupLayout from './Layouts/Startup';
+import Profile from '../components/Profile';
 import LoginLayout from './Layouts/Login';
 import dashboardRoutes from './Dashboard';
+import WithRum from '~/lib/rum/WithRum';
 import ShareRoute from './ShareRoute';
 import ChatRoute from './ChatRoute';
 import Search from './Search';
@@ -202,6 +202,10 @@ export const router = createBrowserRouter(
                   <AgentMarketplace />
                 </MarketplaceProvider>
               ),
+            },
+            {
+              path: 'chat/share/:conversationId',
+              element: <SharedConvo />,
             },
           ],
         },

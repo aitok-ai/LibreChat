@@ -42,6 +42,10 @@ const PUBLIC_USER_RESPONSE_FIELDS = [
   'personalization',
   'favorites',
   'skillStates',
+  'followers',
+  'following',
+  'proMemberExpiredAt',
+  'monthlyQuotaConsumed',
   'createdAt',
   'updatedAt',
   'tenantId',
@@ -65,8 +69,17 @@ const getUserController = async (req, res) => {
       userId: req.user?.id,
       tenantId: req.user?.tenantId,
     }));
+
+  let targetUser = req.user;
+  if (req.params.userId && req.params.userId !== req.user.id) {
+    targetUser = await db.getUserById(req.params.userId);
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+  }
+
   /** @type {IUser} */
-  const userData = sanitizeUserForResponse(req.user);
+  const userData = sanitizeUserForResponse(targetUser);
   if (appConfig.fileStrategy === FileSources.s3 && userData.avatar) {
     const avatarNeedsRefresh = needsRefresh(userData.avatar, 3600);
     if (!avatarNeedsRefresh) {

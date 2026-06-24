@@ -1,15 +1,15 @@
-import { TConversation, TUser, TMessage } from 'librechat-data-provider';
-import { useLikeConversationMutation } from 'librechat-data-provider/react-query';
 import React, { useEffect, useState } from 'react';
+import { Spinner } from '@librechat/client';
 import { CSSTransition } from 'react-transition-group';
 import { useNavigate, useParams } from 'react-router-dom';
+import { TConversation, TUser, TMessage } from 'librechat-data-provider';
+import { useLikeConversationMutation } from 'librechat-data-provider/react-query';
+import useDocumentTitle from '~/hooks/useDocumentTitle';
+import OldMultiMessage from '../Messages/MultiMessage';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { useGetFiles } from '~/data-provider';
-import { mapFiles } from '~/utils';
-import { Spinner } from '@librechat/client';
-import OldMultiMessage from '../Messages/MultiMessage';
-import useDocumentTitle from '~/hooks/useDocumentTitle';
 import { useScreenshot } from '~/hooks/';
+import { mapFiles } from '~/utils';
 // import { useRecoilValue } from 'recoil';
 import { useLocalize } from '~/hooks';
 import { Plugin } from '@librechat/client';
@@ -32,7 +32,7 @@ export default function SharedConvo() {
   const localize = useLocalize();
 
   const { screenshotTargetRef } = useScreenshot();
-  // const { user, token } = useAuthContext();
+  const { token } = useAuthContext();
   const { conversationId } = useParams();
   const likeConversationMutation = useLikeConversationMutation(conversationId || '');
   const navigate = useNavigate();
@@ -163,13 +163,19 @@ export default function SharedConvo() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+      if (!response.ok) {
+        console.error('Failed to fetch conversation:', response.status);
+        setConversation(null);
+        return;
+      }
       const responseObject = await response.json();
       setConversation(responseObject);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching conversation:', error);
+      setConversation(null);
     }
   }
 
@@ -177,17 +183,23 @@ export default function SharedConvo() {
   async function fetchMessagesByConvoId(id: string) {
     setMsgTree(null);
     try {
-      const response = await fetch(`/api/messages/${id}`, {
+      const response = await fetch(`/api/messages/shared/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+      if (!response.ok) {
+        console.error('Failed to fetch messages:', response.status);
+        setMsgTree([]);
+        return;
+      }
       const responseObject = await response.json();
       setMsgTree(buildTree({ messages: responseObject, fileMap }) || []);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching messages:', error);
+      setMsgTree([]);
     }
   }
 
@@ -199,13 +211,19 @@ export default function SharedConvo() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+      if (!response.ok) {
+        console.error('Failed to fetch convo user:', response.status);
+        setConvoUser(null);
+        return;
+      }
       const responseObject = await response.json();
       setConvoUser(responseObject);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching convo user:', error);
+      setConvoUser(null);
     }
   }
 
@@ -216,13 +234,17 @@ export default function SharedConvo() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+      if (!response.ok) {
+        console.error('Failed to increment view count:', response.status);
+        return;
+      }
       const responseObject = await response.json();
       setViewCount(responseObject?.viewCount);
     } catch (error) {
-      console.log(error);
+      console.error('Error incrementing view count:', error);
     }
   }
 
@@ -385,7 +407,7 @@ export default function SharedConvo() {
                 ref={screenshotTargetRef}
               >
                 <div className="dark:gpt-dark-gray flex h-auto flex-col items-center text-sm">
-                  {conversation && msgTree && convoUser ? (
+                  {conversation && msgTree ? (
                     <MessagesView
                       messagesTree={msgTree}
                       conversationId={conversation.conversationId ?? ''}
