@@ -1,0 +1,14 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all",
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineWidth": 120,
+      "arrowParentheses": "asNeeded"
+    }
+  }
+}
