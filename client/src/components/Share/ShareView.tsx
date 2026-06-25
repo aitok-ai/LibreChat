@@ -57,9 +57,16 @@ function SharedView() {
         headers: {
           'Content-Type': 'application/json',
         },
-      }).catch((error) => {
-        console.error('Error incrementing view count:', error);
-      });
+      })
+        .then(async (response) => {
+          if (response.ok) {
+            const result = await response.json();
+            setViewCount(result?.viewCount ?? 0);
+          }
+        })
+        .catch((error) => {
+          console.error('Error incrementing view count:', error);
+        });
     }
   }, [data?.realConversationId]);
 
