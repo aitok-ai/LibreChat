@@ -11,22 +11,23 @@ import React, {
 import * as Ariakit from '@ariakit/react';
 import { Badge } from '@librechat/client';
 import { useRecoilValue, useRecoilCallback } from 'recoil';
+import { atom } from 'recoil'; // Import atom if not already imported
 import type { LucideIcon } from 'lucide-react';
+import type { BadgeItem } from '~/common';
+import useVideoPinned from '~/hooks/Video/useVideoPinned';
 import CodeInterpreter from './CodeInterpreter';
 import { BadgeRowProvider } from '~/Providers';
 import ToolsDropdown from './ToolsDropdown';
-import type { BadgeItem } from '~/common';
 import { useChatBadges } from '~/hooks';
 import ToolDialogs from './ToolDialogs';
+import VideoSelect from './VideoSelect';
 import FileSearch from './FileSearch';
 import Artifacts from './Artifacts';
 import MCPSelect from './MCPSelect';
-import VideoSelect from './VideoSelect';
 import WebSearch from './WebSearch';
+import Memory from './Memory';
 import Skills from './Skills';
 import store from '~/store';
-import { atom } from 'recoil'; // Import atom if not already imported
-import useVideoPinned from '~/hooks/Video/useVideoPinned';
 
 // Define a default atom to use when badge.atom is undefined
 const defaultBadgeAtom = atom({
@@ -391,6 +392,7 @@ function BadgeRow({
             <CodeInterpreter />
             <FileSearch />
             <Skills />
+            <Memory />
             <Artifacts />
             <MCPSelect />
             {isVideoPinned && <VideoSelect />}

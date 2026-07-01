@@ -4,7 +4,6 @@ import type {
   TCreateVideoJobResponse,
   TVideoJobStatusResponse,
 } from './types/videoJobs';
-import type { TContextProjectionRequest, TContextUsageEvent } from './types/runs';
 import type { TFileConfig } from './file-config';
 import type * as t from './types';
 import * as permissions from './accessPermissions';
@@ -305,12 +304,6 @@ export const getTokenConfig = (): Promise<t.TTokenConfigMap> => {
   return request.get(endpoints.tokenConfig());
 };
 
-export const getContextProjection = (
-  payload: TContextProjectionRequest,
-): Promise<TContextUsageEvent | null> => {
-  return request.post(endpoints.contextProjection(), payload);
-};
-
 export const getModels = async (): Promise<t.TModelsConfig> => {
   return request.get(endpoints.models());
 };
@@ -574,6 +567,14 @@ export const getExpandedAgentById = ({ agent_id }: { agent_id: string }): Promis
   return request.get(
     endpoints.agents({
       path: `${agent_id}/expanded`,
+    }),
+  );
+};
+
+export const getAgentVersions = ({ agent_id }: { agent_id: string }): Promise<a.Agent[]> => {
+  return request.get(
+    endpoints.agents({
+      path: `${agent_id}/versions`,
     }),
   );
 };
@@ -843,6 +844,13 @@ export function duplicateConversation(
 
 export function forkConversation(payload: t.TForkConvoRequest): Promise<t.TForkConvoResponse> {
   return request.post(endpoints.forkConversation(), payload);
+}
+
+export function forkSharedConversation(
+  shareId: string,
+  targetMessageIndex?: number,
+): Promise<t.TForkConvoResponse> {
+  return request.post(endpoints.forkSharedMessages(shareId), { targetMessageIndex });
 }
 
 export function deleteConversation(payload: t.TDeleteConversationRequest) {
