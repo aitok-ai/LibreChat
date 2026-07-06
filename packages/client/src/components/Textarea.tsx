@@ -2,6 +2,7 @@
 import * as React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { cn } from '~/utils';
+import './Field.css';
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
@@ -11,7 +12,7 @@ const Textarea: React.ForwardRefExoticComponent<
   return (
     <textarea
       className={cn(
-        'flex h-20 w-full resize-none rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-50 dark:focus:ring-gray-400 dark:focus:ring-offset-gray-900',
+        'lc-field border-border-light bg-surface-secondary text-text-primary placeholder:text-text-secondary focus-visible:border-border-medium focus-visible:ring-ring-primary flex min-h-20 w-full resize-none rounded-lg border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
       ref={ref}

@@ -129,27 +129,39 @@ export default function VersionPanel() {
     [revertAgentVersion, selectedAgentId, versionIds],
   );
 
+  const versionCount = versionIds.length;
+  const countLabel =
+    versionCount > 0
+      ? localize(
+          versionCount === 1 ? 'com_ui_agent_version_count_one' : 'com_ui_agent_version_count',
+          { count: versionCount },
+        )
+      : null;
+
   return (
     <div className="h-full min-h-[40vh] scrollbar-gutter-stable overflow-auto pb-12 text-sm">
-      <div className="version-panel relative flex flex-col items-center px-16 py-4 text-center">
-        <div className="absolute top-4 left-0">
-          <button
-            type="button"
-            className="btn btn-neutral relative"
-            onClick={() => {
-              setActivePanel(Panel.builder);
-            }}
-          >
-            <div className="version-panel-content flex w-full items-center justify-center gap-2">
-              <ChevronLeft />
-            </div>
-          </button>
+      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2 pt-1 pb-2">
+        <button
+          type="button"
+          onClick={() => setActivePanel(Panel.builder)}
+          aria-label={localize('com_ui_back_to_builder')}
+          className="border-border-light text-text-secondary hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-ring-primary inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border transition-colors focus:outline-none focus-visible:ring-2"
+        >
+          <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+        </button>
+        <div className="flex flex-col items-center">
+          <h2 className="text-text-primary text-base font-semibold">
+            {localize('com_ui_agent_version_history')}
+          </h2>
+          {countLabel && (
+            <p className="text-text-secondary text-xs" aria-live="polite">
+              {countLabel}
+            </p>
+          )}
         </div>
-        <div className="mt-2 mb-2 text-xl font-medium">
-          {localize('com_ui_agent_version_history')}
-        </div>
-      </div>
-      <div className="flex flex-col gap-4 px-2">
+        <span aria-hidden="true" className="h-10 w-10" />
+      </header>
+      <div className="flex flex-col px-2 pt-2">
         <VersionContent
           selectedAgentId={selectedAgentId}
           isLoading={isLoading}

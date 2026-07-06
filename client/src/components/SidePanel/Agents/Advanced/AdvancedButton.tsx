@@ -1,6 +1,5 @@
 import React from 'react';
 import { Settings2 } from 'lucide-react';
-import { Button } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 import { Panel } from '~/common';
 
@@ -12,16 +11,15 @@ const AdvancedButton: React.FC<AdvancedButtonProps> = ({ setActivePanel }) => {
   const localize = useLocalize();
 
   return (
-    <Button
-      size={'sm'}
-      variant={'outline'}
-      className="btn btn-neutral border-token-border-light focus-visible:outline-text-primary relative h-9 w-full gap-1 rounded-lg font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+    <button
+      type="button"
       onClick={() => setActivePanel(Panel.advanced)}
       aria-label={localize('com_ui_advanced')}
+      className="border-border-light text-text-primary hover:bg-surface-secondary focus-visible:ring-ring-primary inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border bg-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2"
     >
-      <Settings2 className="h-4 w-4 cursor-pointer" aria-hidden="true" />
+      <Settings2 className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
       {localize('com_ui_advanced')}
-    </Button>
+    </button>
   );
 };
 

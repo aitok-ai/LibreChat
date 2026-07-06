@@ -78,24 +78,31 @@ function Avatar({ avatar }: { avatar: AgentAvatar | null }) {
   const canReset = hasIcon;
 
   return (
-    <>
-      <div className="flex w-full items-center justify-center gap-4">
-        <AvatarMenu
-          trigger={
-            <button
-              type="button"
-              className="f focus-visible:ring-ring h-20 w-20 ring-offset-0 outline-none focus:outline-none focus-visible:ring-2"
-              aria-label={localize('com_ui_upload_agent_avatar_label')}
-            >
-              {avatarPreview ? <AgentAvatarRender url={avatarPreview} /> : <NoImage />}
-            </button>
-          }
-          handleFileChange={handleFileChange}
-          onReset={handleReset}
-          canReset={canReset}
-        />
-      </div>
-    </>
+    <AvatarMenu
+      trigger={
+        <button
+          type="button"
+          className="focus-visible:ring-ring h-14 w-14 overflow-hidden rounded-full ring-offset-0 transition-shadow outline-none focus:outline-none focus-visible:ring-2"
+          aria-label={localize('com_ui_upload_agent_avatar_label')}
+        >
+          <span
+            className="t-icon-swap block h-full w-full"
+            data-state={avatarPreview ? 'a' : 'b'}
+            aria-hidden="true"
+          >
+            <span className="t-icon block h-full w-full" data-icon="a">
+              <AgentAvatarRender url={avatarPreview} />
+            </span>
+            <span className="t-icon block h-full w-full" data-icon="b">
+              <NoImage />
+            </span>
+          </span>
+        </button>
+      }
+      handleFileChange={handleFileChange}
+      onReset={handleReset}
+      canReset={canReset}
+    />
   );
 }
 
