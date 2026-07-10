@@ -36,6 +36,8 @@ import {
   useAssistantsMapContext,
 } from '~/Providers';
 import PendingManualSkillsChips from './PendingManualSkillsChips';
+import useAskAnswerMode from '~/hooks/Input/useAskAnswerMode';
+import AskUserQuestionPopover from './AskUserQuestionPopover';
 import { cn, getModelSpec, removeFocusRings } from '~/utils';
 import { useCreateVideoJobMutation } from '~/data-provider';
 import { useGetStartupConfig } from '~/data-provider';
@@ -216,12 +218,18 @@ const ChatForm = memo(function ChatForm({
     setIsTextAreaFocused(false);
   }, []);
 
+  const answerMode = useAskAnswerMode(conversationId);
+
   useAutoSave({
     files,
     setFiles,
     textAreaRef,
     conversationId,
     isSubmitting,
+    // While a question pause is live the composer is the answer box: drafts
+    // swap to the answer's own key, and the conversation draft is restored
+    // when the question resolves.
+    draftId: answerMode.draftId,
   });
 
   const { submitMessage, submitPrompt } = useSubmitMessage();
@@ -244,7 +252,10 @@ const ChatForm = memo(function ChatForm({
     submitButtonRef,
     setIsScrollable,
     disabled: disableInputs,
-    placeholder,
+    // The composer IS the free-form answer box while a question pause is live.
+    placeholder: answerMode.active
+      ? (answerMode.otherLabel ?? localize('com_ui_something_else'))
+      : placeholder,
   });
 
   useQueryParams({ textAreaRef });
@@ -603,7 +614,15 @@ const ChatForm = memo(function ChatForm({
 
   return (
     <form
-      onSubmit={methods.handleSubmit(videoMode ? handleVideoSubmit : submitMessage)}
+      onSubmit={methods.handleSubmit((data) => {
+        if (videoMode) {
+          return handleVideoSubmit();
+        }
+        if (answerMode.active && answerMode.submitText(data.text)) {
+          return;
+        }
+        return submitMessage(data);
+      })}
       className={cn(
         'mx-auto flex w-full flex-row gap-3 transition-[max-width] duration-300 sm:px-2',
         maximizeChatSpace ? 'max-w-full' : 'md:max-w-3xl xl:max-w-4xl',
@@ -635,6 +654,9 @@ const ChatForm = memo(function ChatForm({
             textAreaRef={textAreaRef}
           />
           <PromptsCommand index={index} textAreaRef={textAreaRef} submitPrompt={submitPrompt} />
+          {index === 0 && (
+            <AskUserQuestionPopover conversationId={conversationId} textAreaRef={textAreaRef} />
+          )}
           <SkillsCommand
             index={index}
             textAreaRef={textAreaRef}
@@ -689,7 +711,14 @@ const ChatForm = memo(function ChatForm({
                     }}
                     disabled={disableInputs || isNotAppendable}
                     onPaste={handlePaste}
-                    onKeyDown={handleKeyDown}
+                    onKeyDown={(e) => {
+                      // Answer mode consumes option-navigation keys from the
+                      // empty composer; everything else follows the normal path.
+                      if (answerMode.handleComposerKeyDown(e)) {
+                        return;
+                      }
+                      handleKeyDown(e);
+                    }}
                     onKeyUp={handleKeyUp}
                     onCompositionStart={handleCompositionStart}
                     onCompositionEnd={handleCompositionEnd}
@@ -770,7 +799,7 @@ const ChatForm = memo(function ChatForm({
                 />
               )}
               <div className={cn('flex items-center gap-2', isRTL ? 'ml-2' : 'mr-2')}>
-                {isSubmitting && showStopButton ? (
+                {isSubmitting && showStopButton && !answerMode.active ? (
                   <StopButton stop={handleStopGenerating} setShowStopButton={setShowStopButton} />
                 ) : (
                   endpoint && (
@@ -779,10 +808,9 @@ const ChatForm = memo(function ChatForm({
                       control={methods.control}
                       disabled={
                         filesLoading ||
-                        isSubmitting ||
-                        videoSubmitting ||
                         disableInputs ||
-                        isNotAppendable
+                        isNotAppendable ||
+                        (isSubmitting && !answerMode.active)
                       }
                     />
                   )
