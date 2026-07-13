@@ -34,7 +34,10 @@ async function initializeMCPs() {
     );
   } catch (error) {
     logger.error('[MCP] Failed to initialize MCPServersRegistry:', error);
-    throw error;
+    logger.warn(
+      '[MCP] Server will start without MCP server registry. MCP features will be unavailable.',
+    );
+    return;
   }
 
   try {
@@ -53,7 +56,7 @@ async function initializeMCPs() {
     }
   } catch (error) {
     logger.error('[MCP] Failed to initialize MCPManager:', error);
-    throw error;
+    logger.warn('[MCP] Server will start without MCP manager. MCP features will be unavailable.');
   }
 }
 
