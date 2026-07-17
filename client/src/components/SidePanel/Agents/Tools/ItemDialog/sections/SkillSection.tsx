@@ -10,7 +10,9 @@ export default function SkillSection({ item }: Props) {
   return (
     <div className="flex flex-col gap-5">
       {item.description ? (
-        <p className="text-text-secondary text-sm leading-relaxed">{item.description}</p>
+        <p className="text-text-secondary max-h-40 overflow-y-auto text-sm leading-relaxed whitespace-pre-wrap">
+          {item.description}
+        </p>
       ) : (
         <p className="text-text-tertiary text-sm italic">
           {localize('com_ui_tools_no_description')}

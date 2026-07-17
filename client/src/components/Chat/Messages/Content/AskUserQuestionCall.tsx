@@ -1,4 +1,4 @@
-import { MessageCircleQuestion } from 'lucide-react';
+import { MessageCircleQuestion, TriangleAlert } from 'lucide-react';
 import { getSubmittedAskAnswer, parseAskUserQuestionArgs } from '~/utils/approval';
 import { useLocalize } from '~/hooks';
 
@@ -14,11 +14,13 @@ export default function AskUserQuestionCall({
   output,
   toolCallId,
   isSubmitting = false,
+  failed = false,
 }: {
   args: string | Record<string, unknown> | undefined;
   output: string;
   toolCallId?: string;
   isSubmitting?: boolean;
+  failed?: boolean;
 }) {
   const localize = useLocalize();
   const question = parseAskUserQuestionArgs(args);
@@ -29,7 +31,7 @@ export default function AskUserQuestionCall({
    * Q&A record never blinks out while the resumed segment streams.
    */
   const effectiveOutput = output.length > 0 ? output : (getSubmittedAskAnswer(toolCallId) ?? '');
-  const answered = effectiveOutput.length > 0;
+  const answered = effectiveOutput.length > 0 && !failed;
 
   /**
    * While the turn is live and unanswered, the INTERACTIVE card (rendered from
@@ -39,8 +41,28 @@ export default function AskUserQuestionCall({
    * so the record takes over immediately; an abandoned pause only shows its
    * "no answer" state after the turn is no longer submitting.
    */
-  if (!answered && isSubmitting) {
+  if (!answered && !failed && isSubmitting) {
     return null;
+  }
+
+  if (failed) {
+    return (
+      <div
+        className="border-border-light bg-surface-secondary my-2 flex w-full flex-col gap-1.5 rounded-lg border p-3"
+        role="status"
+      >
+        <div className="text-text-warning flex items-center gap-2 text-xs font-medium">
+          <TriangleAlert className="h-4 w-4" aria-hidden="true" />
+          {localize('com_ui_question_failed')}
+        </div>
+        {question?.question != null && (
+          <p className="text-text-primary text-sm font-medium">{question.question}</p>
+        )}
+        <p className="text-text-secondary text-sm">
+          {localize('com_ui_question_failed_description')}
+        </p>
+      </div>
+    );
   }
 
   /**

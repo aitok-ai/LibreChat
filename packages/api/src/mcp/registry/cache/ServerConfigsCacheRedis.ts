@@ -1,9 +1,9 @@
-import type Keyv from 'keyv';
 import { fromPairs } from 'lodash';
 import { logger } from '@librechat/data-schemas';
+import type Keyv from 'keyv';
 import type { IServerConfigsRepositoryInterface } from '~/mcp/registry/ServerConfigsRepositoryInterface';
 import type { ParsedServerConfig, AddServerResult } from '~/mcp/types';
-import { standardCache, keyvRedisClient } from '~/cache';
+import { keyvRedisClient, observeRedisOperation, RedisUseCases, standardCache } from '~/cache';
 import { BaseRegistryCache } from './BaseRegistryCache';
 
 /**
@@ -75,31 +75,26 @@ export class ServerConfigsCacheRedis
   }
 
   public async getAll(): Promise<Record<string, ParsedServerConfig>> {
-    if (!keyvRedisClient || !('scanIterator' in keyvRedisClient)) {
+    const redisClient = keyvRedisClient;
+    if (!redisClient || !('scanIterator' in redisClient)) {
       throw new Error('Redis client with scanIterator not available.');
     }
 
     const startTime = Date.now();
     const pattern = `*${this.cache.namespace}:*`;
 
-    const keys: string[] = [];
-
-    if ('scanIterator' in keyvRedisClient && typeof keyvRedisClient.scanIterator === 'function') {
-      // Handle both RedisClient and RedisCluster
-      type RedisClientWithScan = {
-        scanIterator(options?: { MATCH?: string; COUNT?: number }): AsyncIterableIterator<string>;
-      };
-      const scanIterator = (keyvRedisClient as unknown as RedisClientWithScan).scanIterator({
-        MATCH: pattern,
-      });
-      for await (const key of scanIterator) {
-        if (Array.isArray(key)) {
-          keys.push(...(key as string[]));
-        } else {
-          keys.push(key as string);
+    const keys = await observeRedisOperation(
+      'keyv',
+      RedisUseCases.MCP_REGISTRY,
+      'scan',
+      async () => {
+        const scannedKeys: string[] = [];
+        for await (const key of redisClient.scanIterator({ MATCH: pattern })) {
+          scannedKeys.push(key);
         }
-      }
-    }
+        return scannedKeys;
+      },
+    );
 
     if (keys.length === 0) {
       logger.debug(`[ServerConfigsCacheRedis] getAll(${this.namespace}): no keys found`);
