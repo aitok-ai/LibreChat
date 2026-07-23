@@ -319,6 +319,83 @@ const ChatForm = memo(function ChatForm({
     stopGenerating,
   });
 
+  /** Read at call time, not captured: a reclaim resolves into the callback from
+   *  the render it was clicked in, so the closure's `conversationId` is the OLD
+   *  chat — comparing it against itself would pass while `methods` (one form,
+   *  reused across conversations) writes into the chat now on screen. */
+  const liveConversationIdRef = useRef(conversationId);
+  liveConversationIdRef.current = conversationId;
+  /** Same reason: attachments staged after the click must be seen. */
+  const liveFilesRef = useRef(files);
+  liveFilesRef.current = files;
+  /** Same reason: the run can pause on `ask_user_question` mid-reclaim. */
+  const liveAnswerModeRef = useRef(answerMode.active);
+  liveAnswerModeRef.current = answerMode.active;
+  /** A reclaim can resolve after this form unmounts (left the route, closed the
+   *  pane). Its refs still hold the origin chat, so the restore would pass its
+   *  checks and write into a dead form — reporting success and making the caller
+   *  drop the steer, losing the text. Track mount so the restore refuses and the
+   *  caller queues it instead. */
+  const composerMountedRef = useRef(true);
+  useEffect(
+    () => () => {
+      composerMountedRef.current = false;
+    },
+    [],
+  );
+
+  /** A draft is anything the user has staged, not just typed: `editToComposer`
+   *  MERGES the steer's attachments into the composer's file map and its quotes
+   *  and skill picks into their atoms, so restoring over staged context would
+   *  glue the two submissions together. */
+  const hasStagedComposerContext = useRecoilCallback(
+    ({ snapshot }) =>
+      (convoId: string) =>
+        snapshot.getLoadable(store.pendingQuotesByConvoId(convoId)).getValue().length > 0 ||
+        snapshot.getLoadable(store.pendingManualSkillsByConvoId(convoId)).getValue().length > 0,
+    [],
+  );
+
+  /**
+   * `editToComposer` for a steer whose reclaim was a round-trip: by the time it
+   * resolves the composer may have moved on. Refuses (returning false, so the
+   * caller re-homes the words instead of dropping them) rather than overwrite a
+   * draft the user has since staged, or drop a steer into whatever chat they
+   * navigated to.
+   */
+  const restoreReclaimedSteer = useCallback(
+    (
+      text: string,
+      steerFiles: TMessage['files'],
+      context: QueuedMessageContext,
+      originConversationId: string,
+    ): boolean => {
+      if (!composerMountedRef.current) {
+        return false;
+      }
+      const liveConversationId = liveConversationIdRef.current;
+      if (originConversationId !== liveConversationId) {
+        return false;
+      }
+      /** Answer mode owns the composer: `onSubmit` hands its text to
+       *  `answerMode.submitText` before any send/steer routing, so restoring
+       *  here would turn the steer into the tool's answer on the next Enter. */
+      if (liveAnswerModeRef.current) {
+        return false;
+      }
+      if (
+        (methods.getValues('text') ?? '').trim().length > 0 ||
+        (liveFilesRef.current?.size ?? 0) > 0 ||
+        hasStagedComposerContext(liveConversationId)
+      ) {
+        return false;
+      }
+      editToComposer(text, steerFiles, context);
+      return true;
+    },
+    [methods, editToComposer, hasStagedComposerContext],
+  );
+
   /** ⌘/Ctrl+Enter = the non-default during-run action, ⌥/Alt+Enter =
    *  interrupt & send — the counterpart of Enter's `submitDuringRun`. */
   const handleDuringRunModifier = useCallback(
@@ -769,10 +846,18 @@ const ChatForm = memo(function ChatForm({
       <div className="relative flex h-full flex-1 items-stretch md:flex-col">
         {/* Primary composer owns the selection popup so split-view doesn't double it. */}
         {index === 0 && quotesEnabled && <QuoteButton conversationId={conversationId} />}
-        <div className="flex w-full flex-col">
+        {/* `relative` anchors the in-flight steer overlay, which floats above
+            the composer (`bottom-full`) over the bottom of the thread. */}
+        <div className="relative flex w-full flex-col">
           {/* Run-scoped: `enabled` alone is any primary composer on a steerable
               endpoint, so a chip that outlives the run would strand a bubble. */}
-          {steering.enabled && isSubmitting && <InFlightSteers conversationId={conversationId} />}
+          {steering.enabled && isSubmitting && (
+            <InFlightSteers
+              steering={steering}
+              conversationId={conversationId}
+              onRestoreToComposer={restoreReclaimedSteer}
+            />
+          )}
           <div className={cn('flex w-full items-center', isRTL && 'flex-row-reverse')}>
             <Mention
               index={index}
@@ -799,156 +884,159 @@ const ChatForm = memo(function ChatForm({
               conversationId={conversationId}
               agentId={conversation?.agent_id}
             />
-          </div>
-          <div
-            onClick={handleContainerClick}
-            className={cn(
-              'text-text-primary relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border pb-4 transition-all duration-200 sm:rounded-3xl sm:pb-0',
-              isTextAreaFocused ? 'shadow-lg' : 'shadow-md',
-              isTemporary
-                ? 'border-violet-800/60 bg-violet-950/10'
-                : 'border-border-light bg-surface-chat',
-            )}
-          >
-            <TextareaHeader addedConvo={addedConvo} setAddedConvo={setAddedConvo} />
-            <PendingManualSkillsChips conversationId={conversationId} />
-            {quotesEnabled && <PendingQuoteChips conversationId={conversationId} />}
-            {steering.enabled && (
-              <PendingSteerChips
-                conversationId={conversationId}
-                steering={steering}
-                onEditToComposer={editToComposer}
-              />
-            )}
-            {/* WIP */}
-            <EditBadges
-              isEditingChatBadges={isEditingBadges}
-              handleCancelBadges={handleCancelBadges}
-              handleSaveBadges={handleSaveBadges}
-              setBadges={setBadges}
-            />
-            <FileFormChat
-              conversation={conversation}
-              files={files}
-              setFiles={setFiles}
-              setFilesLoading={setFilesLoading}
-            />
-            {endpoint && (
-              <div className={cn('flex', isRTL ? 'flex-row-reverse' : 'flex-row')}>
-                <div
-                  className="relative flex-1"
-                  style={
-                    isCollapsed
-                      ? {
-                          WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 90%)',
-                          maskImage: 'linear-gradient(to bottom, black 60%, transparent 90%)',
-                        }
-                      : undefined
-                  }
-                >
-                  <TextareaAutosize
-                    {...registerProps}
-                    ref={(e) => {
-                      ref(e);
-                      (textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current =
-                        e;
-                    }}
-                    disabled={disableInputs || isNotAppendable}
-                    onPaste={handlePaste}
-                    onKeyDown={(e) => {
-                      // Answer mode consumes option-navigation keys from the
-                      // empty composer; everything else follows the normal path.
-                      if (answerMode.handleComposerKeyDown(e)) {
-                        return;
-                      }
-                      handleKeyDown(e);
-                    }}
-                    onKeyUp={handleKeyUp}
-                    onCompositionStart={handleCompositionStart}
-                    onCompositionEnd={handleCompositionEnd}
-                    id={mainTextareaId}
-                    tabIndex={0}
-                    data-testid="text-input"
-                    rows={1}
-                    onFocus={handleTextareaFocus}
-                    onBlur={handleTextareaBlur}
-                    aria-label={localize('com_ui_message_input')}
-                    onClick={handleFocusOrClick}
-                    style={{ height: 44, overflowY: 'auto' }}
-                    className={cn(
-                      baseClasses,
-                      removeFocusRings,
-                      'scrollbar-hover transition-[max-height] duration-200 disabled:cursor-not-allowed',
-                    )}
-                  />
-                </div>
-                <div className="flex flex-col items-start justify-start pt-1.5 pr-2.5">
-                  <CollapseChat
-                    isCollapsed={isCollapsed}
-                    isScrollable={isMoreThanThreeRows}
-                    setIsCollapsed={setIsCollapsed}
-                  />
-                </div>
-              </div>
-            )}
             <div
+              onClick={handleContainerClick}
               className={cn(
-                'items-between @container flex gap-2 pb-2',
-                isRTL ? 'flex-row-reverse' : 'flex-row',
+                'text-text-primary relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border pb-4 transition-all duration-200 sm:rounded-3xl sm:pb-0',
+                isTextAreaFocused ? 'shadow-lg' : 'shadow-md',
+                isTemporary
+                  ? 'border-violet-800/60 bg-violet-950/10'
+                  : 'border-border-light bg-surface-chat',
               )}
             >
-              <div className={`${isRTL ? 'mr-2' : 'ml-2'}`}>
-                <AttachFileChat
-                  conversation={conversation}
-                  disableInputs={disableInputs}
-                  files={files}
-                  setFiles={setFiles}
-                  setFilesLoading={setFilesLoading}
-                />
-              </div>
-              <BadgeRow
-                showEphemeralBadges={
-                  !!endpoint &&
-                  !hideBadgeRow &&
-                  !isAgentsEndpoint(endpoint) &&
-                  !isAssistantsEndpoint(endpoint)
-                }
-                isSubmitting={isSubmitting}
-                conversationId={conversationId}
-                specName={conversation?.spec}
-                onChange={setBadges}
-                isInChat={
-                  Array.isArray(conversation?.messages) && conversation.messages.length >= 1
-                }
-              />
-              <div className="mx-auto flex" />
-              <TokenUsage index={index} conversation={conversation} isSubmitting={isSubmitting} />
-              {SpeechToText && (
-                <AudioRecorder
-                  methods={methods}
-                  ask={submitMessage}
-                  disabled={disableInputs || isNotAppendable}
-                  isSubmitting={isSubmitting}
+              <TextareaHeader addedConvo={addedConvo} setAddedConvo={setAddedConvo} />
+              <PendingManualSkillsChips conversationId={conversationId} />
+              {quotesEnabled && <PendingQuoteChips conversationId={conversationId} />}
+              {steering.enabled && (
+                <PendingSteerChips
+                  conversationId={conversationId}
+                  steering={steering}
+                  onEditToComposer={editToComposer}
+                  onRestoreToComposer={restoreReclaimedSteer}
                 />
               )}
-              <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
-                {isSubmitting && showStopButton && !answerMode.active
-                  ? duringRunSlot
-                  : endpoint && (
-                      <SendButton
-                        ref={submitButtonRef}
-                        control={methods.control}
-                        disabled={
-                          filesLoading ||
-                          disableInputs ||
-                          isNotAppendable ||
-                          (isSubmitting && !answerMode.active)
+              {/* WIP */}
+              <EditBadges
+                isEditingChatBadges={isEditingBadges}
+                handleCancelBadges={handleCancelBadges}
+                handleSaveBadges={handleSaveBadges}
+                setBadges={setBadges}
+              />
+              <FileFormChat
+                conversation={conversation}
+                files={files}
+                setFiles={setFiles}
+                setFilesLoading={setFilesLoading}
+              />
+              {endpoint && (
+                <div className={cn('flex', isRTL ? 'flex-row-reverse' : 'flex-row')}>
+                  <div
+                    className="relative flex-1"
+                    style={
+                      isCollapsed
+                        ? {
+                            WebkitMaskImage:
+                              'linear-gradient(to bottom, black 60%, transparent 90%)',
+                            maskImage: 'linear-gradient(to bottom, black 60%, transparent 90%)',
+                          }
+                        : undefined
+                    }
+                  >
+                    <TextareaAutosize
+                      {...registerProps}
+                      ref={(e) => {
+                        ref(e);
+                        (
+                          textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+                        ).current = e;
+                      }}
+                      disabled={disableInputs || isNotAppendable}
+                      onPaste={handlePaste}
+                      onKeyDown={(e) => {
+                        // Answer mode consumes option-navigation keys from the
+                        // empty composer; everything else follows the normal path.
+                        if (answerMode.handleComposerKeyDown(e)) {
+                          return;
                         }
-                      />
-                    )}
+                        handleKeyDown(e);
+                      }}
+                      onKeyUp={handleKeyUp}
+                      onCompositionStart={handleCompositionStart}
+                      onCompositionEnd={handleCompositionEnd}
+                      id={mainTextareaId}
+                      tabIndex={0}
+                      data-testid="text-input"
+                      rows={1}
+                      onFocus={handleTextareaFocus}
+                      onBlur={handleTextareaBlur}
+                      aria-label={localize('com_ui_message_input')}
+                      onClick={handleFocusOrClick}
+                      style={{ height: 44, overflowY: 'auto' }}
+                      className={cn(
+                        baseClasses,
+                        removeFocusRings,
+                        'scrollbar-hover transition-[max-height] duration-200 disabled:cursor-not-allowed',
+                      )}
+                    />
+                  </div>
+                  <div className="flex flex-col items-start justify-start pt-1.5 pr-2.5">
+                    <CollapseChat
+                      isCollapsed={isCollapsed}
+                      isScrollable={isMoreThanThreeRows}
+                      setIsCollapsed={setIsCollapsed}
+                    />
+                  </div>
+                </div>
+              )}
+              <div
+                className={cn(
+                  'items-between @container flex gap-2 pb-2',
+                  isRTL ? 'flex-row-reverse' : 'flex-row',
+                )}
+              >
+                <div className={`${isRTL ? 'mr-2' : 'ml-2'}`}>
+                  <AttachFileChat
+                    conversation={conversation}
+                    disableInputs={disableInputs}
+                    files={files}
+                    setFiles={setFiles}
+                    setFilesLoading={setFilesLoading}
+                  />
+                </div>
+                <BadgeRow
+                  showEphemeralBadges={
+                    !!endpoint &&
+                    !hideBadgeRow &&
+                    !isAgentsEndpoint(endpoint) &&
+                    !isAssistantsEndpoint(endpoint)
+                  }
+                  isSubmitting={isSubmitting}
+                  conversationId={conversationId}
+                  specName={conversation?.spec}
+                  onChange={setBadges}
+                  isInChat={
+                    Array.isArray(conversation?.messages) && conversation.messages.length >= 1
+                  }
+                />
+                <div className="mx-auto flex" />
+                <TokenUsage index={index} conversation={conversation} isSubmitting={isSubmitting} />
+                {SpeechToText && (
+                  <AudioRecorder
+                    methods={methods}
+                    ask={submitMessage}
+                    disabled={disableInputs || isNotAppendable}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
+                  {isSubmitting && showStopButton && !answerMode.active
+                    ? duringRunSlot
+                    : endpoint && (
+                        <SendButton
+                          ref={submitButtonRef}
+                          control={methods.control}
+                          disabled={
+                            filesLoading ||
+                            disableInputs ||
+                            isNotAppendable ||
+                            (isSubmitting && !answerMode.active)
+                          }
+                        />
+                      )}
+                </div>
               </div>
+              {TextToSpeech && automaticPlayback && <StreamAudio index={index} />}
             </div>
-            {TextToSpeech && automaticPlayback && <StreamAudio index={index} />}
           </div>
           {activeVideoNotice && (
             <HoverCard open={true} onOpenChange={() => undefined}>

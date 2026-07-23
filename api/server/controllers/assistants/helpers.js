@@ -235,10 +235,9 @@ const fetchAssistants = async ({ req, res, overrideEndpoint }) => {
   } else if (endpoint === EModelEndpoint.azureAssistants) {
     const azureConfig = appConfig.endpoints?.[EModelEndpoint.azureOpenAI];
     body = await listAssistantsForAzure({ req, res, version, azureConfig, query });
-  }
-
-  if (!appConfig.endpoints?.[endpoint]) {
-    return body;
+  } else {
+    logger.warn(`[fetchAssistants] Invalid endpoint for listing assistants: ${endpoint}`);
+    body = { data: [], has_more: false, first_id: null, last_id: null, object: 'list' };
   }
 
   let canManageAssistants = false;
@@ -271,7 +270,7 @@ const fetchAssistants = async ({ req, res, overrideEndpoint }) => {
  * @returns {Assistant[]} - The filtered list of assistants.
  */
 function filterAssistants({ assistants, userId, assistantsConfig }) {
-  const { supportedIds, excludedIds, privateAssistants } = assistantsConfig;
+  const { supportedIds, excludedIds, privateAssistants } = assistantsConfig ?? {};
   if (privateAssistants) {
     return assistants.filter((assistant) => userId === assistant.metadata?.author);
   } else if (supportedIds?.length) {

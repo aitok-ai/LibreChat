@@ -20,6 +20,11 @@ import { useLocalize, useAuthContext } from '~/hooks';
 const containerClassName =
   'shadow-stroke relative flex h-full items-center justify-center rounded-full bg-white dark:bg-presentation dark:text-white text-black dark:after:shadow-none ';
 
+/** Stable references: fresh literals re-initialized SplitText's springs and
+ * re-rendered every grapheme span on each Landing render. */
+const greetingAnimationFrom = { opacity: 0, transform: 'translate3d(0,50px,0)' };
+const greetingAnimationTo = { opacity: 1, transform: 'translate3d(0,0,0)' };
+
 function getTextSizeClass(text: string | undefined | null) {
   if (!text) {
     return 'text-xl sm:text-2xl';
@@ -203,8 +208,8 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
                 className={`${getTextSizeClass(name)} text-text-primary font-medium`}
                 delay={50}
                 textAlign="center"
-                animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
-                animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
+                animationFrom={greetingAnimationFrom}
+                animationTo={greetingAnimationTo}
                 easing={easings.easeOutCubic}
                 threshold={0}
                 rootMargin="0px"
@@ -218,8 +223,8 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
               className={`${getTextSizeClass(greetingText)} text-text-primary font-medium`}
               delay={50}
               textAlign="center"
-              animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
-              animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
+              animationFrom={greetingAnimationFrom}
+              animationTo={greetingAnimationTo}
               easing={easings.easeOutCubic}
               threshold={0}
               rootMargin="0px"
