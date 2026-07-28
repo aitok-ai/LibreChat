@@ -79,19 +79,17 @@ const listAllAssistants = async ({ req, res, version, query }) => {
       after: afterToken,
     });
 
-    const { body } = response;
-
-    allAssistants.push(...body.data);
-    hasMore = body.has_more;
+    allAssistants.push(...response.data);
+    hasMore = response.has_more;
 
     if (!first_id) {
-      first_id = body.first_id;
+      first_id = response.first_id;
     }
 
     if (hasMore) {
-      afterToken = body.last_id;
+      afterToken = response.last_id;
     } else {
-      last_id = body.last_id;
+      last_id = response.last_id;
     }
   }
 
