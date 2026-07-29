@@ -243,7 +243,8 @@ export type TFilesUsageBody = {
 };
 
 export type TFilesUsageResponse = {
-  marked: number;
+  /** Count of queued uploads whose TTL hold was extended. */
+  held: number;
 };
 
 export type DeleteFilesResponse = {
