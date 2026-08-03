@@ -418,8 +418,9 @@ export function registerMemoryTools({
   toolRegistry?: LCToolRegistry;
   toolDefinitions?: LCTool[];
   validKeys?: string[];
-}): { toolDefinitions: LCTool[]; registered: string[] } {
+}): { toolDefinitions: LCTool[]; registered: string[]; toolNames: string[] } {
   const memoryToolDefinitions = getMemoryToolDefinitions(validKeys);
+  const toolNames = memoryToolDefinitions.map((def) => def.name);
   const inputDefinitions = toolDefinitions ?? [];
   const newDefs: LCTool[] = [];
   const registered: string[] = [];
@@ -436,9 +437,9 @@ export function registerMemoryTools({
   }
 
   if (newDefs.length === 0) {
-    return { toolDefinitions: inputDefinitions, registered };
+    return { toolDefinitions: inputDefinitions, registered, toolNames };
   }
-  return { toolDefinitions: [...inputDefinitions, ...newDefs], registered };
+  return { toolDefinitions: [...inputDefinitions, ...newDefs], registered, toolNames };
 }
 
 type GetRoleByName = (
