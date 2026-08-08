@@ -238,7 +238,7 @@ export default function WebSearch({
           ) : (
             <Globe className="text-text-secondary size-4 shrink-0" aria-hidden="true" />
           )}
-          <span className="font-medium">{completedText}</span>
+          <span className="min-w-0 truncate font-medium">{completedText}</span>
           {hasSourceData && (
             <ChevronDown
               className={cn(
@@ -289,7 +289,7 @@ export default function WebSearch({
       </span>
       {showSources && <StackedFavicons sources={streamingSources} start={-5} />}
       <Globe className="text-text-secondary size-4 shrink-0" aria-hidden="true" />
-      <span className="tool-status-text shimmer text-text-secondary font-medium">
+      <span className="tool-status-text shimmer text-text-secondary min-w-0 truncate font-medium">
         {progressText}
       </span>
     </div>

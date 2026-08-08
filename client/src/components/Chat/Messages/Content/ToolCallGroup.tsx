@@ -376,10 +376,11 @@ export default function ToolCallGroup({
         )}
         <span
           className={cn(
-            'tool-status-text font-medium',
+            'tool-status-text min-w-0 truncate font-medium',
             activityFailed && 'text-amber-600 dark:text-amber-400',
           )}
           role="status"
+          title={groupLabel}
         >
           {groupLabel}
         </span>
@@ -387,7 +388,9 @@ export default function ToolCallGroup({
          *   questions) — every entry deduplicates to the same token, which
          *   adds noise without info. Mixed groups keep the summary. */}
         {toolNameSummary && !allSubagents && !allAskQuestions && (
-          <span className="text-text-secondary text-xs font-normal">— {toolNameSummary}</span>
+          <span className="text-text-secondary max-w-[40%] min-w-0 truncate text-xs font-normal">
+            · {toolNameSummary}
+          </span>
         )}
         <ChevronDown
           className={cn(
