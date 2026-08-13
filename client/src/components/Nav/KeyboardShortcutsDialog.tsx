@@ -135,7 +135,7 @@ function ShortcutRow({
           <button
             type="button"
             onClick={() => resetBinding(info.id)}
-            className="text-text-secondary hover:text-text-primary focus-visible:ring-ring text-[11.5px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none"
+            className="text-text-secondary hover:text-text-primary focus-visible:ring-text-primary text-[11.5px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none"
           >
             {localize('com_shortcut_reset')}
           </button>
@@ -146,7 +146,7 @@ function ShortcutRow({
             onClick={() => onStartEdit(info.id)}
             aria-label={editAriaLabel}
             data-testid={`edit-shortcut-${info.id}`}
-            className="border-border-medium text-text-secondary hover:border-border-heavy hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-ring dark:hover:bg-surface-secondary-alt inline-flex h-[22px] items-center gap-1 rounded-md border border-dashed bg-transparent px-2 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            className="border-border-medium text-text-secondary hover:border-border-heavy hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt inline-flex h-[22px] items-center gap-1 rounded-md border border-dashed bg-transparent px-2 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <Plus className="h-3 w-3" aria-hidden="true" />
             {localize('com_shortcut_set')}
@@ -157,7 +157,7 @@ function ShortcutRow({
             onClick={() => onStartEdit(info.id)}
             aria-label={editAriaLabel}
             data-testid={`edit-shortcut-${info.id}`}
-            className="hover:bg-surface-tertiary focus-visible:ring-ring dark:hover:bg-surface-secondary-alt rounded-md px-1 py-0.5 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            className="hover:bg-surface-tertiary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt rounded-md px-1 py-0.5 transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <ShortcutKeyCombo keys={displayKeys} />
           </button>
@@ -329,7 +329,7 @@ function KeyboardShortcutsDialog() {
           <OGDialogTitle className="text-text-primary text-[16px] font-semibold">
             {localize('com_shortcut_keyboard_shortcuts')}
           </OGDialogTitle>
-          <OGDialogClose className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-ring dark:hover:bg-surface-secondary-alt inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none">
+          <OGDialogClose className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none">
             <X className="h-4 w-4" />
             <span className="sr-only">{localize('com_ui_close')}</span>
           </OGDialogClose>
@@ -389,7 +389,7 @@ function KeyboardShortcutsDialog() {
             <button
               type="button"
               onClick={resetAll}
-              className="text-text-secondary hover:text-text-primary focus-visible:ring-ring text-[12px] transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className="text-text-secondary hover:text-text-primary focus-visible:ring-text-primary text-[12px] transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               {localize('com_shortcut_reset_all')}
             </button>

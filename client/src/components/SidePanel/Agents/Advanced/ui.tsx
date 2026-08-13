@@ -1,4 +1,5 @@
 import {
+  Button,
   Switch,
   HoverCard,
   CircleHelpIcon,
@@ -43,13 +44,13 @@ export function InfoTrigger() {
   const localize = useLocalize();
   return (
     <HoverCardTrigger asChild>
-      <button
-        type="button"
+      <Button
+        variant="ghost"
         aria-label={localize('com_ui_more_info')}
-        className="text-text-tertiary hover:text-text-secondary focus-visible:ring-ring-primary flex h-4 w-4 flex-shrink-0 items-center justify-center rounded transition-colors focus:outline-none focus-visible:ring-2"
+        className="text-text-tertiary hover:text-text-secondary focus-visible:ring-text-primary flex h-4 w-4 flex-shrink-0 items-center justify-center rounded p-0 transition-colors hover:bg-transparent focus:outline-none focus-visible:ring-2"
       >
         <CircleHelpIcon className="h-3.5 w-3.5" aria-hidden={true} />
-      </button>
+      </Button>
     </HoverCardTrigger>
   );
 }

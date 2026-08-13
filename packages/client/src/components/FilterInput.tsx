@@ -35,14 +35,14 @@ const FilterInput: React.ForwardRefExoticComponent<
           placeholder=" "
           aria-label={label}
           className={cn(
-            'peer border-border-light ring-offset-background placeholder:text-muted-foreground flex h-9 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            'peer border-border-light ring-offset-surface-primary placeholder:text-text-secondary flex h-9 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             className,
           )}
           {...props}
         />
         <label
           htmlFor={inputId}
-          className="text-text-secondary peer-focus:bg-background peer-[:not(:placeholder-shown)]:bg-background pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm transition-all duration-200 peer-focus:top-0 peer-focus:px-1 peer-focus:text-xs peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:px-1 peer-[:not(:placeholder-shown)]:text-xs"
+          className="text-text-secondary peer-focus:bg-surface-primary peer-[:not(:placeholder-shown)]:bg-surface-primary pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm transition-all duration-200 peer-focus:top-0 peer-focus:px-1 peer-focus:text-xs peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:px-1 peer-[:not(:placeholder-shown)]:text-xs"
         >
           {label}
         </label>

@@ -20,13 +20,13 @@ export default function VectorStoreListItem({
       onClick={() => {
         navigate('vs_id_abcdef');
       }}
-      className="mt-2 flex w-100 cursor-pointer flex-row justify-around rounded-md border border-0 bg-white p-4 transition duration-300 ease-in-out hover:bg-slate-200"
+      className="bg-surface-secondary hover:bg-surface-hover mt-2 flex w-100 cursor-pointer flex-row justify-around rounded-md border border-0 p-4 transition duration-300 ease-in-out"
     >
       <div className="flex w-1/2 flex-col justify-around align-middle">
         <strong>{vectorStore.name}</strong>
-        <p className="text-sm text-gray-500">{vectorStore.object}</p>
+        <p className="text-text-tertiary text-sm">{vectorStore.object}</p>
       </div>
-      <div className="w-2/6 text-gray-500">
+      <div className="text-text-tertiary w-2/6">
         <p>
           {localize('com_ui_files_count_size', {
             0: vectorStore.file_counts?.total ?? 0,
@@ -36,11 +36,11 @@ export default function VectorStoreListItem({
         <p className="text-sm">{vectorStore.created_at.toString()}</p>
       </div>
       <div className="flex w-1/6 flex-col justify-around sm:flex-row">
-        <Button className="m-0 w-full content-center bg-transparent p-0 text-gray-500 hover:bg-slate-200 sm:w-min">
-          <DotsIcon className="text-grey-100 m-0 p-0" />
+        <Button className="text-text-tertiary hover:bg-surface-hover m-0 w-full content-center bg-transparent p-0 sm:w-min">
+          <DotsIcon className="text-text-tertiary m-0 p-0" />
         </Button>
         <Button
-          className="m-0 w-full bg-transparent p-0 text-[#666666] hover:bg-slate-200 sm:w-fit"
+          className="text-text-destructive hover:bg-surface-hover m-0 w-full bg-transparent p-0 sm:w-fit"
           onClick={() => deleteVectorStore(vectorStore._id)}
         >
           <TrashIcon className="m-0 p-0" />

@@ -3,6 +3,7 @@ import { useRecoilValue } from 'recoil';
 import * as Ariakit from '@ariakit/react';
 import { Upload, Share2 } from 'lucide-react';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
+import { useGetSharedLinkQuery } from 'librechat-data-provider/react-query';
 import { DropdownPopup, TooltipAnchor, useMediaQuery } from '@librechat/client';
 import type * as t from '~/common';
 import ExportModal from '~/components/Nav/ExportConversation/ExportModal';
@@ -31,10 +32,14 @@ export default function ExportAndShareMenu({
   const conversation = useRecoilValue(store.conversationByIndex(0));
 
   const exportable =
-    conversation &&
+    conversation != null &&
     conversation.conversationId != null &&
     conversation.conversationId !== 'new' &&
     conversation.conversationId !== 'search';
+  const { data: share } = useGetSharedLinkQuery(conversation?.conversationId ?? '', {
+    enabled: exportable && isSharedButtonEnabled,
+  });
+  const hasSharedLink = Boolean(share?.shareId);
 
   if (exportable === false) {
     return null;
@@ -81,18 +86,29 @@ export default function ExportAndShareMenu({
         setIsOpen={setIsPopoverActive}
         trigger={
           <TooltipAnchor
-            description={localize('com_endpoint_export_share')}
+            description={localize(
+              hasSharedLink ? 'com_ui_export_share_link_active' : 'com_endpoint_export_share',
+            )}
             render={
               <Ariakit.MenuButton
                 id="export-menu-button"
-                aria-label="Export options"
-                className="border-border-light bg-presentation text-text-primary hover:bg-surface-tertiary radix-state-open:bg-surface-tertiary inline-flex size-9 flex-shrink-0 items-center justify-center rounded-xl border transition-all ease-in-out disabled:pointer-events-none disabled:opacity-50"
+                aria-label={localize(
+                  hasSharedLink ? 'com_ui_export_share_link_active' : 'com_endpoint_export_share',
+                )}
+                className="border-border-light bg-presentation text-text-primary hover:bg-surface-tertiary radix-state-open:bg-surface-tertiary relative inline-flex size-9 flex-shrink-0 items-center justify-center rounded-xl border transition-all ease-in-out disabled:pointer-events-none disabled:opacity-50"
               >
                 <Share2
                   className="icon-md text-text-primary"
                   aria-hidden="true"
                   focusable="false"
                 />
+                {hasSharedLink && (
+                  <span
+                    className="bg-status-info ring-presentation absolute -top-0.5 -right-0.5 size-2 rounded-full ring-2"
+                    data-testid="header-shared-link-indicator"
+                    aria-hidden="true"
+                  />
+                )}
               </Ariakit.MenuButton>
             }
           />

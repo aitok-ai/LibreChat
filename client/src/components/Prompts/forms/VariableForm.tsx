@@ -145,7 +145,7 @@ export default function VariableForm({
   return (
     <div className="mx-auto p-1 md:container">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="bg-surface-tertiary text-text-secondary dark:bg-surface-primary mb-6 max-h-screen max-w-[80vw] overflow-auto rounded-md p-4 sm:max-w-full md:max-h-96">
+        <div className="bg-surface-tertiary text-text-secondary mb-6 max-h-screen max-w-[80vw] overflow-auto rounded-md p-4 sm:max-w-full md:max-h-96">
           <ReactMarkdown
             /** @ts-ignore */
             remarkPlugins={[supersub, remarkGfm, [remarkMath, { singleDollarTextMath: false }]]}
@@ -157,7 +157,7 @@ export default function VariableForm({
             ]}
             /** @ts-ignore */
             components={{ code: codeNoExecution, p: PromptVariableGfm }}
-            className="markdown prose dark:prose-invert light dark:text-text-secondary my-1 max-h-[50vh] max-w-full break-words"
+            className="markdown prose dark:prose-invert light my-1 max-h-[50vh] max-w-full break-words"
           >
             {generateHighlightedMarkdown()}
           </ReactMarkdown>

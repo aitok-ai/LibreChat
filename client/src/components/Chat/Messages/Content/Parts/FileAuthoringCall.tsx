@@ -204,7 +204,7 @@ export default function FileAuthoringCall({
                 <pre
                   className={cn(
                     'border-border-light max-h-[300px] overflow-auto border-t px-3 py-2.5 font-mono text-xs break-words whitespace-pre-wrap',
-                    hasError ? 'text-red-600 dark:text-red-400' : 'text-text-primary',
+                    hasError ? 'text-status-error' : 'text-text-primary',
                   )}
                 >
                   {output}

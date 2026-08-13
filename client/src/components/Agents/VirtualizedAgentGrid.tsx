@@ -188,7 +188,7 @@ const VirtualizedAgentGrid: React.FC<VirtualizedAgentGridProps> = ({
               aria-live="polite"
               aria-label={localize('com_agents_loading')}
             >
-              <Spinner className="text-primary h-6 w-6" />
+              <Spinner className="text-text-primary h-6 w-6" />
               <span className="sr-only">{localize('com_agents_loading')}</span>
             </div>
           )}
@@ -209,7 +209,7 @@ const VirtualizedAgentGrid: React.FC<VirtualizedAgentGridProps> = ({
   // Simple loading spinner
   const loadingSpinner = (
     <div className="flex justify-center py-12">
-      <Spinner className="text-primary h-8 w-8" />
+      <Spinner className="text-text-primary h-8 w-8" />
     </div>
   );
 

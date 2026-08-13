@@ -1,9 +1,16 @@
 import { useEffect } from 'react';
-import { Search, X } from 'lucide-react';
-import { Dialog, DialogPanel, DialogTitle, Description } from '@headlessui/react';
+import { Search } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { isAgentsEndpoint } from 'librechat-data-provider';
 import { useUpdateUserPluginsMutation } from 'librechat-data-provider/react-query';
+import {
+  Alert,
+  Input,
+  OGDialog,
+  OGDialogTitle,
+  OGDialogContent,
+  OGDialogDescription,
+} from '@librechat/client';
 import type {
   AssistantsEndpoint,
   EModelEndpoint,
@@ -139,59 +146,39 @@ function AssistantToolsDialog({
   ]);
 
   return (
-    <Dialog
+    <OGDialog
       open={isOpen}
-      onClose={() => {
-        setIsOpen(false);
-        setCurrentPage(1);
-        setSearchValue('');
+      onOpenChange={(open) => {
+        if (!open) {
+          setIsOpen(false);
+          setCurrentPage(1);
+          setSearchValue('');
+        }
       }}
-      className="relative z-[102]"
     >
-      {/* The backdrop, rendered as a fixed sibling to the panel container */}
-      <div className="bg-surface-primary fixed inset-0 opacity-60 transition-opacity dark:opacity-80" />
-      {/* Full-screen container to center the panel */}
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel
-          className="bg-surface-secondary relative w-full transform overflow-hidden overflow-y-auto rounded-lg text-left shadow-xl transition-all max-sm:h-full sm:mx-7 sm:my-8 sm:max-w-2xl lg:max-w-5xl xl:max-w-7xl"
-          style={{ minHeight: '610px' }}
-        >
+      <OGDialogContent
+        className="bg-surface-dialog gap-0 overflow-hidden overflow-y-auto p-0 text-left max-sm:h-full sm:mx-7 sm:my-8 sm:max-w-2xl lg:max-w-5xl xl:max-w-7xl"
+        style={{ minHeight: '610px' }}
+      >
+        <div>
           <div className="border-border-medium flex items-center justify-between border-b-[1px] px-4 pt-5 pb-4 sm:p-6">
             <div className="flex items-center">
               <div className="text-center sm:text-left">
-                <DialogTitle className="text-text-primary text-lg leading-6 font-medium">
+                <OGDialogTitle className="text-text-primary text-lg leading-6 font-medium">
                   {isAgentTools
                     ? localize('com_nav_tool_dialog_agents')
                     : localize('com_nav_tool_dialog')}
-                </DialogTitle>
-                <Description className="text-text-secondary text-sm">
+                </OGDialogTitle>
+                <OGDialogDescription className="text-text-secondary text-sm">
                   {localize('com_nav_tool_dialog_description')}
-                </Description>
-              </div>
-            </div>
-            <div>
-              <div className="sm:mt-0">
-                <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    setCurrentPage(1);
-                  }}
-                  className="text-text-secondary hover:text-text-primary inline-block rounded-full transition-colors"
-                  aria-label="Close dialog"
-                  type="button"
-                >
-                  <X aria-hidden="true" />
-                </button>
+                </OGDialogDescription>
               </div>
             </div>
           </div>
           {error && (
-            <div
-              className="relative m-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
-              role="alert"
-            >
+            <Alert variant="error" icon={false} className="m-4">
               {localize('com_nav_plugin_auth_error')} {errorMessage}
-            </div>
+            </Alert>
           )}
           {showPluginAuthForm && (
             <div className="p-4 sm:p-6 sm:pt-4">
@@ -205,12 +192,13 @@ function AssistantToolsDialog({
           <div className="p-4 sm:p-6 sm:pt-4">
             <div className="mt-4 flex flex-col gap-4">
               <div className="flex items-center justify-center space-x-4">
-                <Search className="text-text-tertiary h-6 w-6" />
-                <input
+                <Search className="text-text-tertiary h-6 w-6" aria-hidden="true" />
+                <Input
                   type="text"
                   value={searchValue}
                   onChange={handleSearch}
                   placeholder={localize('com_nav_tool_search')}
+                  aria-label={localize('com_nav_tool_search')}
                   className="border-border-medium text-text-primary w-64 rounded border bg-transparent px-2 py-1 focus:outline-none"
                 />
               </div>
@@ -245,9 +233,9 @@ function AssistantToolsDialog({
               )}
             </div>
           </div>
-        </DialogPanel>
-      </div>
-    </Dialog>
+        </div>
+      </OGDialogContent>
+    </OGDialog>
   );
 }
 

@@ -83,8 +83,8 @@ const DeleteAccount = ({ disabled = false }: { title?: string; disabled?: boolea
               {localize('com_nav_delete_account_confirm')}
             </OGDialogTitle>
           </OGDialogHeader>
-          <div className="mb-8 text-sm text-black dark:text-white">
-            <ul className="font-semibold text-amber-600">
+          <div className="text-text-primary mb-8 text-sm">
+            <ul className="text-text-warning font-semibold">
               <li>{localize('com_nav_delete_warning')}</li>
               <li>{localize('com_nav_delete_data_info')}</li>
             </ul>
@@ -139,16 +139,17 @@ const DeleteAccount = ({ disabled = false }: { title?: string; disabled?: boolea
                     )}
                   </InputOTP>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="link"
                   onClick={() => {
                     setUseBackup(!useBackup);
                     setOtpToken('');
                   }}
-                  className="text-primary text-sm hover:underline"
+                  className="text-text-primary h-auto p-0 text-sm font-normal hover:underline"
                 >
                   {useBackup ? localize('com_ui_use_2fa_code') : localize('com_ui_use_backup_code')}
-                </button>
+                </Button>
               </div>
             )}
             {renderDeleteButton(handleDeleteUser, isDeleting, isLocked || !otpReady, localize)}
@@ -166,9 +167,9 @@ const renderInput = (
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
 ) => (
   <div className="mb-4">
-    <label className="mb-1 block text-sm font-medium text-black dark:text-white" htmlFor={id}>
+    <Label className="mb-1 text-sm font-medium" htmlFor={id}>
       {label}
-    </label>
+    </Label>
     <Input id={id} onChange={onChange} placeholder={value} />
   </div>
 );
@@ -179,10 +180,13 @@ const renderDeleteButton = (
   isLocked: boolean,
   localize: LocalizeFunction,
 ) => (
-  <button
+  <Button
+    variant="destructive"
     className={cn(
-      'bg-surface-tertiary mt-4 flex w-full items-center justify-center rounded-lg px-4 py-2 transition-all duration-200',
-      isLocked ? 'cursor-not-allowed opacity-30' : 'bg-destructive text-destructive-foreground',
+      'bg-surface-tertiary text-text-primary hover:bg-surface-tertiary mt-4 w-full gap-0 transition-all duration-200',
+      isLocked
+        ? 'cursor-not-allowed opacity-30 disabled:opacity-30'
+        : 'bg-surface-destructive hover:bg-surface-destructive-hover text-white disabled:opacity-100',
     )}
     onClick={handleDeleteUser}
     disabled={isDeleting || isLocked}
@@ -206,7 +210,7 @@ const renderDeleteButton = (
         )}
       </>
     )}
-  </button>
+  </Button>
 );
 
 export default DeleteAccount;

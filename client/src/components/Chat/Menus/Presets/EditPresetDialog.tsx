@@ -1,10 +1,11 @@
-import { useRecoilState } from 'recoil';
 import { useCallback, useEffect, useMemo } from 'react';
+import { useRecoilState } from 'recoil';
 import { useQueryClient } from '@tanstack/react-query';
 import { QueryKeys, isAgentsEndpoint } from 'librechat-data-provider';
 import {
   Input,
   Label,
+  Button,
   OGDialog,
   OGDialogTitle,
   SelectDropDown,
@@ -132,7 +133,7 @@ const EditPresetDialog = ({
 
   return (
     <OGDialog open={presetModalVisible} onOpenChange={handleOpenChange} triggerRef={triggerRef}>
-      <OGDialogContent className="dark:bg-gray-850 h-[100dvh] max-h-[100dvh] w-full max-w-full overflow-y-auto bg-white md:h-auto md:max-h-[90vh] md:max-w-[75vw] md:rounded-lg lg:max-w-[950px] dark:border-gray-700 dark:text-gray-300">
+      <OGDialogContent className="bg-surface-dialog h-[100dvh] max-h-[100dvh] w-full max-w-full overflow-y-auto md:h-auto md:max-h-[90vh] md:max-w-[75vw] md:rounded-lg lg:max-w-[950px]">
         <OGDialogTitle>
           {localize('com_ui_edit_preset_title', { title: preset?.title })}
         </OGDialogTitle>
@@ -197,18 +198,12 @@ const EditPresetDialog = ({
 
           {/* Action buttons */}
           <div className="border-border-medium flex justify-end gap-2 border-t pt-2 md:pt-4">
-            <button
-              onClick={exportPreset}
-              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none md:px-4 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-            >
+            <Button variant="outline" onClick={exportPreset}>
               {localize('com_endpoint_export')}
-            </button>
-            <button
-              onClick={submitPreset}
-              className="rounded-md bg-green-500 px-3 py-2 text-sm font-medium text-white hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none md:px-4"
-            >
+            </Button>
+            <Button variant="submit" onClick={submitPreset}>
               {localize('com_ui_save')}
-            </button>
+            </Button>
           </div>
         </div>
       </OGDialogContent>

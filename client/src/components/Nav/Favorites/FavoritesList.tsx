@@ -399,7 +399,7 @@ function FavoritesList({
                 role="button"
                 tabIndex={0}
                 aria-label={localize('com_agents_marketplace')}
-                className="group text-text-primary hover:bg-surface-active-alt relative flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-white"
+                className="group text-text-primary hover:bg-surface-active-alt focus-visible:ring-ring-primary relative flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
                 onClick={handleAgentMarketplace}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

@@ -5,6 +5,7 @@ import { VisuallyHidden } from '@ariakit/react';
 import { Tools } from 'librechat-data-provider';
 import { X, Globe, Newspaper, Image, ChevronDown, File, Download } from 'lucide-react';
 import {
+  Button,
   OGDialog,
   AnimatedTabs,
   OGDialogClose,
@@ -81,7 +82,7 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
               </a>
             }
           />
-          <Ariakit.HovercardDisclosure className="text-text-primary focus:ring-ring absolute right-2 rounded-full focus:ring-2 focus:outline-none">
+          <Ariakit.HovercardDisclosure className="text-text-primary focus:ring-text-primary absolute right-2 rounded-full focus:ring-2 focus:outline-none">
             <VisuallyHidden>
               {localize('com_citation_more_details', { label: domain })}
             </VisuallyHidden>
@@ -319,7 +320,9 @@ const FileItem = React.memo(function FileItem({
             </span>
           )}
         </div>
-        {error && <div className="mt-1 text-xs text-red-500">{getErrorMessage(error)}</div>}
+        {error && (
+          <div className="text-text-destructive mt-1 text-xs">{getErrorMessage(error)}</div>
+        )}
       </button>
     );
   }
@@ -353,7 +356,7 @@ const FileItem = React.memo(function FileItem({
           </span>
         )}
       </div>
-      {error && <div className="mt-1 text-xs text-red-500">{getErrorMessage(error)}</div>}
+      {error && <div className="text-text-destructive mt-1 text-xs">{getErrorMessage(error)}</div>}
     </button>
   );
 });
@@ -422,8 +425,8 @@ const SourcesGroup = React.memo(function SourcesGroup({
             </div>
           </OGDialogTrigger>
         )}
-        <OGDialogContent className="bg-surface-primary flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[600px]">
-          <div className="border-border-light bg-surface-primary sticky top-0 z-10 flex items-center justify-between border-b px-3 py-2">
+        <OGDialogContent className="bg-surface-dialog flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[600px]">
+          <div className="border-border-light bg-surface-dialog sticky top-0 z-10 flex items-center justify-between border-b px-3 py-2">
             <OGDialogTitle className="text-base font-medium">
               {localize('com_sources_title')}
             </OGDialogTitle>
@@ -518,8 +521,8 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
             </div>
           </OGDialogTrigger>
         )}
-        <OGDialogContent className="bg-surface-primary flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[600px]">
-          <div className="border-border-light bg-surface-primary sticky top-0 z-10 flex items-center justify-between border-b px-3 py-2">
+        <OGDialogContent className="bg-surface-dialog flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[600px]">
+          <div className="border-border-light bg-surface-dialog sticky top-0 z-10 flex items-center justify-between border-b px-3 py-2">
             <OGDialogTitle className="text-base font-medium">
               {localize('com_sources_agent_files')}
             </OGDialogTitle>
@@ -723,7 +726,7 @@ function SourcesComponent({ messageId, conversationId }: SourcesProps = {}) {
         containerClassName="flex min-w-full mb-4"
         tabListClassName="flex items-center mb-2 border-b border-border-light overflow-x-auto"
         tabPanelClassName="w-full overflow-x-auto scrollbar-none md:mx-0 md:px-0"
-        tabClassName="flex items-center whitespace-nowrap text-xs font-medium text-token-text-secondary px-1 pt-2 pb-1 border-b-2 border-transparent data-[state=active]:text-text-primary outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        tabClassName="flex items-center whitespace-nowrap text-xs font-medium text-token-text-secondary px-1 pt-2 pb-1 border-b-2 border-transparent data-[state=active]:text-text-primary outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2"
       />
     </div>
   );
@@ -750,13 +753,15 @@ export default function Sources(props: SourcesProps) {
       <div className="text-text-secondary mb-2 text-sm">
         {localize('com_sources_error_fallback')}
       </div>
-      <button
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => window.location.reload()}
-        className="hover:bg-surface-primary-hover bg-surface-primary text-text-primary focus:ring-ring rounded-md px-3 py-1 text-sm focus:ring-2 focus:outline-none"
+        className="bg-surface-primary text-text-primary hover:bg-surface-hover rounded-md px-3 py-1 text-sm"
         aria-label={localize('com_sources_reload_page')}
       >
         {localize('com_ui_refresh')}
-      </button>
+      </Button>
     </div>
   );
 

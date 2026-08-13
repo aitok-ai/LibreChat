@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button, useMediaQuery } from '@librechat/client';
 import { Users, X, ExternalLink } from 'lucide-react';
 import { ResourceType } from 'librechat-data-provider';
+import { Button, useMediaQuery } from '@librechat/client';
 import type { TPrincipal, AccessRoleIds } from 'librechat-data-provider';
 import AccessRolesPicker from '~/components/Sharing/AccessRolesPicker';
 import PrincipalAvatar from '~/components/Sharing/PrincipalAvatar';
@@ -38,7 +38,7 @@ export default function SelectedPrincipalsList({
   if (principles.length === 0) {
     return (
       <div className={`space-y-3 ${className}`}>
-        <div className="border-border-medium text-muted-foreground rounded-lg border border-dashed py-8 text-center">
+        <div className="border-border-medium text-text-secondary rounded-lg border border-dashed py-8 text-center">
           <Users className="mx-auto mb-2 h-8 w-8 opacity-50" aria-hidden="true" />
           <p className="mt-1 text-xs">{localize('com_ui_search_above_to_add_all')}</p>
         </div>
@@ -58,14 +58,14 @@ export default function SelectedPrincipalsList({
           return (
             <div
               key={share.idOnTheSource + '-principalList'}
-              className="bg-surface border-border flex items-center justify-between rounded-2xl border p-3"
+              className="border-border-light flex flex-col gap-3 rounded-xl border bg-transparent p-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <PrincipalAvatar principal={share} size="md" />
 
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{displayName}</div>
-                  <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                  <div className="text-text-secondary flex items-center gap-1 text-xs">
                     <span>{subtitle}</span>
                     {share.source === 'entra' && (
                       <>
@@ -77,7 +77,7 @@ export default function SelectedPrincipalsList({
                 </div>
               </div>
 
-              <div className="flex flex-shrink-0 items-center gap-2">
+              <div className="flex w-full flex-shrink-0 items-center justify-end gap-2 sm:w-auto">
                 {lockOwner ? (
                   <span className="text-text-secondary px-3 py-2 text-sm font-medium">
                     {localize('com_ui_role_owner')}
@@ -99,7 +99,7 @@ export default function SelectedPrincipalsList({
                   <Button
                     variant="outline"
                     onClick={() => onRemoveHandler(share.idOnTheSource!)}
-                    className="hover:border-destructive/10 hover:bg-destructive/10 hover:text-destructive h-9 w-9 p-0"
+                    className="hover:border-status-error-border hover:bg-status-error-subtle hover:text-text-destructive h-9 w-9 p-0"
                     aria-label={localize('com_ui_remove_user', { 0: displayName })}
                   >
                     <X className="h-4 w-4" aria-hidden="true" />

@@ -80,7 +80,7 @@ export default function ActionsAuth({ disableOAuth }: { disableOAuth?: boolean }
         <OGDialogTrigger asChild>
           <button
             type="button"
-            className="group border-border-light hover:bg-surface-secondary focus-visible:ring-ring-primary flex w-full items-center gap-3 rounded-xl border bg-transparent px-3 py-2.5 text-left transition-colors focus:outline-none focus-visible:ring-2"
+            className="group border-border-light hover:bg-surface-secondary focus-visible:ring-text-primary flex w-full items-center gap-3 rounded-xl border bg-transparent px-3 py-2.5 text-left transition-colors focus:outline-none focus-visible:ring-2"
           >
             <current.icon className="text-text-secondary size-5 shrink-0" aria-hidden={true} />
             <span className="min-w-0 flex-1">
@@ -95,7 +95,7 @@ export default function ActionsAuth({ disableOAuth }: { disableOAuth?: boolean }
           </button>
         </OGDialogTrigger>
       </div>
-      <OGDialogContent className="bg-surface-primary text-text-primary w-full max-w-lg">
+      <OGDialogContent className="bg-surface-dialog text-text-primary w-full max-w-lg">
         <OGDialogHeader>
           <OGDialogTitle className="text-lg font-semibold">
             {localize('com_ui_authentication')}

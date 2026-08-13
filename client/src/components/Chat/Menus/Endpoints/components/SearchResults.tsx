@@ -199,7 +199,10 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
                         <span>{modelName}</span>
                       </div>
                       {isGlobal && (
-                        <EarthIcon className="ml-auto size-4 text-green-400" aria-hidden="true" />
+                        <EarthIcon
+                          className="text-accent-primary ml-auto size-4"
+                          aria-hidden="true"
+                        />
                       )}
                       {isModelSelected && (
                         <>
@@ -228,7 +231,7 @@ export function SearchResults({ results, localize, searchValue }: SearchResultsP
                 <div className="flex items-center gap-2">
                   {endpoint.icon && (
                     <div
-                      className="flex items-center justify-center overflow-hidden rounded-full border border-gray-200 p-1 dark:border-gray-700"
+                      className="border-border-light flex items-center justify-center overflow-hidden rounded-full border p-1"
                       style={{ borderRadius: '50%' }}
                     >
                       {endpoint.icon}

@@ -3,9 +3,9 @@ import { useRecoilState } from 'recoil';
 import * as Ariakit from '@ariakit/react';
 import { VisuallyHidden } from '@ariakit/react';
 import { GitFork, InfoIcon } from 'lucide-react';
-import { useToastContext } from '@librechat/client';
 import { ForkOptions } from 'librechat-data-provider';
 import { GitCommit, GitBranchPlus, ListTree } from 'lucide-react';
+import { Button, Label, Checkbox, useToastContext } from '@librechat/client';
 import { TranslationKeys, useLocalize, useNavigateToConvo } from '~/hooks';
 import { useForkConvoMutation } from '~/data-provider';
 import { cn } from '~/utils';
@@ -98,7 +98,7 @@ const PopoverButton: React.FC<PopoverButtonProps> = ({
             </Ariakit.Button>
           }
         />
-        <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-ring rounded-full focus:ring-2 focus:outline-none">
+        <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary rounded-full focus:ring-2 focus:outline-none">
           <VisuallyHidden>
             {localize('com_ui_fork_more_details_about', { 0: label })}
           </VisuallyHidden>
@@ -153,32 +153,32 @@ const CheckboxOption: React.FC<CheckboxOptionProps> = ({
         <Ariakit.HovercardAnchor
           render={
             <div className="flex items-center">
-              <Ariakit.Checkbox
+              <Checkbox
                 id={id}
                 checked={checked}
-                onChange={(e) => {
-                  const value = e.target.checked;
-                  if (value && showToastOnCheck) {
+                onCheckedChange={(value) => {
+                  const isChecked = value === true;
+                  if (isChecked && showToastOnCheck) {
                     showToast({
                       message: localize('com_ui_fork_remember_checked'),
                       status: 'info',
                     });
                   }
-                  onToggle(value);
+                  onToggle(isChecked);
                 }}
-                className="border-primary ring-offset-background focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground h-4 w-4 rounded-sm border transition duration-300 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="transition duration-300 ease-in-out"
                 aria-label={localize(labelKey)}
               />
-              <label
+              <Label
                 htmlFor={id}
-                className="text-text-secondary hover:text-text-primary ml-2 cursor-pointer text-sm select-none"
+                className="text-text-secondary hover:text-text-primary ml-2 w-auto cursor-pointer text-sm break-normal select-none"
               >
                 {localize(labelKey)}
-              </label>
+              </Label>
             </div>
           }
         />
-        <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-ring ml-1 rounded-full focus:ring-2 focus:outline-none">
+        <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary ml-1 rounded-full focus:ring-2 focus:outline-none">
           <VisuallyHidden>{localize(infoKey)}</VisuallyHidden>
           {chevronDown}
         </Ariakit.HovercardDisclosure>
@@ -227,12 +227,12 @@ export default function Fork({
   });
 
   const buttonStyle = cn(
-    'hover-button rounded-lg p-1.5 text-text-secondary-alt',
+    'hover-button size-auto rounded-lg p-1.5 text-text-secondary-alt',
     'hover:text-text-primary hover:bg-surface-hover',
     'group-hover:visible group-focus-within:visible group-[.final-completion]:visible',
     !isLast &&
       'group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:hover)]:opacity-0',
-    'focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white focus-visible:outline-none',
+    'focus-visible:ring-2 focus-visible:ring-text-primary focus-visible:outline-none',
     isActive && 'active text-text-primary bg-surface-hover',
   );
 
@@ -330,7 +330,9 @@ export default function Fork({
       <Ariakit.PopoverAnchor
         store={popoverStore}
         render={
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             className={buttonStyle}
             onClick={(e) => {
               if (rememberGlobal) {
@@ -351,7 +353,7 @@ export default function Fork({
             aria-label={localize('com_ui_fork_open_menu')}
           >
             <GitFork size="19" aria-hidden="true" />
-          </button>
+          </Button>
         }
       />
       <Ariakit.Popover
@@ -381,7 +383,7 @@ export default function Fork({
                   </button>
                 }
               />
-              <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-ring rounded-full focus:ring-2 focus:outline-none">
+              <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary rounded-full focus:ring-2 focus:outline-none">
                 <VisuallyHidden>{localize('com_ui_fork_more_info_options')}</VisuallyHidden>
                 {chevronDown}
               </Ariakit.HovercardDisclosure>

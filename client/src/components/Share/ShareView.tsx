@@ -9,6 +9,7 @@ import {
   Spinner,
   Button,
   OGDialog,
+  Separator,
   ThemeContext,
   OGDialogTitle,
   useMediaQuery,
@@ -39,7 +40,7 @@ function SharedView() {
   const { theme, setTheme } = useContext(ThemeContext);
   const { shareId } = useParams();
   const { data: config } = useGetSharedStartupConfig(shareId);
-  const { data, isLoading } = useGetSharedMessages(shareId ?? '');
+  const { data, isLoading, refetch } = useGetSharedMessages(shareId ?? '');
   const dataTree = data && buildTree({ messages: data.messages });
   const messagesTree = dataTree?.length === 0 ? null : (dataTree ?? null);
 
@@ -56,6 +57,14 @@ function SharedView() {
        *  routes them through login (with a redirect back to this share), so a
        *  generic error toast would be misleading noise before the redirect. */
       if (status === 401) {
+        return;
+      }
+      /** A 409 means the owner republished the link between the load and the
+       *  request, so the payload this fork was aimed at no longer exists. Pull
+       *  the current version in so a retry continues what is on screen. */
+      if (status === 409) {
+        void refetch();
+        showToast({ message: localize('com_ui_shared_link_updated'), status: 'warning' });
         return;
       }
       showToast({
@@ -101,8 +110,12 @@ function SharedView() {
     if (shareId == null || shareId === '') {
       return;
     }
-    forkSharedConvo({ shareId, targetMessageIndex: getActiveTargetIndex() });
-  }, [shareId, forkSharedConvo, getActiveTargetIndex]);
+    forkSharedConvo({
+      shareId,
+      targetMessageIndex: getActiveTargetIndex(),
+      shareRevision: data?.updatedAt,
+    });
+  }, [shareId, forkSharedConvo, getActiveTargetIndex, data?.updatedAt]);
 
   // configure document title
   let docTitle = '';
@@ -219,7 +232,7 @@ function SharedView() {
   );
 
   const mainContent = (
-    <div className="transition-width dark:bg-surface-secondary relative flex h-full w-full flex-1 flex-col items-stretch overflow-hidden pt-0">
+    <div className="transition-width bg-surface-secondary relative flex h-full w-full flex-1 flex-col items-stretch overflow-hidden pt-0">
       <div className="text-text-primary relative flex h-full min-h-0 flex-col" role="presentation">
         {content}
         {footer}
@@ -289,7 +302,7 @@ function ShareHeader({
 
   return (
     <section className="mx-auto w-full px-2 pt-4 pb-3 md:px-5 md:pt-6 md:pb-4">
-      <div className="bg-surface-primary/80 border-border-light relative mx-auto flex w-full max-w-[60rem] flex-col gap-3 rounded-2xl border px-4 py-4 shadow-xl backdrop-blur md:gap-4 md:rounded-3xl md:px-6 md:py-5">
+      <div className="border-border-light bg-surface-primary/80 relative mx-auto flex w-full max-w-[60rem] flex-col gap-3 rounded-2xl border px-4 py-4 shadow-xl backdrop-blur md:gap-4 md:rounded-3xl md:px-6 md:py-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0 space-y-1.5 md:space-y-2">
             <h1 className="text-text-primary line-clamp-2 text-2xl font-semibold break-words md:text-4xl">
@@ -354,7 +367,7 @@ function ShareHeader({
                     onChange={onThemeChange}
                     popoverClassName="z-[150]"
                   />
-                  <div className="bg-border-medium/60 h-px w-full" />
+                  <Separator orientation="horizontal" className="bg-border-medium/60" />
                   <LangSelector
                     langcode={langcode}
                     onChange={onLangChange}

@@ -1,4 +1,4 @@
-import { TooltipAnchor } from '@librechat/client';
+import { Button, TooltipAnchor } from '@librechat/client';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '~/utils';
 
@@ -8,7 +8,7 @@ interface OptionToggleProps {
   label: string;
   /** Defaults to `label` (bulk toggles use the same text for both). */
   tooltip?: string;
-  /** Text color applied when pressed (e.g. `text-amber-500`). */
+  /** Text color applied directly to the icon when pressed. */
   activeClass: string;
   onToggle: () => void;
   size?: 'sm' | 'md';
@@ -40,25 +40,23 @@ export default function OptionToggle({
       description={tooltip ?? label}
       side="top"
       render={
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={disabled ? undefined : onToggle}
           aria-pressed={pressed}
           aria-label={label}
           aria-disabled={disabled || undefined}
           className={cn(
-            'focus-visible:ring-ring-primary flex items-center justify-center rounded-md transition-colors focus:outline-none focus-visible:ring-2',
+            'rounded-md',
             size === 'sm' ? 'size-6' : 'size-7',
             disabled
-              ? 'text-text-tertiary cursor-not-allowed opacity-60'
-              : cn(
-                  'hover:bg-surface-hover',
-                  pressed ? activeClass : 'text-text-secondary hover:text-text-primary',
-                ),
+              ? 'text-text-tertiary hover:text-text-tertiary cursor-not-allowed opacity-60 hover:bg-transparent'
+              : 'text-text-secondary hover:bg-surface-hover hover:text-text-secondary',
           )}
         >
-          <Icon className="size-4" aria-hidden="true" />
-        </button>
+          <Icon className={cn('size-4', pressed && activeClass)} aria-hidden="true" />
+        </Button>
       }
     />
   );

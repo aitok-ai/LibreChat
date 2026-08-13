@@ -1,4 +1,6 @@
 import React, { Component, ReactNode } from 'react';
+import { Button } from '@librechat/client';
+import { useLocalize } from '~/hooks';
 
 interface Props {
   children: ReactNode;
@@ -9,6 +11,28 @@ interface Props {
 
 interface State {
   hasError: boolean;
+}
+
+function DefaultFallback() {
+  const localize = useLocalize();
+  return (
+    <div
+      className="border-border-medium bg-surface-secondary flex flex-col items-center justify-center rounded-lg border p-4 text-center"
+      role="alert"
+      aria-live="polite"
+    >
+      {/* eslint-disable-next-line i18next/no-literal-string */}
+      <div className="text-text-secondary mb-2 text-sm">Sources temporarily unavailable</div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => window.location.reload()}
+        aria-label={localize('com_ui_reload_page')}
+      >
+        {localize('com_ui_refresh')}
+      </Button>
+    </div>
+  );
 }
 
 class SourcesErrorBoundary extends Component<Props, State> {
@@ -30,25 +54,7 @@ class SourcesErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      // Default simple error UI (using localized strings from Sources.tsx fallback)
-      /* eslint-disable i18next/no-literal-string */
-      return (
-        <div
-          className="border-border-medium bg-surface-secondary flex flex-col items-center justify-center rounded-lg border p-4 text-center"
-          role="alert"
-          aria-live="polite"
-        >
-          <div className="text-text-secondary mb-2 text-sm">Sources temporarily unavailable</div>
-          <button
-            onClick={() => window.location.reload()}
-            className="hover:bg-surface-primary-hover bg-surface-primary text-text-primary focus:ring-ring rounded-md px-3 py-1 text-sm focus:ring-2 focus:outline-none"
-            aria-label="Reload the page"
-          >
-            Refresh
-          </button>
-        </div>
-      );
-      /* eslint-enable i18next/no-literal-string */
+      return <DefaultFallback />;
     }
 
     return this.props.children;

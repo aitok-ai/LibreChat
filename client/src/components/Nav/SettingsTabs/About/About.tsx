@@ -98,19 +98,18 @@ function About() {
         />
       </dl>
 
-      <div className="border-border-light mt-4 flex flex-col items-start gap-3 border-t pt-4">
-        <p className="text-text-secondary text-xs">
+      <div className="border-border-light mt-4 flex flex-col items-start gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <p className="text-text-secondary min-w-0 flex-1 text-xs">
           {localize('com_nav_about_diagnostics_description')}
         </p>
         <CopyButton
           isCopied={isCopied}
           onClick={handleCopy}
           label={localize('com_nav_about_diagnostics_copy')}
-          copiedLabel={localize('com_nav_about_diagnostics_copied')}
-          className="border-border-light bg-surface-secondary text-text-primary hover:bg-surface-tertiary ml-0 gap-2 self-start rounded-lg border px-3 py-1.5 text-xs font-medium"
+          className="border-border-light bg-surface-secondary text-text-primary hover:bg-surface-tertiary ml-0 shrink-0 gap-2 self-start rounded-lg border px-3 py-1.5 text-xs font-medium sm:self-auto"
         />
         <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-          {isCopied ? localize('com_nav_about_diagnostics_copied') : ''}
+          {isCopied ? localize('com_ui_copied') : ''}
         </span>
       </div>
     </div>

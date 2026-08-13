@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import copy from 'copy-to-clipboard';
+import { Button } from '@librechat/client';
 import CopyButton from '~/components/Messages/Content/CopyButton';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
@@ -124,7 +125,7 @@ export default function OutputRenderer({ text }: OutputRendererProps) {
         <pre
           className={cn(
             'max-h-[300px] overflow-auto text-xs break-words whitespace-pre-wrap',
-            error && 'font-mono text-red-600 dark:text-red-400',
+            error && 'text-status-error font-mono',
             !error && structured && 'text-text-secondary font-mono',
             !error && !structured && 'text-text-primary font-sans text-sm',
           )}
@@ -141,25 +142,27 @@ export default function OutputRenderer({ text }: OutputRendererProps) {
         />
       </div>
       {needsTruncation && (
-        <button
-          type="button"
-          className="text-text-secondary focus-visible:ring-border-heavy mt-1 text-xs underline focus-visible:ring-2 focus-visible:outline-none"
+        <Button
+          variant="link"
+          size="sm"
+          className="text-text-secondary focus-visible:ring-border-heavy mt-1 h-auto p-0 text-xs underline focus-visible:ring-2 focus-visible:outline-none"
           onClick={() => setIsExpanded((prev) => !prev)}
         >
           {isExpanded ? localize('com_ui_show_less') : localize('com_ui_show_more')}
-        </button>
+        </Button>
       )}
       {error && rawError && rawError !== displayText && (
-        <button
-          type="button"
-          className="text-text-secondary focus-visible:ring-border-heavy mt-1 block text-xs underline focus-visible:ring-2 focus-visible:outline-none"
+        <Button
+          variant="link"
+          size="sm"
+          className="text-text-secondary focus-visible:ring-border-heavy mt-1 block h-auto p-0 text-xs underline focus-visible:ring-2 focus-visible:outline-none"
           onClick={() => setShowErrorDetails((prev) => !prev)}
         >
           {localize('com_ui_details')}
-        </button>
+        </Button>
       )}
       {showErrorDetails && rawError && (
-        <pre className="mt-2 max-h-[200px] overflow-auto font-mono text-xs break-words whitespace-pre-wrap text-red-600 dark:text-red-400">
+        <pre className="text-status-error mt-2 max-h-[200px] overflow-auto font-mono text-xs break-words whitespace-pre-wrap">
           {rawError}
         </pre>
       )}

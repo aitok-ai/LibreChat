@@ -82,7 +82,7 @@ function Avatar({ avatar }: { avatar: AgentAvatar | null }) {
       trigger={
         <button
           type="button"
-          className="focus-visible:ring-ring h-14 w-14 overflow-hidden rounded-full ring-offset-0 transition-shadow outline-none focus:outline-none focus-visible:ring-2"
+          className="focus-visible:ring-text-primary h-14 w-14 overflow-hidden rounded-full ring-offset-0 transition-shadow outline-none focus:outline-none focus-visible:ring-2"
           aria-label={localize('com_ui_upload_agent_avatar_label')}
         >
           <span

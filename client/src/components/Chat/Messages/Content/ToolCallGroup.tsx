@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { useRecoilValue } from 'recoil';
+import { Button } from '@librechat/client';
 import { ChevronDown, MessageCircleQuestion, Users } from 'lucide-react';
 import { Tools, Constants, ContentTypes, ToolCallTypes } from 'librechat-data-provider';
 import type {
@@ -9,8 +10,8 @@ import type {
   FunctionToolCall,
 } from 'librechat-data-provider';
 import type { PartWithIndex } from './ParallelContent';
+import { cn, getToolDisplayLabel, getBatchActivityLabelPart, getActivityLabelText } from '~/utils';
 import { useLocalize, useExpandCollapse, scheduleMessageContentLayoutReconcile } from '~/hooks';
-import { cn, getToolDisplayLabel, getActivityLabelPart, getActivityLabelText } from '~/utils';
 import { useMCPIconMap, useMCPServerNames } from '~/hooks/MCP';
 import { isBashProgrammaticToolCall } from './routing';
 import { ASK_USER_QUESTION } from '~/utils/approval';
@@ -151,7 +152,7 @@ export default function ToolCallGroup({
     () => parts.some(({ part }) => hasPendingApprovalInPart(part)),
     [parts],
   );
-  const activityLabel = getActivityLabelPart(labelPart?.part);
+  const activityLabel = getBatchActivityLabelPart(labelPart?.part);
   const activityLabelText = getActivityLabelText(activityLabel);
   const activityFailed = activityLabel?.status === 'failed' || activityLabel?.status === 'partial';
   /** A settled, filled label is itself a completion proof: the PostToolBatch
@@ -344,9 +345,10 @@ export default function ToolCallGroup({
 
   return (
     <div className="mt-1 mb-2" ref={rootRef}>
-      <button
+      <Button
+        variant="ghost"
         type="button"
-        className="text-text-secondary focus-visible:ring-border-heavy inline-flex w-full items-center gap-2 py-1 focus-visible:ring-2 focus-visible:outline-none"
+        className="text-text-secondary hover:text-text-secondary focus-visible:ring-border-heavy inline-flex h-auto w-full items-center justify-start gap-2 rounded-none bg-transparent p-0 py-1 hover:bg-transparent focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:outline-none"
         onClick={handleToggle}
         aria-expanded={isExpanded}
         aria-label={groupLabel}
@@ -360,7 +362,7 @@ export default function ToolCallGroup({
           <div
             className={cn(
               'text-text-secondary flex h-5 w-5 shrink-0 items-center justify-center',
-              !allCompleted && isSubmitting && 'text-primary animate-pulse',
+              !allCompleted && isSubmitting && 'text-text-primary animate-pulse',
             )}
             aria-hidden="true"
           >
@@ -399,7 +401,7 @@ export default function ToolCallGroup({
           )}
           aria-hidden="true"
         />
-      </button>
+      </Button>
       <div
         style={expandStyle}
         onTransitionEnd={handleTransitionEnd}

@@ -79,11 +79,11 @@ const Radio: React.NamedExoticComponent<RadioProps> = memo(function Radio({
   if (options.length === 0) {
     return (
       <div
-        className="bg-muted relative inline-flex items-center rounded-lg p-1 opacity-50"
+        className="bg-surface-tertiary relative inline-flex items-center rounded-lg p-1 opacity-50"
         role="radiogroup"
         aria-labelledby={ariaLabelledBy}
       >
-        <span className="text-muted-foreground px-4 py-2 text-xs">
+        <span className="text-text-secondary px-4 py-2 text-xs">
           {localize('com_ui_no_options')}
         </span>
       </div>
@@ -95,13 +95,13 @@ const Radio: React.NamedExoticComponent<RadioProps> = memo(function Radio({
   return (
     <div
       ref={containerRef}
-      className={`relative ${fullWidth ? 'flex' : 'inline-flex'} bg-muted items-center rounded-lg px-1 ${className}`}
+      className={`relative ${fullWidth ? 'flex' : 'inline-flex'} bg-surface-tertiary items-center rounded-lg px-1 ${className}`}
       role="radiogroup"
       aria-labelledby={ariaLabelledBy}
     >
       {selectedIndex >= 0 && isMounted && (
         <div
-          className="border-border bg-background pointer-events-none absolute inset-y-1 left-0 rounded-md border shadow-sm transition-all duration-300 ease-out"
+          className="border-border-light bg-surface-primary pointer-events-none absolute inset-y-1 left-0 rounded-md border shadow-sm transition-all duration-300 ease-out"
           style={backgroundStyle}
         />
       )}
@@ -116,7 +116,7 @@ const Radio: React.NamedExoticComponent<RadioProps> = memo(function Radio({
           aria-checked={currentValue === option.value}
           onClick={() => handleChange(option.value)}
           disabled={disabled}
-          className={`focus-visible:ring-ring relative z-10 flex h-[34px] items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none ${
+          className={`focus-visible:ring-text-primary relative z-10 flex h-[34px] items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none ${
             currentValue === option.value ? 'text-text-primary' : 'text-text-secondary'
           } ${disabled ? 'cursor-not-allowed opacity-50' : ''} ${fullWidth ? 'flex-1' : ''} ${buttonClassName}`}
         >

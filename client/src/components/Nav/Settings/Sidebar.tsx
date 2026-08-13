@@ -45,14 +45,14 @@ export default function Sidebar({
           }}
           placeholder={localize('com_ui_settings_search_placeholder')}
           aria-label={localize('com_ui_settings_search_placeholder')}
-          className="bg-surface-secondary text-text-primary focus:ring-border-xheavy w-full rounded-lg py-2 pr-8 pl-8 text-sm focus:ring-2 focus:outline-none"
+          className="bg-surface-secondary text-text-primary w-full rounded-lg py-2 pr-8 pl-8 text-sm focus-visible:outline-none"
         />
         {query.length > 0 && (
           <button
             type="button"
             onClick={() => onQueryChange('')}
             aria-label={localize('com_ui_clear_search')}
-            className="text-text-secondary hover:bg-surface-hover hover:text-text-primary focus:ring-border-xheavy absolute top-1/2 right-1.5 -translate-y-1/2 rounded-md p-1 transition-colors focus:ring-2 focus:outline-none"
+            className="text-text-secondary hover:bg-surface-hover hover:text-text-primary focus-visible:ring-text-primary absolute top-1/2 right-1.5 -translate-y-1/2 rounded-md p-1 transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -69,7 +69,7 @@ export default function Sidebar({
               value={tab.id}
               onClick={() => onSelectTab(tab.id)}
               className={cn(
-                'text-text-secondary hover:bg-surface-hover flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm transition-colors md:py-2',
+                'text-text-secondary hover:bg-surface-hover hover:text-text-primary focus-visible:ring-text-primary flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset md:py-2',
                 'radix-state-active:bg-surface-tertiary radix-state-active:text-text-primary',
               )}
             >

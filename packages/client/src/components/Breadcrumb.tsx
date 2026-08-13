@@ -24,7 +24,7 @@ const BreadcrumbList: React.ForwardRefExoticComponent<
     <ol
       ref={ref}
       className={cn(
-        'text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5',
+        'text-text-secondary flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5',
         className,
       )}
       {...props}
@@ -61,7 +61,7 @@ const BreadcrumbLink: React.ForwardRefExoticComponent<
   return (
     <Comp
       ref={ref}
-      className={cn('hover:text-foreground transition-colors', className)}
+      className={cn('hover:text-text-primary transition-colors', className)}
       {...props}
     />
   );
@@ -78,7 +78,7 @@ const BreadcrumbPage: React.ForwardRefExoticComponent<
       role="link"
       aria-disabled="true"
       aria-current="page"
-      className={cn('text-foreground font-normal', className)}
+      className={cn('text-text-primary font-normal', className)}
       {...props}
     />
   ),

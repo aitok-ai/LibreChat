@@ -144,7 +144,7 @@ const SkillContentEditor: React.FC<SkillContentEditorProps> = ({
           }
         />
         {errors[name] && (
-          <p className="mt-1 text-sm text-red-500" role="alert">
+          <p className="text-text-destructive mt-1 text-sm" role="alert">
             {errors[name]?.message as string}
           </p>
         )}

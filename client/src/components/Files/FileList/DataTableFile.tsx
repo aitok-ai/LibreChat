@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { ListFilter } from 'lucide-react';
 import { useSetRecoilState } from 'recoil';
+import { FileContext } from 'librechat-data-provider';
 import {
   flexRender,
   getCoreRowModel,
@@ -9,13 +10,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import type {
-  ColumnDef,
-  SortingState,
-  VisibilityState,
-  ColumnFiltersState,
-} from '@tanstack/react-table';
-import { FileContext } from 'librechat-data-provider';
 import {
   Input,
   Table,
@@ -32,6 +26,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from '@librechat/client';
+import type {
+  ColumnDef,
+  SortingState,
+  VisibilityState,
+  ColumnFiltersState,
+} from '@tanstack/react-table';
 import type { TFile } from 'librechat-data-provider';
 import type { AugmentedColumnDef } from '~/common';
 import ActionButton from '~/components/Files/ActionButton';
@@ -111,13 +111,13 @@ export default function DataTableFile<TData, TValue>({
                 deleteFiles({ files: filesToDelete as TFile[], setFiles });
                 setRowSelection({});
               }}
-              className="dark:hover:bg-gray-850/25 ml-1 gap-2 sm:ml-0"
+              className="hover:bg-surface-hover ml-1 gap-2 sm:ml-0"
               disabled={!table.getFilteredSelectedRowModel().rows.length || isDeleting}
             >
               {isDeleting ? (
                 <Spinner className="h-4 w-4" />
               ) : (
-                <TrashIcon className="h-4 w-4 text-red-400" />
+                <TrashIcon className="text-text-destructive h-4 w-4" />
               )}
               {localize('com_ui_delete')}
             </Button>
@@ -132,7 +132,7 @@ export default function DataTableFile<TData, TValue>({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="dark:bg-gray-850 z-[1001] dark:border-gray-700"
+                className="border-border-light bg-surface-dialog z-[1001]"
               >
                 {table
                   .getAllColumns()
@@ -141,7 +141,7 @@ export default function DataTableFile<TData, TValue>({
                     return (
                       <DropdownMenuCheckboxItem
                         key={column.id}
-                        className="cursor-pointer capitalize dark:text-white dark:hover:bg-gray-800"
+                        className="text-text-primary hover:bg-surface-hover cursor-pointer capitalize"
                         checked={column.getIsVisible()}
                         onCheckedChange={(value) => column.toggleVisibility(Boolean(value))}
                       >
@@ -161,7 +161,7 @@ export default function DataTableFile<TData, TValue>({
           </div>
         </div>
       </div>
-      <div className="relative mt-3 max-h-[25rem] min-h-0 overflow-y-auto rounded-md border border-black/10 pb-4 sm:min-h-[28rem] dark:border-white/10">
+      <div className="border-border-light relative mt-3 max-h-[25rem] min-h-0 overflow-y-auto rounded-md border pb-4 sm:min-h-[28rem]">
         <Table className="w-full min-w-[600px] border-separate border-spacing-0">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -192,7 +192,7 @@ export default function DataTableFile<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 sm:px-4 sm:py-2 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100"
+                      className="align-start border-border-light bg-surface-secondary text-text-secondary sticky top-0 rounded-t border-b px-2 py-1 text-left font-medium sm:px-4 sm:py-2"
                       style={style}
                     >
                       {header.isPlaceholder
@@ -210,7 +210,7 @@ export default function DataTableFile<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="border-b border-black/10 text-left text-gray-600 dark:border-white/10 dark:text-gray-300 [tr:last-child_&]:border-b-0"
+                  className="border-border-light text-text-secondary border-b text-left [tr:last-child_&]:border-b-0"
                 >
                   {row.getVisibleCells().map((cell, index) => {
                     const maxWidth =
@@ -247,14 +247,14 @@ export default function DataTableFile<TData, TValue>({
         </Table>
       </div>
       <div className="mt-4 mr-4 ml-4 flex h-auto items-center justify-end space-x-2 py-4 sm:mr-0 sm:ml-0 sm:h-0">
-        <div className="text-muted-foreground ml-2 flex-1 text-sm">
+        <div className="text-text-secondary ml-2 flex-1 text-sm">
           {localize('com_files_number_selected', {
             0: `${table.getFilteredSelectedRowModel().rows.length}`,
             1: `${table.getFilteredRowModel().rows.length}`,
           })}
         </div>
         <Button
-          className="dark:border-gray-500 dark:hover:bg-gray-600"
+          className="border-border-medium hover:bg-surface-hover"
           variant="outline"
           size="sm"
           onClick={() => table.previousPage()}
@@ -263,7 +263,7 @@ export default function DataTableFile<TData, TValue>({
           {localize('com_ui_prev')}
         </Button>
         <Button
-          className="dark:border-gray-500 dark:hover:bg-gray-600"
+          className="border-border-medium hover:bg-surface-hover"
           variant="outline"
           size="sm"
           onClick={() => table.nextPage()}

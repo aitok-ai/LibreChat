@@ -45,7 +45,7 @@ const TableFooter: React.ForwardRefExoticComponent<
   ({ className, ...props }, ref) => (
     <tfoot
       ref={ref}
-      className={cn('bg-muted/50 border-t font-medium [&>tr]:last:border-b-0', className)}
+      className={cn('bg-surface-tertiary border-t font-medium [&>tr]:last:border-b-0', className)}
       {...props}
     />
   ),
@@ -59,7 +59,7 @@ const TableRow: React.ForwardRefExoticComponent<
     <tr
       ref={ref}
       className={cn(
-        'border-border-light hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors',
+        'border-border-light hover:bg-surface-tertiary data-[state=selected]:bg-surface-tertiary border-b transition-colors',
         className,
       )}
       {...props}
@@ -75,7 +75,7 @@ const TableHead: React.ForwardRefExoticComponent<
     <th
       ref={ref}
       className={cn(
-        'text-muted-foreground h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0',
+        'text-text-secondary h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0',
         className,
       )}
       {...props}
@@ -118,7 +118,7 @@ const TableCaption: React.ForwardRefExoticComponent<
   React.HTMLAttributes<HTMLTableCaptionElement> & React.RefAttributes<HTMLTableCaptionElement>
 > = React.forwardRef<HTMLTableCaptionElement, React.HTMLAttributes<HTMLTableCaptionElement>>(
   ({ className, ...props }, ref) => (
-    <caption ref={ref} className={cn('text-muted-foreground mt-4 text-sm', className)} {...props} />
+    <caption ref={ref} className={cn('text-text-secondary mt-4 text-sm', className)} {...props} />
   ),
 );
 TableCaption.displayName = 'TableCaption';

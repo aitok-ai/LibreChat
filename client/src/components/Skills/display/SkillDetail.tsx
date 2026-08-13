@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { TooltipAnchor } from '@librechat/client';
+import { Button, TooltipAnchor } from '@librechat/client';
 import { Eye, Code, User, Calendar, EarthIcon, ScrollText } from 'lucide-react';
 import type { TSkill } from 'librechat-data-provider';
 import { useLocalize, useAuthContext, useSkillPermissions, useSkillActiveState } from '~/hooks';
@@ -107,7 +107,7 @@ export default function SkillDetail({ skill, onEdit, onDelete }: SkillDetailProp
                     side="top"
                     render={
                       <EarthIcon
-                        className="size-5 shrink-0 text-green-400"
+                        className="text-accent-primary size-5 shrink-0"
                         aria-label={localize('com_ui_skill_sr_public')}
                       />
                     }
@@ -139,13 +139,14 @@ export default function SkillDetail({ skill, onEdit, onDelete }: SkillDetailProp
           />
           <ShareSkill skill={skill} />
           {permissions.canEdit && onEdit && (
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={onEdit}
-              className="border-border-medium text-text-primary hover:bg-surface-hover inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-semibold transition-colors"
+              className="border-border-medium h-9 rounded-md px-3 text-xs font-semibold"
             >
               {localize('com_ui_edit')}
-            </button>
+            </Button>
           )}
           {permissions.canDelete && onDelete && (
             <DeleteSkill skillId={skill._id} skillName={skill.name} onDelete={onDelete} />

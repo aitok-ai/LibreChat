@@ -86,7 +86,7 @@ export interface SharedLinksListParams {
 export type SharedLinkItem = {
   shareId: string;
   title: string;
-  createdAt: Date;
+  createdAt: string;
   conversationId: string;
 };
 

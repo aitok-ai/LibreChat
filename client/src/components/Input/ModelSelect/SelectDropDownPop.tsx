@@ -68,17 +68,15 @@ function SelectDropDownPop({
             <button
               data-testid="select-dropdown-button"
               className={cn(
-                'pointer-cursor relative flex flex-col rounded-lg border border-black/10 bg-white py-2 pr-10 pl-3 text-left focus:ring-0 focus:ring-offset-0 sm:text-sm dark:border-gray-700 dark:bg-gray-800',
-                'radix-state-open:bg-gray-50 dark:radix-state-open:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700',
+                'pointer-cursor border-border-light bg-surface-secondary relative flex flex-col rounded-lg border py-2 pr-10 pl-3 text-left focus:ring-0 focus:ring-offset-0 sm:text-sm',
+                'hover:bg-surface-hover radix-state-open:bg-surface-hover',
                 'max-w-[215px] min-w-[200px] sm:max-w-full sm:min-w-full',
               )}
-              aria-label={`Select ${title}`}
+              aria-label={localize('com_ui_select_var', { 0: title })}
               aria-haspopup="false"
             >
               {' '}
-              {showLabel && (
-                <label className="block text-xs text-gray-700 dark:text-gray-500">{title}</label>
-              )}
+              {showLabel && <label className="text-text-secondary block text-xs">{title}</label>}
               <span className="inline-flex w-full">
                 <span
                   className={cn(
@@ -98,7 +96,7 @@ function SelectDropDownPop({
                   viewBox="0 0 24 24"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="h-4 w-4 text-gray-400"
+                  className="text-text-tertiary h-4 w-4"
                   height="1em"
                   width="1em"
                   xmlns="http://www.w3.org/2000/svg"
@@ -114,7 +112,7 @@ function SelectDropDownPop({
               side="bottom"
               align="start"
               className={cn(
-                'z-50 mt-2 mr-3 max-h-[52vh] w-full max-w-[85vw] overflow-hidden overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg sm:max-w-full lg:max-h-[52vh] dark:border-gray-700 dark:bg-gray-700 dark:text-white',
+                'border-border-light bg-surface-secondary z-50 mt-2 mr-3 max-h-[52vh] w-full max-w-[85vw] overflow-hidden overflow-y-auto rounded-lg border shadow-lg sm:max-w-full lg:max-h-[52vh]',
                 hasSearchRender && 'relative',
               )}
             >

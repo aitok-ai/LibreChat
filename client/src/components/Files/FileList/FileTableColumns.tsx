@@ -81,7 +81,7 @@ export const fileTableColumns: ColumnDef<TFileWithVectors>[] = [
               return (
                 <span
                   key={index}
-                  className="mt-2 ml-2 flex w-fit flex-row items-center rounded-full bg-[#f5f5f5] px-2 text-gray-500"
+                  className="bg-surface-tertiary text-text-tertiary mt-2 ml-2 flex w-fit flex-row items-center rounded-full px-2"
                 >
                   <PlusIcon className="h-3 w-3" />
                   &nbsp;
@@ -120,8 +120,8 @@ export const fileTableColumns: ColumnDef<TFileWithVectors>[] = [
     cell: () => {
       return (
         <>
-          <Button className="w-min content-center bg-transparent text-gray-500 hover:bg-slate-200">
-            <DotsIcon className="text-grey-100 m-0 size-5 p-0" />
+          <Button className="text-text-tertiary hover:bg-surface-hover w-min content-center bg-transparent">
+            <DotsIcon className="text-text-tertiary m-0 size-5 p-0" />
           </Button>
         </>
       );

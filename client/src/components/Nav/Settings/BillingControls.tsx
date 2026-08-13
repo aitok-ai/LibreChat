@@ -46,7 +46,9 @@ export function AutoRefill() {
 
   if (!hasValidRefillSettings) {
     return (
-      <div className="text-sm text-red-500">{localize('com_nav_balance_auto_refill_error')}</div>
+      <div className="text-text-destructive text-sm">
+        {localize('com_nav_balance_auto_refill_error')}
+      </div>
     );
   }
 

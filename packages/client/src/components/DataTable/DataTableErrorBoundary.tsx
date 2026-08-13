@@ -73,7 +73,7 @@ class DataTableErrorBoundaryInner extends Component<
             aria-labelledby="datatable-error-title"
             aria-describedby="datatable-error-desc"
             tabIndex={-1}
-            className="before:bg-surface-destructive/80 border-border-light bg-surface-primary-alt focus:ring-ring dark:border-border-medium dark:bg-surface-secondary relative w-full max-w-md overflow-hidden rounded-lg border p-6 shadow-sm outline-none before:absolute before:top-0 before:left-0 before:h-full before:w-1 focus:ring-2 focus:ring-offset-2"
+            className="border-border-light bg-surface-primary-alt before:bg-surface-destructive/80 focus:ring-text-primary relative w-full max-w-md overflow-hidden rounded-lg border p-6 shadow-sm outline-none before:absolute before:top-0 before:left-0 before:h-full before:w-1 focus:ring-2 focus:ring-offset-2"
           >
             <div className="flex items-center gap-2">
               <RefreshCw className="text-surface-destructive h-4 w-4" />
@@ -98,7 +98,7 @@ class DataTableErrorBoundaryInner extends Component<
           </div>
 
           {import.meta.env.MODE === 'development' && this.state.error && (
-            <details className="bg-surface-secondary dark:bg-surface-tertiary mt-4 max-w-md rounded-md p-3 text-xs">
+            <details className="bg-surface-secondary mt-4 max-w-md rounded-md p-3 text-xs">
               <summary className="text-text-primary cursor-pointer font-medium">
                 {this.props.localize('com_ui_error_details')}
               </summary>

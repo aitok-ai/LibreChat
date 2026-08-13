@@ -3,6 +3,7 @@ import { JSX } from 'react/jsx-runtime';
 import { Sun, Moon, Monitor } from 'lucide-react';
 import { ThemeContext, isDark } from '../theme';
 import { useLocalize } from '../hooks';
+import { Button } from './Button';
 
 declare global {
   interface Window {
@@ -35,23 +36,19 @@ const Theme = ({ theme, onChange }: { theme: string; onChange: (value: string) =
   }, [nextTheme, onChange]);
 
   return (
-    <button
-      className="text-text-primary hover:bg-surface-hover flex items-center gap-2 rounded-lg p-2 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-0"
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-text-primary h-auto w-auto p-2"
       aria-label={localize('com_ui_toggle_theme')}
       aria-keyshortcuts="Ctrl+Shift+T"
       onClick={(e) => {
         e.preventDefault();
         onChange(nextTheme);
       }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onChange(nextTheme);
-        }
-      }}
     >
       {themeIcons[theme as ThemeType]}
-    </button>
+    </Button>
   );
 };
 
@@ -90,7 +87,7 @@ const ThemeSelector = ({ returnThemeOnly }: { returnThemeOnly?: boolean }): JSX.
   }
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white pt-6 sm:pt-0 dark:bg-gray-900">
+    <div className="bg-surface-primary flex flex-col items-center justify-center pt-6 sm:pt-0">
       <div className="absolute bottom-0 left-0 m-4">
         <Theme theme={theme} onChange={changeTheme} />
       </div>

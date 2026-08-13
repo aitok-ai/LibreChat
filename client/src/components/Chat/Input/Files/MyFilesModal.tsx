@@ -1,6 +1,6 @@
 import { FileSources, FileContext } from 'librechat-data-provider';
-import type { TFile } from 'librechat-data-provider';
 import { OGDialog, OGDialogContent, OGDialogHeader, OGDialogTitle } from '@librechat/client';
+import type { TFile } from 'librechat-data-provider';
 import { useGetFiles } from '~/data-provider';
 import { DataTable, columns } from './Table';
 import { useLocalize } from '~/hooks';
@@ -29,7 +29,7 @@ export function MyFilesModal({
     <OGDialog open={open} onOpenChange={onOpenChange} triggerRef={triggerRef}>
       <OGDialogContent
         title={localize('com_nav_my_files')}
-        className="bg-background text-text-primary w-11/12 shadow-2xl"
+        className="bg-surface-dialog text-text-primary w-11/12 shadow-2xl"
       >
         <OGDialogHeader>
           <OGDialogTitle>{localize('com_nav_my_files')}</OGDialogTitle>

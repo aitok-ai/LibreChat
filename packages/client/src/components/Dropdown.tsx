@@ -137,16 +137,17 @@ const Dropdown: React.FC<DropdownProps> = ({
         store={selectProps}
         disabled={disabled}
         className={cn(
-          'focus:ring-offset-ring-offset border-input bg-background text-text-primary hover:bg-accent hover:text-accent-foreground focus:ring-ring-primary relative inline-flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-all duration-200 ease-in-out',
-          'disabled:hover:bg-background disabled:hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50',
-          iconOnly ? 'size-10' : 'w-fit gap-2',
+          'border-border-light text-text-primary hover:bg-surface-hover hover:text-text-primary relative inline-flex items-center justify-between rounded-xl border bg-transparent py-2 text-sm transition-all duration-200 ease-in-out',
+          'disabled:hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent',
+          /** Horizontal padding would squeeze the icon, which flex-shrinks to fit */
+          iconOnly ? 'size-10 justify-center px-0' : 'w-fit gap-2 px-3',
           className,
         )}
         data-testid={testId}
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
       >
-        <div className="flex w-full items-center gap-2">
+        <div className={cn('flex items-center gap-2', iconOnly ? 'shrink-0' : 'w-full')}>
           {icon}
           {!iconOnly && (
             <span className="block truncate">
@@ -176,7 +177,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       >
         {searchable ? (
           <>
-            <div className="bg-surface-primary dark:bg-surface-secondary sticky -top-2 z-10 -mx-2 -mt-2 mb-1 px-2 pt-2 pb-1.5">
+            <div className="sticky -top-2 z-10 -mx-2 -mt-2 mb-1 bg-inherit px-2 pt-2 pb-1.5">
               <div className="relative">
                 <Search
                   className="text-text-tertiary pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2"
@@ -187,7 +188,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   autoSelect
                   placeholder={searchPlaceholder}
                   aria-label={searchPlaceholder}
-                  className="text-text-primary placeholder:text-text-secondary focus:ring-border-xheavy w-full rounded-lg bg-transparent py-1.5 pr-2 pl-8 text-sm focus:ring-2 focus:outline-none"
+                  className="border-border-light text-text-primary placeholder:text-text-secondary w-full rounded-lg border bg-inherit py-1.5 pr-2 pl-8 text-sm focus:outline-none"
                 />
               </div>
             </div>

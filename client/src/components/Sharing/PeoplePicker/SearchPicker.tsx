@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Search } from 'lucide-react';
 import debounce from 'lodash/debounce';
 import * as Ariakit from '@ariakit/react';
-import { Spinner, Skeleton } from '@librechat/client';
+import { Input, Spinner, Skeleton } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -15,6 +15,7 @@ type SearchPickerProps<TOption extends { key: string }> = {
   placeholder?: string;
   inputClassName?: string;
   label?: string;
+  labelClassName?: string;
   resetValueOnHide?: boolean;
   isSmallScreen?: boolean;
   isLoading?: boolean;
@@ -28,8 +29,10 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
   onQueryChange,
   query,
   label,
+  labelClassName,
   isSmallScreen = false,
   placeholder,
+  inputClassName,
   resetValueOnHide = false,
   isLoading = false,
   minQueryLengthForNoResults = 2,
@@ -72,25 +75,25 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
 
   return (
     <Ariakit.ComboboxProvider store={combobox}>
-      <Ariakit.ComboboxLabel className="text-text-primary mb-2 block font-medium">
+      <Ariakit.ComboboxLabel
+        className={cn('text-text-primary mb-2 block font-medium', labelClassName)}
+      >
         {label}
       </Ariakit.ComboboxLabel>
       <>
         <div
           className={cn(
-            'group border-border-medium text-text-primary focus-within:bg-surface-hover hover:bg-surface-hover relative flex h-10 cursor-pointer items-center gap-2 rounded-lg transition-colors duration-200',
+            'text-text-primary relative flex h-10 items-center gap-2',
             isSmallScreen === true ? 'mb-2 h-14 rounded-2xl' : '',
           )}
         >
           {isLoading ? (
             <Spinner className="absolute left-3 h-4 w-4" />
           ) : (
-            <Search
-              className="text-text-secondary group-focus-within:text-text-primary group-hover:text-text-primary absolute left-3 h-4 w-4"
-              aria-hidden="true"
-            />
+            <Search className="text-text-secondary absolute left-3 h-4 w-4" aria-hidden="true" />
           )}
           <Ariakit.Combobox
+            render={<Input />}
             ref={inputRef}
             onKeyDown={(e) => {
               if (e.key === 'Escape' && combobox.getState().open) {
@@ -113,7 +116,7 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
             value={localQuery}
             // autoSelect
             placeholder={placeholder || localize('com_ui_select_options')}
-            className="text-text-primary placeholder-text-secondary placeholder-opacity-100 group-focus-within:placeholder-text-primary group-hover:placeholder-text-primary h-10 w-full rounded-lg bg-transparent pl-10 text-sm leading-tight focus:outline-none focus-visible:outline-none"
+            className={cn('h-10 w-full pl-10 text-sm leading-tight', inputClassName)}
           />
         </div>
       </>

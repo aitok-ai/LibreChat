@@ -31,12 +31,12 @@ export function ArchivedChatsModal({
         tabIndex={-1}
         onOpenAutoFocus={handleOpenAutoFocus}
         title={localize('com_nav_archived_chats')}
-        className="bg-background text-text-primary w-11/12 max-w-[1000px] shadow-2xl focus:outline-none"
+        className="bg-surface-dialog text-text-primary focus-visible:ring-text-primary w-11/12 max-w-[1000px] shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-inset"
       >
         <OGDialogHeader>
           <OGDialogTitle>{localize('com_nav_archived_chats')}</OGDialogTitle>
         </OGDialogHeader>
-        <ArchivedChatsTable onOpenChange={onOpenChange} />
+        <ArchivedChatsTable />
       </OGDialogContent>
     </OGDialog>
   );

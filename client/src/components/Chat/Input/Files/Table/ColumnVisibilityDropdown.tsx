@@ -1,8 +1,8 @@
 import { useState, useId, useMemo } from 'react';
 import { ListFilter } from 'lucide-react';
 import * as Menu from '@ariakit/react/menu';
-import { useReactTable } from '@tanstack/react-table';
 import { DropdownPopup } from '@librechat/client';
+import { useReactTable } from '@tanstack/react-table';
 import { useLocalize, TranslationKeys } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -44,7 +44,7 @@ export function ColumnVisibilityDropdown<TData>({
         <Menu.MenuButton
           aria-label={localize('com_files_filter_by')}
           className={cn(
-            'border-input ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 items-center justify-center gap-2 rounded-md border bg-transparent px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
+            'border-border-medium ring-offset-surface-primary hover:bg-surface-hover hover:text-text-primary focus-visible:ring-text-primary inline-flex h-9 items-center justify-center gap-2 rounded-md border bg-transparent px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
             isSmallScreen && 'px-2 py-1',
           )}
         >

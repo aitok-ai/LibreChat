@@ -190,7 +190,7 @@ const DuringRunSendButton = React.memo(
               id="during-run-send-button"
               disabled={!content || props.disabled === true}
               className={cn(
-                'bg-text-primary text-text-primary disabled:text-text-secondary rounded-full p-1.5 outline-offset-4 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-10',
+                'size-theme-control rounded-theme-control-round bg-text-primary p-theme-compact text-text-primary duration-theme-normal disabled:text-text-secondary outline-offset-4 transition-all disabled:cursor-not-allowed disabled:opacity-10',
               )}
               data-testid="during-run-send-button"
               data-during-run-action={primary}

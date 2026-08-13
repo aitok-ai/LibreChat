@@ -9,7 +9,7 @@ const Input: React.ForwardRefExoticComponent<InputProps & React.RefAttributes<HT
     return (
       <input
         className={cn(
-          'lc-field border-border-light text-text-primary ring-offset-background placeholder:text-text-secondary focus-visible:border-border-medium focus-visible:ring-ring-primary flex h-10 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+          'lc-field border-border-light text-text-primary ring-offset-surface-primary placeholder:text-text-secondary focus-visible:border-border-medium focus-visible:ring-text-primary flex h-10 w-full rounded-lg border bg-transparent px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
           className ?? '',
         )}
         ref={ref}

@@ -72,8 +72,8 @@ function TokenUsageIndicator({
             aria-label={ariaLabel}
             aria-haspopup="dialog"
             className={cn(
-              'flex size-9 items-center justify-center rounded-full p-1 transition-colors',
-              'hover:bg-surface-hover focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+              'size-theme-control rounded-theme-control-round flex items-center justify-center transition-colors',
+              'hover:bg-surface-hover focus-visible:ring-text-primary focus-visible:ring-2 focus-visible:outline-none',
               'animate-in fade-in zoom-in-95 duration-300',
             )}
           >

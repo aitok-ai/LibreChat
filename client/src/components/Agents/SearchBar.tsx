@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
-import { Input } from '@librechat/client';
+import { Button, Input } from '@librechat/client';
 import { useDebounce, useLocalize } from '~/hooks';
 
 /**
@@ -89,10 +89,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ value, onSearch, className = '' }
       </div>
       {/* Show clear button only when search has value - Google style */}
       {searchTerm && (
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           type="button"
           onClick={handleClear}
-          className="group focus:ring-ring absolute top-1/2 right-4 flex size-5 -translate-y-1/2 items-center justify-center rounded-full transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:outline-none"
+          className="group focus:ring-text-primary absolute top-1/2 right-4 flex size-5 -translate-y-1/2 items-center justify-center rounded-full transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:outline-none"
           aria-label={localize('com_agents_clear_search')}
           title={localize('com_agents_clear_search')}
         >
@@ -101,7 +103,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ value, onSearch, className = '' }
             strokeWidth={2.5}
             aria-hidden="true"
           />
-        </button>
+        </Button>
       )}
     </div>
   );
