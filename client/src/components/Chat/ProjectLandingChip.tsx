@@ -9,10 +9,10 @@ import { useChatContext } from '~/Providers';
 import { useLocalize } from '~/hooks';
 
 /**
- * Subtle project indicator shown on a project-scoped new-chat landing.
- * Clicking the chip switches the project (searchable combobox); the trailing
- * `×` removes the project scope. Both update the conversation draft and the
- * `?projectId` search param in place, so the typed message and model are kept.
+ * Project scope control rendered inside the composer on a project-scoped
+ * new-chat landing. The trigger switches projects; the trailing × drops the
+ * scope. Both update the draft and `?projectId` in place so the typed message
+ * and model are kept.
  */
 export default function ProjectLandingChip({ project }: { project: TChatProject }) {
   const localize = useLocalize();
@@ -53,7 +53,7 @@ export default function ProjectLandingChip({ project }: { project: TChatProject 
   );
 
   return (
-    <div className="group mb-2.5 flex items-center gap-1 px-1">
+    <div className="flex items-center gap-0.5 px-2.5 pt-2">
       <ControlCombobox
         selectId="project-landing-select"
         selectedValue={project._id}
@@ -69,9 +69,12 @@ export default function ProjectLandingChip({ project }: { project: TChatProject 
         searchPlaceholder={localize('com_ui_search_projects')}
         isCollapsed={false}
         showCarat={true}
-        placement="top"
-        containerClassName="w-auto px-0"
-        className="text-text-secondary hover:text-text-primary h-8 w-auto min-w-[11rem] gap-1.5 rounded-full px-2.5 text-sm font-medium"
+        placement="top-start"
+        gutter={12}
+        matchTriggerWidth={false}
+        containerClassName="w-auto min-w-0 px-0"
+        className="text-text-secondary hover:bg-surface-hover hover:text-text-primary h-8 w-auto max-w-[14rem] min-w-[7.5rem] gap-1.5 rounded-full border-0 bg-transparent px-2.5 text-sm font-medium"
+        popoverClassName="animate-popover-bottom min-w-64 rounded-2xl shadow-xl"
       />
       <TooltipAnchor
         description={localize('com_ui_remove_from_project')}
@@ -80,7 +83,7 @@ export default function ProjectLandingChip({ project }: { project: TChatProject 
             type="button"
             aria-label={localize('com_ui_remove_from_project')}
             onClick={() => applyProject(null)}
-            className="text-text-secondary hover:bg-surface-hover hover:text-text-primary focus-visible:ring-ring-primary flex h-7 w-7 shrink-0 items-center justify-center rounded-full opacity-0 transition-all outline-none group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2"
+            className="text-text-secondary hover:bg-surface-hover hover:text-text-primary focus-visible:ring-text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset"
           >
             <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>

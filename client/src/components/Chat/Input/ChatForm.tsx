@@ -1,13 +1,9 @@
 import { memo, useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import * as Ariakit from '@ariakit/react';
 import { useWatch } from 'react-hook-form';
+import { apiBaseUrl } from 'librechat-data-provider';
 import { useRecoilState, useRecoilValue, useRecoilCallback } from 'recoil';
-import {
-  Constants,
-  apiBaseUrl,
-  isAssistantsEndpoint,
-  isAgentsEndpoint,
-} from 'librechat-data-provider';
+import { Constants, isAssistantsEndpoint, isAgentsEndpoint } from 'librechat-data-provider';
 import {
   HoverCard,
   HoverCardContent,
@@ -17,7 +13,7 @@ import {
   TooltipAnchor,
   useToastContext,
 } from '@librechat/client';
-import type { TMessage, TConversation } from 'librechat-data-provider';
+import type { TChatProject, TMessage, TConversation } from 'librechat-data-provider';
 import type { ExtendedFile, FileSetter, ConvoGenerator } from '~/common';
 import type { QueuedMessageContext } from '~/hooks/Chat/useSteering';
 import {
@@ -43,6 +39,7 @@ import useAskAnswerMode from '~/hooks/Input/useAskAnswerMode';
 import AskUserQuestionPopover from './AskUserQuestionPopover';
 import InterruptSteerButton from './InterruptSteerButton';
 import DuringRunSendButton from './DuringRunSendButton';
+import ProjectLandingChip from '../ProjectLandingChip';
 import { mainTextareaId, BadgeItem } from '~/common';
 import PendingSteerChips from './PendingSteerChips';
 import PendingQuoteChips from './PendingQuoteChips';
@@ -70,7 +67,8 @@ import store from '~/store';
 interface ChatFormProps {
   index: number;
   placeholder?: string;
-  /** From ChatContext — individual values so memo can compare them */
+  project?: TChatProject;
+  /** From ChatContext: individual values so memo can compare them */
   files: Map<string, ExtendedFile>;
   setFiles: FileSetter;
   conversation: TConversation | null;
@@ -84,6 +82,7 @@ interface ChatFormProps {
 const ChatForm = memo(function ChatForm({
   index,
   placeholder,
+  project,
   files,
   setFiles,
   conversation,
@@ -225,6 +224,9 @@ const ChatForm = memo(function ChatForm({
   }, []);
 
   const answerMode = useAskAnswerMode(conversationId);
+  const answerPlaceholder = answerMode.batchMode
+    ? localize('com_ui_answer_questions_above')
+    : (answerMode.otherLabel ?? localize('com_ui_something_else'));
 
   useAutoSave({
     files,
@@ -440,9 +442,7 @@ const ChatForm = memo(function ChatForm({
     setIsScrollable,
     disabled: disableInputs,
     // The composer IS the free-form answer box while a question pause is live.
-    placeholder: answerMode.active
-      ? (answerMode.otherLabel ?? localize('com_ui_something_else'))
-      : placeholder,
+    placeholder: answerMode.active ? answerPlaceholder : placeholder,
     // Enter stays live during a run when it can steer/queue instead of send.
     allowSubmitWhileGenerating: steering.duringRunActive,
     onDuringRunModifier: steering.duringRunActive ? handleDuringRunModifier : undefined,
@@ -450,8 +450,14 @@ const ChatForm = memo(function ChatForm({
 
   useQueryParams({ textAreaRef });
 
+  /** Attachments stand in for text only on the normal send path. Answer mode
+   *  hands the composer text straight to the paused run, which answers with
+   *  values and cannot consume files, so an empty draft must stay unsubmittable
+   *  there rather than enabling a button whose submit is silently dropped. */
+  const submittableFileCount = answerMode.active ? 0 : files.size;
+
   const { ref, ...registerProps } = methods.register('text', {
-    required: true,
+    required: submittableFileCount === 0,
     onChange: useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) =>
         methods.setValue('text', e.target.value, { shouldValidate: true }),
@@ -905,6 +911,7 @@ const ChatForm = memo(function ChatForm({
                   : 'border-border-light bg-surface-chat',
               )}
             >
+              {project ? <ProjectLandingChip project={project} /> : null}
               <TextareaHeader addedConvo={addedConvo} setAddedConvo={setAddedConvo} />
               <PendingManualSkillsChips conversationId={conversationId} />
               {quotesEnabled && <PendingQuoteChips conversationId={conversationId} />}
@@ -951,7 +958,11 @@ const ChatForm = memo(function ChatForm({
                           textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>
                         ).current = e;
                       }}
-                      disabled={disableInputs || isNotAppendable}
+                      disabled={
+                        disableInputs ||
+                        isNotAppendable ||
+                        (answerMode.active && answerMode.batchMode)
+                      }
                       onPaste={handlePaste}
                       onKeyDown={(e) => {
                         // Answer mode consumes option-navigation keys from the
@@ -1050,10 +1061,12 @@ const ChatForm = memo(function ChatForm({
                         <SendButton
                           ref={submitButtonRef}
                           control={methods.control}
+                          fileCount={submittableFileCount}
                           disabled={
                             filesLoading ||
                             disableInputs ||
                             isNotAppendable ||
+                            (answerMode.active && answerMode.batchMode) ||
                             (isSubmitting && !answerMode.active)
                           }
                         />
@@ -1104,7 +1117,15 @@ ChatForm.displayName = 'ChatForm';
  * to the memo'd ChatForm. This prevents ChatForm from re-rendering on every
  * streaming chunk — it only re-renders when the specific values it uses change.
  */
-function ChatFormWrapper({ index = 0, placeholder }: { index?: number; placeholder?: string }) {
+function ChatFormWrapper({
+  index = 0,
+  placeholder,
+  project,
+}: {
+  index?: number;
+  placeholder?: string;
+  project?: TChatProject;
+}) {
   const {
     files,
     setFiles,
@@ -1164,6 +1185,7 @@ function ChatFormWrapper({ index = 0, placeholder }: { index?: number; placehold
     <ChatForm
       index={index}
       placeholder={placeholder}
+      project={project}
       files={files}
       setFiles={setFiles}
       conversation={stableConversation}

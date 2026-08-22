@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useRecoilValue } from 'recoil';
+import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useMediaQuery } from '@librechat/client';
 import {
   PromptGroupsProvider,
   AssistantsMapContext,
@@ -16,15 +14,17 @@ import {
   useAgentsMap,
   useFileMap,
 } from '~/hooks';
+import { UnifiedSidebar, SIDEBAR_TRANSITION } from '~/components/UnifiedSidebar';
 import KeyboardShortcutsDialog from '~/components/Nav/KeyboardShortcutsDialog';
 import KeyboardDeleteDialog from '~/components/Nav/KeyboardDeleteDialog';
 import { useUserTermsQuery, useGetStartupConfig } from '~/data-provider';
+import { CLOSE_SIDEBAR_ID } from '~/components/Chat/Menus/OpenSidebar';
 import useKeyboardShortcuts from '~/hooks/useKeyboardShortcuts';
-import { UnifiedSidebar } from '~/components/UnifiedSidebar';
+import useSidebarState from '~/hooks/Nav/useSidebarState';
 import { TermsAndConditionsModal } from '~/components/ui';
+import useDrawerSwipe from '~/hooks/Nav/useDrawerSwipe';
 import { useHealthCheck } from '~/data-provider';
 import { Banner } from '~/components/Banners';
-import store from '~/store';
 
 /** Isolates keyboard shortcut listeners so they only mount after auth. */
 function KeyboardShortcutsProvider() {
@@ -40,10 +40,39 @@ function KeyboardShortcutsProvider() {
 export default function Root() {
   const [showTerms, setShowTerms] = useState(false);
   const [bannerHeight, setBannerHeight] = useState(0);
-  const sidebarExpanded = useRecoilValue(store.sidebarExpanded);
-  const isSmallScreen = useMediaQuery('(max-width: 768px)');
-
+  /** Shared with the drawer so the two agree on the breakpoint-transition frame. */
+  const {
+    isSmallScreen,
+    expanded: sidebarExpanded,
+    setExpanded: setSidebarExpanded,
+  } = useSidebarState();
+  const paneRef = useRef<HTMLDivElement>(null);
+  const handleDrawerOpenChange = useCallback(
+    (next: boolean) => {
+      startTransition(() => {
+        setSidebarExpanded(next);
+      });
+      if (next) {
+        /** Same handoff as the OpenSidebar button: opening makes the pane
+         * inert, so keyboard/AT focus must land inside the drawer. */
+        setTimeout(() => {
+          document.getElementById(CLOSE_SIDEBAR_ID)?.focus();
+        }, 250);
+      }
+    },
+    [setSidebarExpanded],
+  );
   const { isAuthenticated, logout } = useAuthContext();
+
+  useDrawerSwipe({
+    paneRef,
+    /** Auth gates the whole tree below (`return null`), so the swipe surfaces
+     * only exist once authenticated — enabling earlier would attach to
+     * nothing and never re-run when they mount. */
+    enabled: isSmallScreen && isAuthenticated,
+    open: sidebarExpanded,
+    onOpenChange: handleDrawerOpenChange,
+  });
 
   useHealthCheck(isAuthenticated);
 
@@ -88,11 +117,12 @@ export default function Root() {
                 <div className="relative z-0 flex h-full w-full overflow-hidden">
                   <UnifiedSidebar />
                   <div
+                    ref={paneRef}
                     className="relative flex h-full max-w-full flex-1 flex-col overflow-hidden"
                     style={{
-                      transform:
-                        isSmallScreen && sidebarExpanded ? 'translateX(min(85vw, 380px))' : 'none',
-                      transition: 'transform 300ms cubic-bezier(0.2, 0, 0, 1)',
+                      /** Self-referential, so it needs no width literal and survives rotation. */
+                      transform: isSmallScreen && sidebarExpanded ? 'translateX(100%)' : 'none',
+                      transition: SIDEBAR_TRANSITION,
                     }}
                     inert={isSmallScreen && sidebarExpanded ? '' : undefined}
                   >

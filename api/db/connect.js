@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { isEnabled, instrumentMongooseQueryMetrics } = require('@librechat/api');
-const { logger } = require('@librechat/data-schemas');
+const { logger, dropSupersededTenantIndexes } = require('@librechat/data-schemas');
 
 const mongoose = require('mongoose');
 const MONGO_URI = process.env.MONGO_URI;
@@ -31,6 +31,15 @@ const autoCreate =
   process.env.MONGO_AUTO_CREATE != undefined
     ? isEnabled(process.env.MONGO_AUTO_CREATE) || false
     : undefined;
+
+/**
+ * Whether Mongoose index management is enabled. When the operator has not
+ * explicitly opted out via `MONGO_AUTO_INDEX=false`, we defer Mongoose's
+ * automatic index builds until after superseded legacy indexes are dropped —
+ * otherwise the new non-unique `messageId_1`/`conversationId_1` index builds
+ * collide with the old unique indexes of the same name and fail at startup.
+ */
+const shouldAutoIndex = autoIndex !== false;
 /**
  * Global is used here to maintain a cached connection across hot reloads
  * in development. This prevents connections growing exponentially
@@ -68,10 +77,29 @@ async function connectDb() {
       // useFindAndModify: true,
       // useCreateIndex: true
     };
+    // Defer autoIndex until after superseded legacy indexes are dropped so the
+    // new non-unique `messageId_1`/`conversationId_1` builds don't collide with
+    // the old unique indexes of the same name. Indexes are then built explicitly
+    // below, preserving the default autoIndex behavior for every deployment.
+    if (shouldAutoIndex) {
+      opts.autoIndex = false;
+    }
     logger.info('Mongo Connection options');
     logger.info(JSON.stringify(opts, null, 2));
     mongoose.set('strictQuery', true);
-    cached.promise = mongoose.connect(MONGO_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGO_URI, opts).then(async (mongoose) => {
+      if (shouldAutoIndex) {
+        const { dropped } = await dropSupersededTenantIndexes(mongoose.connection);
+        if (dropped.length > 0) {
+          logger.info(
+            `[TenantMigration] Dropped ${dropped.length} superseded indexes before building indexes`,
+          );
+        }
+        // Build all indexes now that conflicting legacy indexes are gone.
+        // `allSettled` keeps startup resilient to unrelated index build errors,
+        // matching Mongoose's prior behavior of logging them without crashing.
+        await Promise.allSettled(Object.values(mongoose.models).map((model) => model.init()));
+      }
       return mongoose;
     });
   }

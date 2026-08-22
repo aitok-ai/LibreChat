@@ -2,7 +2,16 @@ module.exports = {
   agents: () => ({ sleep: jest.fn() }),
 
   api: (overrides = {}) => ({
-    isEnabled: jest.fn(),
+    /** Mirrors the real helper so query-flag parsing (`isArchived`, `pinned`) is exercised. */
+    isEnabled: jest.fn((value) => {
+      if (typeof value === 'boolean') {
+        return value;
+      }
+      if (typeof value === 'string') {
+        return value.toLowerCase().trim() === 'true';
+      }
+      return false;
+    }),
     resolveImportMaxFileSize: jest.fn(() => 262144000),
     createAxiosInstance: jest.fn(() => ({
       get: jest.fn(),
@@ -56,6 +65,7 @@ module.exports = {
     getConvo: jest.fn(),
     deleteConvos: jest.fn(),
     saveConvo: jest.fn(),
+    setConvoPinned: jest.fn(),
     deleteAllSharedLinks: jest.fn(),
     deleteConvoSharedLink: jest.fn(),
     deleteToolCalls: jest.fn(),

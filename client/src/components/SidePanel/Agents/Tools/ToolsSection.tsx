@@ -30,6 +30,7 @@ import { useLocalize, useHasAccess } from '~/hooks';
 import { useAgentPanelContext } from '~/Providers';
 import { isEphemeralAgent, ESide } from '~/common';
 import ItemDialog from './ItemDialog/ItemDialog';
+import { mcpAllToken } from './items/selectors';
 import { InfoTrigger } from '../Advanced/ui';
 import SkillsDialog from './SkillsDialog';
 import ToolRow from './ToolRow';
@@ -49,7 +50,8 @@ export default function ToolsSection({ agentId }: Props) {
 
   const { control, getValues, setValue } = useFormContext<AgentForm>();
   const { agentsConfig, regularTools, mcpServersMap } = useAgentPanelContext();
-  const { removeTool: removeMCPTool } = useRemoveMCPTool();
+  const mcpServerNames = useMemo(() => Array.from(mcpServersMap?.keys() ?? []), [mcpServersMap]);
+  const { removeTool: removeMCPTool } = useRemoveMCPTool({ serverNames: mcpServerNames });
   const deleteAgentAction = useDeleteAgentAction({
     onSuccess: () => {
       showToast({
@@ -251,7 +253,9 @@ export default function ToolsSection({ agentId }: Props) {
         item.kind === 'mcp'
           ? {
               ...item,
-              toolCount: (item.server.tools ?? []).filter((t) => enabled.has(t.tool_id)).length,
+              toolCount: enabled.has(mcpAllToken(item.id))
+                ? (item.server.tools ?? []).length
+                : (item.server.tools ?? []).filter((t) => enabled.has(t.tool_id)).length,
             }
           : item,
       );

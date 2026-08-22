@@ -5,10 +5,12 @@ export enum QueryKeys {
   sharedLinks = 'sharedLinks',
   allConversations = 'allConversations',
   archivedConversations = 'archivedConversations',
+  pinnedConversations = 'pinnedConversations',
   searchConversations = 'searchConversations',
   conversation = 'conversation',
   searchEnabled = 'searchEnabled',
   langfuseConnection = 'langfuseConnection',
+  langfuseSessionLink = 'langfuseSessionLink',
   user = 'user',
   name = 'name', // user key name
   models = 'models',

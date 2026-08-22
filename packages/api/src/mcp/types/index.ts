@@ -153,6 +153,11 @@ export type FormattedToolResponse = FormattedContentResult;
  * - `'yaml'`   — operator-defined in librechat.yaml, full trust, boot-time init
  * - `'config'` — admin-defined via Config override, full trust, lazy init
  * - `'user'`   — user-provided via UI, sandboxed (restricted placeholder resolution)
+ * - `'plugin'` — contributed by an Agent Plugins package, no placeholder resolution
+ *
+ * This tag is load-bearing, not descriptive: `processMCPEnv` reads it to decide
+ * which placeholders may resolve. Code that stores a config must carry the tag
+ * through rather than re-deriving it from the storage tier.
  */
 export type MCPServerSource = 'yaml' | 'config' | 'user' | 'plugin';
 
@@ -163,6 +168,13 @@ export type ParsedServerConfig = MCPOptions & {
   capabilities?: string;
   tools?: string;
   toolFunctions?: LCAvailableTools;
+  /**
+   * Instructions advertised by the server, fetched during inspection when
+   * `serverInstructions` is enabled. Held separately so `serverInstructions`
+   * always keeps the operator's declaration: overwriting it in place made a
+   * re-inspected config compare unequal to its own YAML entry.
+   */
+  resolvedInstructions?: string;
   initDuration?: number;
   updatedAt?: number;
   dbId?: string;

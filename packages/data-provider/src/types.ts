@@ -202,6 +202,8 @@ export type TSubmission = {
    * resumes for run steps and activity labels alike.
    */
   editPrefixLength?: number;
+  /** True once server index 0 text/reasoning actually merged into the retained tail. */
+  editPrefixFirstPartFolded?: boolean;
   /**
    * Set once a resume SYNC has replaced the response's retained prefix with
    * the server's completion-local snapshot. From that point the prefix is
@@ -948,3 +950,7 @@ export type TLangfuseConnectionTestErrorCode =
 export type TLangfuseConnectionTestResponse =
   | { success: true }
   | { success: false; errorCode: TLangfuseConnectionTestErrorCode };
+
+export type TLangfuseSessionLinkResponse = {
+  url: string | null;
+};

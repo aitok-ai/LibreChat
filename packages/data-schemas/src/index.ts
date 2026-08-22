@@ -7,6 +7,7 @@ export * from './utils';
 export { createModels } from './models';
 export {
   createMethods,
+  CLIENT_MESSAGE_SELECT,
   RoleConflictError,
   DEFAULT_REFRESH_TOKEN_EXPIRY,
   DEFAULT_SESSION_EXPIRY,
@@ -22,6 +23,8 @@ export {
   validateRelativePath,
   inferSkillFileCategory,
   validateSkillFrontmatter,
+  getCanonicalSkillFrontmatterKey,
+  normalizeSkillFrontmatterKeys,
   validateSkillDescription,
   deriveStructuredFrontmatterFields,
   AUDIT_SCHEMA_VERSION,

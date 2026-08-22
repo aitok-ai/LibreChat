@@ -6,16 +6,22 @@ import type { InfiniteQueryObserverResult } from '@tanstack/react-query';
 import type { ConversationListResponse } from 'librechat-data-provider';
 import type { List } from 'react-virtualized';
 import {
+  useConversationsInfiniteQuery,
+  usePinnedConversationsQuery,
+  useTitleGeneration,
+} from '~/data-provider';
+import {
   useLocalize,
   useHasAccess,
   useAuthContext,
   useLocalStorage,
   useNavScrolling,
 } from '~/hooks';
-import { useConversationsInfiniteQuery, useTitleGeneration } from '~/data-provider';
 import ProjectsSection from '~/components/Conversations/ProjectsSection';
+import PinnedSection from '~/components/Conversations/PinnedSection';
 import FavoritesList from '~/components/Nav/Favorites/FavoritesList';
 import { Conversations } from '~/components/Conversations';
+import { collectPinnedConversations } from '~/utils';
 import SearchBar from '~/components/Nav/SearchBar';
 import store from '~/store';
 
@@ -75,6 +81,22 @@ const ConversationsSection = memo(() => {
     return data ? data.pages.flatMap((page) => page.conversations) : [];
   }, [data]);
 
+  /** Pins are fetched on their own so one older than the first page of the chats list
+   * still shows on first paint, instead of appearing only once that list scrolls to it.
+   * The bookmark filter still applies, matching the chats list beside it. */
+  const { data: pinnedData } = usePinnedConversationsQuery(
+    { tags: tags.length === 0 ? undefined : tags },
+    { enabled: isAuthenticated },
+  );
+
+  /* `groupConversationsByDate` strips pins from the chats groups. A failed
+     refetch keeps the previous dedicated result, so merge in pins from the
+     live chats cache rather than hiding a newly pinned row. */
+  const pinnedConversations = useMemo(
+    () => collectPinnedConversations(pinnedData?.conversations, conversations),
+    [pinnedData?.conversations, conversations],
+  );
+
   const toggleNav = useCallback(() => {
     if (isSmallScreen) {
       setSidebarExpanded(false);
@@ -108,20 +130,26 @@ const ConversationsSection = memo(() => {
       role="region"
       aria-label={localize('com_ui_chat_history')}
     >
-      <div className="flex items-center gap-0.5 px-3">
-        {hasAccessToBookmarks && (
-          <Suspense fallback={null}>
-            <BookmarkNav tags={tags} setTags={setTags} />
-          </Suspense>
-        )}
-        {search.enabled && <SearchBar isSmallScreen={isSmallScreen} />}
-      </div>
+      {/* On mobile the search field lives in the drawer's bottom bar, within thumb reach,
+          which would leave the bookmark filter alone on a row of its own — so it moves
+          beside the Chats heading, where the Projects heading already keeps its actions. */}
+      {!isSmallScreen && (
+        <div className="flex items-center gap-0.5 px-3">
+          {hasAccessToBookmarks && (
+            <Suspense fallback={null}>
+              <BookmarkNav tags={tags} setTags={setTags} />
+            </Suspense>
+          )}
+          {search.enabled && <SearchBar isSmallScreen={isSmallScreen} />}
+        </div>
+      )}
       {!search.query && (
         <div className="px-3">
           <FavoritesList isSmallScreen={isSmallScreen} toggleNav={toggleNav} />
         </div>
       )}
       {!search.query && <ProjectsSection toggleNav={toggleNav} isAuthenticated={isAuthenticated} />}
+      {!search.query && <PinnedSection conversations={pinnedConversations} toggleNav={toggleNav} />}
       <div className="flex min-h-0 flex-grow flex-col overflow-hidden">
         <Conversations
           conversations={conversations}
@@ -134,6 +162,13 @@ const ConversationsSection = memo(() => {
           isChatsExpanded={isChatsExpanded}
           setIsChatsExpanded={setIsChatsExpanded}
           showFavorites={false}
+          chatsHeaderTrailing={
+            isSmallScreen && hasAccessToBookmarks ? (
+              <Suspense fallback={null}>
+                <BookmarkNav tags={tags} setTags={setTags} />
+              </Suspense>
+            ) : undefined
+          }
         />
       </div>
     </div>

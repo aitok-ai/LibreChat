@@ -234,46 +234,37 @@ export function EscalateNowButton({
   }, [disabled, targetId]);
 
   return (
-    <>
-      {/* Thin divider binds the arrow to the message on its left, so it can
-       *  never read as part of the bare-glyph menu control beside it — the
-       *  send-now belongs to THIS chip, and the pairing repeats cleanly when
-       *  several messages stack. */}
-      <span aria-hidden="true" className="bg-border-medium h-[18px] w-px shrink-0" />
-      <Ariakit.TooltipProvider placement="top" timeout={300}>
-        <Ariakit.TooltipAnchor
-          render={
-            <button
-              type="button"
-              aria-label={accessibleLabel}
-              aria-keyshortcuts={isActive ? ariaKey : undefined}
-              data-escalate-steer={surface}
-              data-escalate-steer-active={isActive ? 'true' : undefined}
-              data-testid={surface === 'queued' ? 'queued-interrupt-now' : 'steer-escalate-now'}
-              disabled={disabled}
-              onPointerEnter={() =>
-                !disabled && updateActiveEscalateTarget('hover', targetId, true)
-              }
-              onPointerLeave={() => updateActiveEscalateTarget('hover', targetId, false)}
-              onFocus={() => !disabled && updateActiveEscalateTarget('focus', targetId, true)}
-              onBlur={() => updateActiveEscalateTarget('focus', targetId, false)}
-              onClick={onClick}
-              className={cn(
-                'flex size-6 shrink-0 items-center justify-center rounded-full',
-                'bg-text-primary text-surface-primary transition-opacity hover:opacity-85',
-                'focus-visible:ring-border-xheavy focus-visible:ring-2 focus-visible:outline-none',
-                'disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:opacity-35',
-              )}
-            >
-              <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden="true" />
-            </button>
-          }
-        />
-        <Ariakit.Tooltip className="bg-surface-tertiary text-text-primary z-50 rounded-lg px-2 py-1 text-xs shadow-lg">
-          {chord && isActive ? `${label} · ${chord}` : label}
-        </Ariakit.Tooltip>
-      </Ariakit.TooltipProvider>
-    </>
+    <Ariakit.TooltipProvider placement="top" timeout={300}>
+      <Ariakit.TooltipAnchor
+        render={
+          <button
+            type="button"
+            aria-label={accessibleLabel}
+            aria-keyshortcuts={isActive ? ariaKey : undefined}
+            data-escalate-steer={surface}
+            data-escalate-steer-active={isActive ? 'true' : undefined}
+            data-testid={surface === 'queued' ? 'queued-interrupt-now' : 'steer-escalate-now'}
+            disabled={disabled}
+            onPointerEnter={() => !disabled && updateActiveEscalateTarget('hover', targetId, true)}
+            onPointerLeave={() => updateActiveEscalateTarget('hover', targetId, false)}
+            onFocus={() => !disabled && updateActiveEscalateTarget('focus', targetId, true)}
+            onBlur={() => updateActiveEscalateTarget('focus', targetId, false)}
+            onClick={onClick}
+            className={cn(
+              'flex size-6 shrink-0 items-center justify-center rounded-full',
+              'bg-text-primary text-surface-primary transition-opacity hover:opacity-85',
+              'focus-visible:ring-border-xheavy focus-visible:ring-2 focus-visible:outline-none',
+              'disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:opacity-35',
+            )}
+          >
+            <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden="true" />
+          </button>
+        }
+      />
+      <Ariakit.Tooltip className="bg-surface-tertiary text-text-primary z-50 rounded-lg px-2 py-1 text-xs shadow-lg">
+        {chord && isActive ? `${label} · ${chord}` : label}
+      </Ariakit.Tooltip>
+    </Ariakit.TooltipProvider>
   );
 }
 

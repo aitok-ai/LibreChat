@@ -55,10 +55,12 @@ import { isSteeringSupported, isSteerPreemptSupported } from '~/agents/steering/
 import { getLLMConfig as getAnthropicLLMConfig } from '~/endpoints/anthropic/llm';
 import { resolveStreamLimits, resolveSubagentMaxTurns } from '~/agents/config';
 import { CREATE_FILE_TOOL_NAME, EDIT_FILE_TOOL_NAME } from '~/agents/tools';
+import { buildAgentInitialToolSessions } from '~/agents/codeFilesSession';
 import { getProviderConfig } from '~/endpoints/config/providers';
 import { extractDefaultParams } from '~/endpoints/openai/llm';
 import { resolveHeaders, createSafeUser } from '~/utils/env';
 import { getAgentCheckpointer } from '~/agents/checkpointer';
+import { getPluginHookSource } from '~/agents/hooks/source';
 import { getOpenAIConfig } from '~/endpoints/openai/config';
 import { buildHITLRunWiring } from '~/agents/hitl/runtime';
 import { buildLangfuseConfig } from '~/langfuse/config';
@@ -382,9 +384,13 @@ type RunAgent = Omit<Agent, 'tools'> & {
   /**
    * Per-agent stateful-session gate set by `initializeAgent`: the admin
    * `stateful_code_sessions` capability AND the agent's builder opt-in AND
-   * `codeEnvAvailable`. Walked here to gate `toolExecution.sandbox`.
+   * `codeEnvAvailable`. Carried into per-agent tool loading and prewarming.
    */
   statefulCodeSessions?: boolean;
+  /** Per-agent stateful workspace sharing scope. */
+  statefulCodeEnvironment?: Agent['stateful_code_environment'];
+  /** Trusted partition for transient code session ids and file references. */
+  codeSessionKey?: string;
   /** Optional per-agent summarization overrides */
   summarization?: SummarizationConfig;
   /** Response field to read model reasoning from for custom OpenAI-compatible endpoints. */
@@ -420,6 +426,8 @@ type LazySubagentAgent = Pick<
   | 'subagents'
   | 'codeEnvAvailable'
   | 'statefulCodeSessions'
+  | 'statefulCodeEnvironment'
+  | 'codeSessionKey'
   | 'includeReasoningHistory'
 > & {
   configId: string;
@@ -436,6 +444,8 @@ type SubagentTreeNode = Pick<
   | 'model_parameters'
   | 'codeEnvAvailable'
   | 'statefulCodeSessions'
+  | 'statefulCodeEnvironment'
+  | 'codeSessionKey'
   | 'includeReasoningHistory'
 > & {
   subagentAgentConfigs?: SubagentTreeNode[];
@@ -946,44 +956,6 @@ function isAskUserQuestionAdminDisabled(appConfig?: AppConfig): boolean {
 
 /**
  * Whether any agent reachable in the run — primary, handoff/parallel, or a
- * nested subagent — resolved `statefulCodeSessions` during initialization
- * (admin `stateful_code_sessions` capability AND the agent's builder opt-in
- * AND a working code env). Walks `subagentAgentConfigs` like
- * {@link anyAgentHasCodeEnv}; when true, `createRun` opts the run's remote
- * sandbox tools into stateful runtime sessions via `toolExecution.sandbox`.
- * Off by default: the capability is absent from `defaultAgentCapabilities`,
- * agents opt in individually, and the SDK derives the session hint from
- * `thread_id` (= conversationId), so this is never a trust boundary.
- */
-export function anyAgentHasStatefulSessions(agents: Array<RunAgent | null | undefined>): boolean {
-  const visited = new Set<string>();
-  const pending: Array<SubagentTreeNode | null | undefined> = [...agents];
-
-  for (let index = 0; index < pending.length; index++) {
-    const agent = pending[index];
-    if (agent == null || visited.has(agent.id)) {
-      continue;
-    }
-    visited.add(agent.id);
-    if (agent.statefulCodeSessions === true) {
-      return true;
-    }
-    for (const child of agent.subagentAgentConfigs ?? []) {
-      if (child != null && !visited.has(child.id)) {
-        pending.push(child);
-      }
-    }
-    for (const child of agent.lazySubagentConfigs ?? []) {
-      if (!visited.has(child.id)) {
-        pending.push(child);
-      }
-    }
-  }
-  return false;
-}
-
-/**
- * Whether any agent reachable in the run — primary, handoff/parallel, or a
  * nested subagent — opts into cross-turn `reasoning_content` reconstruction.
  * Walks `subagentAgentConfigs` like {@link anyAgentHasCodeEnv}, since an
  * opted-in custom endpoint may appear only as a (possibly pruned) subagent.
@@ -1187,6 +1159,7 @@ export async function createRun({
   activityPhase,
   hitlCapable = false,
   toolInputValidationErrors,
+  sessionStartSource,
   streaming = true,
   streamUsage = true,
 }: {
@@ -1274,6 +1247,8 @@ export async function createRun({
    * final response / `[DONE]` with the tool call left unresolved).
    */
   hitlCapable?: boolean;
+  /** Plugin-hook SessionStart lifecycle source: 'startup' (default) or 'resume' on HITL-rebuild paths. */
+  sessionStartSource?: string;
   /** Request-scoped tool input failures consumed by the completion handler. */
   toolInputValidationErrors?: Map<string, ToolInputValidationError>;
 } & Pick<
@@ -1492,6 +1467,8 @@ export async function createRun({
       initialSummary: isSubagent ? undefined : initialSummary,
       contextPruningConfig: summarization.contextPruning,
       maxToolResultChars: agent.maxToolResultChars,
+      initialSessions: buildAgentInitialToolSessions(agent, initialSessions),
+      codeSessionKey: agent.codeSessionKey,
     };
     if (askGraphTools) {
       /**
@@ -1568,9 +1545,6 @@ export async function createRun({
    * and the resume route). When disabled, nothing attaches and the run is identical
    * to before this feature shipped.
    */
-  // Per-agent truth resolved by initializeAgent (admin capability AND builder
-  // opt-in AND code env) — the run opts in when any reachable agent did.
-  const statefulCodeSessions = anyAgentHasStatefulSessions(agents);
   // Resolve the effective policy through the single seam so per-agent / per-skill
   // sources can layer in later without touching this call site (see
   // `resolveToolApprovalPolicy`). Only the endpoint layer is wired today, so this
@@ -1644,6 +1618,34 @@ export async function createRun({
     if (steering.preemptHook != null && isSteerPreemptSupported()) {
       hooks.register('PreemptBoundary', { hooks: [steering.preemptHook] });
     }
+  }
+  /**
+   * Deployment-plugin hooks (Agent Plugins `ai.librechat/hooks/hooks.json`)
+   * register last so internal policy hooks (HITL, labels, steering) keep
+   * their ordering. The source is wired at startup by the plugins package
+   * (see `setPluginHookSource` in api/server/index.js) and stays empty
+   * unless the operator installed plugins with hook documents AND opted in
+   * via DEPLOYMENT_PLUGIN_HOOKS. The conversation id doubles as the plugin
+   * "session", giving SessionStart its once-per-conversation scope.
+   */
+  const pluginHookSource = getPluginHookSource();
+  if (pluginHookSource?.hasHooks() === true) {
+    hooks = hooks ?? new HookRegistry();
+    const primaryAgent = agents[0];
+    pluginHookSource.register({
+      registry: hooks,
+      context: {
+        sessionId: requestBody?.conversationId,
+        userId: user?.id,
+        sessionStartSource,
+        model: primaryAgent?.model_parameters?.model ?? primaryAgent?.model ?? undefined,
+        agentType: primaryAgent?.id,
+      },
+      // `ask` needs the checkpointer + resume surface; without HITL wiring the
+      // source tightens plugin `ask` decisions to `deny` rather than stranding
+      // the run on an un-resumable interrupt.
+      askDecisionSupported: hitl != null,
+    });
   }
 
   const streamLimits = resolveStreamLimits(agentsEndpointConfig);
@@ -1728,15 +1730,6 @@ export async function createRun({
     }),
     ...(enableToolOutputReferences && {
       toolOutputReferences: { enabled: true },
-    }),
-    // Best-effort stateful runtime sessions on the remote Code API. The SDK
-    // stamps a per-conversation session hint on execute_code/bash requests and
-    // hedges those tools' descriptions; the transport is otherwise unchanged.
-    // `engine` is omitted (defaults to `sandbox`) and the hint defaults to
-    // thread_id. Requires @librechat/agents with `toolExecution.sandbox`;
-    // older versions ignore the field.
-    ...(statefulCodeSessions && {
-      toolExecution: { sandbox: { statefulSessions: true } },
     }),
     // HITL opt-in: the `humanInTheLoop` switch + the PreToolUse policy hook. Spread
     // here (not just `compileOptions.checkpointer` above) so an `ask` decision raises

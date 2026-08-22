@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { SquareTerminal } from 'lucide-react';
-import type { TAttachment } from 'librechat-data-provider';
+import type { TAttachment, PartMetadata } from 'librechat-data-provider';
 import { parseBackgroundHandle, splitBackgroundAttachments } from './handle';
 import ProgressText from '~/components/Chat/Messages/Content/ProgressText';
 import { sandboxStartingByToolCallId } from '~/store';
@@ -56,6 +56,9 @@ export const ERROR_PATTERNS = /^(Traceback|Error:|Exception:|.*Error:)/m;
 
 export default function ExecuteCode({
   isSubmitting,
+  runStepStatus,
+  runStepDurationMs,
+  backgrounded,
   initialProgress = 0.1,
   args,
   output = '',
@@ -66,6 +69,9 @@ export default function ExecuteCode({
 }: {
   initialProgress: number;
   isSubmitting: boolean;
+  runStepStatus?: PartMetadata['runStepStatus'];
+  runStepDurationMs?: PartMetadata['runStepDurationMs'];
+  backgrounded?: PartMetadata['backgrounded'];
   args?: string | Record<string, unknown>;
   output?: string;
   attachments?: TAttachment[];
@@ -81,7 +87,7 @@ export default function ExecuteCode({
   const sandboxStarting = useRecoilValue(sandboxStartingByToolCallId(toolCallId ?? ''));
 
   const { showCode, toggleCode, expandStyle, expandRef, progress, cancelled, hasError, hasOutput } =
-    useToolCallState(initialProgress, isSubmitting, output, !!code, onExpand);
+    useToolCallState(initialProgress, isSubmitting, output, !!code, onExpand, runStepStatus);
 
   const highlighted = useLazyHighlight(code, lang);
   const outputHasError = useMemo(() => ERROR_PATTERNS.test(output), [output]);
@@ -117,6 +123,15 @@ export default function ExecuteCode({
             cancelled
               ? localize('com_ui_cancelled')
               : (backgroundFinishedText ?? intent ?? localize('com_ui_analyzing_finished'))
+          }
+          /** A backgrounded call's run step closes when dispatch returns the
+           *  handle, so its duration is the dispatch time — showing it would
+           *  misstate a detached task's runtime as seconds. The handle check
+           *  covers the live card; the persisted `backgrounded` marker covers
+           *  the card after harvest replaces the handle with real stdout
+           *  (and after any reload), when no transient signal survives. */
+          durationMs={
+            backgroundHandle == null && backgrounded !== true ? runStepDurationMs : undefined
           }
           errorSuffix={
             (hasError && !cancelled) || backgroundFailed

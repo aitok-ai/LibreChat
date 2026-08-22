@@ -4,6 +4,7 @@ import {
   buildTree,
   ContentTypes,
   isEphemeralAgentId,
+  getEphemeralSender,
   appendAgentIdSuffix,
   encodeEphemeralAgentId,
 } from 'librechat-data-provider';
@@ -190,6 +191,14 @@ export const getAllContentText = (message?: TMessage | null): string => {
 
   return '';
 };
+
+/**
+ * Whether a draft message has enough content to submit: non-whitespace
+ * text, or at least one attached file. Lets users send a file without
+ * having to type a placeholder message alongside it.
+ */
+export const isSubmittableMessage = (text?: string | null, fileCount = 0): boolean =>
+  (text ?? '').trim() !== '' || fileCount > 0;
 
 export const hasStreamStartFailed = (message?: Pick<TMessage, 'metadata'> | null): boolean =>
   message?.metadata?.[STREAM_START_FAILED_METADATA_KEY] === true;
@@ -486,13 +495,13 @@ export const createDualMessageContent = (
       primaryConvo.spec != null && primaryConvo.spec !== ''
         ? modelSpecs?.find((s) => s.name === primaryConvo.spec)
         : undefined;
-    // For ephemeral agents, use modelLabel if provided, then model spec's label,
-    // then modelDisplayLabel from endpoint config, otherwise empty string to show model name
-    const primarySender =
-      primaryConvo.modelLabel ??
-      primarySpec?.label ??
-      (primaryEndpoint ? endpointsConfig?.[primaryEndpoint]?.modelDisplayLabel : undefined) ??
-      '';
+    const primarySender = getEphemeralSender({
+      modelLabel: primaryConvo.modelLabel,
+      specLabel: primarySpec?.label,
+      modelDisplayLabel: primaryEndpoint
+        ? endpointsConfig?.[primaryEndpoint]?.modelDisplayLabel
+        : undefined,
+    });
     primaryAgentId = encodeEphemeralAgentId({
       endpoint: primaryEndpoint ?? '',
       model: primaryModel,
@@ -526,13 +535,13 @@ export const createDualMessageContent = (
       addedConvo.spec != null && addedConvo.spec !== ''
         ? modelSpecs?.find((s) => s.name === addedConvo.spec)
         : undefined;
-    // For ephemeral agents, use modelLabel if provided, then model spec's label,
-    // then modelDisplayLabel from endpoint config, otherwise empty string to show model name
-    const addedSender =
-      addedConvo.modelLabel ??
-      addedSpec?.label ??
-      (addedEndpoint ? endpointsConfig?.[addedEndpoint]?.modelDisplayLabel : undefined) ??
-      '';
+    const addedSender = getEphemeralSender({
+      modelLabel: addedConvo.modelLabel,
+      specLabel: addedSpec?.label,
+      modelDisplayLabel: addedEndpoint
+        ? endpointsConfig?.[addedEndpoint]?.modelDisplayLabel
+        : undefined,
+    });
     addedAgentId = encodeEphemeralAgentId({
       endpoint: addedEndpoint ?? '',
       model: addedModel,

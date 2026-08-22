@@ -1,4 +1,5 @@
 import { memo, startTransition, useId, type MemoExoticComponent } from 'react';
+import { Search } from 'lucide-react';
 import { JSX } from 'react/jsx-runtime';
 import type { DataTableSearchProps } from './DataTable.types';
 import { useLocalize } from '~/hooks';
@@ -24,6 +25,10 @@ export const DataTableSearch: MemoExoticComponent<
         <label htmlFor={searchId} className="sr-only">
           {localize('com_ui_search_table')}
         </label>
+        <Search
+          className="text-text-tertiary pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+          aria-hidden="true"
+        />
         <Input
           id={searchId}
           value={value}
@@ -34,7 +39,10 @@ export const DataTableSearch: MemoExoticComponent<
           aria-label={localize('com_ui_search_table')}
           aria-describedby={descriptionId}
           placeholder={placeholder || localize('com_ui_search')}
-          className={cn('bg-surface-secondary h-10 rounded-b-none border-0 md:h-12', className)}
+          className={cn(
+            'placeholder:text-text-tertiary h-11 rounded-none border-0 bg-transparent pl-9 text-sm focus-visible:ring-inset',
+            className,
+          )}
         />
         <span id={descriptionId} className="sr-only">
           {localize('com_ui_search_table_description')}

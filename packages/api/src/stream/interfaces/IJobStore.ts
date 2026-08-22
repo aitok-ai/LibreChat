@@ -1,6 +1,7 @@
 import type { Agents, TFile, TPendingSteer } from 'librechat-data-provider';
 import type { StandardGraph } from '@librechat/agents';
 import type { ActivityPhaseSnapshot } from '~/agents/activityPhases/runtime';
+import type { ResolvedAskUserQuestion } from '~/agents/hitl/resume';
 import type { RecoveredSteerPayload } from '../SteerRecovery';
 
 /**
@@ -163,6 +164,12 @@ export interface SerializableJobData {
    */
   pendingAction?: Agents.PendingAction;
 
+  /** Durable bridge between the resume claim and content reconstruction. An
+   * abort can win while the resume controller is still rebuilding the client;
+   * retaining the accepted answer here lets that terminal owner stamp it onto
+   * the persisted partial response instead of losing it with the request. */
+  resolvedAskUserQuestions?: ResolvedAskUserQuestion[];
+
   /**
    * Flat mirror of `pendingAction.actionId`, kept as a top-level field so an
    * atomic status transition can guard on it (a nested JSON field can't be
@@ -263,6 +270,7 @@ export type JobMetadataPatch = Partial<
     | 'activityPhaseSnapshot'
     | 'preemptCapable'
     | 'generationProtocolVersion'
+    | 'resolvedAskUserQuestions'
   >
 >;
 
@@ -1264,6 +1272,10 @@ export interface IEventTransport {
   /** Awaitable, generation-correlated abort handoff. Resolves true only after
    * the replica owning that generation processes the abort. */
   emitAbortConfirmed?(streamId: string, generationId: number): Promise<boolean>;
+
+  /** Persist proof that this process synchronously stopped the exact generation.
+   * A delayed replacement can use the proof after the owner's listeners retire. */
+  recordAbortAcknowledgement?(streamId: string, generationId: number): Promise<boolean>;
 
   /** Publish a predecessor DONE only while the current job's opaque creation
    * attempt still carries that predecessor in its durable receipt chain. */
