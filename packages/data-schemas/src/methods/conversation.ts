@@ -1,7 +1,14 @@
 import { RetentionMode } from 'librechat-data-provider';
-import type { FilterQuery, Model, SortOrder } from 'mongoose';
+import type { FilterQuery, Model, SortOrder, Types } from 'mongoose';
 import type { DeleteResult } from 'mongoose';
-import type { AppConfig, IChatProjectDocument, IConversation, ISharedLink } from '~/types';
+import type {
+  AppConfig,
+  IChatProjectDocument,
+  IActiveSubagentThreadLease,
+  IConversation,
+  ISharedLink,
+  ISubagentThreadReservation,
+} from '~/types';
 import type { MessageMethods } from './message';
 import {
   activeExpirationFilter,
@@ -30,6 +37,80 @@ type ConversationUpdateResult = {
     updatedExisting?: boolean;
   };
 };
+
+export type SubagentThreadReadRecord = Pick<
+  IConversation,
+  | 'conversationId'
+  | 'tenantId'
+  | 'title'
+  | 'agent_id'
+  | 'updatedAt'
+  | 'subagentThread'
+  | 'subagentThreadLease'
+>;
+
+const ARCHIVE_CONVERSATION_BATCH_SIZE = 500;
+const PROJECT_STATS_REFRESH_CONCURRENCY = 10;
+const PROJECT_STATS_REFRESH_MAX_PASSES = 2;
+const PROJECT_DISCOVERY_MAX_ATTEMPTS = 3;
+
+async function discoverProjectIds(
+  Conversation: Model<IConversation>,
+  filter: FilterQuery<IConversation>,
+): Promise<string[]> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < PROJECT_DISCOVERY_MAX_ATTEMPTS; attempt++) {
+    try {
+      const currentProjectIds = await Conversation.distinct('chatProjectId', filter);
+      return currentProjectIds.filter((projectId): projectId is string => Boolean(projectId));
+    } catch (error) {
+      lastError = error;
+      logger.error('[archiveAllConvos] Conversations archived but project discovery failed', error);
+    }
+  }
+  throw lastError;
+}
+
+/**
+ * A project dropped here stays wrong forever: its chats are archived, so no retry of
+ * archive-all can find them again to recompute against. The likeliest rejection is also
+ * the most recoverable one, `refreshChatProjectStatsForUser` giving up after the project
+ * changed under every compare-and-set attempt, so failures are collected and replayed
+ * once the rest of the run has stopped competing with them.
+ */
+async function refreshChatProjectStatsInBatches(
+  mongoose: typeof import('mongoose'),
+  user: string,
+  projectIds: Iterable<string>,
+): Promise<void> {
+  let pending = [...projectIds];
+  for (let pass = 0; pass < PROJECT_STATS_REFRESH_MAX_PASSES && pending.length > 0; pass++) {
+    const failed: string[] = [];
+    for (let index = 0; index < pending.length; index += PROJECT_STATS_REFRESH_CONCURRENCY) {
+      const batch = pending.slice(index, index + PROJECT_STATS_REFRESH_CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map((projectId) => refreshChatProjectStatsForUser(mongoose, user, projectId)),
+      );
+      for (let resultIndex = 0; resultIndex < results.length; resultIndex++) {
+        const result = results[resultIndex];
+        if (result.status === 'rejected') {
+          failed.push(batch[resultIndex]);
+          logger.error(
+            `[refreshChatProjectStatsInBatches] Failed to refresh project ${batch[resultIndex]}`,
+            result.reason,
+          );
+        }
+      }
+    }
+    pending = failed;
+  }
+
+  if (pending.length > 0) {
+    logger.error(
+      `[refreshChatProjectStatsInBatches] Left ${pending.length} project(s) unreconciled: ${pending.join(', ')}`,
+    );
+  }
+}
 
 export interface ConversationMethods {
   getConvoFiles(conversationId: string): Promise<string[]>;
@@ -80,10 +161,56 @@ export interface ConversationMethods {
     convoMap: Record<string, unknown>;
   }>;
   getConvo(user: string, conversationId: string): Promise<IConversation | null>;
+  getSubagentThreadForParent(input: {
+    user: string;
+    parentConversationId: string;
+    conversationId: string;
+    tenantId?: string;
+  }): Promise<SubagentThreadReadRecord | null>;
+  reserveSubagentThread(input: {
+    user: string;
+    conversationId: string;
+    conversation: Partial<IConversation>;
+    tenantId?: string;
+  }): Promise<ISubagentThreadReservation>;
+  acquireSubagentThreadLease(input: {
+    user: string;
+    conversationId: string;
+    token: string;
+    taskId: string;
+    now: Date;
+    expiresAt: Date;
+    tenantId?: string;
+  }): Promise<boolean>;
+  renewSubagentThreadLease(input: {
+    user: string;
+    conversationId: string;
+    token: string;
+    now: Date;
+    expiresAt: Date;
+    tenantId?: string;
+  }): Promise<boolean>;
+  releaseSubagentThreadLease(input: {
+    user: string;
+    conversationId: string;
+    token: string;
+    tenantId?: string;
+  }): Promise<boolean>;
+  countActiveSubagentThreadLeases(input: {
+    user: string;
+    now: Date;
+    tenantId?: string;
+  }): Promise<number>;
+  listActiveSubagentThreadLeases(input: {
+    user: string;
+    now: Date;
+    tenantId?: string;
+  }): Promise<IActiveSubagentThreadLease[]>;
   getConvoOwnership(
     user: string,
     conversationId: string,
-  ): Promise<Pick<IConversation, 'user'> | null>;
+    tenantId?: string | null,
+  ): Promise<Pick<IConversation, 'user' | 'tenantId' | 'subagentThread'> | null>;
   getConvoRetention(
     user: string,
     conversationId: string,
@@ -93,6 +220,7 @@ export interface ConversationMethods {
     user: string,
     filter: FilterQuery<IConversation>,
   ): Promise<DeleteResult & { messages: DeleteResult; conversationIds: string[] }>;
+  archiveAllConvos(user: string): Promise<{ archivedCount: number }>;
 }
 
 export function createConversationMethods(
@@ -108,6 +236,11 @@ export function createConversationMethods(
 
   function getVisibleConversationRetentionFilter(): FilterQuery<IConversation> {
     return buildRetentionVisibilityFilter<IConversation>();
+  }
+
+  /** Child threads are durable execution records, not user-navigable conversations. */
+  function getHumanConversationFilter(): FilterQuery<IConversation> {
+    return { subagentThread: { $exists: false } } as FilterQuery<IConversation>;
   }
 
   /**
@@ -136,6 +269,232 @@ export function createConversationMethods(
     } catch (error) {
       logger.error('[getConvo] Error getting single conversation', error);
       throw new Error('Error getting single conversation');
+    }
+  }
+
+  /** Resolves a child only through its owning parent and includes its private live lease. */
+  async function getSubagentThreadForParent(input: {
+    user: string;
+    parentConversationId: string;
+    conversationId: string;
+    tenantId?: string;
+  }): Promise<SubagentThreadReadRecord | null> {
+    try {
+      const Conversation = mongoose.models.Conversation as Model<IConversation>;
+      return await Conversation.findOne({
+        user: input.user,
+        conversationId: input.conversationId,
+        'subagentThread.parentConversationId': input.parentConversationId,
+        ...subagentLeaseTenantFilter(input.tenantId),
+      })
+        .select(
+          'conversationId tenantId title agent_id updatedAt subagentThread +subagentThreadLease',
+        )
+        .lean<SubagentThreadReadRecord>();
+    } catch (error) {
+      logger.error('[getSubagentThreadForParent] Error getting child conversation', error);
+      throw new Error('Error getting child conversation');
+    }
+  }
+
+  /** Creates immutable child lineage exactly once without overwriting a concurrent winner. */
+  async function reserveSubagentThread(input: {
+    user: string;
+    conversationId: string;
+    conversation: Partial<IConversation>;
+    tenantId?: string;
+  }): Promise<ISubagentThreadReservation> {
+    const Conversation = mongoose.models.Conversation as Model<IConversation>;
+    const filter = {
+      user: input.user,
+      conversationId: input.conversationId,
+      ...(input.tenantId == null ? { tenantId: { $exists: false } } : { tenantId: input.tenantId }),
+    };
+    try {
+      const result = (await Conversation.findOneAndUpdate(
+        filter,
+        {
+          $setOnInsert: {
+            ...input.conversation,
+            user: input.user,
+            conversationId: input.conversationId,
+            messages: [],
+          },
+        },
+        { new: true, upsert: true, includeResultMetadata: true, setDefaultsOnInsert: true },
+      )) as unknown as ConversationUpdateResult;
+      if (result.value == null) {
+        throw new Error('Unable to reserve the subagent thread.');
+      }
+      return {
+        conversation: result.value.toObject(),
+        created: result.lastErrorObject?.updatedExisting !== true,
+      };
+    } catch (error) {
+      /** Concurrent upserts can race at the unique index. The document that won is
+       * the reservation; callers still validate its immutable lineage before use. */
+      if ((error as { code?: number }).code === 11000) {
+        const existing = await Conversation.findOne(filter).lean<IConversation>();
+        if (existing != null) {
+          return { conversation: existing, created: false };
+        }
+      }
+      throw error;
+    }
+  }
+
+  function subagentLeaseTenantFilter(tenantId?: string): FilterQuery<IConversation> {
+    return tenantId == null ? { tenantId: { $exists: false } } : { tenantId };
+  }
+
+  /** Atomically claims one durable child thread across all API replicas. */
+  async function acquireSubagentThreadLease(input: {
+    user: string;
+    conversationId: string;
+    token: string;
+    taskId: string;
+    now: Date;
+    expiresAt: Date;
+    tenantId?: string;
+  }): Promise<boolean> {
+    const Conversation = mongoose.models.Conversation as Model<IConversation>;
+    const result = await Conversation.updateOne(
+      {
+        user: input.user,
+        conversationId: input.conversationId,
+        subagentThread: { $exists: true },
+        ...subagentLeaseTenantFilter(input.tenantId),
+        $or: [
+          { subagentThreadLease: { $exists: false } },
+          { 'subagentThreadLease.expiresAt': { $lte: input.now } },
+          { 'subagentThreadLease.token': input.token },
+        ],
+      },
+      {
+        $set: {
+          subagentThreadLease: {
+            token: input.token,
+            taskId: input.taskId,
+            expiresAt: input.expiresAt,
+          },
+        },
+      },
+      { timestamps: false },
+    );
+    return result.matchedCount === 1;
+  }
+
+  /** Renews only the unexpired lease owned by this exact task token. */
+  async function renewSubagentThreadLease(input: {
+    user: string;
+    conversationId: string;
+    token: string;
+    now: Date;
+    expiresAt: Date;
+    tenantId?: string;
+  }): Promise<boolean> {
+    const Conversation = mongoose.models.Conversation as Model<IConversation>;
+    const result = await Conversation.updateOne(
+      {
+        user: input.user,
+        conversationId: input.conversationId,
+        ...subagentLeaseTenantFilter(input.tenantId),
+        'subagentThreadLease.token': input.token,
+        'subagentThreadLease.expiresAt': { $gt: input.now },
+      },
+      { $set: { 'subagentThreadLease.expiresAt': input.expiresAt } },
+      { timestamps: false },
+    );
+    return result.matchedCount === 1;
+  }
+
+  /** Releases only the lease owned by this exact task token. */
+  async function releaseSubagentThreadLease(input: {
+    user: string;
+    conversationId: string;
+    token: string;
+    tenantId?: string;
+  }): Promise<boolean> {
+    const Conversation = mongoose.models.Conversation as Model<IConversation>;
+    const result = await Conversation.updateOne(
+      {
+        user: input.user,
+        conversationId: input.conversationId,
+        ...subagentLeaseTenantFilter(input.tenantId),
+        'subagentThreadLease.token': input.token,
+      },
+      { $unset: { subagentThreadLease: 1 } },
+      { timestamps: false },
+    );
+    return result.modifiedCount === 1;
+  }
+
+  /** Counts live child execution fences while account deletion drains. */
+  async function countActiveSubagentThreadLeases(input: {
+    user: string;
+    now: Date;
+    tenantId?: string;
+  }): Promise<number> {
+    const Conversation = mongoose.models.Conversation as Model<IConversation>;
+    return Conversation.countDocuments({
+      user: input.user,
+      ...subagentLeaseTenantFilter(input.tenantId),
+      'subagentThreadLease.expiresAt': { $gt: input.now },
+    });
+  }
+
+  /** Resolves only live task addresses so account-wide cancellation stays O(active tasks). */
+  async function listActiveSubagentThreadLeases(input: {
+    user: string;
+    now: Date;
+    tenantId?: string;
+  }): Promise<IActiveSubagentThreadLease[]> {
+    const Conversation = mongoose.models.Conversation as Model<IConversation>;
+    const conversations = await Conversation.find({
+      user: input.user,
+      ...subagentLeaseTenantFilter(input.tenantId),
+      'subagentThreadLease.expiresAt': { $gt: input.now },
+    })
+      .select('conversationId subagentThread.parentConversationId +subagentThreadLease')
+      .lean<
+        Array<Pick<IConversation, 'conversationId' | 'subagentThread' | 'subagentThreadLease'>>
+      >();
+    return conversations.flatMap((conversation) => {
+      const { conversationId } = conversation;
+      const parentConversationId = conversation.subagentThread?.parentConversationId;
+      const taskId = conversation.subagentThreadLease?.taskId;
+      return typeof conversationId === 'string' &&
+        conversationId !== '' &&
+        typeof parentConversationId === 'string' &&
+        parentConversationId !== '' &&
+        typeof taskId === 'string' &&
+        taskId !== ''
+        ? [{ conversationId, parentConversationId, taskId }]
+        : [];
+    });
+  }
+
+  /**
+   * Public-read probe: resolves ownership plus the child-thread discriminator
+   * without materializing the full conversation document (preset spread +
+   * message ObjectId array).
+   */
+  async function getConvoOwnership(user: string, conversationId: string, tenantId?: string | null) {
+    try {
+      const Conversation = mongoose.models.Conversation as Model<IConversation>;
+      const tenantFilter =
+        tenantId === undefined ? {} : subagentLeaseTenantFilter(tenantId ?? undefined);
+      return await Conversation.findOne(
+        {
+          user,
+          conversationId,
+          ...tenantFilter,
+        },
+        'user tenantId subagentThread',
+      ).lean<Pick<IConversation, 'user' | 'tenantId' | 'subagentThread'>>();
+    } catch (error) {
+      logger.error('[getConvoOwnership] Error checking conversation ownership', error);
+      throw new Error('Error checking conversation ownership');
     }
   }
 
@@ -491,8 +850,10 @@ export function createConversationMethods(
          * refresh: the incremental path only bumps the count for brand-new inserts,
          * so a pre-existing chat joining the project would otherwise be uncounted.
          */
+        const isNewConversation = conversationResult.lastErrorObject?.updatedExisting === false;
         const shouldRefreshProjectStats =
           projectMembershipChanged ||
+          isNewConversation ||
           typeof update.isArchived === 'boolean' ||
           Object.prototype.hasOwnProperty.call(unsetFields, 'isArchived') ||
           isRetentionVisibilityUpdate ||
@@ -506,7 +867,6 @@ export function createConversationMethods(
             userId,
             conversation.chatProjectId,
             conversation,
-            conversationResult.lastErrorObject?.updatedExisting === false,
           );
         }
       }
@@ -756,6 +1116,7 @@ export function createConversationMethods(
     }
 
     filters.push(getVisibleConversationRetentionFilter());
+    filters.push(getHumanConversationFilter());
 
     if (search) {
       try {
@@ -945,10 +1306,12 @@ export function createConversationMethods(
       const conversationIds = convoIds.map((convo) => convo.conversationId);
 
       const results = await Conversation.find({
-        user,
-        conversationId: { $in: conversationIds },
-        ...getVisibleConversationRetentionFilter(),
-      }).lean<IConversation[]>();
+        $and: [
+          { user, conversationId: { $in: conversationIds } },
+          getVisibleConversationRetentionFilter(),
+          getHumanConversationFilter(),
+        ],
+      } as FilterQuery<IConversation>).lean<IConversation[]>();
 
       results.sort(
         (a, b) => new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime(),
@@ -1006,12 +1369,58 @@ export function createConversationMethods(
       const Conversation = mongoose.models.Conversation as Model<IConversation>;
       const { deleteMessages } = getMessageMethods();
       const userFilter = { ...filter, user };
-      const conversations = await Conversation.find(userFilter).select(
-        'conversationId chatProjectId tags',
-      );
-      const conversationIds = conversations.map((c) => c.conversationId);
+      type DeletionConversation = Pick<IConversation, 'conversationId' | 'chatProjectId' | 'tags'>;
+      const conversations = await Conversation.find(userFilter)
+        .select('conversationId chatProjectId tags')
+        .lean<DeletionConversation[]>();
+      if (!conversations.length) {
+        throw new Error('Conversation not found or already deleted.');
+      }
+
+      /**
+       * Delete roots first, then walk their owner-scoped lineage. Apart from
+       * making child threads share the parent's lifecycle, deleting each wave
+       * before discovering the next closes the child-creation race: a creator
+       * that started concurrently sees its parent disappear and rolls back,
+       * while a child already committed is found by the next query.
+       */
+      const deletedConversations: DeletionConversation[] = [];
+      const seen = new Set<string>();
+      let pending = conversations;
+      let acknowledged = true;
+      let deletedCount = 0;
+      while (pending.length > 0) {
+        const wave = pending.filter((conversation) => !seen.has(conversation.conversationId));
+        if (wave.length === 0) {
+          break;
+        }
+        const waveIds = wave.map((conversation) => conversation.conversationId);
+        try {
+          const result = await Conversation.deleteMany({ user, conversationId: { $in: waveIds } });
+          acknowledged &&= result.acknowledged;
+          deletedCount += result.deletedCount;
+          for (const conversation of wave) {
+            seen.add(conversation.conversationId);
+            deletedConversations.push(conversation);
+          }
+          pending = await Conversation.find({
+            user,
+            'subagentThread.parentConversationId': { $in: waveIds },
+          })
+            .select('conversationId chatProjectId tags')
+            .lean<DeletionConversation[]>();
+        } catch (error) {
+          if (deletedConversations.length === 0) {
+            throw error;
+          }
+          logger.error('[deleteConvos] Root deleted but child-thread cascade failed', error);
+          break;
+        }
+      }
+
+      const conversationIds = deletedConversations.map((c) => c.conversationId);
       const projectIds = new Set(
-        conversations
+        deletedConversations
           .map((conversation) => conversation.chatProjectId)
           .filter((projectId): projectId is string => Boolean(projectId)),
       );
@@ -1022,7 +1431,7 @@ export function createConversationMethods(
        * the bookmark count once.
        */
       const tagDecrements: string[] = [];
-      for (const conversation of conversations) {
+      for (const conversation of deletedConversations) {
         if (!conversation.tags?.length) {
           continue;
         }
@@ -1031,11 +1440,7 @@ export function createConversationMethods(
         }
       }
 
-      if (!conversationIds.length) {
-        throw new Error('Conversation not found or already deleted.');
-      }
-
-      const deleteConvoResult = await Conversation.deleteMany(userFilter);
+      const deleteConvoResult: DeleteResult = { acknowledged, deletedCount };
       const deleted = deleteConvoResult.deletedCount > 0;
 
       /**
@@ -1074,11 +1479,7 @@ export function createConversationMethods(
        */
       if (deleted && projectIds.size > 0) {
         try {
-          await Promise.all(
-            [...projectIds].map((projectId) =>
-              refreshChatProjectStatsForUser(mongoose, user, projectId),
-            ),
-          );
+          await refreshChatProjectStatsInBatches(mongoose, user, projectIds);
         } catch (error) {
           logger.error('[deleteConvos] Conversations deleted but stats refresh failed', error);
         }
@@ -1094,6 +1495,134 @@ export function createConversationMethods(
     }
   }
 
+  /**
+   * Archives every conversation the user can currently see in one pass. Temporary and
+   * retention-expired conversations are left alone: they are already hidden from the
+   * chat list, so archiving them would only resurrect them in the archived view.
+   */
+  async function archiveAllConvos(user: string) {
+    const Conversation = mongoose.models.Conversation as Model<IConversation>;
+    const projectIds = new Set<string>();
+    /** One stamp for the whole sweep so the archived view groups the run together
+     * instead of fanning it out across however long the batching took, and so the
+     * recovery below can find everything this call committed without holding an id
+     * per conversation in memory. */
+    const archivedAt = new Date();
+    let archivedCount = 0;
+    /** A write whose result never came back may still have committed, so reconciliation
+     * keys off the attempt rather than off `archivedCount`: a stepdown between commit and
+     * acknowledgement would otherwise strand those chats with stale project counts, and no
+     * retry can find them again because they no longer match the sweep filter. */
+    let attemptedArchiveWrite = false;
+    try {
+      const filter = {
+        user,
+        $and: [
+          { $or: [{ isArchived: false }, { isArchived: { $exists: false } }] },
+          getVisibleConversationRetentionFilter(),
+          getHumanConversationFilter(),
+        ],
+      } as FilterQuery<IConversation>;
+
+      const snapshotBoundary = await Conversation.findOne(filter)
+        .select('_id')
+        .sort({ _id: -1 })
+        .lean<Pick<IConversation, '_id'>>();
+      if (!snapshotBoundary) {
+        return { archivedCount: 0 };
+      }
+
+      let lastConversationId: Types.ObjectId | null = null;
+
+      while (true) {
+        const idRange = lastConversationId
+          ? { $gt: lastConversationId, $lte: snapshotBoundary._id }
+          : { $lte: snapshotBoundary._id };
+        const conversations = await Conversation.find({ ...filter, _id: idRange })
+          .select('_id chatProjectId')
+          .sort({ _id: 1 })
+          .limit(ARCHIVE_CONVERSATION_BATCH_SIZE)
+          .lean<Array<Pick<IConversation, '_id' | 'chatProjectId'>>>();
+        if (conversations.length === 0) {
+          break;
+        }
+
+        const conversationIds: Types.ObjectId[] = [];
+        for (const conversation of conversations) {
+          conversationIds.push(conversation._id);
+          if (conversation.chatProjectId) {
+            projectIds.add(conversation.chatProjectId);
+          }
+        }
+        lastConversationId = conversationIds[conversationIds.length - 1];
+
+        /**
+         * `timestamps: false` keeps each conversation's own `updatedAt`, so the archived
+         * view stays sorted by real activity instead of collapsing onto the archive time.
+         * `archivedAt` is still stamped: the filter only matches unarchived chats, so this
+         * cannot move an existing stamp, and leaving it unset would drop the whole sweep
+         * into the legacy group the archived table sorts and dates by `createdAt`.
+         */
+        attemptedArchiveWrite = true;
+        const result = await Conversation.updateMany(
+          { ...filter, _id: { $in: conversationIds } },
+          { $set: { isArchived: true, archivedAt } },
+          { timestamps: false },
+        );
+        const batchArchivedCount = result.modifiedCount ?? 0;
+        archivedCount += batchArchivedCount;
+
+        if (batchArchivedCount > 0) {
+          const currentProjectIds = await discoverProjectIds(Conversation, {
+            _id: { $in: conversationIds },
+            user,
+          });
+          for (const projectId of currentProjectIds) {
+            projectIds.add(projectId);
+          }
+        }
+      }
+
+      return { archivedCount };
+    } catch (error) {
+      logger.error('[archiveAllConvos] Error archiving conversations', error);
+      throw error;
+    } finally {
+      /**
+       * Best-effort, mirroring `deleteConvos`: committed batches are already archived, so
+       * a stats failure must not hide that from the caller. Recover destination projects
+       * first, because in-loop discovery can throw after a move and a retry cannot see
+       * those already-archived chats. The sweep marker is what identifies them, so this
+       * costs one indexed query rather than a per-conversation id list: history size
+       * changes how much this reads, never how much it holds.
+       */
+      if (attemptedArchiveWrite) {
+        try {
+          const recoveredProjectIds = await discoverProjectIds(Conversation, {
+            user,
+            isArchived: true,
+            archivedAt,
+          });
+          for (const projectId of recoveredProjectIds) {
+            projectIds.add(projectId);
+          }
+        } catch (error) {
+          logger.error(
+            '[archiveAllConvos] Conversations archived but project recovery failed',
+            error,
+          );
+        }
+      }
+      if (attemptedArchiveWrite && projectIds.size > 0) {
+        try {
+          await refreshChatProjectStatsInBatches(mongoose, user, projectIds);
+        } catch (error) {
+          logger.error('[archiveAllConvos] Conversations archived but stats refresh failed', error);
+        }
+      }
+    }
+  }
+
   return {
     getConvoFiles,
     searchConversation,
@@ -1104,9 +1633,17 @@ export function createConversationMethods(
     getConvosByCursor,
     getConvosQueried,
     getConvo,
+    getSubagentThreadForParent,
+    reserveSubagentThread,
+    acquireSubagentThreadLease,
+    renewSubagentThreadLease,
+    releaseSubagentThreadLease,
+    countActiveSubagentThreadLeases,
+    listActiveSubagentThreadLeases,
     getConvoOwnership,
     getConvoRetention,
     getConvoTitle,
     deleteConvos,
+    archiveAllConvos,
   };
 }

@@ -8,6 +8,7 @@ import { sandboxStartingByToolCallId } from '~/store';
 import useLazyHighlight from './useLazyHighlight';
 import useToolCallState from './useToolCallState';
 import CodeWindowHeader from './CodeWindowHeader';
+import useFollowScroll from './useFollowScroll';
 import { AttachmentGroup } from './Attachment';
 import { useToolCallIntent } from './intent';
 import { useLocalize } from '~/hooks';
@@ -86,15 +87,15 @@ export default function ExecuteCode({
   const intent = useToolCallIntent(args);
   const sandboxStarting = useRecoilValue(sandboxStartingByToolCallId(toolCallId ?? ''));
 
-  const { showCode, toggleCode, expandStyle, expandRef, progress, cancelled, hasError, hasOutput } =
-    useToolCallState(initialProgress, isSubmitting, output, !!code, onExpand, runStepStatus);
-
-  const highlighted = useLazyHighlight(code, lang);
   const outputHasError = useMemo(() => ERROR_PATTERNS.test(output), [output]);
   /** A backgrounded call's persisted output stays the dispatch handle until
    *  the detached run settles and patches it; render a background state
    *  instead of the handle JSON. Completion arrives live as the status marker
-   *  attachment (also covers stdout-only runs) or as harvested files. */
+   *  attachment (also covers stdout-only runs) or as harvested files.
+   *
+   *  Resolved before the phase, which folds `backgroundFailed` in: the
+   *  detached task's outcome is this card's outcome, and the dispatch step's
+   *  own output cannot express it. */
   const backgroundHandle = useMemo(() => parseBackgroundHandle(output), [output]);
   const { fileAttachments, backgroundStatus } = useMemo(
     () => splitBackgroundAttachments(attachments, toolCallId),
@@ -109,18 +110,35 @@ export default function ExecuteCode({
       )
     : null;
 
+  const { showCode, toggleCode, expandStyle, expandRef, phase, hasOutput } = useToolCallState({
+    initialProgress,
+    isSubmitting,
+    output,
+    hasInput: !!code,
+    onExpand,
+    runStepStatus,
+    extraError: backgroundFailed,
+  });
+
+  const highlighted = useLazyHighlight(code, lang);
+  const { ref: codePaneRef, onScroll: onCodePaneScroll } = useFollowScroll<HTMLPreElement>(
+    highlighted ?? code ?? '',
+    phase === 'running',
+    showCode,
+  );
+
   return (
     <>
       <div className="relative my-1.5 flex h-5 shrink-0 items-center gap-2.5">
         <ProgressText
-          progress={progress}
+          phase={phase}
           onClick={toggleCode}
           inProgressText={
             intent ??
             (sandboxStarting ? localize('com_ui_sandbox_starting') : localize('com_ui_analyzing'))
           }
           finishedText={
-            cancelled
+            phase === 'cancelled'
               ? localize('com_ui_cancelled')
               : (backgroundFinishedText ?? intent ?? localize('com_ui_analyzing_finished'))
           }
@@ -133,23 +151,17 @@ export default function ExecuteCode({
           durationMs={
             backgroundHandle == null && backgrounded !== true ? runStepDurationMs : undefined
           }
-          errorSuffix={
-            (hasError && !cancelled) || backgroundFailed
-              ? localize('com_ui_tool_failed')
-              : undefined
-          }
           icon={
             <SquareTerminal
               className={cn(
                 'text-text-secondary size-4 shrink-0',
-                progress < 1 && !cancelled && !hasError && 'animate-pulse',
+                phase === 'running' && 'animate-pulse',
               )}
               aria-hidden="true"
             />
           }
           hasInput={!!code?.length}
           isExpanded={showCode}
-          error={cancelled}
         />
       </div>
       <div style={expandStyle}>
@@ -157,7 +169,11 @@ export default function ExecuteCode({
           <div className="border-border-light bg-surface-secondary my-2 overflow-hidden rounded-lg border">
             {code && <CodeWindowHeader language={lang} code={code} />}
             {code && (
-              <pre className="bg-surface-chat dark:bg-surface-primary-alt max-h-[300px] overflow-auto p-4 font-mono text-xs">
+              <pre
+                ref={codePaneRef}
+                onScroll={onCodePaneScroll}
+                className="bg-surface-chat dark:bg-surface-primary-alt max-h-[300px] overflow-auto p-4 font-mono text-xs"
+              >
                 <code className={`hljs language-${lang} !whitespace-pre`}>{highlighted}</code>
               </pre>
             )}

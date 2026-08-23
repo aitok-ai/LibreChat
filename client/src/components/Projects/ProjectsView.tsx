@@ -295,8 +295,9 @@ export default function ProjectsView() {
             items={sortMenuItems}
           />
         </div>
-        <div className="flex items-baseline justify-between gap-4 pt-6">
-          <h2 className="text-text-primary text-lg font-semibold">
+
+        <div className="mt-8 flex items-baseline justify-between gap-3">
+          <h2 className="text-text-primary text-sm font-medium">
             {localize('com_ui_your_projects')}
           </h2>
           {!isLoading && projects.length > 0 ? (

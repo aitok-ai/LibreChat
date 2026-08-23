@@ -9,6 +9,7 @@ const {
   findShadowedServerNames,
   agentCreateSchema,
   agentUpdateSchema,
+  agentSubagentsSchema,
   refreshListAvatars,
   collectEdgeAgentIds,
   replaceEdgeSourceId,
@@ -35,6 +36,8 @@ const {
   actionDelimiter,
   AgentCapabilities,
   EModelEndpoint,
+  resolveAllowedStatefulCodeEnvironments,
+  removeCodeExecutionCaller,
   removeNullishValues,
 } = require('librechat-data-provider');
 const {
@@ -174,8 +177,62 @@ const validateEdgeAgentReferences = async (
 };
 
 /**
- * Validates `subagents.agent_ids` more strictly than edges: both
- * missing AND unauthorized ids are errors. `subagents.agent_ids`
+ * Collects every saved agent referenced by a spawn target. Graph edge
+ * endpoints are included defensively even though request validation requires
+ * them to be declared in the graph's `agent_ids` list.
+ * @param {import('librechat-data-provider').AgentSubagentsConfig | undefined} subagents
+ * @returns {string[]}
+ */
+const collectSubagentAgentIds = (subagents) => {
+  const ids = new Set(subagents?.agent_ids ?? []);
+  for (const graph of subagents?.graphs ?? []) {
+    for (const agentId of graph.agent_ids ?? []) {
+      ids.add(agentId);
+    }
+    for (const edge of graph.edges ?? []) {
+      for (const agentId of collectEdgeAgentIds([edge])) {
+        ids.add(agentId);
+      }
+    }
+  }
+  return [...ids];
+};
+
+/**
+ * Rewrites a duplicated agent's self-references inside saved graph spawn
+ * targets so the clone remains self-contained.
+ * @param {import('librechat-data-provider').AgentSubagentsConfig | undefined} subagents
+ * @param {string} sourceAgentId
+ * @param {string} targetAgentId
+ */
+const replaceSubagentGraphAgentId = (subagents, sourceAgentId, targetAgentId) => {
+  if (!Array.isArray(subagents?.graphs)) {
+    return subagents;
+  }
+
+  const replaceId = (agentId) => (agentId === sourceAgentId ? targetAgentId : agentId);
+  return {
+    ...subagents,
+    graphs: subagents.graphs.map((graph) => ({
+      ...graph,
+      agent_ids: graph.agent_ids?.map(replaceId),
+      edges: graph.edges?.map((edge) => ({
+        ...edge,
+        from: Array.isArray(edge.from) ? edge.from.map(replaceId) : replaceId(edge.from),
+        to: Array.isArray(edge.to) ? edge.to.map(replaceId) : replaceId(edge.to),
+      })),
+      entry_agent_id: replaceId(graph.entry_agent_id),
+      result_agent_id: replaceId(graph.result_agent_id),
+    })),
+  };
+};
+
+const replaceAndValidateSubagentGraphAgentId = (subagents, sourceAgentId, targetAgentId) =>
+  agentSubagentsSchema.parse(replaceSubagentGraphAgentId(subagents, sourceAgentId, targetAgentId));
+
+/**
+ * Validates saved-agent spawn targets more strictly than top-level edges: both
+ * missing AND unauthorized ids are errors. Spawn targets
  * can't self-reference (subagents spawn *other* agents), so a
  * missing id is always a typo or a reference to a deleted agent —
  * `initializeClient` would silently drop it at runtime, leaving the
@@ -183,8 +240,22 @@ const validateEdgeAgentReferences = async (
  * Returning the split lets the caller report each bucket with the
  * appropriate status.
  */
-const validateSubagentReferences = (subagents, userId, userRole) =>
-  classifyAgentReferences(subagents?.agent_ids ?? [], userId, userRole);
+const validateSubagentReferences = async (
+  subagents,
+  userId,
+  userRole,
+  allowedMissingIds = new Set(),
+) => {
+  const { missing, unauthorized } = await classifyAgentReferences(
+    collectSubagentAgentIds(subagents),
+    userId,
+    userRole,
+  );
+  return {
+    missing: missing.filter((id) => !allowedMissingIds.has(id)),
+    unauthorized,
+  };
+};
 
 /**
  * Returns true when the agents-endpoint `subagents` capability is
@@ -199,6 +270,75 @@ const isSubagentsCapabilityEnabled = (req) => {
   const capabilities = req.config?.endpoints?.[EModelEndpoint.agents]?.capabilities;
   if (!Array.isArray(capabilities)) return false;
   return capabilities.includes(AgentCapabilities.subagents);
+};
+
+const isCodeInterpreterCapabilityEnabled = (req) => {
+  const capabilities = req.config?.endpoints?.[EModelEndpoint.agents]?.capabilities;
+  if (!Array.isArray(capabilities)) return false;
+  return capabilities.includes(AgentCapabilities.execute_code);
+};
+
+/** Reject a newly selected stateful workspace scope that the deployment owner
+ * has excluded. Disabled sessions and unrelated edits remain saveable so an
+ * allowlist tightening never silently rewrites or strands an existing agent. */
+const validateStatefulCodeEnvironment = (req, res, enabled, environment) => {
+  if (enabled !== true) {
+    return true;
+  }
+
+  const allowedEnvironments = resolveAllowedStatefulCodeEnvironments(
+    req.config?.endpoints?.[EModelEndpoint.agents]?.statefulCodeSessions?.allowedEnvironments,
+  );
+  const resolvedEnvironment = environment ?? 'user';
+  if (allowedEnvironments.includes(resolvedEnvironment)) {
+    return true;
+  }
+
+  res.status(403).json({
+    error: `Stateful code environment is not allowed by this deployment: ${resolvedEnvironment}`,
+  });
+  return false;
+};
+
+/**
+ * @param {import('librechat-data-provider').AgentSubagentsConfig | undefined} subagents
+ * @param {Express.Request} req
+ * @returns {Promise<{ status: number, body: { error: string, agent_ids: string[] } } | null>}
+ */
+const getSubagentReferenceError = async (subagents, req, allowedMissingIds = new Set()) => {
+  if (
+    !isSubagentsCapabilityEnabled(req) ||
+    subagents?.enabled !== true ||
+    collectSubagentAgentIds(subagents).length === 0
+  ) {
+    return null;
+  }
+
+  const { missing, unauthorized } = await validateSubagentReferences(
+    subagents,
+    req.user.id,
+    req.user.role,
+    allowedMissingIds,
+  );
+  if (missing.length > 0) {
+    return {
+      status: 400,
+      body: {
+        error: 'One or more agents referenced in subagents do not exist',
+        agent_ids: missing,
+      },
+    };
+  }
+  if (unauthorized.length > 0) {
+    return {
+      status: 403,
+      body: {
+        error: 'You do not have access to one or more agents referenced in subagents',
+        agent_ids: unauthorized,
+      },
+    };
+  }
+  return null;
 };
 
 /**
@@ -400,6 +540,24 @@ const createAgentHandler = async (req, res) => {
     const validatedData = agentCreateSchema.parse(req.body);
     const { tools = [], ...agentData } = removeNullishValues(validatedData);
 
+    if (
+      (!isCodeInterpreterCapabilityEnabled(req) || !tools.includes(Tools.execute_code)) &&
+      agentData.tool_options != null
+    ) {
+      agentData.tool_options = removeCodeExecutionCaller(agentData.tool_options);
+    }
+
+    if (
+      !validateStatefulCodeEnvironment(
+        req,
+        res,
+        agentData.stateful_code_sessions,
+        agentData.stateful_code_environment,
+      )
+    ) {
+      return;
+    }
+
     if (agentData.model_parameters && typeof agentData.model_parameters === 'object') {
       agentData.model_parameters = removeNullishValues(
         sanitizeModelParameters(agentData.model_parameters),
@@ -410,6 +568,11 @@ const createAgentHandler = async (req, res) => {
     const { id: userId, role: userRole } = req.user;
     agentData.id = `agent_${nanoid()}`;
     agentData.edges = replaceEdgeSourceId(agentData.edges, '', agentData.id);
+    agentData.subagents = replaceAndValidateSubagentGraphAgentId(
+      agentData.subagents,
+      '',
+      agentData.id,
+    );
 
     if (agentData.tool_resources) {
       await pruneToolResourceFileIdsForAgent({
@@ -454,28 +617,13 @@ const createAgentHandler = async (req, res) => {
      * gate, so a user who lost VIEW on a child can still save the
      * disable edit.
      */
-    if (
-      isSubagentsCapabilityEnabled(req) &&
-      agentData.subagents?.enabled === true &&
-      agentData.subagents?.agent_ids?.length
-    ) {
-      const { missing, unauthorized } = await validateSubagentReferences(
-        agentData.subagents,
-        userId,
-        userRole,
-      );
-      if (missing.length > 0) {
-        return res.status(400).json({
-          error: 'One or more agents referenced in subagents do not exist',
-          agent_ids: missing,
-        });
-      }
-      if (unauthorized.length > 0) {
-        return res.status(403).json({
-          error: 'You do not have access to one or more agents referenced in subagents',
-          agent_ids: unauthorized,
-        });
-      }
+    const subagentReferenceError = await getSubagentReferenceError(
+      agentData.subagents,
+      req,
+      new Set([agentData.id]),
+    );
+    if (subagentReferenceError) {
+      return res.status(subagentReferenceError.status).json(subagentReferenceError.body);
     }
 
     agentData.author = userId;
@@ -678,6 +826,63 @@ const updateAgentHandler = async (req, res) => {
     // Preserve explicit null for avatar to allow resetting the avatar
     const { avatar: avatarField, _id, ...rest } = validatedData;
     const updateData = removeNullishValues(rest);
+    let existingAgent;
+
+    const includesStatefulConfiguration =
+      updateData.stateful_code_sessions !== undefined ||
+      updateData.stateful_code_environment !== undefined;
+    const includesToolsConfiguration = Array.isArray(updateData.tools);
+    const includesToolOptionsConfiguration = updateData.tool_options !== undefined;
+    if (
+      includesStatefulConfiguration ||
+      includesToolsConfiguration ||
+      includesToolOptionsConfiguration
+    ) {
+      existingAgent = await db.getAgent({ id });
+      if (!existingAgent) {
+        return res.status(404).json({ error: 'Agent not found' });
+      }
+
+      const statefulConfigurationChanged =
+        (updateData.stateful_code_sessions !== undefined &&
+          (updateData.stateful_code_sessions === true) !==
+            (existingAgent.stateful_code_sessions === true)) ||
+        (updateData.stateful_code_environment !== undefined &&
+          (updateData.stateful_code_environment ?? 'user') !==
+            (existingAgent.stateful_code_environment ?? 'user'));
+      const activatesCodeExecution =
+        includesToolsConfiguration &&
+        updateData.tools.includes(Tools.execute_code) &&
+        existingAgent.tools?.includes(Tools.execute_code) !== true;
+      if (statefulConfigurationChanged || activatesCodeExecution) {
+        const effectiveStatefulSessions =
+          updateData.stateful_code_sessions ?? existingAgent.stateful_code_sessions;
+        const effectiveStatefulEnvironment =
+          updateData.stateful_code_environment ?? existingAgent.stateful_code_environment;
+        if (
+          !validateStatefulCodeEnvironment(
+            req,
+            res,
+            effectiveStatefulSessions,
+            effectiveStatefulEnvironment,
+          )
+        ) {
+          return;
+        }
+      }
+
+      if (includesToolsConfiguration || includesToolOptionsConfiguration) {
+        const effectiveTools = updateData.tools ?? existingAgent.tools;
+        const effectiveToolOptions = updateData.tool_options ?? existingAgent.tool_options;
+        if (
+          (!isCodeInterpreterCapabilityEnabled(req) ||
+            !effectiveTools?.includes(Tools.execute_code)) &&
+          effectiveToolOptions != null
+        ) {
+          updateData.tool_options = removeCodeExecutionCaller(effectiveToolOptions);
+        }
+      }
+    }
 
     if (updateData.model_parameters && typeof updateData.model_parameters === 'object') {
       updateData.model_parameters = removeNullishValues(
@@ -692,6 +897,9 @@ const updateAgentHandler = async (req, res) => {
 
     if (updateData.edges !== undefined) {
       updateData.edges = replaceEdgeSourceId(updateData.edges, '', id);
+    }
+    if (updateData.subagents !== undefined) {
+      updateData.subagents = replaceAndValidateSubagentGraphAgentId(updateData.subagents, '', id);
     }
 
     if (updateData.edges?.length) {
@@ -722,35 +930,15 @@ const updateAgentHandler = async (req, res) => {
      *  disabled payloads always pass the gate — that preserves the
      *  "can always save a disable edit" behavior a user might need
      *  after losing VIEW on a referenced child. */
-    if (
-      isSubagentsCapabilityEnabled(req) &&
-      updateData.subagents?.enabled === true &&
-      updateData.subagents?.agent_ids?.length
-    ) {
-      const { id: userId, role: userRole } = req.user;
-      const { missing, unauthorized } = await validateSubagentReferences(
-        updateData.subagents,
-        userId,
-        userRole,
-      );
-      if (missing.length > 0) {
-        return res.status(400).json({
-          error: 'One or more agents referenced in subagents do not exist',
-          agent_ids: missing,
-        });
-      }
-      if (unauthorized.length > 0) {
-        return res.status(403).json({
-          error: 'You do not have access to one or more agents referenced in subagents',
-          agent_ids: unauthorized,
-        });
-      }
+    const subagentReferenceError = await getSubagentReferenceError(updateData.subagents, req);
+    if (subagentReferenceError) {
+      return res.status(subagentReferenceError.status).json(subagentReferenceError.body);
     }
 
     // Convert OCR to context in incoming updateData
     convertOcrToContextInPlace(updateData);
 
-    const existingAgent = await db.getAgent({ id });
+    existingAgent ??= await db.getAgent({ id });
 
     if (!existingAgent) {
       return res.status(404).json({ error: 'Agent not found' });
@@ -964,8 +1152,28 @@ const duplicateAgentHandler = async (req, res) => {
       id: newAgentId,
       author: userId,
     });
+    if (
+      !validateStatefulCodeEnvironment(
+        req,
+        res,
+        newAgentData.stateful_code_sessions,
+        newAgentData.stateful_code_environment,
+      )
+    ) {
+      return;
+    }
     newAgentData.edges = replaceEdgeSourceId(newAgentData.edges, id, newAgentId);
     newAgentData.edges = replaceEdgeSourceId(newAgentData.edges, '', newAgentId);
+    newAgentData.subagents = replaceAndValidateSubagentGraphAgentId(
+      newAgentData.subagents,
+      id,
+      newAgentId,
+    );
+    newAgentData.subagents = replaceAndValidateSubagentGraphAgentId(
+      newAgentData.subagents,
+      '',
+      newAgentId,
+    );
 
     if (newAgentData.edges?.length) {
       const { missing, unauthorized } = await validateEdgeAgentReferences(
@@ -986,6 +1194,15 @@ const duplicateAgentHandler = async (req, res) => {
           agent_ids: unauthorized,
         });
       }
+    }
+
+    const subagentReferenceError = await getSubagentReferenceError(
+      newAgentData.subagents,
+      req,
+      new Set([newAgentId]),
+    );
+    if (subagentReferenceError) {
+      return res.status(subagentReferenceError.status).json(subagentReferenceError.body);
     }
 
     const newActionsList = [];
@@ -1077,6 +1294,14 @@ const duplicateAgentHandler = async (req, res) => {
         ownerIds: userId,
         logPrefix: '[/Agents/:id/duplicate]',
       });
+    }
+
+    if (
+      (!isCodeInterpreterCapabilityEnabled(req) ||
+        !newAgentData.tools?.includes(Tools.execute_code)) &&
+      newAgentData.tool_options != null
+    ) {
+      newAgentData.tool_options = removeCodeExecutionCaller(newAgentData.tool_options);
     }
 
     const newAgent = await db.createAgent(newAgentData);
@@ -1498,6 +1723,17 @@ const revertAgentVersionHandler = async (req, res) => {
     }
 
     const revertVersion = existingAgent.versions?.[version_index];
+    if (
+      revertVersion &&
+      !validateStatefulCodeEnvironment(
+        req,
+        res,
+        revertVersion.stateful_code_sessions,
+        revertVersion.stateful_code_environment,
+      )
+    ) {
+      return;
+    }
     const storedRevertEdges = Array.isArray(revertVersion?.edges) ? revertVersion.edges : [];
     const revertEdges = replaceEdgeSourceId(storedRevertEdges, '', id);
     const hasLegacyEdgeSource = storedRevertEdges.some((edge) =>
@@ -1521,6 +1757,11 @@ const revertAgentVersionHandler = async (req, res) => {
           agent_ids: unauthorized,
         });
       }
+    }
+
+    const subagentReferenceError = await getSubagentReferenceError(revertVersion?.subagents, req);
+    if (subagentReferenceError) {
+      return res.status(subagentReferenceError.status).json(subagentReferenceError.body);
     }
 
     // Permissions are enforced via route middleware (ACL EDIT)
@@ -1553,6 +1794,18 @@ const revertAgentVersionHandler = async (req, res) => {
       if (filteredTools.length !== updatedAgent.tools.length) {
         revertUpdates.tools = filteredTools;
       }
+    }
+
+    const effectiveRevertTools = revertUpdates.tools ?? updatedAgent.tools;
+    const hasCodeExecutionCaller = Object.values(updatedAgent.tool_options ?? {}).some((options) =>
+      options.allowed_callers?.includes('code_execution'),
+    );
+    if (
+      (!isCodeInterpreterCapabilityEnabled(req) ||
+        !effectiveRevertTools?.includes(Tools.execute_code)) &&
+      hasCodeExecutionCaller
+    ) {
+      revertUpdates.tool_options = removeCodeExecutionCaller(updatedAgent.tool_options);
     }
 
     if (updatedAgent.tool_resources) {

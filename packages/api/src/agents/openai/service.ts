@@ -20,6 +20,7 @@
  */
 import { nanoid } from 'nanoid';
 import { AgentCapabilities } from 'librechat-data-provider';
+import type { StatefulCodeEnvironment } from 'librechat-data-provider';
 import type { Response as ServerResponse, Request } from 'express';
 import type {
   ChatCompletionResponse,
@@ -31,6 +32,7 @@ import type {
   ToolCall,
 } from './types';
 import type { OpenAIStreamHandlerConfig, EventHandler } from './handlers';
+import type { MCPRuntimeRequestBody } from '~/mcp/request';
 import type { ToolExecuteOptions } from '../handlers';
 import {
   createOpenAIContentAggregator,
@@ -40,6 +42,7 @@ import {
   createChunk,
   writeSSE,
 } from './handlers';
+import { createMCPRuntimeRequestBody } from '~/mcp/request';
 import { createSafeUser } from '~/utils';
 
 /**
@@ -134,6 +137,7 @@ interface InitializeAgentParams {
   agent: Agent;
   conversationId?: string | null;
   parentMessageId?: string | null;
+  requestBody?: MCPRuntimeRequestBody;
   requestFiles?: unknown[];
   loadTools?: LoadToolsFn;
   endpointOption?: Record<string, unknown>;
@@ -155,6 +159,8 @@ interface InitializeAgentParams {
    * in-repo controllers; absent / `undefined` disables the feature.
    */
   statefulSessionsAvailable?: boolean;
+  /** Deployment allowlist carried explicitly because this route's Request has no req.config. */
+  allowedStatefulCodeEnvironments?: readonly StatefulCodeEnvironment[];
   /**
    * Whether the admin-level `run_in_background` capability is enabled.
    * Gates `applyBackgroundToolCalls` in `initializeAgent` (the injected
@@ -188,6 +194,7 @@ type LoadToolsFn = (params: {
   model: string | null;
   tool_options: unknown;
   tool_resources: unknown;
+  requestBody?: MCPRuntimeRequestBody;
 }) => Promise<{
   tools: unknown[];
   toolContextMap: Record<string, unknown>;
@@ -432,6 +439,17 @@ export async function createAgentChatCompletion(
   // Generate IDs
   const requestId = `chatcmpl-${nanoid()}`;
   const conversationId = request.conversation_id ?? nanoid();
+  let mcpParentMessageId: string | null | undefined;
+  if (typeof request.parent_message_id === 'string' && request.parent_message_id.trim() !== '') {
+    mcpParentMessageId = request.parent_message_id;
+  } else if (request.conversation_id == null) {
+    mcpParentMessageId = null;
+  }
+  const mcpRequestBody = createMCPRuntimeRequestBody({
+    messageId: requestId,
+    conversationId,
+    parentMessageId: mcpParentMessageId,
+  });
   const created = Math.floor(Date.now() / 1000);
 
   // Build response context
@@ -475,6 +493,16 @@ export async function createAgentChatCompletion(
      *  also carries each agent's trusted stateful endpoint/profile selection
      *  into tool loading and prewarming. */
     const statefulSessionsAvailable = capabilityEnabled(AgentCapabilities.stateful_code_sessions);
+    const allowedStatefulCodeEnvironments =
+      agentsConfig != null && typeof agentsConfig === 'object'
+        ? (
+            agentsConfig as {
+              statefulCodeSessions?: {
+                allowedEnvironments?: readonly StatefulCodeEnvironment[];
+              };
+            }
+          ).statefulCodeSessions?.allowedEnvironments
+        : undefined;
     /** Same gate as the in-repo controllers: without it, agents that opted
      *  tools in via tool_options.run_in_background silently lose the
      *  background param + poll tool on this route. */
@@ -489,6 +517,7 @@ export async function createAgentChatCompletion(
       agent,
       conversationId,
       parentMessageId: request.parent_message_id,
+      requestBody: mcpRequestBody,
       loadTools: deps.loadAgentTools,
       endpointOption: {
         endpoint: agent.provider,
@@ -498,6 +527,7 @@ export async function createAgentChatCompletion(
       isInitialAgent: true,
       codeEnvAvailable,
       statefulSessionsAvailable,
+      allowedStatefulCodeEnvironments,
       backgroundToolsAvailable,
       toolIntentsAvailable,
     });
@@ -556,17 +586,13 @@ export async function createAgentChatCompletion(
        * correctly leaves MCP gated.
        */
       const safeUser: Record<string, unknown> = { ...createSafeUser(reqUser), id: userId };
-
       const run = await deps.createRun({
         agents: [initializedAgent],
         messages,
         runId: requestId,
         signal: abortController.signal,
         customHandlers: eventHandlers,
-        requestBody: {
-          messageId: requestId,
-          conversationId,
-        },
+        requestBody: mcpRequestBody,
         user: safeUser,
         tenantId: typeof reqUser?.tenantId === 'string' ? reqUser.tenantId : undefined,
         appConfig: deps.appConfig
@@ -586,6 +612,7 @@ export async function createAgentChatCompletion(
               thread_id: conversationId,
               user_id: userId,
               user: safeUser,
+              requestBody: mcpRequestBody,
               /** Same per-agent channel the in-repo controllers thread via
                *  `loadTools`: without it, the executor's PTC path cannot
                *  strip host-injected `intent` params from the schemas the
@@ -637,7 +664,27 @@ export async function createAgentChatCompletion(
       writeSSE(res, '[DONE]');
       res.end();
     } else {
-      sendErrorResponse(res, 500, errorMessage, 'server_error');
+      const candidateStatus =
+        error != null && typeof error === 'object'
+          ? ((error as { status?: unknown; statusCode?: unknown }).status ??
+            (error as { statusCode?: unknown }).statusCode)
+          : undefined;
+      const statusCode =
+        typeof candidateStatus === 'number' &&
+        Number.isInteger(candidateStatus) &&
+        candidateStatus >= 400 &&
+        candidateStatus < 600
+          ? candidateStatus
+          : 500;
+      const errorType =
+        statusCode >= 400 && statusCode < 500 ? 'invalid_request_error' : 'server_error';
+      const errorCode =
+        error != null &&
+        typeof error === 'object' &&
+        typeof (error as { code?: unknown }).code === 'string'
+          ? (error as { code: string }).code
+          : null;
+      sendErrorResponse(res, statusCode, errorMessage, errorType, errorCode);
     }
   }
 }

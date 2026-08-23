@@ -19,7 +19,7 @@ import store from '~/store';
 interface ConversationProps {
   conversation: TConversation;
   retainView: () => void;
-  toggleNav: () => void;
+  toggleNav: (afterSlide?: () => void) => void;
   isGenerating?: boolean;
 }
 
@@ -159,12 +159,15 @@ function Conversation({
       return;
     }
 
-    toggleNav();
+    /** The navigation rides `afterSlide`: run synchronously it flushes the
+     * conversation-switch commit in the tap's task, stalling the drawer's
+     * first frame — the exact delay the animated toggle exists to avoid. */
+    toggleNav(() => {
+      setDocumentTitle(title);
 
-    setDocumentTitle(title);
-
-    navigateToConvo(conversation, {
-      currentConvoId,
+      navigateToConvo(conversation, {
+        currentConvoId,
+      });
     });
   };
 
@@ -219,17 +222,6 @@ function Conversation({
           ? 'bg-surface-active-alt before:bg-text-primary before:absolute before:top-1 before:bottom-1 before:left-0 before:w-0.5 before:rounded-full'
           : 'hover:bg-surface-active-alt',
       )}
-      role="button"
-      tabIndex={renaming ? -1 : 0}
-      aria-label={
-        isSharedBadgeVisible
-          ? localize('com_ui_conversation_label_shared', {
-              title: title || localize('com_ui_untitled'),
-            })
-          : localize('com_ui_conversation_label', {
-              title: title || localize('com_ui_untitled'),
-            })
-      }
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleMouseEnter}
@@ -240,18 +232,6 @@ function Conversation({
         }
         if (e.button === 0) {
           handleNavigation(e.ctrlKey || e.metaKey);
-        }
-      }}
-      onKeyDown={(e) => {
-        if (renaming) {
-          return;
-        }
-        if (e.target !== e.currentTarget) {
-          return;
-        }
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleNavigation(false);
         }
       }}
       style={{ cursor: renaming ? 'default' : 'pointer' }}
@@ -269,6 +249,7 @@ function Conversation({
         <ConvoLink
           isActiveConvo={isActiveConvo}
           isPopoverActive={isPopoverActive}
+          isSharedBadgeVisible={isSharedBadgeVisible}
           title={title}
           onRename={handleRename}
           isSmallScreen={isSmallScreen}

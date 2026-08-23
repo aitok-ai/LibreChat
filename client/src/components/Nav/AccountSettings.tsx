@@ -109,9 +109,9 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
     enabled: !!isAuthenticated && startupConfig?.balance?.enabled,
   });
   const [showSettings, setShowSettings] = useState(false);
-  const [showFiles, setShowFiles] = useState(false);
   const setShowShortcutsDialog = useSetRecoilState(store.showShortcutsDialog);
   const [showArchived, setShowArchived] = useState(false);
+  const [showFiles, setShowFiles] = useState(false);
   const accountSettingsButtonRef = useRef<HTMLButtonElement>(null);
 
   if (!user) {
@@ -171,15 +171,15 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
           onClick={() => navigate(`/profile/${user.id}`)}
           className="select-item text-sm"
         >
-          <UserIcon className="icon-md" aria-hidden="true" />
+          <UserIcon className="icon-md" aria-hidden={true} />
           {localize('com_ui_profile')}
         </Menu.MenuItem>
         <Menu.MenuItem onClick={() => navigate('/home')} className="select-item text-sm">
-          <HomeIcon className="icon-md" aria-hidden="true" />
+          <HomeIcon className="icon-md" aria-hidden={true} />
           {localize('com_ui_hottest')}
         </Menu.MenuItem>
         <Menu.MenuItem onClick={() => navigate('/leaderboard')} className="select-item text-sm">
-          <LeaderboardIcon className="icon-md" aria-hidden="true" />
+          <LeaderboardIcon className="icon-md" aria-hidden={true} />
           {localize('com_ui_referrals_leaderboard')}
         </Menu.MenuItem>
         <Menu.MenuItem onClick={() => setShowFiles(true)} className="select-item text-sm">
@@ -210,13 +210,6 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
           {localize('com_nav_log_out')}
         </Menu.MenuItem>
       </Menu.Menu>
-      {showFiles && (
-        <MyFilesModal
-          open={showFiles}
-          onOpenChange={setShowFiles}
-          triggerRef={accountSettingsButtonRef}
-        />
-      )}
       {showArchived && (
         <ArchivedChatsModal
           open={showArchived}
@@ -225,6 +218,13 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
         />
       )}
       {showSettings && <Settings open={showSettings} onOpenChange={setShowSettings} />}
+      {showFiles && (
+        <MyFilesModal
+          open={showFiles}
+          onOpenChange={setShowFiles}
+          triggerRef={accountSettingsButtonRef}
+        />
+      )}
     </Menu.MenuProvider>
   );
 }

@@ -74,7 +74,7 @@ const PresetsMenu: FC = () => {
               id="presets-button"
               data-testid="presets-button"
               aria-label={localize('com_endpoint_examples')}
-              className="bg-presentation hover:bg-surface-hover radix-state-open:bg-surface-active-alt h-9 w-9 shrink-0 rounded-xl duration-0"
+              className="rounded-theme-control bg-presentation hover:bg-surface-hover radix-state-open:bg-surface-active-alt h-9 w-9 shrink-0 duration-0"
             >
               <BookCopy className="icon-md" aria-hidden="true" />
             </Button>
@@ -88,7 +88,7 @@ const PresetsMenu: FC = () => {
           sideOffset={8}
           collisionPadding={16}
           aria-label={localize('com_endpoint_examples')}
-          className="border-border-light bg-presentation text-text-primary z-50 max-h-[495px] overflow-x-hidden rounded-lg border shadow-lg md:min-w-[400px]"
+          className="rounded-theme-surface border-border-light bg-presentation text-text-primary z-50 max-h-[495px] overflow-x-hidden border shadow-lg md:min-w-[400px]"
         >
           <PresetItems
             presets={presetsQuery.data}

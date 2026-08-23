@@ -16,10 +16,12 @@ import {
   OGDialogHeader,
   OGDialogContent,
   OGDialogTrigger,
+  TooltipAnchor,
   useToastContext,
 } from '@librechat/client';
-import { ThemeSelector, LangSelector } from '~/components/Nav/SettingsTabs/General/Selectors';
+import SharedSubagentActivityDialog from '~/components/Chat/Subagents/SharedSubagentActivityDialog';
 import { cn, DEFAULT_APP_TITLE, getResponseStatus, selectActiveBranchTail } from '~/utils';
+import { ThemeSelector, LangSelector } from '~/components/Appearance';
 import { ShareMessagesProvider } from './ShareMessagesProvider';
 import { useForkSharedConvoMutation } from '~/data-provider';
 import { useGetSharedStartupConfig } from '~/data-provider';
@@ -229,7 +231,7 @@ function SharedView() {
     <div className="from-surface-secondary pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-40% to-transparent">
       <Footer
         startupConfig={config ?? null}
-        className="text-text-secondary pointer-events-auto relative mx-auto flex max-w-[55rem] flex-wrap items-center justify-center gap-2 px-3 pt-6 pb-4 text-center text-xs"
+        className="text-text-secondary pointer-events-auto relative mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-3 pt-6 pb-4 text-center text-xs"
       />
     </div>
   );
@@ -261,7 +263,31 @@ function SharedView() {
           {artifactsContainer}
         </main>
       </div>
+      <SharedSubagentActivityDialog shareId={shareId} />
     </ShareContext.Provider>
+  );
+}
+
+function ShareTitle({ title }: { title?: string }) {
+  if (title == null || title === '') {
+    return null;
+  }
+
+  return (
+    <TooltipAnchor
+      description={title}
+      side="bottom"
+      tabIndex={0}
+      className="block max-w-full min-w-0 cursor-default"
+      render={
+        <h1
+          data-testid="share-title"
+          className="text-text-primary focus-visible:ring-text-primary cursor-default truncate text-2xl font-semibold focus-visible:ring-2 focus-visible:outline-none md:text-4xl"
+        >
+          {title}
+        </h1>
+      }
+    />
   );
 }
 
@@ -293,6 +319,7 @@ function ShareHeader({
   onLangChange,
 }: ShareHeaderProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsContent, setSettingsContent] = useState<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery('(max-width: 767px)');
   const localize = useLocalize();
 
@@ -305,12 +332,10 @@ function ShareHeader({
 
   return (
     <section className="mx-auto w-full px-2 pt-4 pb-3 md:px-5 md:pt-6 md:pb-4">
-      <div className="border-border-light bg-surface-primary/80 relative mx-auto flex w-full max-w-[60rem] flex-col gap-3 rounded-2xl border px-4 py-4 shadow-xl backdrop-blur md:gap-4 md:rounded-3xl md:px-6 md:py-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="min-w-0 space-y-1.5 md:space-y-2">
-            <h1 className="text-text-primary line-clamp-2 text-2xl font-semibold break-words md:text-4xl">
-              {title}
-            </h1>
+      <div className="border-border-light bg-surface-secondary relative mx-auto flex w-full max-w-7xl flex-col gap-3 rounded-2xl border px-4 py-4 shadow-xl md:gap-4 md:rounded-3xl md:px-6 md:py-5">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="min-w-0 flex-1 space-y-1.5 md:space-y-2">
+            <ShareTitle title={title} />
             {formattedDate && (
               <div className="text-text-secondary flex items-center gap-2 text-sm">
                 <CalendarDays className="size-4" aria-hidden="true" />
@@ -356,7 +381,8 @@ function ShareHeader({
                 </Button>
               </OGDialogTrigger>
               <OGDialogContent
-                className="w-11/12 max-w-lg"
+                ref={setSettingsContent}
+                className="w-11/12 max-w-lg overflow-y-visible"
                 showCloseButton={true}
                 onPointerDownOutside={handleDialogOutside}
                 onInteractOutside={handleDialogOutside}
@@ -364,16 +390,18 @@ function ShareHeader({
                 <OGDialogHeader className="text-left">
                   <OGDialogTitle>{settingsLabel}</OGDialogTitle>
                 </OGDialogHeader>
-                <div className="flex flex-col gap-4 pt-2 text-sm">
+                <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto pt-2 text-sm">
                   <ThemeSelector
                     theme={theme}
                     onChange={onThemeChange}
+                    portalElement={settingsContent}
                     popoverClassName="z-[150]"
                   />
                   <Separator orientation="horizontal" className="bg-border-medium/60" />
                   <LangSelector
                     langcode={langcode}
                     onChange={onLangChange}
+                    portalElement={settingsContent}
                     popoverClassName="z-[150]"
                   />
                 </div>

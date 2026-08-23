@@ -46,6 +46,11 @@ const loadSkillsView = () =>
     Component: m.default,
   }));
 
+const loadInsightsView = () =>
+  import('~/components/Insights').then((m) => ({
+    Component: m.default,
+  }));
+
 const loadProjectsView = () =>
   import('~/components/Projects').then((m) => ({
     Component: m.ProjectsView,
@@ -167,6 +172,10 @@ export const router = createBrowserRouter(
             {
               path: 'skills',
               lazy: loadSkillsView,
+            },
+            {
+              path: 'insights',
+              lazy: loadInsightsView,
             },
             {
               path: 'skills/new',

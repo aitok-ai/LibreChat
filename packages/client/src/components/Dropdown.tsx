@@ -4,6 +4,7 @@ import { matchSorter } from 'match-sorter';
 import * as Select from '@ariakit/react/select';
 import * as Combobox from '@ariakit/react/combobox';
 import type { Option } from '~/common';
+import { fieldControl } from './Field';
 import { cn } from '~/utils/';
 import './Dropdown.css';
 
@@ -12,7 +13,11 @@ interface DropdownProps {
   label?: string;
   onChange: (value: string) => void;
   options: (string | Option | { divider: true })[];
+  /** Applied to the positioning wrapper */
   className?: string;
+  /** Applied to the trigger button */
+  triggerClassName?: string;
+  /** Applied to the popover */
   sizeClasses?: string;
   testId?: string;
   icon?: React.ReactNode;
@@ -21,6 +26,10 @@ interface DropdownProps {
   ariaLabel?: string;
   'aria-labelledby'?: string;
   portal?: boolean;
+  /** `field` matches the `Input` primitive so this can sit in a form row. */
+  variant?: 'default' | 'field';
+  /** Renders the popover into this element instead of document.body */
+  portalElement?: ((element: HTMLElement) => HTMLElement | null) | HTMLElement | null;
   disabled?: boolean;
   searchable?: boolean;
   searchPlaceholder?: string;
@@ -42,6 +51,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   onChange,
   options,
   className = '',
+  triggerClassName,
   sizeClasses,
   testId = 'dropdown-menu',
   icon,
@@ -50,6 +60,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   portal = true,
+  variant = 'default',
+  portalElement,
   disabled = false,
   searchable = false,
   searchPlaceholder,
@@ -132,7 +144,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   );
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative', variant === 'field' && 'w-full', className)}>
       <Select.Select
         store={selectProps}
         disabled={disabled}
@@ -141,7 +153,8 @@ const Dropdown: React.FC<DropdownProps> = ({
           'disabled:hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent',
           /** Horizontal padding would squeeze the icon, which flex-shrinks to fit */
           iconOnly ? 'size-10 justify-center px-0' : 'w-fit gap-2 px-3',
-          className,
+          variant === 'field' && fieldControl,
+          triggerClassName,
         )}
         data-testid={testId}
         aria-label={ariaLabel}
@@ -166,13 +179,12 @@ const Dropdown: React.FC<DropdownProps> = ({
       </Select.Select>
       <Select.SelectPopover
         portal={portal}
+        portalElement={portalElement}
         store={selectProps}
         className={cn(
           'popover-ui z-40 text-sm',
-          sizeClasses,
-          className,
-          'max-h-[80vh] overflow-y-auto',
           '[pointer-events:auto]', // Override body's pointer-events:none when in modal
+          sizeClasses,
         )}
       >
         {searchable ? (

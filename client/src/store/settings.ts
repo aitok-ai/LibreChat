@@ -41,7 +41,6 @@ function isSmallViewport(): boolean {
 
 const localStorageAtoms = {
   // General settings
-  autoScroll: atomWithLocalStorage('autoScroll', false),
   sidebarExpanded: atomWithLocalStorage(
     'unifiedSidebarExpanded',
     !isSmallViewport(),
@@ -80,6 +79,17 @@ const localStorageAtoms = {
   chatDirection: atomWithLocalStorage('chatDirection', 'LTR'),
   autoExpandTools: atomWithLocalStorage(LocalStorageKeys.AUTO_EXPAND_TOOLS, false),
   saveDrafts: atomWithLocalStorage('saveDrafts', true),
+  /**
+   * Whether long user messages render collapsed to a preview with a
+   * "Show more" toggle. The clamp is visual only; the full text stays in
+   * the DOM, copyable and searchable.
+   */
+  collapseLongUserMessages: atomWithLocalStorage('collapseLongUserMessages', false),
+  /**
+   * Whether pasting a large block of text attaches it as a `.txt` file instead of
+   * flooding the composer. The text still reaches the model in full.
+   */
+  pasteLongTextAsFile: atomWithLocalStorage('pasteLongTextAsFile', true),
   showScrollButton: atomWithLocalStorage('showScrollButton', true),
   forkSetting: atomWithLocalStorage('forkSetting', ''),
   splitAtTarget: atomWithLocalStorage('splitAtTarget', false),

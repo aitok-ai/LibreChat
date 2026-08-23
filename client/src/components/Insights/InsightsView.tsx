@@ -1,0 +1,746 @@
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { AlertCircle, Info, Search } from 'lucide-react';
+import { Button, Input, Spinner, TooltipAnchor, useMediaQuery } from '@librechat/client';
+import {
+  INSIGHTS_MAX_RANGE_DAYS,
+  INSIGHTS_SEARCH_MAX_LENGTH,
+  INSIGHTS_SEARCH_MIN_LENGTH,
+  SystemRoles,
+} from 'librechat-data-provider';
+import type {
+  InsightsRange,
+  TInsightsChurnedUser,
+  TInsightsConversation,
+  TInsightsParams,
+  TInsightsUser,
+} from 'librechat-data-provider';
+import type { TranslationKeys } from '~/hooks';
+import { useGetStartupConfig, useInsightsAccessQuery, useInsightsQuery } from '~/data-provider';
+import { useAuthContext, useDocumentTitle, useLocalize } from '~/hooks';
+import OpenSidebar from '~/components/Chat/Menus/OpenSidebar';
+import { LocalizedDateRangePicker } from '~/components/ui';
+import { getRollingDateRange } from './dateRange';
+import { cn } from '~/utils';
+
+type ShortcutRange = Exclude<InsightsRange, 'custom'>;
+type Localize = ReturnType<typeof useLocalize>;
+type SparklinePoint = { date: string; value: number };
+type CustomDateRange = { startDate: Date; endDate: Date };
+
+type KpiCardData = {
+  id: 'conversations' | 'users' | 'messages' | 'tokens';
+  title: string;
+  value: number;
+  sparkline: SparklinePoint[];
+};
+
+const ranges: Array<{ value: ShortcutRange; labelKey: TranslationKeys; days: number }> = [
+  { value: '24h', labelKey: 'com_insights_range_24_hours', days: 1 },
+  { value: '7d', labelKey: 'com_insights_range_7_days', days: 7 },
+  { value: '30d', labelKey: 'com_insights_range_30_days', days: 30 },
+];
+const dateRangeSelectionDelayMs = 350;
+const searchDelayMs = 350;
+
+function formatValue(value: number, locale: string) {
+  return new Intl.NumberFormat(locale, {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+function formatExactValue(value: number, locale: string) {
+  return new Intl.NumberFormat(locale).format(value);
+}
+
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
+function formatRecentChatDate(value: string, locale: string) {
+  const date = new Date(value);
+  const now = new Date();
+  const elapsedMinutes = Math.floor((now.getTime() - date.getTime()) / 60_000);
+  const relativeTime = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'narrow' });
+
+  if (elapsedMinutes < 1) {
+    return relativeTime.format(0, 'minute');
+  }
+  if (elapsedMinutes < 60) {
+    return relativeTime.format(-elapsedMinutes, 'minute');
+  }
+  if (elapsedMinutes < 24 * 60) {
+    return relativeTime.format(-Math.floor(elapsedMinutes / 60), 'hour');
+  }
+  if (elapsedMinutes < 7 * 24 * 60) {
+    return relativeTime.format(-Math.floor(elapsedMinutes / (24 * 60)), 'day');
+  }
+  return new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    day: 'numeric',
+    ...(date.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }),
+  }).format(date);
+}
+
+function displayUserName(name: string, localize: Localize) {
+  return name || localize('com_insights_unknown_user');
+}
+
+function responseStatus(error: unknown) {
+  return (error as { response?: { status?: number } } | undefined)?.response?.status;
+}
+
+function getShortcutDateRange(range: ShortcutRange) {
+  const days = ranges.find((item) => item.value === range)?.days ?? 7;
+  return getRollingDateRange(new Date(), days);
+}
+
+function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <section
+      className={cn(
+        'border-border-light bg-surface-primary min-w-0 rounded-lg border p-5',
+        className,
+      )}
+    >
+      {children}
+    </section>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="text-text-secondary flex min-h-40 items-center justify-center text-sm">
+      {message}
+    </div>
+  );
+}
+
+function LoadingState({ message }: { message: string }) {
+  return (
+    <Panel className="flex min-h-52 flex-col items-center justify-center gap-3">
+      <Spinner className="text-text-secondary size-7" />
+      <span className="text-text-secondary text-sm">{message}</span>
+    </Panel>
+  );
+}
+
+function Sparkline({
+  values,
+  label,
+  locale,
+}: {
+  values: SparklinePoint[];
+  label: string;
+  locale: string;
+}) {
+  const patternId = useId().replace(/:/g, '');
+  const [activeIndex, setActiveIndex] = useState<number>();
+  const points = useMemo(() => {
+    if (values.length < 2) {
+      return [];
+    }
+    const maximum = Math.max(1, ...values.map((point) => point.value));
+    return values.map((point, index) => ({
+      ...point,
+      x: (index / (values.length - 1)) * 300,
+      y: 52 - (point.value / maximum) * 46,
+    }));
+  }, [values]);
+
+  if (points.length < 2) {
+    return <div className="h-14" />;
+  }
+
+  const line = points.map((point) => `${point.x},${point.y}`).join(' ');
+  const area = `M 0 56 L ${points.map((point) => `${point.x} ${point.y}`).join(' L ')} L 300 56 Z`;
+  const activePoint = activeIndex == null ? undefined : points[activeIndex];
+  const formatter = new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+
+  return (
+    <div
+      className="text-status-info relative mt-2 h-14 w-full outline-none"
+      role="img"
+      tabIndex={0}
+      aria-label={label}
+      onFocus={() => setActiveIndex(points.length - 1)}
+      onBlur={() => setActiveIndex(undefined)}
+      onMouseLeave={() => setActiveIndex(undefined)}
+      onMouseMove={(event) => {
+        const bounds = event.currentTarget.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+        setActiveIndex(Math.round(ratio * (points.length - 1)));
+      }}
+    >
+      <svg
+        className="h-full w-full overflow-visible"
+        viewBox="0 0 300 56"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern id={patternId} width="6" height="6" patternUnits="userSpaceOnUse">
+            <path
+              d="M-1 1 L1 -1 M0 6 L6 0 M5 7 L7 5"
+              stroke="currentColor"
+              strokeWidth="0.8"
+              opacity="0.22"
+            />
+          </pattern>
+        </defs>
+        <path d={area} fill={`url(#${patternId})`} />
+        <polyline
+          points={line}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      {activePoint && (
+        <>
+          <span
+            className="bg-border-medium pointer-events-none absolute top-0 h-full w-px"
+            style={{ left: `${(activePoint.x / 300) * 100}%` }}
+          />
+          <span
+            className="bg-status-info ring-surface-primary pointer-events-none absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2"
+            style={{
+              left: `${(activePoint.x / 300) * 100}%`,
+              top: `${(activePoint.y / 56) * 100}%`,
+            }}
+          />
+          <span
+            className="border-border-light bg-surface-primary text-text-primary pointer-events-none absolute bottom-full mb-2 -translate-x-1/2 rounded-lg border px-2.5 py-1.5 text-xs whitespace-nowrap shadow-lg"
+            style={{ left: `${Math.max(14, Math.min(86, (activePoint.x / 300) * 100))}%` }}
+          >
+            {formatter.format(new Date(activePoint.date))}{' '}
+            <strong>{formatExactValue(activePoint.value, locale)}</strong>
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function KpiCard({ card, locale }: { card: KpiCardData; locale: string }) {
+  const localize = useLocalize();
+  return (
+    <Panel>
+      <h2 className="text-text-secondary text-lg font-normal">{card.title}</h2>
+      <div className="text-text-primary mt-3 text-4xl leading-none font-semibold tabular-nums">
+        {formatValue(card.value, locale)}
+      </div>
+      <Sparkline
+        values={card.sparkline}
+        label={localize('com_insights_sparkline_accessibility', { label: card.title })}
+        locale={locale}
+      />
+    </Panel>
+  );
+}
+
+function TablePanel({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <Panel className="overflow-hidden">
+      <h2 className="text-text-primary mb-3 text-base font-semibold">{title}</h2>
+      {children}
+    </Panel>
+  );
+}
+
+function UserCell({ name, email, localize }: { name: string; email: string; localize: Localize }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-text-primary truncate">{displayUserName(name, localize)}</div>
+      <div className="text-text-secondary truncate text-xs">{email}</div>
+    </div>
+  );
+}
+
+function TopUsersTable({
+  rows,
+  localize,
+  locale,
+}: {
+  rows: TInsightsUser[];
+  localize: Localize;
+  locale: string;
+}) {
+  return (
+    <TablePanel title={localize('com_insights_top_users')}>
+      {rows.length === 0 ? (
+        <EmptyState message={localize('com_insights_no_data')} />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[420px] text-left text-sm">
+            <thead className="border-border-medium text-text-secondary border-b text-xs">
+              <tr>
+                <th className="px-2 py-2 font-medium">{localize('com_insights_user')}</th>
+                <th className="px-2 py-2 text-right font-medium">
+                  {localize('com_insights_messages')}
+                </th>
+                <th className="px-2 py-2 text-right font-medium">
+                  {localize('com_insights_chats')}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-border-light divide-y">
+              {rows.map((entry) => (
+                <tr key={entry.userId} className="hover:bg-surface-hover">
+                  <td className="px-2 py-3">
+                    <UserCell {...entry} localize={localize} />
+                  </td>
+                  <td className="px-2 py-3 text-right tabular-nums">
+                    {formatExactValue(entry.messages, locale)}
+                  </td>
+                  <td className="px-2 py-3 text-right tabular-nums">
+                    {formatExactValue(entry.conversations, locale)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </TablePanel>
+  );
+}
+
+function ChurnedUsersTable({
+  rows,
+  localize,
+  locale,
+}: {
+  rows: TInsightsChurnedUser[];
+  localize: Localize;
+  locale: string;
+}) {
+  const definition = localize('com_insights_churned_users_definition');
+  return (
+    <TablePanel
+      title={
+        <span className="inline-flex items-center gap-1.5">
+          {localize('com_insights_churned_users')}
+          <TooltipAnchor
+            description={definition}
+            render={
+              <button
+                type="button"
+                aria-label={definition}
+                className="text-text-secondary hover:text-text-primary"
+              >
+                <Info className="size-4" aria-hidden="true" />
+              </button>
+            }
+          />
+        </span>
+      }
+    >
+      {rows.length === 0 ? (
+        <EmptyState message={localize('com_insights_no_data')} />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] table-fixed text-left text-sm">
+            <thead className="border-border-medium text-text-secondary border-b text-xs">
+              <tr>
+                <th className="w-[34%] px-2 py-2 font-medium">{localize('com_insights_user')}</th>
+                <th className="w-[12%] px-2 py-2 text-right font-medium">
+                  {localize('com_insights_messages')}
+                </th>
+                <th className="w-[12%] px-2 py-2 text-right font-medium">
+                  {localize('com_insights_chats')}
+                </th>
+                <th className="w-[21%] px-2 py-2 text-right font-medium">
+                  {localize('com_insights_first_seen')}
+                </th>
+                <th className="w-[21%] px-2 py-2 text-right font-medium">
+                  {localize('com_insights_last_seen')}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-border-light divide-y">
+              {rows.map((entry) => (
+                <tr key={entry.userId} className="hover:bg-surface-hover">
+                  <td className="overflow-hidden px-2 py-3">
+                    <UserCell {...entry} localize={localize} />
+                  </td>
+                  <td className="px-2 py-3 text-right tabular-nums">
+                    {formatExactValue(entry.messages, locale)}
+                  </td>
+                  <td className="px-2 py-3 text-right tabular-nums">
+                    {formatExactValue(entry.conversations, locale)}
+                  </td>
+                  <td className="text-text-secondary px-2 py-3 text-right whitespace-nowrap">
+                    {formatDate(entry.firstSeen, locale)}
+                  </td>
+                  <td className="text-text-secondary px-2 py-3 text-right whitespace-nowrap">
+                    {formatDate(entry.lastSeen, locale)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </TablePanel>
+  );
+}
+
+function LatestConversations({
+  rows,
+  search,
+  activeSearch,
+  page,
+  pages,
+  isFetching,
+  setPage,
+  setSearch,
+  localize,
+  locale,
+}: {
+  rows: TInsightsConversation[];
+  search: string;
+  activeSearch: string;
+  page: number;
+  pages: number;
+  isFetching: boolean;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
+  setSearch: React.Dispatch<React.SetStateAction<string>>;
+  localize: Localize;
+  locale: string;
+}) {
+  return (
+    <Panel className="overflow-hidden">
+      <div className="mb-3 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-semibold">
+            {localize('com_insights_latest_conversations')}
+          </h2>
+          {isFetching && <Spinner className="text-text-secondary size-4" />}
+        </div>
+        <div className="relative w-full sm:max-w-md">
+          <Search
+            className="text-text-secondary pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+            aria-hidden="true"
+          />
+          <Input
+            aria-label={localize('com_insights_search_placeholder')}
+            className="pl-9"
+            maxLength={INSIGHTS_SEARCH_MAX_LENGTH}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={localize('com_insights_search_placeholder')}
+            value={search}
+          />
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] table-fixed text-left text-sm">
+          <thead className="border-border-medium text-text-secondary border-b text-xs">
+            <tr>
+              <th className="w-[120px] px-2 py-2 font-medium">{localize('com_insights_date')}</th>
+              <th className="w-[192px] px-2 py-2 font-medium">{localize('com_insights_user')}</th>
+              <th className="px-2 py-2 font-medium">{localize('com_insights_first_message')}</th>
+              <th className="w-20 px-2 py-2 text-right font-medium">
+                {localize('com_insights_messages')}
+              </th>
+              <th className="w-20 px-2 py-2 text-right font-medium">
+                {localize('com_insights_total_tokens')}
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-border-light divide-y">
+            {rows.map((conversation) => (
+              <tr
+                key={`${conversation.conversationId}:${conversation.userId}`}
+                className="hover:bg-surface-hover"
+              >
+                <td className="text-text-secondary px-2 py-3 whitespace-nowrap">
+                  {formatRecentChatDate(conversation.date, locale)}
+                </td>
+                <td className="px-2 py-3">
+                  <UserCell {...conversation} localize={localize} />
+                </td>
+                <td className="max-w-xl px-2 py-3">
+                  <span className="line-clamp-2">
+                    {conversation.firstMessage || localize('com_insights_no_message')}
+                  </span>
+                </td>
+                <td className="px-2 py-3 text-right tabular-nums">
+                  {formatExactValue(conversation.messages, locale)}
+                </td>
+                <td className="px-2 py-3 text-right tabular-nums">
+                  {formatValue(conversation.totalTokens, locale)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {rows.length === 0 && (
+        <EmptyState
+          message={
+            activeSearch
+              ? localize('com_insights_no_search_results')
+              : localize('com_insights_no_data')
+          }
+        />
+      )}
+      <div className="border-border-light text-text-secondary mt-3 flex items-center justify-between gap-3 border-t pt-3 text-sm">
+        <span>{localize('com_insights_page_of', { page, pages })}</span>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isFetching || page <= 1}
+            onClick={() => setPage((value) => Math.max(1, value - 1))}
+          >
+            {localize('com_ui_prev')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isFetching || page >= pages}
+            onClick={() => setPage((value) => value + 1)}
+          >
+            {localize('com_ui_next')}
+          </Button>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+export default function InsightsView() {
+  const localize = useLocalize();
+  const { i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const { user } = useAuthContext();
+  const { data: startupConfig, isLoading: configLoading } = useGetStartupConfig();
+  const [range, setRange] = useState<ShortcutRange>('7d');
+  const [customDateRange, setCustomDateRange] = useState<CustomDateRange>();
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const dateRangeSelectionTimeout = useRef<number>();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const insightsFeatureEnabled = startupConfig?.insightsEnabled === true;
+  const shouldCheckAccess = user?.role === SystemRoles.ADMIN && insightsFeatureEnabled;
+  const access = useInsightsAccessQuery(user?.id, {
+    enabled: shouldCheckAccess,
+  });
+  const isAllowed = insightsFeatureEnabled && access.data?.access === true;
+  const insightsParams = useMemo<TInsightsParams>(() => {
+    const params: TInsightsParams = { page, pageSize: 10, search, timeZone };
+    if (customDateRange) {
+      return {
+        ...params,
+        range: 'custom',
+        fromTimestamp: customDateRange.startDate.toISOString(),
+        toTimestamp: customDateRange.endDate.toISOString(),
+      };
+    }
+    return { ...params, range };
+  }, [customDateRange, page, range, search, timeZone]);
+  const displayDateRange = useMemo(
+    () => customDateRange ?? getShortcutDateRange(range),
+    [customDateRange, range],
+  );
+  const insights = useInsightsQuery(insightsParams, { enabled: isAllowed });
+  const data = insights.data;
+
+  useDocumentTitle(`${localize('com_insights_title')} | LibreChat`);
+
+  useEffect(
+    () => () => {
+      if (dateRangeSelectionTimeout.current != null) {
+        window.clearTimeout(dateRangeSelectionTimeout.current);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const trimmedSearch = searchInput.trim().slice(0, INSIGHTS_SEARCH_MAX_LENGTH);
+    const nextSearch = trimmedSearch.length >= INSIGHTS_SEARCH_MIN_LENGTH ? trimmedSearch : '';
+    if (nextSearch === search) {
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      setSearch(nextSearch);
+      setPage(1);
+    }, searchDelayMs);
+    return () => window.clearTimeout(timeout);
+  }, [search, searchInput]);
+
+  const kpiCards = useMemo<KpiCardData[]>(() => {
+    if (!data) {
+      return [];
+    }
+    return [
+      {
+        id: 'conversations',
+        title: localize('com_insights_total_conversations'),
+        value: data.summary.totalConversations,
+        sparkline: data.daily.map((row) => ({ date: row.date, value: row.conversations })),
+      },
+      {
+        id: 'users',
+        title: localize('com_insights_total_users'),
+        value: data.summary.totalUsers,
+        sparkline: data.daily.map((row) => ({ date: row.date, value: row.users })),
+      },
+      {
+        id: 'messages',
+        title: localize('com_insights_messages'),
+        value: data.summary.totalMessages,
+        sparkline: data.daily.map((row) => ({ date: row.date, value: row.messages })),
+      },
+      {
+        id: 'tokens',
+        title: localize('com_insights_total_tokens'),
+        value: data.summary.totalTokens,
+        sparkline: data.daily.map((row) => ({ date: row.date, value: row.totalTokens })),
+      },
+    ];
+  }, [data, localize]);
+
+  const handleSelectDateRange = (startDate: Date, endDate: Date) => {
+    if (dateRangeSelectionTimeout.current != null) {
+      window.clearTimeout(dateRangeSelectionTimeout.current);
+    }
+    dateRangeSelectionTimeout.current = window.setTimeout(() => {
+      setCustomDateRange({ startDate: new Date(startDate), endDate: new Date(endDate) });
+      setPage(1);
+      dateRangeSelectionTimeout.current = undefined;
+    }, dateRangeSelectionDelayMs);
+  };
+
+  if (configLoading || (shouldCheckAccess && access.isLoading)) {
+    return (
+      <div className="bg-presentation h-full w-full p-4">
+        <LoadingState message={localize('com_insights_loading')} />
+      </div>
+    );
+  }
+  const accessStatus = responseStatus(access.error);
+  if (access.isError && accessStatus !== 403 && accessStatus !== 404) {
+    return (
+      <div className="bg-presentation h-full w-full p-4">
+        <Panel className="flex items-center gap-2">
+          <AlertCircle className="text-status-error size-4" />
+          <span className="text-sm">{localize('com_insights_load_error')}</span>
+        </Panel>
+      </div>
+    );
+  }
+  if (!isAllowed) {
+    return <Navigate to="/c/new" replace />;
+  }
+
+  return (
+    <div className="bg-presentation text-text-primary flex h-full w-full min-w-0 flex-col">
+      <header className="border-border-light bg-presentation z-20 flex min-h-14 w-full flex-shrink-0 flex-col gap-3 border-b px-4 py-3 sm:px-5 md:flex-row md:items-center md:justify-between md:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          {isSmallScreen && <OpenSidebar />}
+          <h1 className="text-base font-semibold">{localize('com_insights_title')}</h1>
+        </div>
+        <div className="flex max-w-full flex-wrap items-center gap-2 md:flex-nowrap">
+          <div className="border-border-light inline-flex rounded-lg border p-0.5">
+            {ranges.map((item) => (
+              <Button
+                key={item.value}
+                size="sm"
+                variant="ghost"
+                aria-pressed={!customDateRange && range === item.value}
+                className={cn(
+                  'h-8 rounded-md px-3',
+                  !customDateRange && range === item.value && 'bg-surface-active-alt',
+                )}
+                onClick={() => {
+                  if (dateRangeSelectionTimeout.current != null) {
+                    window.clearTimeout(dateRangeSelectionTimeout.current);
+                    dateRangeSelectionTimeout.current = undefined;
+                  }
+                  setRange(item.value);
+                  setCustomDateRange(undefined);
+                  setPage(1);
+                }}
+              >
+                {localize(item.labelKey)}
+              </Button>
+            ))}
+          </div>
+          <div className="w-full min-w-0 sm:w-[340px]">
+            <LocalizedDateRangePicker
+              endDate={displayDateRange.endDate}
+              futureDatesDisabled
+              labels={{
+                apply: localize('com_ui_done'),
+                cancel: localize('com_ui_cancel'),
+                endDate: localize('com_insights_end_date'),
+                invalidRange: localize('com_insights_invalid_date_range', {
+                  days: INSIGHTS_MAX_RANGE_DAYS,
+                }),
+                startDate: localize('com_insights_start_date'),
+              }}
+              locale={locale}
+              maxRangeLength={INSIGHTS_MAX_RANGE_DAYS}
+              onSelectDateRange={handleSelectDateRange}
+              placeholder={localize('com_insights_date_range_placeholder')}
+              startDate={displayDateRange.startDate}
+            />
+          </div>
+        </div>
+      </header>
+      <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <div className="flex w-full min-w-0 flex-col gap-5 px-4 py-4 sm:px-5 md:px-6 lg:px-8">
+          {insights.isLoading && <LoadingState message={localize('com_insights_loading')} />}
+          {insights.isError && (
+            <Panel className="flex items-center gap-2">
+              <AlertCircle className="text-status-error size-4" />
+              <span className="text-sm">{localize('com_insights_load_error')}</span>
+            </Panel>
+          )}
+          {data && (
+            <>
+              <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-3">
+                {kpiCards.map((card) => (
+                  <KpiCard key={card.id} card={card} locale={locale} />
+                ))}
+              </div>
+              <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(min(100%,580px),1fr))] gap-3">
+                <TopUsersTable rows={data.topUsers} localize={localize} locale={locale} />
+                <ChurnedUsersTable rows={data.churnedUsers} localize={localize} locale={locale} />
+              </div>
+              <LatestConversations
+                rows={data.latest.conversations}
+                search={searchInput}
+                activeSearch={search}
+                page={data.latest.page}
+                pages={data.latest.pages}
+                isFetching={insights.isFetching}
+                setPage={setPage}
+                setSearch={setSearchInput}
+                localize={localize}
+                locale={locale}
+              />
+            </>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

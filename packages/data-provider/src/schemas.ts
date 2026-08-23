@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import type { TMessageContentParts, FunctionTool, FunctionToolCall } from './types/assistants';
+import type {
+  TMessageContentParts,
+  AgentSubagentGraph,
+  FunctionToolCall,
+  FunctionTool,
+} from './types/assistants';
 import type { SearchResultData } from './types/web';
 import type { TFile } from './types/files';
 import { TFeedback, feedbackSchema } from './feedback';
@@ -361,7 +366,12 @@ export const defaultAgentFormValues = {
   skills_enabled: undefined as boolean | undefined,
   /** `undefined` = feature disabled by default (no subagent tool injected). */
   subagents: undefined as
-    | { enabled?: boolean; allowSelf?: boolean; agent_ids?: string[] }
+    | {
+        enabled?: boolean;
+        allowSelf?: boolean;
+        agent_ids?: string[];
+        graphs?: AgentSubagentGraph[];
+      }
     | undefined,
   /** Memory partition: 'agent' isolates memories per (user, agent); default shared pool */
   memory_scope: undefined as MemoryScope | undefined,
@@ -755,6 +765,9 @@ export const tPluginSchema = z.object({
   chatMenu: z.boolean().optional(),
   isButton: z.boolean().optional(),
   toolkit: z.boolean().optional(),
+  /** Raw upstream tool name when the model-facing key stripped a redundant
+   *  server-name prefix — proves upstream identity for legacy id migration. */
+  serverToolName: z.string().optional(),
 });
 
 export type TPlugin = z.infer<typeof tPluginSchema>;
@@ -885,10 +898,17 @@ export type UIResource = {
   [key: string]: unknown;
 };
 
+export type WorkspaceChange = {
+  profile: 'stateful';
+  operation: 'created' | 'updated';
+  path: string;
+};
+
 export type TAttachmentMetadata = {
   type?: Tools;
   messageId: string;
   toolCallId: string;
+  workspaceChange?: WorkspaceChange;
   [Tools.memory]?: MemoryArtifact;
   [Tools.ui_resources]?: UIResource[];
   [Tools.web_search]?: SearchResultData;
@@ -940,6 +960,19 @@ const DocumentType: z.ZodType<DocumentTypeValue> = z.lazy(() =>
     z.record(z.lazy(() => DocumentType)),
   ]),
 );
+
+export const subagentThreadLineageSchema = z.object({
+  rootConversationId: z.string().min(1),
+  parentConversationId: z.string().min(1),
+  parentMessageId: z.string().min(1),
+  parentToolCallId: z.string().min(1),
+  parentAgentId: z.string().min(1).optional(),
+  subagentType: z.string().min(1),
+  subagentKind: z.enum(['agent', 'graph']),
+  depth: z.number().int().positive(),
+});
+
+export type TSubagentThreadLineage = z.infer<typeof subagentThreadLineageSchema>;
 
 export const tConversationSchema = z.object({
   conversationId: z.string().nullable(),
@@ -1020,6 +1053,8 @@ export const tConversationSchema = z.object({
   assistant_id: z.string().optional(),
   /* agents */
   agent_id: z.string().optional(),
+  /** Durable parent/child navigation for a subagent thread. */
+  subagentThread: subagentThreadLineageSchema.optional(),
   /* AWS Bedrock */
   region: z.string().optional(),
   maxTokens: coerceNumber.optional(),

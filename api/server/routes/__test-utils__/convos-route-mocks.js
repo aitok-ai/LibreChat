@@ -1,4 +1,8 @@
+const archiveAllHandler = jest.fn();
+
 module.exports = {
+  archiveAllHandler,
+
   agents: () => ({ sleep: jest.fn() }),
 
   api: (overrides = {}) => ({
@@ -21,6 +25,14 @@ module.exports = {
     })),
     logAxiosError: jest.fn(),
     restoreTenantContextFromReq: jest.fn((req, res, next) => next()),
+    createArchiveAllHandler: jest.fn(({ archiveAllConvos }) => {
+      archiveAllHandler.mockImplementation(async (req, res) => {
+        const result = await archiveAllConvos(req.user.id);
+        return res.status(200).json(result);
+      });
+      return archiveAllHandler;
+    }),
+    createSubagentThreadViewHandler: jest.fn(() => (_req, res) => res.status(200).json({})),
     deleteConvoSharedLinksWithCleanup: jest.fn(),
     deleteAllSharedLinksWithCleanup: jest.fn(),
     deleteAgentCheckpoints: jest.fn(),
@@ -64,6 +76,7 @@ module.exports = {
     getConvosByCursor: jest.fn(),
     getConvo: jest.fn(),
     deleteConvos: jest.fn(),
+    archiveAllConvos: jest.fn(),
     saveConvo: jest.fn(),
     setConvoPinned: jest.fn(),
     deleteAllSharedLinks: jest.fn(),
@@ -109,4 +122,22 @@ module.exports = {
     })),
 
   assistantEndpoint: () => ({ initializeClient: jest.fn() }),
+
+  subagentThreadStore: () => ({
+    cancelAndDrainForOwner: jest.fn().mockResolvedValue(undefined),
+    withOwnerDeletionFence: jest.fn().mockImplementation(async (_userId, _tenantId, deletion) => {
+      return deletion();
+    }),
+    planCancellationForConversations: jest
+      .fn()
+      .mockImplementation(async (userId, conversationIds, tenantId) => ({
+        userId,
+        tenantId,
+        conversationIds: [...conversationIds],
+        scopes: [],
+        leases: [],
+      })),
+    cancelPlan: jest.fn().mockResolvedValue(0),
+    cancelForOwner: jest.fn(),
+  }),
 };

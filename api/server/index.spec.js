@@ -35,6 +35,14 @@ jest.mock('~/config', () => ({
   }),
 }));
 
+jest.mock('~/server/services/Agents/triggers', () => ({
+  initializeAgentTriggerService: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('~/server/services/Schedules', () => ({
+  initializeScheduleEngine: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock(
   '@librechat/api/telemetry',
   () => ({
@@ -132,6 +140,14 @@ describe('Startup readiness wiring', () => {
     expect(streamConfigIndex).toBeLessThan(postListenMcpIndex);
   });
 
+  it('configures subagent task routing before the server accepts requests', () => {
+    const routingIndex = source.indexOf('await configureSubagentTaskRouting();');
+    const listenIndex = source.indexOf('const server = app.listen');
+
+    expect(routingIndex).toBeGreaterThan(-1);
+    expect(listenIndex).toBeGreaterThan(routingIndex);
+  });
+
   it('registers generation stream cleanup with the graceful shutdown coordinator', () => {
     const shutdownRegistrationIndex = source.indexOf(
       "registerShutdownTask('generation job manager'",
@@ -163,6 +179,14 @@ describe('Startup readiness wiring', () => {
     expect(readinessGateIndex).toBeGreaterThan(-1);
     expect(agentsRouteIndex).toBeGreaterThan(-1);
     expect(readinessGateIndex).toBeLessThan(agentsRouteIndex);
+  });
+
+  it('awaits durable trigger delivery before reporting readiness', () => {
+    const triggerDeliveryIndex = source.indexOf('await initializeAgentTriggerService(');
+    const readyIndex = source.indexOf('serverReady = true;');
+
+    expect(triggerDeliveryIndex).toBeGreaterThan(-1);
+    expect(readyIndex).toBeGreaterThan(triggerDeliveryIndex);
   });
 });
 

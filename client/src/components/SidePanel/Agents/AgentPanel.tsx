@@ -11,6 +11,8 @@ import {
   ResourceType,
   EModelEndpoint,
   PermissionBits,
+  removeCodeExecutionCaller,
+  resolveStatefulCodeEnvironment,
   isAssistantsEndpoint,
 } from 'librechat-data-provider';
 import type { Agent, AgentUpdateParams } from 'librechat-data-provider';
@@ -90,6 +92,8 @@ export function composeAgentUpdatePayload(data: AgentForm, agent_id?: string | n
    * execute_code is disabled so a stale opt-in can't silently reactivate later. */
   const normalizedStatefulCodeSessions =
     data.execute_code === true ? stateful_code_sessions : false;
+  const normalizedToolOptions =
+    data.execute_code === true ? tool_options : removeCodeExecutionCaller(tool_options);
   const normalizedStatefulCodeEnvironment = stateful_code_environment ?? 'user';
 
   const shouldResetAvatar =
@@ -117,7 +121,7 @@ export function composeAgentUpdatePayload(data: AgentForm, agent_id?: string | n
       recursion_limit,
       category,
       support_contact,
-      tool_options,
+      tool_options: normalizedToolOptions,
       skills,
       skills_enabled,
       /** A hidden stale 'agent' scope must not survive disabling memory —
@@ -286,6 +290,11 @@ export default function AgentPanel() {
     setCurrentAgentId,
     agent_id: current_agent_id,
   } = useAgentPanelContext();
+  const defaultStatefulCodeEnvironment =
+    resolveStatefulCodeEnvironment(
+      user?.personalization?.statefulCodeEnvironment ?? 'user',
+      agentsConfig?.statefulCodeSessions?.allowedEnvironments,
+    ) ?? 'user';
 
   const { onSelect: onSelectAgent } = useSelectAgent();
 
@@ -307,7 +316,7 @@ export default function AgentPanel() {
 
   const models = useMemo(() => modelsQuery.data ?? {}, [modelsQuery.data]);
   const methods = useForm<AgentForm>({
-    defaultValues: getDefaultAgentFormValues(),
+    defaultValues: getDefaultAgentFormValues(defaultStatefulCodeEnvironment),
     mode: 'onChange',
   });
 
@@ -579,6 +588,7 @@ export default function AgentPanel() {
                 agentQuery={agentQuery}
                 setCurrentAgentId={setCurrentAgentId}
                 selectedAgentId={agentQuery.isInitialLoading ? null : (current_agent_id ?? null)}
+                defaultStatefulCodeEnvironment={defaultStatefulCodeEnvironment}
               />
             </div>
             {agent_id && (
@@ -588,7 +598,7 @@ export default function AgentPanel() {
                   variant="outline"
                   className="w-full justify-center"
                   onClick={() => {
-                    reset(getDefaultAgentFormValues());
+                    reset(getDefaultAgentFormValues(defaultStatefulCodeEnvironment));
                     setCurrentAgentId(undefined);
                   }}
                   disabled={agentQuery.isInitialLoading}

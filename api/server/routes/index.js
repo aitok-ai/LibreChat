@@ -17,6 +17,7 @@ const memories = require('./memories');
 const presets = require('./presets');
 const projects = require('./projects');
 const prompts = require('./prompts');
+const schedules = require('./schedules');
 const skills = require('./skills');
 const balance = require('./balance');
 const actions = require('./actions');
@@ -40,8 +41,10 @@ const user = require('./user');
 const mcp = require('./mcp');
 const videoJobs = require('./videoJobs');
 const rum = require('./rum');
+const insights = require('./insights');
 
 module.exports = {
+  insights,
   rum,
   mcp,
   auth,
@@ -74,6 +77,7 @@ module.exports = {
   assistants,
   webhooks,
   projects,
+  schedules,
   skills,
   actions,
   presets,

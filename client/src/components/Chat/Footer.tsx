@@ -65,7 +65,8 @@ function Footer({ className, startupConfig }: FooterProps) {
               <a
                 className="text-text-secondary underline"
                 href={href}
-                rel="noreferrer"
+                target="_blank"
+                rel="noopener noreferrer"
                 {...otherProps}
               >
                 {children}
@@ -92,7 +93,6 @@ function Footer({ className, startupConfig }: FooterProps) {
           className ??
           'text-text-primary absolute right-0 bottom-0 left-0 hidden items-center justify-center gap-2 px-2 py-2 text-center text-xs sm:flex md:px-[60px]'
         }
-        role="contentinfo"
       >
         {footerElements.map((contentRender, index) => {
           const isLastElement = index === footerElements.length - 1;

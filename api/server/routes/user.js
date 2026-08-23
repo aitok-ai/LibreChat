@@ -1,4 +1,5 @@
 const express = require('express');
+const { createUserPreferencesHandler } = require('@librechat/api');
 const {
   updateUserPluginsController,
   resendVerificationController,
@@ -20,14 +21,19 @@ const {
 } = require('~/server/middleware');
 
 const settings = require('./settings');
+const { updateUserStatefulCodeEnvironment } = require('~/models');
 
 const router = express.Router();
 
-// Settings routes
+const updateUserPreferences = createUserPreferencesHandler({
+  updateStatefulCodeEnvironment: updateUserStatefulCodeEnvironment,
+});
+
 router.use('/settings', settings);
 
 // Routes without userId parameter (must come before parameterized routes)
 router.get('/', requireJwtAuth, getUserController);
+router.patch('/preferences', requireJwtAuth, configMiddleware, updateUserPreferences);
 router.get('/terms', requireJwtAuth, getTermsStatusController);
 router.post('/terms/accept', requireJwtAuth, acceptTermsController);
 router.post('/plugins', requireJwtAuth, updateUserPluginsController);

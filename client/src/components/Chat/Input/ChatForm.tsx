@@ -32,14 +32,15 @@ import {
   useAddedChatContext,
   useAssistantsMapContext,
 } from '~/Providers';
-import { useCreateVideoJobMutation, useGetStartupConfig } from '~/data-provider';
 import { cn, getModelSpec, hasIncompleteFiles, removeFocusRings } from '~/utils';
 import PendingManualSkillsChips from './PendingManualSkillsChips';
 import useAskAnswerMode from '~/hooks/Input/useAskAnswerMode';
 import AskUserQuestionPopover from './AskUserQuestionPopover';
+import { useCreateVideoJobMutation } from '~/data-provider';
 import InterruptSteerButton from './InterruptSteerButton';
 import DuringRunSendButton from './DuringRunSendButton';
 import ProjectLandingChip from '../ProjectLandingChip';
+import { useGetStartupConfig } from '~/data-provider';
 import { mainTextareaId, BadgeItem } from '~/common';
 import PendingSteerChips from './PendingSteerChips';
 import PendingQuoteChips from './PendingQuoteChips';
@@ -227,8 +228,13 @@ const ChatForm = memo(function ChatForm({
   const answerPlaceholder = answerMode.batchMode
     ? localize('com_ui_answer_questions_above')
     : (answerMode.otherLabel ?? localize('com_ui_something_else'));
+  /** The composer is not a plain chat composer: it either IS this pause's
+   *  answer box, or is locked behind the batch card that owns the answer. A
+   *  collapsed batch is neither — it hands the composer back to the thread. */
+  const composerReserved = answerMode.composerAnswers || answerMode.composerLocked;
 
   useAutoSave({
+    index,
     files,
     setFiles,
     textAreaRef,
@@ -316,7 +322,7 @@ const ChatForm = memo(function ChatForm({
     conversationId,
     conversation,
     isSubmitting,
-    answerModeActive: answerMode.active,
+    answerModeActive: composerReserved,
     files,
     setFiles,
     filesLoading,
@@ -334,8 +340,8 @@ const ChatForm = memo(function ChatForm({
   const liveFilesRef = useRef(files);
   liveFilesRef.current = files;
   /** Same reason: the run can pause on `ask_user_question` mid-reclaim. */
-  const liveAnswerModeRef = useRef(answerMode.active);
-  liveAnswerModeRef.current = answerMode.active;
+  const liveAnswerModeRef = useRef(composerReserved);
+  liveAnswerModeRef.current = composerReserved;
   /** A reclaim can resolve after this form unmounts (left the route, closed the
    *  pane). Its refs still hold the origin chat, so the restore would pass its
    *  checks and write into a dead form — reporting success and making the caller
@@ -442,10 +448,11 @@ const ChatForm = memo(function ChatForm({
     setIsScrollable,
     disabled: disableInputs,
     // The composer IS the free-form answer box while a question pause is live.
-    placeholder: answerMode.active ? answerPlaceholder : placeholder,
+    placeholder: composerReserved ? answerPlaceholder : placeholder,
     // Enter stays live during a run when it can steer/queue instead of send.
     allowSubmitWhileGenerating: steering.duringRunActive,
     onDuringRunModifier: steering.duringRunActive ? handleDuringRunModifier : undefined,
+    answerModeActive: answerMode.composerAnswers,
   });
 
   useQueryParams({ textAreaRef });
@@ -454,7 +461,7 @@ const ChatForm = memo(function ChatForm({
    *  hands the composer text straight to the paused run, which answers with
    *  values and cannot consume files, so an empty draft must stay unsubmittable
    *  there rather than enabling a button whose submit is silently dropped. */
-  const submittableFileCount = answerMode.active ? 0 : files.size;
+  const submittableFileCount = composerReserved ? 0 : files.size;
 
   const { ref, ...registerProps } = methods.register('text', {
     required: submittableFileCount === 0,
@@ -836,6 +843,10 @@ const ChatForm = memo(function ChatForm({
         if (videoMode) {
           return handleVideoSubmit();
         }
+        // Answer mode: composer text answers the paused run instead of
+        // starting a new turn (submitText resets the composer itself).
+        // Dismissing the popover — or collapsing a batch, which answers in its
+        // own card — restores normal sends.
         if (answerMode.active && answerMode.submitText(data.text)) {
           return;
         }
@@ -958,11 +969,7 @@ const ChatForm = memo(function ChatForm({
                           textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>
                         ).current = e;
                       }}
-                      disabled={
-                        disableInputs ||
-                        isNotAppendable ||
-                        (answerMode.active && answerMode.batchMode)
-                      }
+                      disabled={disableInputs || isNotAppendable || answerMode.composerLocked}
                       onPaste={handlePaste}
                       onKeyDown={(e) => {
                         // Answer mode consumes option-navigation keys from the
@@ -1055,7 +1062,7 @@ const ChatForm = memo(function ChatForm({
                 <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
                   {isSubmitting &&
                   (showStopButton || steering.duringRunActive) &&
-                  !answerMode.active
+                  !answerMode.composerAnswers
                     ? duringRunSlot
                     : endpoint && (
                         <SendButton
@@ -1066,8 +1073,8 @@ const ChatForm = memo(function ChatForm({
                             filesLoading ||
                             disableInputs ||
                             isNotAppendable ||
-                            (answerMode.active && answerMode.batchMode) ||
-                            (isSubmitting && !answerMode.active)
+                            answerMode.composerLocked ||
+                            (isSubmitting && !answerMode.composerAnswers)
                           }
                         />
                       )}

@@ -76,6 +76,12 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
   const chatHelpers = useChatHelpers(index, conversationId);
   const addedChatHelpers = useAddedResponse();
 
+  const activeConversation =
+    chatHelpers.conversation?.conversationId === conversationId
+      ? chatHelpers.conversation
+      : undefined;
+  const activeSubagentThread = activeConversation?.subagentThread;
+
   useAdaptiveSSE(rootSubmission, chatHelpers, false, index);
 
   // Auto-resume if navigating back to conversation with active job.
@@ -117,6 +123,11 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
       : undefined;
   const pageHeading =
     isLandingPage || !conversationTitle ? localize('com_ui_new_chat') : conversationTitle;
+  const parentConversationId = activeSubagentThread?.parentConversationId;
+  /** Durable child threads are an execution record owned by their parent agent.
+   * Human continuation is a separate future fork/promotion flow, never an
+   * in-place mutation of this canonical child transcript. */
+  const isSubagentThreadReadOnly = activeSubagentThread != null;
 
   return (
     <ChatFormProvider {...methods}>
@@ -125,8 +136,11 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
           <Presentation>
             <div className="relative flex h-full w-full flex-col">
               <h1 className="sr-only">{pageHeading}</h1>
-              <Header />
-              <div className="flex min-h-0 flex-1 flex-col">
+              <Header
+                parentConversationId={parentConversationId}
+                readOnly={isSubagentThreadReadOnly}
+              />
+              <>
                 <div
                   className={cn(
                     'flex flex-1 flex-col overflow-y-auto',
@@ -147,15 +161,24 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
                     )}
                   >
                     {isLandingPage && <ConversationStarters />}
-                    <ChatForm
-                      index={index}
-                      placeholder={chatFormPlaceholder}
-                      project={isProjectLandingPage ? project : undefined}
-                    />
+                    {isSubagentThreadReadOnly ? (
+                      <div
+                        className="text-text-secondary mx-auto w-full max-w-3xl px-4 py-3 text-center text-sm xl:max-w-4xl"
+                        role="note"
+                      >
+                        {localize('com_ui_subagent_thread_read_only')}
+                      </div>
+                    ) : (
+                      <ChatForm
+                        index={index}
+                        placeholder={chatFormPlaceholder}
+                        project={isProjectLandingPage ? project : undefined}
+                      />
+                    )}
                     {!isLandingPage && <Footer />}
                   </div>
                 </div>
-              </div>
+              </>
               {isLandingPage && <Footer />}
             </div>
           </Presentation>

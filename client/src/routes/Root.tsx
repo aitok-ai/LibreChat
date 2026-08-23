@@ -11,6 +11,7 @@ import {
   useSearchEnabled,
   useAssistantsMap,
   useAuthContext,
+  useCatalogWarmup,
   useAgentsMap,
   useFileMap,
 } from '~/hooks';
@@ -47,22 +48,30 @@ export default function Root() {
     setExpanded: setSidebarExpanded,
   } = useSidebarState();
   const paneRef = useRef<HTMLDivElement>(null);
+  /** Focus handoff lives in the drawer header's own expanded-effect — the
+   * commit drives it, so every opener (button, swipe) is covered without a
+   * timer racing the deferred state flip. */
   const handleDrawerOpenChange = useCallback(
     (next: boolean) => {
       startTransition(() => {
         setSidebarExpanded(next);
       });
-      if (next) {
-        /** Same handoff as the OpenSidebar button: opening makes the pane
-         * inert, so keyboard/AT focus must land inside the drawer. */
-        setTimeout(() => {
-          document.getElementById(CLOSE_SIDEBAR_ID)?.focus();
-        }, 250);
-      }
     },
     [setSidebarExpanded],
   );
   const { isAuthenticated, logout } = useAuthContext();
+  /** Releases feature-catalog queries after first paint on browser idle. */
+  useCatalogWarmup(isAuthenticated);
+
+  useDrawerSwipe({
+    paneRef,
+    /** Auth gates the whole tree below (`return null`), so the swipe surfaces
+     * only exist once authenticated — enabling earlier would attach to
+     * nothing and never re-run when they mount. */
+    enabled: isSmallScreen && isAuthenticated,
+    open: sidebarExpanded,
+    onOpenChange: handleDrawerOpenChange,
+  });
 
   useDrawerSwipe({
     paneRef,

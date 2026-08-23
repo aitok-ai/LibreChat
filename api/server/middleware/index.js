@@ -4,7 +4,11 @@ const validateRegistration = require('./validateRegistration');
 const buildEndpointOption = require('./buildEndpointOption');
 const validateEmailLogin = require('./validateEmailLogin');
 const validateMessageReq = require('./validateMessageReq');
-const { prepareMessageRequestValidation, sendValidationResponse } = require('./messageValidation');
+const {
+  canReadActiveJobConversation,
+  prepareMessageRequestValidation,
+  sendValidationResponse,
+} = require('./messageValidation');
 const checkDomainAllowed = require('./checkDomainAllowed');
 const requireLocalAuth = require('./requireLocalAuth');
 const canDeleteAccount = require('./canDeleteAccount');
@@ -50,6 +54,7 @@ module.exports = {
   configMiddleware,
   checkDomainAllowed,
   validateMessageReq,
+  canReadActiveJobConversation,
   sendValidationResponse,
   prepareMessageRequestValidation,
   buildEndpointOption,

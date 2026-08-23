@@ -10,6 +10,7 @@ import LangIcon from '~/components/Messages/Content/LangIcon';
 import { sandboxStartingByToolCallId } from '~/store';
 import useToolCallState from './useToolCallState';
 import useLazyHighlight from './useLazyHighlight';
+import useFollowScroll from './useFollowScroll';
 import { ERROR_PATTERNS } from './ExecuteCode';
 import { AttachmentGroup } from './Attachment';
 import { useToolCallIntent } from './intent';
@@ -48,15 +49,15 @@ export default function BashCall({
   const isWritingCommand = !command || !areToolCallArgsComplete(args);
   const sandboxStarting = useRecoilValue(sandboxStartingByToolCallId(toolCallId ?? ''));
 
-  const { showCode, toggleCode, expandStyle, expandRef, progress, cancelled, hasError, hasOutput } =
-    useToolCallState(initialProgress, isSubmitting, output, !!command, onExpand, runStepStatus);
-
-  const highlighted = useLazyHighlight(command || undefined, 'bash');
   const outputHasError = useMemo(() => ERROR_PATTERNS.test(output), [output]);
   /** A backgrounded call's persisted output stays the dispatch handle until
    *  the detached run settles and patches it; render a background state
    *  instead of the handle JSON. Completion arrives live as the status marker
-   *  attachment (also covers stdout-only runs) or as harvested files. */
+   *  attachment (also covers stdout-only runs) or as harvested files.
+   *
+   *  Resolved before the phase, which folds `backgroundFailed` in: the
+   *  detached task's outcome is this card's outcome, and the dispatch step's
+   *  own output cannot express it. */
   const backgroundHandle = useMemo(() => parseBackgroundHandle(output), [output]);
   const { fileAttachments, backgroundStatus } = useMemo(
     () => splitBackgroundAttachments(attachments, toolCallId),
@@ -70,6 +71,23 @@ export default function BashCall({
           : 'com_ui_background_running',
       )
     : null;
+
+  const { showCode, toggleCode, expandStyle, expandRef, phase, hasOutput } = useToolCallState({
+    initialProgress,
+    isSubmitting,
+    output,
+    hasInput: !!command,
+    onExpand,
+    runStepStatus,
+    extraError: backgroundFailed,
+  });
+
+  const highlighted = useLazyHighlight(command || undefined, 'bash');
+  const { ref: commandPaneRef, onScroll: onCommandPaneScroll } = useFollowScroll<HTMLDivElement>(
+    highlighted ?? command,
+    phase === 'running',
+    showCode,
+  );
 
   const [isCopied, setIsCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -104,11 +122,11 @@ export default function BashCall({
     <>
       <div className="relative my-1.5 flex h-5 shrink-0 items-center gap-2.5">
         <ProgressText
-          progress={progress}
+          phase={phase}
           onClick={toggleCode}
           inProgressText={inProgressText}
           finishedText={
-            cancelled
+            phase === 'cancelled'
               ? localize('com_ui_cancelled')
               : (backgroundFinishedText ?? intent ?? localize('com_ui_command_finished'))
           }
@@ -121,30 +139,28 @@ export default function BashCall({
           durationMs={
             backgroundHandle == null && backgrounded !== true ? runStepDurationMs : undefined
           }
-          errorSuffix={
-            (hasError && !cancelled) || backgroundFailed
-              ? localize('com_ui_tool_failed')
-              : undefined
-          }
           icon={
             <LangIcon
               lang="bash"
               className={cn(
                 'text-text-secondary size-4 shrink-0',
-                progress < 1 && !cancelled && !hasError && 'animate-pulse',
+                phase === 'running' && 'animate-pulse',
               )}
             />
           }
           hasInput={!!command || hasOutput}
           isExpanded={showCode}
-          error={cancelled}
         />
       </div>
       <div style={expandStyle}>
         <div className="overflow-hidden" ref={expandRef}>
           <div className="border-border-light my-2 overflow-hidden rounded-lg border">
             {command && (
-              <div className="bg-surface-tertiary relative max-h-[300px] overflow-auto dark:bg-gray-950">
+              <div
+                ref={commandPaneRef}
+                onScroll={onCommandPaneScroll}
+                className="bg-surface-tertiary relative max-h-[300px] overflow-auto dark:bg-gray-950"
+              >
                 <CopyButton
                   iconOnly
                   isCopied={isCopied}

@@ -13,6 +13,10 @@ const {
   attachAskUserQuestionAnswers,
   attachAskUserQuestionArgs,
   createMessageFilterPii,
+  isAgentTriggerRequest,
+  exemptAgentTriggerFromIpLimiter,
+  captureScheduleFireContext,
+  exemptFromUserLimiter: exemptScheduleFromUserLimiter,
 } = require('@librechat/api');
 const { createSseStreamTelemetry } = require('@librechat/api/telemetry');
 const { logger } = require('@librechat/data-schemas');
@@ -34,12 +38,21 @@ const {
   negotiateExistingGenerationProtocol,
 } = require('~/server/controllers/agents/protocol');
 const { saveMessage } = require('~/models');
+const {
+  recordScheduleOutcome,
+  beginScheduledStop,
+  acknowledgeScheduledStopPersistence,
+} = require('~/server/services/Schedules');
 const responses = require('./responses');
 const openai = require('./openai');
 const { v1 } = require('./v1');
 const chat = require('./chat');
 
 const { LIMIT_MESSAGE_IP, LIMIT_MESSAGE_USER } = process.env ?? {};
+
+/** Applies `limiter` unless this trusted loopback request should skip it. */
+const unless = (isExempt, limiter) => (req, res, next) =>
+  isExempt(req) ? next() : limiter(req, res, next);
 
 /** Untenanted jobs (pre-multi-tenancy) remain accessible if the userId check passes. */
 function hasTenantMismatch(job, user) {
@@ -109,6 +122,13 @@ router.use('/v1/responses', responses);
 router.use('/v1', openai);
 
 router.use(requireJwtAuth);
+// Capture the short-lived trigger identity immediately after authentication. Downstream
+// middleware reads this stable decision instead of re-verifying an expired token.
+router.use((req, _res, next) => {
+  req._isAgentTrigger = isAgentTriggerRequest(req);
+  captureScheduleFireContext(req);
+  next();
+});
 router.use(checkBan);
 router.use(uaParser);
 
@@ -657,6 +677,27 @@ router.post('/chat/abort', configMiddleware, async (req, res, next) => {
               throwOnError: true,
             })
           : undefined;
+      // Stamp a scheduled run's Stop BEFORE signalling the abort. `abortJob` flips the job
+      // to `aborted` immediately, then runs the partial-message/checkpoint persistence in
+      // `beforePublish`. Without this stamp the owner settlement, reconciliation, and
+      // schedule/account deletion could observe `aborted` and terminalize/erase the run
+      // mid-write. The stamp is serialized: a fresh Stop already owning it means another
+      // request is persisting, so we must not signal a second abort.
+      const stopScheduleId = job.metadata?.scheduleId;
+      const stopScheduledFor = job.metadata?.scheduledFor;
+      const isScheduledStop = stopScheduleId != null && stopScheduledFor != null;
+      let scheduledStopStamped = false;
+      if (isScheduledStop) {
+        const stopStamp = await beginScheduledStop({
+          scheduleId: stopScheduleId,
+          scheduledFor: stopScheduledFor,
+        });
+        if (stopStamp === 'in_progress') {
+          res.set('Retry-After', '1');
+          return res.status(409).json({ code: 'STOP_IN_PROGRESS', generationProtocolVersion });
+        }
+        scheduledStopStamped = stopStamp === true;
+      }
       const abortResult = await GenerationJobManager.abortJob(jobStreamId, {
         expectedCreatedAt: job.createdAt,
         transformAbortContent: (content, abortJobData) => {
@@ -795,6 +836,18 @@ router.post('/chat/abort', configMiddleware, async (req, res, next) => {
           }
         },
       });
+      // The abort did not land (replaced/still-active/already-settled), so no persistence
+      // is in flight: release the Stop barrier we armed rather than deferring this
+      // occurrence's settlement for the full stale-owner window. A retry or a replacement
+      // generation re-stamps its own; the acknowledgement is fenced to the occurrence, not
+      // a generation, so it cannot settle a successor through its predecessor.
+      if (scheduledStopStamped && !abortResult.success) {
+        await acknowledgeScheduledStopPersistence({
+          scheduleId: stopScheduleId,
+          scheduledFor: stopScheduledFor,
+        });
+        scheduledStopStamped = false;
+      }
       if (abortResult.failureReason === 'generation_replaced') {
         return res.status(409).json({ code: 'RUN_REPLACED', generationProtocolVersion });
       }
@@ -845,6 +898,53 @@ router.post('/chat/abort', configMiddleware, async (req, res, next) => {
         abortResultUserMessageId: abortResult.jobData?.userMessage?.messageId,
         abortResultResponseMessageId: abortResult.jobData?.responseMessageId,
       });
+
+      // `beforePublish` has run: its partial-message and checkpoint writes have either
+      // landed or failed. Acknowledge the Stop ONLY on success — that releases the owner's
+      // settlement barrier so the run can terminalize. On a persistence failure we leave
+      // the barrier unresolved: the run stays preserved (client retries; the stale-owner
+      // timeout is the bounded recovery) rather than settling over an incomplete write.
+      if (scheduledStopStamped && !abortResult.persistenceFailed) {
+        await acknowledgeScheduledStopPersistence({
+          scheduleId: stopScheduleId,
+          scheduledFor: stopScheduledFor,
+          // Re-drive the terminal outcome from here for a RUNNING generation: its owner
+          // calls recordScheduleOutcome once, and if that call's Stop barrier deferred
+          // (slow beforePublish), nothing would settle the run where no schedule
+          // reconciler is armed. recordRunOutcome is match-guarded and idempotent, so an
+          // owner that already settled makes this a no-op. A paused job is settled
+          // explicitly below and needs no re-drive here.
+          ...(job.status !== 'requires_action' && {
+            settle: {
+              status: 'interrupted',
+              conversationId: job.metadata?.conversationId ?? jobStreamId,
+              error: 'Scheduled run was stopped',
+            },
+          }),
+        });
+      }
+
+      // A paused generation has no live provider owner left to report the stop.
+      // Persist its scheduled occurrence here, after abortJob's required partial
+      // response/checkpoint work AND its acknowledgement above, while running generations
+      // continue to settle from their owning request/resume controller. A failed
+      // persistence skips settlement so the incomplete run is not terminalized.
+      if (
+        job.status === 'requires_action' &&
+        job.metadata?.scheduleId &&
+        !abortResult.persistenceFailed
+      ) {
+        await recordScheduleOutcome({
+          scheduleId: job.metadata.scheduleId,
+          scheduledFor: job.metadata.scheduledFor,
+          streamId: jobStreamId,
+          jobCreatedAt: job.createdAt,
+          status: 'interrupted',
+          conversationId: job.metadata.conversationId ?? jobStreamId,
+          clearConversationId: abortResult.jobData?.createdEventEmitted !== true,
+          error: 'Scheduled run was stopped while awaiting approval',
+        });
+      }
 
       if (abortResult.persistenceFailed && generationProtocolVersion < GENERATION_PROTOCOL_V2) {
         res.set('Retry-After', '1');
@@ -899,7 +999,7 @@ router.post('/chat/abort', configMiddleware, async (req, res, next) => {
  */
 const steerLimiters = [];
 if (isEnabled(LIMIT_MESSAGE_IP)) {
-  steerLimiters.push(messageIpLimiter);
+  steerLimiters.push(unless(exemptAgentTriggerFromIpLimiter, messageIpLimiter));
 }
 if (isEnabled(LIMIT_MESSAGE_USER)) {
   steerLimiters.push(messageUserLimiter);
@@ -911,6 +1011,22 @@ router.post(
   createMessageFilterPii({ getConfig: (req) => req.config?.messageFilter?.pii }),
   moderateText,
   SteerController,
+);
+
+/**
+ * @route POST /chat/steer/deliver
+ * @desc Strict, idempotent steer admission for trusted event-delivery hosts
+ * @access Private
+ * @description Uses the same text-admission chain as an interactive steer,
+ * then requires a v2 durable receipt and exact originating-agent identity.
+ */
+router.post(
+  '/chat/steer/deliver',
+  configMiddleware,
+  ...steerLimiters,
+  createMessageFilterPii({ getConfig: (req) => req.config?.messageFilter?.pii }),
+  moderateText,
+  SteerController.SteerDeliveryController,
 );
 
 /**
@@ -945,11 +1061,11 @@ const chatRouter = express.Router();
 chatRouter.use(configMiddleware);
 
 if (isEnabled(LIMIT_MESSAGE_IP)) {
-  chatRouter.use(messageIpLimiter);
+  chatRouter.use(unless(exemptAgentTriggerFromIpLimiter, messageIpLimiter));
 }
 
 if (isEnabled(LIMIT_MESSAGE_USER)) {
-  chatRouter.use(messageUserLimiter);
+  chatRouter.use(unless(exemptScheduleFromUserLimiter, messageUserLimiter));
 }
 
 chatRouter.use('/', chat);

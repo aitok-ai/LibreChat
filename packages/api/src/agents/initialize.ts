@@ -9,6 +9,7 @@ import {
   paramEndpoints,
   isAgentsEndpoint,
   AgentCapabilities,
+  resolveAllowedStatefulCodeEnvironments,
   replaceSpecialVars,
   providerEndpointMap,
 } from 'librechat-data-provider';
@@ -20,24 +21,27 @@ import type {
   TFile,
   Agent,
   TUser,
+  StatefulCodeEnvironment,
 } from 'librechat-data-provider';
 import type { GenericTool, LCToolRegistry, ToolMap, LCTool } from '@librechat/agents';
 import type { IMongoFile, FileOwnerScope } from '@librechat/data-schemas';
 import type { Response as ServerResponse } from 'express';
+import type {
+  ServerRequest,
+  RequestBody,
+  EndpointDbMethods,
+  EndpointTokenConfig,
+  InitializeResultBase,
+} from '~/types';
 import type {
   ResolvedManualSkill,
   ResolvedAlwaysApplySkill,
   TListSkillsByAccess,
   TGetSkillByName,
 } from './skills';
-import type {
-  ServerRequest,
-  EndpointDbMethods,
-  EndpointTokenConfig,
-  InitializeResultBase,
-} from '~/types';
 import type { LCAvailableTools, RequestScopedMCPConnectionStore } from '../mcp/types';
 import type { TFilterFilesByAgentAccess } from './resources';
+import type { MCPToolAlias } from '~/tools/classification';
 import {
   injectSkillCatalog,
   resolveManualSkills,
@@ -67,9 +71,12 @@ import {
   registerFileAuthoringTools,
   isFileAuthoringToolDefinition,
 } from './tools';
+import {
+  createStatefulCodeEnvironmentPolicyError,
+  isFatalAgentInitializationError,
+} from './errors';
 import { registerMemoryTools, memoryToolUsageGuard } from './memory';
 import { applyIntentLabels, sanitizeIntentLabels } from './intent';
-import { isFatalAgentInitializationError } from './errors';
 import { applyBackgroundToolCalls } from './background';
 import { filterFilesByEndpointConfig } from '~/files';
 import { generateArtifactsPrompt } from '~/prompts';
@@ -274,6 +281,8 @@ export type InitializedAgent = Agent & {
   requestScopedConnections?: RequestScopedMCPConnectionStore;
   /** Serializable tool definitions for event-driven execution */
   toolDefinitions?: LCTool[];
+  /** Both-direction identity aliases for MCP tools whose key spelling changed */
+  mcpToolAliases?: MCPToolAlias[];
   /** Precomputed flag indicating if any tools have defer_loading enabled (for efficient runtime checks) */
   hasDeferredTools?: boolean;
   /**
@@ -409,6 +418,8 @@ export interface InitializeAgentParams {
   conversationId?: string | null;
   /** Parent message ID for determining the current thread (optional) */
   parentMessageId?: string | null;
+  /** Normalized body used by MCP runtime placeholders during tool discovery. */
+  requestBody?: RequestBody;
   /** Request files */
   requestFiles?: IMongoFile[];
   /** Function to load agent tools */
@@ -421,6 +432,7 @@ export interface InitializeAgentParams {
     model: string | null;
     tool_options: AgentToolOptions | undefined;
     tool_resources: AgentToolResources | undefined;
+    requestBody?: RequestBody;
     /** Trusted endpoint/profile resolved for this agent before any code-file priming. */
     codeExecutionContext: CodeExecutionContext;
     /** Full accessible MCP server names (operator + user DB) when the heal
@@ -439,6 +451,7 @@ export interface InitializeAgentParams {
     /** Serializable tool definitions for event-driven mode */
     toolDefinitions?: LCTool[];
     hasDeferredTools?: boolean;
+    mcpToolAliases?: MCPToolAlias[];
     actionsEnabled?: boolean;
     /**
      * Pre-uploaded code-env file refs for the agent's
@@ -478,6 +491,8 @@ export interface InitializeAgentParams {
   toolIntentsAvailable?: boolean;
   /** Whether stateful code sessions are available (stateful_code_sessions capability enabled) */
   statefulSessionsAvailable?: boolean;
+  /** Explicit deployment allowlist for request types that do not carry LibreChat config on req. */
+  allowedStatefulCodeEnvironments?: readonly StatefulCodeEnvironment[];
   /** Whether inline memory tools are available (memory capability enabled, memory
    *  configured, and the user permitted). When true and the agent lists the `memory`
    *  capability, `set_memory` + `delete_memory` are registered for the LLM. */
@@ -602,6 +617,7 @@ export async function initializeAgent(
     conversationId,
     endpointOption,
     parentMessageId,
+    requestBody,
     allowedProviders,
     isInitialAgent = false,
   } = params;
@@ -723,6 +739,15 @@ export async function initializeAgent(
     params.statefulSessionsAvailable === true &&
     agent.stateful_code_sessions === true;
   const statefulCodeEnvironment = normalizeStatefulCodeEnvironment(agent.stateful_code_environment);
+  if (effectiveStatefulSessions) {
+    const allowedStatefulCodeEnvironments = resolveAllowedStatefulCodeEnvironments(
+      params.allowedStatefulCodeEnvironments ??
+        req.config?.endpoints?.[EModelEndpoint.agents]?.statefulCodeSessions?.allowedEnvironments,
+    );
+    if (!allowedStatefulCodeEnvironments.includes(statefulCodeEnvironment)) {
+      throw createStatefulCodeEnvironmentPolicyError(statefulCodeEnvironment);
+    }
+  }
   const codeExecutionContext = resolveCodeExecutionContext({
     statefulSessions: effectiveStatefulSessions,
     environment: statefulCodeEnvironment,
@@ -1048,6 +1073,7 @@ export async function initializeAgent(
       model: agent.model,
       tool_options: agent.tool_options,
       tool_resources,
+      requestBody,
       codeExecutionContext,
       accessibleMcpServerNames: resolvedAuditNames,
     });
@@ -1090,6 +1116,7 @@ export async function initializeAgent(
     mcpAvailableTools,
     requestScopedConnections,
     hasDeferredTools,
+    mcpToolAliases,
     actionsEnabled,
     tools: structuredTools,
     primedCodeFiles,
@@ -1103,6 +1130,7 @@ export async function initializeAgent(
     requestScopedConnections: undefined,
     toolDefinitions: [],
     hasDeferredTools: false,
+    mcpToolAliases: [],
     actionsEnabled: undefined,
     primedCodeFiles: undefined,
   };
@@ -1541,6 +1569,7 @@ export async function initializeAgent(
     userMCPAuthMap,
     toolDefinitions,
     hasDeferredTools,
+    mcpToolAliases,
     backgroundToolNames,
     intentToolNames,
     actionsEnabled,

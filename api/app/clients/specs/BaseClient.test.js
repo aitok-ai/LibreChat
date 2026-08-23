@@ -691,6 +691,21 @@ describe('BaseClient', () => {
       );
     });
 
+    it('honors response and user message IDs preallocated before initialization', async () => {
+      TestClient = initializeFakeClient(apiKey, options, messageHistory);
+
+      const result = await TestClient.handleStartMethods('request-scoped MCP', {
+        conversationId,
+        parentMessageId: '3',
+        preallocatedUserMessageId: 'preallocated-user',
+        preallocatedResponseMessageId: 'preallocated-response',
+      });
+
+      expect(result.userMessage.messageId).toBe('preallocated-user');
+      expect(result.responseMessageId).toBe('preallocated-response');
+      expect(TestClient.responseMessageId).toBe('preallocated-response');
+    });
+
     it('applies edited reasoning content from its typed payload before regeneration', async () => {
       const responseMessageId = 'response-with-reasoning';
       const newHistory = [
@@ -1055,6 +1070,15 @@ describe('BaseClient', () => {
         anotherExistingField: 'anotherValue',
         temperature: 0.7,
         modelLabel: 'GPT-3.5',
+        subagentThread: {
+          rootConversationId: 'root-conversation',
+          parentConversationId: 'parent-conversation',
+          parentMessageId: 'parent-message',
+          parentToolCallId: 'parent-tool-call',
+          subagentType: 'researcher',
+          subagentKind: 'agent',
+          depth: 1,
+        },
       };
 
       getConvo.mockResolvedValue(existingConvo);
@@ -1089,6 +1113,7 @@ describe('BaseClient', () => {
 
       // Only check that someExistingField is in unsetFields
       expect(saveOptions.unsetFields).toHaveProperty('someExistingField', 1);
+      expect(saveOptions.unsetFields).not.toHaveProperty('subagentThread');
 
       // Mock saveConvo to return the expected fields
       saveConvo.mockImplementation((req, fields) => {
