@@ -1,28 +1,27 @@
-import * as Ariakit from '@ariakit/react';
-import { ChevronDown, Video as VideoIcon, Check } from 'lucide-react';
 import { useMemo } from 'react';
+import * as Ariakit from '@ariakit/react';
 import { TooltipAnchor } from '@librechat/client';
-import { Constants, downloadVideoJobZip } from 'librechat-data-provider';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import { ChevronDown, Video as VideoIcon, Check } from 'lucide-react';
+import { Constants, downloadVideoJobZip } from 'librechat-data-provider';
+import { VIDEO_PRESET_OPTIONS, VIDEO_TEMPLATE_OPTIONS } from './videoOptions';
 import { useBadgeRowContext } from '~/Providers';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 import store from '~/store';
-import { VIDEO_PRESET_OPTIONS, VIDEO_TEMPLATE_OPTIONS } from './videoOptions';
 
 export default function VideoSelect() {
-  const { conversationId } = useBadgeRowContext();
   const localize = useLocalize();
-  const convoKey = conversationId ?? Constants.NEW_CONVO;
+  const context = useBadgeRowContext();
+  const convoKey = context?.conversationId ?? Constants.NEW_CONVO;
 
   const [videoMode, setVideoMode] = useRecoilState(store.videoModeByConvoId(convoKey));
   const [videoTemplate, setVideoTemplate] = useRecoilState(store.videoTemplateByConvoId(convoKey));
   const [videoPreset, setVideoPreset] = useRecoilState(store.videoPresetByConvoId(convoKey));
   const jobState = useRecoilValue(store.videoJobUIStateByConvoId(convoKey));
 
-  const { videoMenuStore } = useBadgeRowContext();
-  const fallbackMenuStore = Ariakit.useMenuStore({ focusLoop: true });
-  const menuStore = videoMenuStore ?? fallbackMenuStore;
+  const defaultMenuStore = Ariakit.useMenuStore({ focusLoop: true });
+  const menuStore = (context?.videoMenuStore ?? defaultMenuStore) as Ariakit.MenuStore;
   const isOpen = menuStore.useState('open');
 
   const displayText = useMemo(() => {
@@ -46,6 +45,10 @@ export default function VideoSelect() {
     }
     return displayText ?? localize('com_ui_video');
   }, [displayText, localize, videoMode]);
+
+  if (!context) {
+    return null;
+  }
 
   return (
     <Ariakit.MenuProvider store={menuStore}>

@@ -1,20 +1,20 @@
 import React from 'react';
+import { useRecoilState } from 'recoil';
 import * as Ariakit from '@ariakit/react';
-import { Check, ChevronRight, Video as VideoIcon } from 'lucide-react';
 import { PinIcon } from '@librechat/client';
 import { Constants } from 'librechat-data-provider';
-import { useRecoilState } from 'recoil';
+import { Check, ChevronRight, Video as VideoIcon } from 'lucide-react';
+import { VIDEO_PRESET_OPTIONS, VIDEO_TEMPLATE_OPTIONS } from './videoOptions';
+import useVideoPinned from '~/hooks/Video/useVideoPinned';
 import { useBadgeRowContext } from '~/Providers';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 import store from '~/store';
-import useVideoPinned from '~/hooks/Video/useVideoPinned';
-import { VIDEO_PRESET_OPTIONS, VIDEO_TEMPLATE_OPTIONS } from './videoOptions';
 
 const VideoSubMenu = React.forwardRef<HTMLDivElement>((props, ref) => {
   const localize = useLocalize();
-  const { conversationId } = useBadgeRowContext();
-  const convoKey = conversationId ?? Constants.NEW_CONVO;
+  const context = useBadgeRowContext();
+  const convoKey = context?.conversationId ?? Constants.NEW_CONVO;
   const [videoMode, setVideoMode] = useRecoilState(store.videoModeByConvoId(convoKey));
   const [videoTemplate, setVideoTemplate] = useRecoilState(store.videoTemplateByConvoId(convoKey));
   const [videoPreset, setVideoPreset] = useRecoilState(store.videoPresetByConvoId(convoKey));
@@ -25,6 +25,10 @@ const VideoSubMenu = React.forwardRef<HTMLDivElement>((props, ref) => {
     showTimeout: 100,
     placement: 'right',
   });
+
+  if (!context) {
+    return null;
+  }
 
   return (
     <div ref={ref}>
