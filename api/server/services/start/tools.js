@@ -42,7 +42,7 @@ function loadAndFormatTools({ directory, adminFilter = [], adminIncluded = [] })
 
   for (const file of files) {
     const filePath = path.join(directory, file);
-    if (!file.endsWith('.js') || (filter.has(file) && included.size === 0)) {
+    if (!file.endsWith('.js') || file.endsWith('.spec.js') || file.endsWith('.test.js')) {
       continue;
     }
 
