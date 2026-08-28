@@ -4,6 +4,7 @@ import { InfoHoverCard, ESide } from '@librechat/client';
 import type { TFile, TMessage } from 'librechat-data-provider';
 import FilePreviewDialog from '~/components/Chat/Messages/Content/FilePreviewDialog';
 import MessageTimestamp from '~/components/Chat/Messages/ui/MessageTimestamp';
+import MessageQuotes from '~/components/Chat/Messages/Content/MessageQuotes';
 import MarkdownLite from '~/components/Chat/Messages/Content/MarkdownLite';
 import FileContainer from '~/components/Chat/Input/Files/FileContainer';
 import Image from '~/components/Chat/Messages/Content/Image';
@@ -25,11 +26,15 @@ import store from '~/store';
 const SteerPart = memo(function SteerPart({
   steer,
   files,
+  quotes,
   steerId,
   createdAt,
 }: {
   steer: string;
   files?: TMessage['files'];
+  /** Quoted excerpts steered with the message; rendered as the same reference
+   *  blocks a user bubble shows for `message.quotes`. */
+  quotes?: string[];
   /** Anchors the part for the message-nav rail (`#steer-<id>` rib target). */
   steerId?: string;
   createdAt?: number;
@@ -83,6 +88,7 @@ const SteerPart = memo(function SteerPart({
       <div className="user-turn relative flex w-fit max-w-[90%] flex-col items-end sm:max-w-[85%]">
         <h2 className="sr-only">{label}</h2>
         <div className="rounded-theme-surface rounded-br-theme-control bg-surface-tertiary px-theme-normal flex max-w-full flex-col items-start gap-2 py-2.5">
+          <MessageQuotes quotes={quotes} />
           {(imageFiles.length > 0 || otherFiles.length > 0) && (
             <div className="flex flex-wrap gap-2">
               {otherFiles.map((file) => (
@@ -114,15 +120,6 @@ const SteerPart = memo(function SteerPart({
               {enableUserMsgMarkdown ? <MarkdownLite content={steer} /> : steer}
             </div>
           </CollapsibleText>
-        </div>
-        <div className="text-text-secondary mt-1 flex min-h-8 items-center justify-end">
-          <span
-            data-testid="steer-info-affordance"
-            className="duration-theme-normal transition-opacity group-hover:opacity-100 focus-within:opacity-100 motion-reduce:transition-none [@media(hover:hover)]:opacity-0"
-          >
-            <InfoHoverCard side={ESide.Top} text={localize('com_ui_steered_info')} />
-          </span>
-          <MessageTimestamp value={timestamp} />
         </div>
         <div className="text-text-secondary mt-1 flex min-h-8 items-center justify-end">
           <span

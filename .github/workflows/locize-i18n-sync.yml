@@ -13,10 +13,6 @@ concurrency:
   group: locize-i18n-sync
   cancel-in-progress: false
 
-concurrency:
-  group: locize-i18n-sync
-  cancel-in-progress: false
-
 permissions:
   contents: read
 

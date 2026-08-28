@@ -159,6 +159,8 @@ describe('ToolsMarketplaceDialog', () => {
     mockWatchedTools = [];
     mockExecuteCode = false;
     mockMcpServersMap = new Map();
+    mockToggleFavorite.mockClear();
+    mockFavoriteKeys = new Set<string>();
   });
   test('renders cards from catalog when open', () => {
     render(<ToolsMarketplaceDialog open onOpenChange={jest.fn()} agentId="a1" />);

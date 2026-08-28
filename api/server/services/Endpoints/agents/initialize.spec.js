@@ -49,6 +49,7 @@ const mockArtifactToolEndCallback = jest.fn();
 jest.mock('~/server/controllers/agents/callbacks', () => ({
   createToolEndCallback: jest.fn(() => mockArtifactToolEndCallback),
   createAttachmentEmitter: jest.fn(() => jest.fn()),
+  createPtcProgressEmitter: jest.fn(() => jest.fn()),
   createBackgroundCodeResultHandler: jest.fn(() => jest.fn()),
   getDefaultHandlers: jest.fn((opts) => {
     capturedDefaultHandlerOptions = opts;
@@ -206,6 +207,7 @@ describe('initializeClient — processAgent ACL gate', () => {
   it('threads the owning job epoch into resumable event handlers', async () => {
     const {
       createAttachmentEmitter,
+      createPtcProgressEmitter,
       createToolEndCallback,
     } = require('~/server/controllers/agents/callbacks');
     mockInitializeAgent.mockResolvedValue(makePrimaryConfig([]));
@@ -237,6 +239,13 @@ describe('initializeClient — processAgent ACL gate', () => {
       streamId: 'conv_1',
       jobCreatedAt: 1234,
     });
+    /** The PTC trace emitter is generation-fenced like every other resumable
+     *  emitter; a stale epoch would leak one run's inner calls into the next. */
+    expect(createPtcProgressEmitter).toHaveBeenCalledWith({
+      res: {},
+      streamId: 'conv_1',
+      jobCreatedAt: 1234,
+    });
 
     mockLoadToolsForExecution.mockResolvedValue({ loadedTools: [], configurable: {} });
     await capturedToolExecuteOptions.loadTools([], PRIMARY_ID);
@@ -246,6 +255,46 @@ describe('initializeClient — processAgent ACL gate', () => {
         jobCreatedAt: 1234,
       }),
     );
+  });
+
+  it('publishes event-root activity through the owning child task stream', async () => {
+    const subagentThreadTaskStore = require('./subagentThreadStore');
+    const publishTaskActivity = jest
+      .spyOn(subagentThreadTaskStore, 'publishTaskActivity')
+      .mockResolvedValueOnce(undefined);
+    mockInitializeAgent.mockResolvedValue(makePrimaryConfig([]));
+    const req = makeReq();
+    req._resumableStreamId = 'child-conversation';
+    req.body.conversationId = 'child-conversation';
+    req._agentEventTaskId = 'event-task';
+    req._agentEventBindingParentConversationId = 'parent-conversation';
+    req._agentEventBindingParentAgentId = 'parent-agent';
+
+    await initializeClient({
+      req,
+      res: {},
+      signal: new AbortController().signal,
+      endpointOption: makeEndpointOption(),
+    });
+
+    expect(capturedDefaultHandlerOptions.eventChildActivity).toEqual(
+      expect.objectContaining({
+        runId: 'child-conversation',
+        parentRunId: 'parent-conversation',
+        subagentRunId: 'event-task',
+        subagentType: PRIMARY_ID,
+        subagentAgentId: PRIMARY_ID,
+        parentAgentId: 'parent-agent',
+      }),
+    );
+    await capturedDefaultHandlerOptions.eventChildActivity.publish({
+      phase: 'writing',
+      label: 'Drafting response',
+    });
+    expect(publishTaskActivity).toHaveBeenCalledWith('child-conversation', 'event-task', {
+      phase: 'writing',
+      label: 'Drafting response',
+    });
   });
 
   it('propagates an expected-MCP-tools failure from the runtime tool loader', async () => {

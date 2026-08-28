@@ -1,7 +1,12 @@
 import type { IConversation, IMessage } from '@librechat/data-schemas';
 import type { Response } from 'express';
 import type { ServerRequest } from '~/types';
-import { createSubagentThreadViewHandler, SUBAGENT_THREAD_VIEW_LIMITS } from './view';
+import {
+  createParentSubagentIndexHandler,
+  createSubagentThreadViewHandler,
+  PARENT_SUBAGENT_INDEX_LIMITS,
+  SUBAGENT_THREAD_VIEW_LIMITS,
+} from './view';
 
 jest.mock('@librechat/data-schemas', () => ({
   CLIENT_MESSAGE_SELECT: '-_id -user',
@@ -122,6 +127,7 @@ describe('subagent thread parent-scoped view', () => {
       status: 'completed',
       activity: [],
       activityTruncated: false,
+      controlReceipts: [],
       messages: [
         expect.objectContaining({ messageId: 'task-1:user', role: 'user' }),
         expect.objectContaining({
@@ -196,6 +202,72 @@ describe('subagent thread parent-scoped view', () => {
     expect(JSON.stringify(view)).not.toContain('private thought');
     expect(JSON.stringify(view)).not.toContain('response_metadata');
     expect(view.messages[0]).not.toHaveProperty('subagentTranscript');
+  });
+
+  it('returns bounded authoritative control receipts without private fingerprints', async () => {
+    const input = message('task-1:user', 'running', true);
+    input.subagentTask!.controlReceipts = [
+      {
+        invocationId: 'private-reservation',
+        fingerprint: 'private-reservation-fingerprint',
+        action: 'queue' as const,
+        status: 'reserved' as const,
+        createdAt: new Date('2026-08-21T09:59:59.000Z'),
+        updatedAt: new Date('2026-08-21T09:59:59.000Z'),
+      },
+      ...Array.from({ length: 32 }, (_, index) => ({
+        invocationId: `earlier-${index}`,
+        fingerprint: `private-${index}`,
+        action: 'queue' as const,
+        status: 'applied' as const,
+        createdAt: new Date(`2026-08-21T10:00:${String(index).padStart(2, '0')}.000Z`),
+        updatedAt: new Date(`2026-08-21T10:00:${String(index).padStart(2, '0')}.000Z`),
+      })),
+      {
+        invocationId: 'invocation-1',
+        fingerprint: 'private-fingerprint',
+        controlId: 'control-1',
+        action: 'steer',
+        status: 'applied',
+        createdAt: new Date('2026-08-21T11:00:01.000Z'),
+        updatedAt: new Date('2026-08-21T11:00:02.000Z'),
+        boundary: 'tool',
+        message: 'x'.repeat(1_000),
+      },
+    ];
+    const handler = createSubagentThreadViewHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      getSubagentThreadForParent: jest.fn().mockResolvedValue(child),
+      getMessagesForSubagentThreadView: jest
+        .fn()
+        .mockResolvedValue([message('task-1:assistant', 'completed'), input]),
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest({}, { taskId: 'task-1' }), response);
+
+    const view = json.mock.calls[0][0];
+    expect(view.controlReceipts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          invocationId: 'invocation-1',
+          controlId: 'control-1',
+          action: 'steer',
+          status: 'applied',
+          boundary: 'tool',
+          messageTruncated: true,
+        }),
+      ]),
+    );
+    const projected = view.controlReceipts.find(
+      (receipt: { invocationId: string }) => receipt.invocationId === 'invocation-1',
+    );
+    expect(projected).toBeDefined();
+    expect(Buffer.byteLength(projected?.message ?? '', 'utf8')).toBeLessThanOrEqual(512);
+    expect(view.controlReceipts).toHaveLength(32);
+    expect(view.controlReceiptsTruncated).toBe(true);
+    expect(JSON.stringify(view)).not.toContain('private-reservation');
+    expect(JSON.stringify(view)).not.toContain('private-fingerprint');
   });
 
   it('fences replacement activity to the exact selected task input', async () => {
@@ -551,5 +623,322 @@ describe('subagent thread parent-scoped view', () => {
     await handler(createRequest(), response);
 
     expect(json.mock.calls[0][0]).toEqual(expect.objectContaining({ status: 'interrupted' }));
+  });
+});
+
+describe('parent child-thread index', () => {
+  const eventChild = {
+    ...child,
+    conversationId: 'event-thread',
+    title: 'Agent actor: analyst-a',
+    actorId: 'analyst-a',
+    subagentThread: {
+      ...child.subagentThread!,
+      parentToolCallId: 'event-binding:private-binding-id',
+    },
+  };
+
+  it('returns one bounded actor projection and batches task discovery', async () => {
+    const listSubagentThreadsForParent = jest.fn().mockResolvedValue([eventChild]);
+    const listSubagentTasksForThreads = jest.fn().mockResolvedValue([
+      {
+        conversationId: 'event-thread',
+        tasks: [
+          {
+            messageId: 'task-1:assistant',
+            status: 'completed',
+            createdAt: new Date('2026-08-21T11:01:00.000Z'),
+          },
+        ],
+      },
+    ]);
+    const handler = createParentSubagentIndexHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      listSubagentThreadsForParent,
+      listSubagentTasksForThreads,
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest(), response);
+
+    expect(listSubagentThreadsForParent).toHaveBeenCalledWith({
+      user: 'user-1',
+      parentConversationId,
+      tenantId: 'tenant-1',
+      limit: PARENT_SUBAGENT_INDEX_LIMITS.children + 1,
+    });
+    expect(listSubagentTasksForThreads).toHaveBeenCalledTimes(1);
+    expect(listSubagentTasksForThreads).toHaveBeenCalledWith({
+      user: 'user-1',
+      conversationIds: ['event-thread'],
+      tenantId: 'tenant-1',
+      limitPerThread: PARENT_SUBAGENT_INDEX_LIMITS.tasksPerChild + 1,
+    });
+    expect(json).toHaveBeenCalledWith({
+      parentConversationId,
+      childrenTruncated: false,
+      children: [
+        expect.objectContaining({
+          threadId: 'event-thread',
+          origin: 'event',
+          actorId: 'analyst-a',
+          status: 'completed',
+          latestTaskId: 'task-1',
+          tasks: [expect.objectContaining({ taskId: 'task-1', status: 'completed' })],
+        }),
+      ],
+    });
+    const publicJson = JSON.stringify(json.mock.calls[0][0]);
+    expect(publicJson).not.toContain('private-binding-id');
+    expect(publicJson).not.toContain('subagentThreadLease');
+    expect(publicJson).not.toContain('sourceKeyId');
+  });
+
+  it('propagates a filled shared task window as truncated child history', async () => {
+    const handler = createParentSubagentIndexHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      listSubagentThreadsForParent: jest.fn().mockResolvedValue([eventChild]),
+      listSubagentTasksForThreads: jest.fn().mockResolvedValue([
+        {
+          conversationId: 'event-thread',
+          sourceTruncated: true,
+          tasks: [
+            {
+              messageId: 'task-1:assistant',
+              status: 'completed',
+              createdAt: new Date('2026-08-21T11:01:00.000Z'),
+            },
+          ],
+        },
+      ]),
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest(), response);
+
+    expect(json.mock.calls[0][0].children[0]).toEqual(
+      expect.objectContaining({ tasksTruncated: true }),
+    );
+  });
+
+  it('keeps a derived partial event snapshot running while its exact lease is active', async () => {
+    const handler = createParentSubagentIndexHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      listSubagentThreadsForParent: jest.fn().mockResolvedValue([
+        {
+          ...eventChild,
+          subagentThreadLease: {
+            token: 'lease-token',
+            taskId: 'delivery-active',
+            expiresAt: new Date('2099-08-21T12:00:00.000Z'),
+          },
+        },
+      ]),
+      listSubagentTasksForThreads: jest.fn().mockResolvedValue([
+        {
+          conversationId: 'event-thread',
+          tasks: [
+            {
+              messageId: 'delivery-active:assistant',
+              status: 'cancelled',
+              statusDerived: true,
+              createdAt: new Date('2026-08-21T11:01:00.000Z'),
+            },
+          ],
+        },
+      ]),
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest(), response);
+
+    expect(json.mock.calls[0][0].children[0]).toEqual(
+      expect.objectContaining({ status: 'running', latestTaskId: 'delivery-active' }),
+    );
+  });
+
+  it('promotes a resumed leased task ahead of a newer completed turn', async () => {
+    const handler = createParentSubagentIndexHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      listSubagentThreadsForParent: jest.fn().mockResolvedValue([
+        {
+          ...eventChild,
+          subagentThreadLease: {
+            token: 'lease-token',
+            taskId: 'delivery-resumed',
+            expiresAt: new Date('2099-08-21T12:00:00.000Z'),
+          },
+        },
+      ]),
+      listSubagentTasksForThreads: jest.fn().mockResolvedValue([
+        {
+          conversationId: 'event-thread',
+          tasks: [
+            {
+              messageId: 'delivery-newer:assistant',
+              status: 'completed',
+              createdAt: new Date('2026-08-21T11:02:00.000Z'),
+            },
+            {
+              messageId: 'delivery-resumed:assistant',
+              status: 'cancelled',
+              statusDerived: true,
+              createdAt: new Date('2026-08-21T11:01:00.000Z'),
+            },
+          ],
+        },
+      ]),
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest(), response);
+
+    expect(json.mock.calls[0][0].children[0]).toEqual(
+      expect.objectContaining({ status: 'running', latestTaskId: 'delivery-resumed' }),
+    );
+  });
+
+  it('redacts event delivery identity from the detailed child view', async () => {
+    const handler = createSubagentThreadViewHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      getSubagentThreadForParent: jest.fn().mockResolvedValue(eventChild),
+      getMessagesForSubagentThreadView: jest.fn().mockResolvedValue([]),
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest({ threadId: 'event-thread' }), response);
+
+    expect(json.mock.calls[0][0].parentToolCallId).toBe('event-thread:event-thread');
+    expect(JSON.stringify(json.mock.calls[0][0])).not.toContain('private-binding-id');
+  });
+
+  it('derives a completed event task from its ordinary persisted assistant row', async () => {
+    const getMessagesForSubagentThreadView = jest.fn().mockResolvedValue([
+      {
+        messageId: 'delivery-1:assistant',
+        isCreatedByUser: false,
+        text: 'Event result',
+        createdAt: new Date('2026-08-21T11:01:00.000Z'),
+      },
+    ]);
+    const handler = createSubagentThreadViewHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      getSubagentThreadForParent: jest.fn().mockResolvedValue(eventChild),
+      getMessagesForSubagentThreadView,
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest({ threadId: 'event-thread' }, { taskId: 'delivery-1' }), response);
+
+    expect(json.mock.calls[0][0]).toEqual(expect.objectContaining({ status: 'completed' }));
+    expect(getMessagesForSubagentThreadView).toHaveBeenCalledWith(
+      expect.objectContaining({ taskId: 'delivery-1' }),
+    );
+  });
+
+  it('projects ordinary and event children together without exposing event delivery identity', async () => {
+    const handler = createParentSubagentIndexHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      listSubagentThreadsForParent: jest.fn().mockResolvedValue([eventChild, child]),
+      listSubagentTasksForThreads: jest.fn().mockResolvedValue([]),
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest(), response);
+
+    expect(json.mock.calls[0][0].children).toEqual([
+      expect.objectContaining({ threadId: 'event-thread', origin: 'event', actorId: 'analyst-a' }),
+      expect.objectContaining({
+        threadId,
+        origin: 'tool',
+        parentToolCallId: 'parent-tool-call',
+      }),
+    ]);
+    expect(JSON.stringify(json.mock.calls[0][0])).not.toContain('private-binding-id');
+  });
+
+  it('bounds child and per-child task discovery while retaining newest tasks', async () => {
+    const children = Array.from(
+      { length: PARENT_SUBAGENT_INDEX_LIMITS.children + 1 },
+      (_, index) => ({
+        ...eventChild,
+        conversationId: `event-thread-${String(index).padStart(2, '0')}`,
+        actorId: `actor-${String(index).padStart(2, '0')}`,
+        subagentThreadLease: undefined,
+      }),
+    );
+    const tasks = Array.from(
+      { length: PARENT_SUBAGENT_INDEX_LIMITS.tasksPerChild + 1 },
+      (_, index) => ({
+        messageId: `task-${String(index).padStart(2, '0')}:assistant`,
+        status: 'completed' as const,
+        createdAt: new Date(Date.UTC(2026, 7, 21, 12, index)),
+      }),
+    ).reverse();
+    const listSubagentTasksForThreads = jest
+      .fn()
+      .mockResolvedValue([{ conversationId: children[0].conversationId, tasks }]);
+    const handler = createParentSubagentIndexHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      listSubagentThreadsForParent: jest.fn().mockResolvedValue(children),
+      listSubagentTasksForThreads,
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest(), response);
+
+    const projection = json.mock.calls[0][0];
+    expect(projection.children).toHaveLength(PARENT_SUBAGENT_INDEX_LIMITS.children);
+    expect(projection.childrenTruncated).toBe(true);
+    expect(projection.children[0].tasks).toHaveLength(PARENT_SUBAGENT_INDEX_LIMITS.tasksPerChild);
+    expect(projection.children[0].tasksTruncated).toBe(true);
+    expect(projection.children[0].latestTaskId).toBe('task-20');
+    expect(listSubagentTasksForThreads.mock.calls[0][0].conversationIds).toHaveLength(
+      PARENT_SUBAGENT_INDEX_LIMITS.children,
+    );
+  });
+
+  it('fails closed for a child parent and does not read task history', async () => {
+    const listSubagentTasksForThreads = jest.fn();
+    const handler = createParentSubagentIndexHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue({
+        ...parent,
+        subagentThread: child.subagentThread,
+      }),
+      listSubagentThreadsForParent: jest.fn().mockResolvedValue([]),
+      listSubagentTasksForThreads,
+    });
+    const { response, status, json } = createResponse();
+
+    await handler(createRequest(), response);
+
+    expect(status).toHaveBeenCalledWith(404);
+    expect(json).toHaveBeenCalledWith({ error: 'Conversation not found' });
+    expect(listSubagentTasksForThreads).not.toHaveBeenCalled();
+  });
+
+  it('drops a mismatched child lineage before the batched task read', async () => {
+    const listSubagentTasksForThreads = jest.fn().mockResolvedValue([]);
+    const handler = createParentSubagentIndexHandler({
+      getConvoOwnership: jest.fn().mockResolvedValue(parent),
+      listSubagentThreadsForParent: jest.fn().mockResolvedValue([
+        {
+          ...eventChild,
+          subagentThread: {
+            ...eventChild.subagentThread,
+            parentConversationId: 'different-parent',
+          },
+        },
+      ]),
+      listSubagentTasksForThreads,
+    });
+    const { response, json } = createResponse();
+
+    await handler(createRequest(), response);
+
+    expect(listSubagentTasksForThreads).toHaveBeenCalledWith(
+      expect.objectContaining({ conversationIds: [] }),
+    );
+    expect(json.mock.calls[0][0].children).toEqual([]);
   });
 });

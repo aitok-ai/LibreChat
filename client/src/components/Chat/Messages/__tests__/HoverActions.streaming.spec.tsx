@@ -12,6 +12,7 @@ import Message from '~/components/Chat/Messages/Message';
 import store from '~/store';
 
 let mockHoverButtonsRenderCount = 0;
+let mockContentRenderCount = 0;
 
 jest.mock('~/components/Chat/Messages/HoverButtons', () => ({
   __esModule: true,
@@ -23,7 +24,23 @@ jest.mock('~/components/Chat/Messages/HoverButtons', () => ({
 
 jest.mock('~/components/Chat/Messages/Content/MessageContent', () => ({
   __esModule: true,
-  default: ({ text }: { text: string }) => <div data-testid="message-content">{text}</div>,
+  default: ({ text }: { text: string }) => {
+    mockContentRenderCount += 1;
+    return <div data-testid="message-content">{text}</div>;
+  },
+}));
+
+jest.mock('~/components/Chat/Messages/Content/ContentParts', () => ({
+  __esModule: true,
+  default: ({ content }: { content?: TMessage['content'] }) => {
+    mockContentRenderCount += 1;
+    return <div data-testid="structured-message-content">{JSON.stringify(content ?? [])}</div>;
+  },
+}));
+
+jest.mock('~/components/Chat/Messages/Content/Parts/AuthorHeader', () => ({
+  __esModule: true,
+  default: () => <div data-testid="author-header" />,
 }));
 
 jest.mock('~/components/Chat/Messages/Content/ContentParts', () => ({
@@ -135,7 +152,15 @@ function createQueryClient() {
   });
 }
 
-function DerivedStreamingRow({ structured = false }: { structured?: boolean }) {
+function DerivedStreamingRow({
+  structured = false,
+  submitting = true,
+  siblingIdx = 1,
+}: {
+  structured?: boolean;
+  submitting?: boolean;
+  siblingIdx?: number;
+}) {
   const queryClient = useQueryClient();
   const latestMessage = useLatestMessage(0);
   const latestMessageId = useLatestMessageId(0);
@@ -151,7 +176,7 @@ function DerivedStreamingRow({ structured = false }: { structured?: boolean }) {
         latestMessageId: latestMessageId ?? undefined,
         latestMessageDepth,
         handleContinue: jest.fn(),
-        isSubmitting: true,
+        isSubmitting: submitting,
         abortScroll: false,
         setAbortScroll: jest.fn(),
         getMessages: () =>
@@ -163,7 +188,7 @@ function DerivedStreamingRow({ structured = false }: { structured?: boolean }) {
           );
         },
       }) as unknown as ReturnType<typeof useChatContext>,
-    [latestMessageDepth, latestMessageId, queryClient],
+    [latestMessageDepth, latestMessageId, queryClient, submitting],
   );
 
   if (!latestMessage) {
@@ -178,7 +203,7 @@ function DerivedStreamingRow({ structured = false }: { structured?: boolean }) {
           message={latestMessage}
           currentEditId={null}
           setCurrentEditId={jest.fn()}
-          siblingIdx={0}
+          siblingIdx={siblingIdx}
           siblingCount={2}
           setSiblingIdx={jest.fn()}
         />
@@ -187,7 +212,7 @@ function DerivedStreamingRow({ structured = false }: { structured?: boolean }) {
   );
 }
 
-function renderStreamingRow(structured = false) {
+function renderStreamingRow(structured = false, submitting = true, siblingIdx = 1) {
   const queryClient = createQueryClient();
   queryClient.setQueryData<TMessage[]>(
     [QueryKeys.messages, conversation.conversationId],
@@ -196,14 +221,18 @@ function renderStreamingRow(structured = false) {
 
   const initializeState = ({ set }: MutableSnapshot) => {
     set(store.conversationByIndex(0), conversation);
-    set(store.isSubmittingFamily(0), true);
+    set(store.isSubmittingFamily(0), submitting);
   };
 
   render(
     <QueryClientProvider client={queryClient}>
       <RecoilRoot initializeState={initializeState}>
         <MemoryRouter initialEntries={[`/c/${conversation.conversationId}`]}>
-          <DerivedStreamingRow structured={structured} />
+          <DerivedStreamingRow
+            structured={structured}
+            submitting={submitting}
+            siblingIdx={siblingIdx}
+          />
         </MemoryRouter>
       </RecoilRoot>
     </QueryClientProvider>,
@@ -215,6 +244,7 @@ function renderStreamingRow(structured = false) {
 describe('streaming hover actions', () => {
   beforeEach(() => {
     mockHoverButtonsRenderCount = 0;
+    mockContentRenderCount = 0;
   });
 
   it('keeps actions mounted while an optimistic assistant row is replaced', async () => {
@@ -283,5 +313,62 @@ describe('streaming hover actions', () => {
     renderStreamingRow(structured);
 
     expect(screen.getByTestId('hover-buttons').parentElement).toHaveClass('min-h-[31px]');
+  });
+
+  /**
+   * The elapsed-time indicator fills the footer slot the withheld actions leave
+   * empty, but only under the response that is actively generating.
+   */
+  it.each([
+    ['a plain text', false],
+    ['a structured', true],
+  ])('shows the elapsed timer under %s streaming response', (_label, structured) => {
+    renderStreamingRow(structured);
+
+    expect(screen.getByTestId('stream-elapsed')).toBeInTheDocument();
+  });
+
+  it('renders no elapsed timer once the row is not submitting', () => {
+    renderStreamingRow(false, false);
+
+    expect(screen.queryByTestId('stream-elapsed')).toBeNull();
+  });
+
+  /**
+   * `latestMessageId` follows the SELECTED branch, so a settled older sibling
+   * the reader paged to mid-regeneration satisfies the latest+submitting gate.
+   * The timer additionally requires the newest sibling position — a counting
+   * timer under settled content misleads in a way withheld buttons don't.
+   */
+  it('renders no elapsed timer under an older sibling selected mid-stream', () => {
+    renderStreamingRow(false, true, 0);
+
+    expect(screen.queryByTestId('stream-elapsed')).toBeNull();
+    expect(screen.getByTestId('hover-buttons')).toBeInTheDocument();
+  });
+
+  /**
+   * The timer's once-per-second tick is component-local state: advancing the
+   * clock must re-render nothing beyond the timer itself, or the indicator
+   * would tax every streaming frame's neighbors.
+   */
+  it('ticks the elapsed timer without re-rendering content or actions', () => {
+    jest.useFakeTimers();
+    try {
+      renderStreamingRow();
+
+      const hoverRenders = mockHoverButtonsRenderCount;
+      const contentRenders = mockContentRenderCount;
+
+      act(() => {
+        jest.advanceTimersByTime(5_000);
+      });
+
+      expect(screen.getByTestId('stream-elapsed')).toBeInTheDocument();
+      expect(mockHoverButtonsRenderCount).toBe(hoverRenders);
+      expect(mockContentRenderCount).toBe(contentRenders);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

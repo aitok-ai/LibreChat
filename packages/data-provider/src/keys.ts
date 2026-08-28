@@ -98,6 +98,7 @@ export enum QueryKeys {
   /* Scheduled chats */
   schedules = 'schedules',
   schedule = 'schedule',
+  parentSubagents = 'parentSubagents',
   subagentThread = 'subagentThread',
 }
 
@@ -107,6 +108,7 @@ export const DynamicQueryKeys = {
 } as const;
 
 export enum MutationKeys {
+  subagentControl = 'subagentControl',
   updateLangfuseConnection = 'updateLangfuseConnection',
   testLangfuseConnection = 'testLangfuseConnection',
   createAgentApiKey = 'createAgentApiKey',

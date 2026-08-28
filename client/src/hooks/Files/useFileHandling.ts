@@ -94,23 +94,6 @@ type UploadScope = {
   recent: Map<string, ExtendedFile>;
 };
 
-const mergeRecentUploads = (
-  files: Map<string, ExtendedFile>,
-  recent: Map<string, ExtendedFile>,
-): Map<string, ExtendedFile> => {
-  if (recent.size === 0) {
-    return files;
-  }
-
-  const merged = new Map(files);
-  for (const [file_id, extendedFile] of recent) {
-    if (!merged.has(file_id)) {
-      merged.set(file_id, extendedFile);
-    }
-  }
-  return merged;
-};
-
 /**
  * Upload batches are validated against the file map they write to, so every hook instance
  * sharing a setter (attachment menu, paste routing, SharePoint) must share one queue.
@@ -126,6 +109,23 @@ const getUploadScope = (fileSetter: FileSetter): UploadScope => {
   const created: UploadScope = { queue: Promise.resolve(), recent: new Map() };
   uploadScopes.set(fileSetter, created);
   return created;
+};
+
+const mergeRecentUploads = (
+  files: Map<string, ExtendedFile>,
+  recent: Map<string, ExtendedFile>,
+): Map<string, ExtendedFile> => {
+  if (recent.size === 0) {
+    return files;
+  }
+
+  const merged = new Map(files);
+  for (const [file_id, extendedFile] of recent) {
+    if (!merged.has(file_id)) {
+      merged.set(file_id, extendedFile);
+    }
+  }
+  return merged;
 };
 
 const useFileHandlingCore = (params: UseFileHandling | undefined, fileState: FileHandlingState) => {

@@ -18,6 +18,7 @@ const formatDate = (dateString: string): string => {
 
 export default function MemoryCard({ memory, hasUpdateAccess }: MemoryCardProps) {
   const localize = useLocalize();
+  const displayKey = memory.key || localize('com_ui_memory');
 
   return (
     <div
@@ -29,7 +30,7 @@ export default function MemoryCard({ memory, hasUpdateAccess }: MemoryCardProps)
     >
       {/* Row 1: Key + Agent badge + Token count + Actions */}
       <div className="flex items-center gap-2">
-        <span className="text-text-primary truncate text-sm font-semibold">{memory.key}</span>
+        <span className="text-text-primary truncate text-sm font-semibold">{displayKey}</span>
         {memory.agentId != null && (
           <span
             className="border-border-light text-text-secondary shrink-0 truncate rounded-full border px-2 py-0.5 text-xs"
