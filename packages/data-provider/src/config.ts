@@ -1043,28 +1043,9 @@ export const agentsEndpointSchema = baseEndpointSchema
           allowedEnvironments: z.array(z.enum(STATEFUL_CODE_ENVIRONMENTS)).min(1),
         })
         .optional(),
-      /** Process-wide event-driven agent rollout controls. Configure these from the base
-       * deployment config only so every API replica exposes the same wire capabilities. */
+      /** Optional trusted origin for in-process agent event delivery. */
       eventDriven: z
         .object({
-          childTurns: z.boolean().optional(),
-          completionWakeups: z.boolean().optional(),
-          /** Enable only after every API worker can consume coalesced deliveries. */
-          coalescing: z.boolean().optional(),
-          /** Keep each bound actor's durable delivery lane queued through the
-           *  admitted child turn's authoritative terminal outcome. */
-          actorMailbox: z.boolean().optional(),
-          /** Reuse a bound event actor's committed checkpoint through isolated
-           *  per-invocation forks. Keep off until every API worker runs an SDK
-           *  and host adapter that understand the fork lifecycle. */
-          checkpointForks: z.boolean().optional(),
-          /** Admit checkpoint-forked external actions through the durable
-           * delivery receipt protocol. Enable only after every API replica
-           * runs the token-fenced receipt implementation and pre-upgrade
-           * actor deliveries have drained. */
-          durableReceipts: z.boolean().optional(),
-          /** Optional trusted origin for in-process trigger delivery. The bound
-           *  listener remains the default and is safer for most deployments. */
           selfUrl: z.string().url().optional(),
         })
         .optional(),
@@ -1081,15 +1062,6 @@ export const agentsEndpointSchema = baseEndpointSchema
       checkpointer: checkpointerSchema,
     }),
   )
-  .superRefine((config, ctx) => {
-    if (config.eventDriven?.checkpointForks === true && config.checkpointer?.type === 'memory') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['eventDriven', 'checkpointForks'],
-        message: 'Event actor checkpoint forks require the Mongo checkpointer',
-      });
-    }
-  })
   .default({
     disableBuilder: false,
     capabilities: defaultAgentCapabilities,
@@ -1888,12 +1860,14 @@ export enum SearchProviders {
   SERPER = 'serper',
   SEARXNG = 'searxng',
   TAVILY = 'tavily',
+  KEENABLE = 'keenable',
 }
 
 export enum ScraperProviders {
   FIRECRAWL = 'firecrawl',
   SERPER = 'serper',
   TAVILY = 'tavily',
+  KEENABLE = 'keenable',
 }
 
 export enum RerankerTypes {
@@ -1939,6 +1913,8 @@ export const webSearchSchema = z.object({
   tavilyApiKeyPreview: apiKeyPreviewSchema,
   tavilySearchUrl: z.string().optional().default('${TAVILY_SEARCH_URL}'),
   tavilyExtractUrl: z.string().optional().default('${TAVILY_EXTRACT_URL}'),
+  keenableApiKey: z.string().optional().default('${KEENABLE_API_KEY}'),
+  keenableApiUrl: z.string().optional().default('${KEENABLE_API_URL}'),
   jinaApiKey: z.string().optional().default('${JINA_API_KEY}'),
   jinaApiKeyPreview: apiKeyPreviewSchema,
   jinaApiUrl: z.string().optional().default('${JINA_API_URL}'),
@@ -2017,6 +1993,20 @@ export const webSearchSchema = z.object({
       includeImages: z.boolean().optional(),
       includeFavicon: z.boolean().optional(),
       format: z.enum(['markdown', 'text']).optional(),
+      timeout: z.number().int().nonnegative().max(120000).optional(),
+    })
+    .optional(),
+  keenableSearchOptions: z
+    .object({
+      maxResults: z.number().int().min(1).max(20).optional(),
+      site: z.string().optional(),
+      attributionTitle: z.string().optional(),
+      timeout: z.number().int().nonnegative().max(120000).optional(),
+    })
+    .optional(),
+  keenableScraperOptions: z
+    .object({
+      attributionTitle: z.string().optional(),
       timeout: z.number().int().nonnegative().max(120000).optional(),
     })
     .optional(),

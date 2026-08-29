@@ -46,6 +46,14 @@ export {
   digestMCPAuthorityValue,
 } from './methods';
 export { FAVORITE_ITEM_TYPES } from './types/favorite';
+export {
+  MAX_AGENT_EVENT_ACTOR_DISCOVERED_TOOLS,
+  MAX_AGENT_EVENT_ACTOR_ENCODING_LENGTH,
+  MAX_AGENT_EVENT_ACTOR_SKILLS,
+  MAX_AGENT_EVENT_ACTOR_SUMMARY_LENGTH,
+  MAX_AGENT_EVENT_ACTOR_TOOL_NAME_LENGTH,
+} from './types/convo';
+export { AGENT_TRIGGER_WORKER_CAPABILITY_DETACHED_ACTION_V1 } from './types/triggerDelivery';
 export type * from './types';
 export type * from './methods';
 export {

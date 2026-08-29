@@ -30,6 +30,7 @@ import type {
   IdempotencyClaimValue,
   PreemptMessage,
   SteerQueueItem,
+  DetachedAgentEventActionStoreMode,
 } from './interfaces/IJobStore';
 import type { AgentStartupTelemetry } from '~/agents/startup';
 import type { RecoveredSteerPayload } from './SteerRecovery';
@@ -904,6 +905,19 @@ class GenerationJobManagerClass {
     return this._isRedis;
   }
 
+  /**
+   * Store-selected detached Event Actor execution guarantee. In-memory stores
+   * support the same lifecycle within one process; Redis additionally makes it
+   * recoverable across restarts and replica handoffs.
+   */
+  get detachedAgentEventActionStoreMode(): DetachedAgentEventActionStoreMode | undefined {
+    return this.jobStore.detachedAgentEventActionStoreMode;
+  }
+
+  get supportsDetachedAgentEventActions(): boolean {
+    return this.detachedAgentEventActionStoreMode != null;
+  }
+
   /** Installs the application-owned approval-expiry hook without coupling the
    * stream package to any particular trigger/scheduler implementation. */
   setApprovalExpiredHandler(handler?: ApprovalExpiredHandler): void {
@@ -913,6 +927,26 @@ class GenerationJobManagerClass {
   /** Installs a durable, generation-fenced terminal lifecycle adapter. */
   setTerminalHostActionHandler(handler?: TerminalHostActionHandler): void {
     this.terminalHostActionHandler = handler;
+  }
+
+  /**
+   * Event-driven retry for a durable terminal host action whose external
+   * evidence arrived after the generation itself became terminal. The exact
+   * generation fence prevents a delayed callback from touching a replacement;
+   * the periodic recovery sweep remains the restart/replica fallback.
+   */
+  async retryTerminalHostAction(streamId: string, expectedCreatedAt: number): Promise<boolean> {
+    const job = await this.jobStore.getJob(streamId);
+    if (
+      job?.createdAt !== expectedCreatedAt ||
+      job.status === 'running' ||
+      job.status === 'requires_action' ||
+      job.providerDrained === false ||
+      job.terminalHostActionPending !== true
+    ) {
+      return false;
+    }
+    return this.runTerminalHostActionHandler(streamId, job);
   }
 
   private get storeLabel(): GenerationJobStore {
@@ -2605,6 +2639,14 @@ class GenerationJobManagerClass {
         agent_id: jobData.agent_id,
         // Surface whether the turn was temporary so a resume keeps it non-persisted.
         isTemporary: jobData.isTemporary,
+        agentEventDeliveryKey: jobData.agentEventDeliveryKey,
+        agentEventInvocationKey: jobData.agentEventInvocationKey,
+        agentEventInvocationGenerationCreatedAt: jobData.agentEventInvocationGenerationCreatedAt,
+        agentEventDetachedActionProducerRequired: jobData.agentEventDetachedActionProducerRequired,
+        agentEventDetachedTerminalEvidence: jobData.agentEventDetachedTerminalEvidence,
+        agentEventBindingId: jobData.agentEventBindingId,
+        agentEventExpectedAction: jobData.agentEventExpectedAction,
+        agentEventSuspension: jobData.agentEventSuspension,
         scheduleId: jobData.scheduleId,
         scheduledFor: jobData.scheduledFor,
         scheduleConfigRevision: jobData.scheduleConfigRevision,
@@ -2623,6 +2665,7 @@ class GenerationJobManagerClass {
         // legacy resume's execution rewrite invalidates a stale assertion.
         steerQuotesExecutionId: jobData.steerQuotesExecutionId,
         providerExecutionId: jobData.providerExecutionId,
+        providerExecutionStartedId: jobData.providerExecutionStartedId,
         providerDrained: jobData.providerDrained,
         steersClosed: jobData.steersClosed,
         idempotencyClientRequestId: jobData.idempotencyClientRequestId,
@@ -6694,6 +6737,97 @@ class GenerationJobManagerClass {
     await this.jobStore.updateJob(streamId, updates, generationId);
   }
 
+  /** Stages exact detached terminal evidence in the generation-owned job outbox
+   * and verifies the epoch-fenced write before the external result leaves memory. */
+  async persistAgentEventDetachedTerminalEvidence(
+    streamId: string,
+    expectedCreatedAt: number,
+    evidence: NonNullable<t.GenerationJobMetadata['agentEventDetachedTerminalEvidence']>,
+  ): Promise<boolean> {
+    await this.jobStore.updateJob(
+      streamId,
+      { agentEventDetachedTerminalEvidence: evidence },
+      expectedCreatedAt,
+    );
+    const persisted = await this.jobStore.getJob(streamId);
+    const actual = persisted?.agentEventDetachedTerminalEvidence;
+    return (
+      persisted?.createdAt === expectedCreatedAt &&
+      actual?.version === evidence.version &&
+      actual.deliveryKey === evidence.deliveryKey &&
+      actual.generationCreatedAt === evidence.generationCreatedAt &&
+      actual.taskId === evidence.taskId &&
+      actual.idempotencyKey === evidence.idempotencyKey &&
+      actual.status === evidence.status &&
+      actual.result === evidence.result &&
+      actual.error === evidence.error &&
+      actual.observedAt === evidence.observedAt
+    );
+  }
+
+  /** Records that one exact provider segment has completed every trailing write.
+   * The opaque segment id prevents a paused controller from acknowledging a
+   * later HITL resume that reuses the same generation epoch. */
+  async markProviderExecutionDrained(
+    streamId: string,
+    expectedCreatedAt: number,
+    providerExecutionId: string,
+  ): Promise<boolean> {
+    if (providerExecutionId.length === 0 || providerExecutionId.length > 128) {
+      return false;
+    }
+
+    const observedJob = await this.jobStore.getJob(streamId);
+    if (
+      observedJob?.createdAt === expectedCreatedAt &&
+      observedJob.providerExecutionId === providerExecutionId
+    ) {
+      // `providerDrained` is also the cross-replica host-settlement readiness
+      // fence. Flush the complete generation-fenced run-step snapshot before
+      // advertising that no more provider evidence can arrive.
+      await this.persistAgentEventRunStepEvidence(streamId, observedJob);
+    }
+
+    const [marked, recorded] = await Promise.all([
+      this.jobStore.markProviderExecutionDrained?.(
+        streamId,
+        expectedCreatedAt,
+        providerExecutionId,
+      ) ?? Promise.resolve(false),
+      this.eventTransport.recordProviderDrain?.(streamId, expectedCreatedAt, providerExecutionId) ??
+        Promise.resolve(false),
+    ]);
+    const job = await this.jobStore.getJob(streamId);
+    if (
+      marked &&
+      job?.createdAt === expectedCreatedAt &&
+      job.providerExecutionId === providerExecutionId &&
+      job.providerDrained === true &&
+      job.terminalHostActionPending === true
+    ) {
+      if (job.status === 'aborted' && job.error === APPROVAL_EXPIRED_ERROR) {
+        await this.runApprovalExpiredHandler(streamId, job);
+      } else {
+        await this.runTerminalHostActionHandler(streamId, job);
+      }
+    }
+    if (
+      marked &&
+      recorded &&
+      this._cleanupOnComplete &&
+      job?.createdAt === expectedCreatedAt &&
+      job.providerExecutionId === providerExecutionId &&
+      job.providerDrained === true &&
+      job.preserveForScheduleReconcile !== true &&
+      job.terminalPersistencePending !== true &&
+      job.terminalHostActionPending !== true &&
+      (job.status === 'complete' || job.status === 'aborted')
+    ) {
+      await this.jobStore.deleteJob(streamId, expectedCreatedAt);
+    }
+    return marked;
+  }
+
   /** Starts the initial provider owner only if account deletion, abort, or a
    * replacement has not already changed the exact running generation. */
   async beginProviderExecution(
@@ -6756,44 +6890,6 @@ class GenerationJobManagerClass {
     // terminal CAS. Re-read the exact segment only after terminal ownership is
     // committed, when no not-yet-started provider can begin anymore.
     await this.waitForProviderExecutionDrain(streamId, job.createdAt, job.providerExecutionId);
-  }
-
-  /** Records that one exact provider segment has completed every trailing write.
-   * The opaque segment id prevents a paused controller from acknowledging a
-   * later HITL resume that reuses the same generation epoch. */
-  async markProviderExecutionDrained(
-    streamId: string,
-    expectedCreatedAt: number,
-    providerExecutionId: string,
-  ): Promise<boolean> {
-    if (providerExecutionId.length === 0 || providerExecutionId.length > 128) {
-      return false;
-    }
-
-    const [marked, recorded] = await Promise.all([
-      this.jobStore.markProviderExecutionDrained?.(
-        streamId,
-        expectedCreatedAt,
-        providerExecutionId,
-      ) ?? Promise.resolve(false),
-      this.eventTransport.recordProviderDrain?.(streamId, expectedCreatedAt, providerExecutionId) ??
-        Promise.resolve(false),
-    ]);
-    const job = await this.jobStore.getJob(streamId);
-    if (
-      marked &&
-      recorded &&
-      this._cleanupOnComplete &&
-      job?.createdAt === expectedCreatedAt &&
-      job.providerExecutionId === providerExecutionId &&
-      job.providerDrained === true &&
-      job.preserveForScheduleReconcile !== true &&
-      job.terminalPersistencePending !== true &&
-      (job.status === 'complete' || job.status === 'aborted')
-    ) {
-      await this.jobStore.deleteJob(streamId, expectedCreatedAt);
-    }
-    return marked;
   }
 
   /**
@@ -7528,6 +7624,22 @@ class GenerationJobManagerClass {
         }
       } catch (err) {
         logger.error('[GenerationJobManager] Failed to enumerate pending host actions', err);
+      }
+    }
+    // Detached completion generations live in a versioned recovery lane. An
+    // older replica knows only the ordinary terminal-host-action index and
+    // therefore cannot deserialize away the original invocation identity or
+    // acknowledge the completion against the wrong mailbox delivery.
+    if (this.jobStore.getDetachedAgentEventTerminalHostActionJobs) {
+      try {
+        for (const job of await this.jobStore.getDetachedAgentEventTerminalHostActionJobs()) {
+          candidates.set(job.streamId, job);
+        }
+      } catch (err) {
+        logger.error(
+          '[GenerationJobManager] Failed to enumerate detached Event Actor host actions',
+          err,
+        );
       }
     }
     const streamIds = new Set([...this.runtimeState.keys(), ...candidates.keys()]);

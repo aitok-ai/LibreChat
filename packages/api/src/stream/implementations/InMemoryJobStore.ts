@@ -141,6 +141,8 @@ interface ContentState {
  * - No chunk persistence needed - same instance handles generation and reconnects
  */
 export class InMemoryJobStore implements IJobStoreV2 {
+  readonly detachedAgentEventActionStoreMode = 'process_local' as const;
+
   private jobs = new Map<string, SerializableJobData>();
   private contentState = new Map<string, ContentState>();
   private cleanupInterval: NodeJS.Timeout | null = null;
@@ -737,6 +739,7 @@ export class InMemoryJobStore implements IJobStoreV2 {
       return false;
     }
     job.providerDrained = false;
+    job.providerExecutionStartedId = providerExecutionId;
     return true;
   }
 

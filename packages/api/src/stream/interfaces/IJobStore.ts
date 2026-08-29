@@ -5,10 +5,20 @@ import type {
   UserSubmittedMessageFieldPath,
 } from 'librechat-data-provider';
 import type { RunStep, StandardGraph } from '@librechat/agents';
+import type { AgentEventDetachedTerminalEvidence } from '~/agents/triggers/types';
 import type { ActivityPhaseSnapshot } from '~/agents/activityPhases/runtime';
 import type { ResolvedAskUserQuestion } from '~/agents/hitl/resume';
 import type { RecoveredSteerPayload } from '../SteerRecovery';
 import type { MCPRuntimeRequestBody } from '~/mcp/types';
+
+/**
+ * Detached Event Actor execution guarantee advertised by a generation store.
+ *
+ * `process_local` keeps the lifecycle coherent while this process is alive.
+ * `distributed` additionally permits restart recovery and replica handoff.
+ * Absence means the store cannot host detached Event Actor actions.
+ */
+export type DetachedAgentEventActionStoreMode = 'process_local' | 'distributed';
 
 /**
  * Rewrites string-enum members to their literal values, recursively. The SDK and
@@ -199,6 +209,10 @@ export interface SerializableJobData {
   /** Opaque identity of the currently executing provider segment. A HITL resume
    * replaces it so an earlier paused segment cannot acknowledge the new run. */
   providerExecutionId?: string;
+  /** Durable evidence that the current provider owner crossed its start CAS.
+   * Unlike `providerDrained`, this identity survives terminal drain so host
+   * compensation can distinguish a projected-but-never-started resume. */
+  providerExecutionStartedId?: string;
   /** False while the identified provider segment can still mutate user data;
    * true before provider startup and after the owner has fully unwound. */
   providerDrained?: boolean;
@@ -229,6 +243,14 @@ export interface SerializableJobData {
    * no action clears it immediately on its no-op success, so nothing accumulates.
    */
   terminalHostActionPending?: boolean;
+  /** Redis-only durable marker for a detached Event Actor completion hook.
+   * Capable stores expose it through `terminalHostActionPending` as well, but
+   * keep the persisted field distinct so legacy reconciliation cannot index or
+   * claim the completion through the ordinary terminal-action lane. */
+  detachedAgentEventTerminalHostActionPending?: boolean;
+  /** Logical terminal state hidden behind a versioned fail-closed shell while
+   * a detached Event Actor host action remains unacknowledged. */
+  detachedAgentEventTerminalStatus?: Extract<JobStatus, 'complete' | 'aborted' | 'error'>;
   /**
    * Last time a cleanup pass enumerated this pending host action for retry. Retention is
    * measured from this rather than `completedAt`, so evidence survives as long as some
@@ -279,9 +301,19 @@ export interface SerializableJobData {
    */
   isTemporary?: boolean;
   agentEventDeliveryKey?: string;
+  /** Original actor invocation when an internal completion delivery owns this generation. */
+  agentEventInvocationKey?: string;
+  /** Original actor invocation generation retained across completion HITL resumes. */
+  agentEventInvocationGenerationCreatedAt?: number;
+  /** This generation must resume on a durable detached-action producer. */
+  agentEventDetachedActionProducerRequired?: boolean;
+  /** Durable retry payload captured before detached terminal evidence is written to Mongo. */
+  agentEventDetachedTerminalEvidence?: AgentEventDetachedTerminalEvidence;
   /** Trusted actor binding copied from the authenticated delivery envelope. */
   agentEventBindingId?: string;
   agentEventExpectedAction?: import('~/agents/triggers/types').AgentTriggerExpectedAction;
+  /** Versioned pointer to the canonical signed Conversation suspension. */
+  agentEventSuspension?: import('~/agents/triggers/types').AgentEventSuspensionProjection;
   /** Exact durable legacy-turn fence carried across a HITL pause/resume. */
   agentEventLegacyTurnToken?: string;
 
@@ -402,8 +434,13 @@ export type JobMetadataPatch = Partial<
     | 'agent_id'
     | 'isTemporary'
     | 'agentEventDeliveryKey'
+    | 'agentEventInvocationKey'
+    | 'agentEventInvocationGenerationCreatedAt'
+    | 'agentEventDetachedActionProducerRequired'
+    | 'agentEventDetachedTerminalEvidence'
     | 'agentEventBindingId'
     | 'agentEventExpectedAction'
+    | 'agentEventSuspension'
     | 'agentEventLegacyTurnToken'
     | 'scheduleId'
     | 'scheduledFor'
@@ -821,6 +858,8 @@ export interface ResumeState {
  * store at runtime.
  */
 export interface IJobStore {
+  readonly detachedAgentEventActionStoreMode?: DetachedAgentEventActionStoreMode;
+
   initialize(): Promise<void>;
 
   createJob(
@@ -857,6 +896,11 @@ export interface IJobStore {
    * retry the host adapter after a restart / on another replica, even though the job is
    * no longer in the requires_action index. */
   getTerminalHostActionJobs?(): Promise<SerializableJobData[]>;
+  /** Enumerates detached Event Actor completion generations from a versioned
+   * retry lane known only to capable consumers. Redis keeps this lane separate
+   * from `getTerminalHostActionJobs` so a rolling-deployment replica that only
+   * understands the legacy job identity can never claim it. */
+  getDetachedAgentEventTerminalHostActionJobs?(): Promise<SerializableJobData[]>;
   /** Clears the pending-host-action marker once the adapter acknowledges success.
    * Identity-fenced on `expectedCreatedAt` so a replacement generation at the same
    * streamId is never cleared through its predecessor. */

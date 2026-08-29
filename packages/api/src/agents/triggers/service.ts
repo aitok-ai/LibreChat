@@ -1,4 +1,8 @@
-import { logger, runAsSystem } from '@librechat/data-schemas';
+import {
+  AGENT_TRIGGER_WORKER_CAPABILITY_DETACHED_ACTION_V1,
+  logger,
+  runAsSystem,
+} from '@librechat/data-schemas';
 import type { AgentTriggerDeliveryStatusRecord } from '@librechat/data-schemas';
 import type {
   AgentTriggerDeliveryFailure,
@@ -15,13 +19,12 @@ import type {
 import type { AgentTriggerEnqueueOptions, PreparedAgentTriggerDelivery } from './delivery';
 import type { BoundAddress } from '../../app/origin';
 import { AgentTriggerDeliveryDeferredError, createAgentTriggerDeliveryEngine } from './engine';
-import { AgentTriggerDeliveryError, prepareAgentTriggerDelivery } from './delivery';
 import { isShutdownInProgress, registerShutdownTask } from '../../app/shutdown';
 import { generateAgentTriggerToken } from '../../crypto/jwt';
+import { prepareAgentTriggerDelivery } from './delivery';
 import { selfOriginFromAddress } from '../../app/origin';
 import { createAgentTriggerExecutionHost } from './host';
 import { parseAgentTriggerEnvelope } from './envelope';
-import { isEnabled } from '../../utils/common';
 
 export const AGENT_TRIGGER_TOKEN_TTL = '60s';
 const DEFAULT_USER_DRAIN_TIMEOUT_MS = 35_000;
@@ -46,8 +49,7 @@ export interface AgentTriggerServiceDeps {
   userDrainPollMs?: number;
   purgeRecoveryIntervalMs?: number;
   purgeRecoveryLimit?: number;
-  coalescingEnabled?: () => boolean;
-  actorMailboxEnabled?: () => boolean;
+  supportsDetachedActionCompletion?: () => boolean;
 }
 
 export interface AgentTriggerDeliveryReceipt {
@@ -89,7 +91,11 @@ export interface AgentTriggerDeliveryPersistence {
   enqueueAgentTriggerDelivery: (
     input: PreparedAgentTriggerDelivery,
   ) => Promise<{ delivery: AgentTriggerStoredRecord; replayed: boolean }>;
-  claimNextAgentTriggerDelivery: AgentTriggerDeliveryStore['claimNext'];
+  claimNextAgentTriggerDelivery: (
+    input: Parameters<AgentTriggerDeliveryStore['claimNext']>[0] & {
+      workerCapabilities?: string[];
+    },
+  ) => ReturnType<AgentTriggerDeliveryStore['claimNext']>;
   findEarlierAgentTriggerDelivery: AgentTriggerDeliveryStore['findEarlierUnsettled'];
   getAgentTriggerDeliveryBatch: AgentTriggerDeliveryStore['getBatch'];
   releaseAgentTriggerDelivery: AgentTriggerDeliveryStore['release'];
@@ -151,9 +157,18 @@ export interface AgentTriggerService {
   purgeUser: (userId: string) => Promise<void>;
 }
 
-function createDeliveryStore(methods: AgentTriggerDeliveryPersistence): AgentTriggerDeliveryStore {
+function createDeliveryStore(
+  methods: AgentTriggerDeliveryPersistence,
+  supportsDetachedActionCompletion: () => boolean,
+): AgentTriggerDeliveryStore {
   return {
-    claimNext: methods.claimNextAgentTriggerDelivery,
+    claimNext: (input) =>
+      methods.claimNextAgentTriggerDelivery({
+        ...input,
+        workerCapabilities: supportsDetachedActionCompletion()
+          ? [AGENT_TRIGGER_WORKER_CAPABILITY_DETACHED_ACTION_V1]
+          : [],
+      }),
     findEarlierUnsettled: methods.findEarlierAgentTriggerDelivery,
     getBatch: methods.getAgentTriggerDeliveryBatch,
     release: methods.releaseAgentTriggerDelivery,
@@ -168,7 +183,16 @@ function createDeliveryStore(methods: AgentTriggerDeliveryPersistence): AgentTri
 function publicReceiptStatus(
   status: AgentTriggerStoredRecord['status'],
 ): AgentTriggerDeliveryReceipt['status'] {
-  return status === 'batched' ? 'pending' : status;
+  if (status === 'batched' || status === 'capability_pending') {
+    return 'pending';
+  }
+  if (status === 'capability_staging') {
+    return 'staging';
+  }
+  if (status === 'capability_dead') {
+    return 'dead';
+  }
+  return status === 'capability_leased' ? 'leased' : status;
 }
 
 function requireDeliveryOrigin(boundOrigin: string | undefined): void {
@@ -195,10 +219,7 @@ export function createAgentTriggerService(deps: AgentTriggerServiceDeps = {}): A
   const purgeRecoveryIntervalMs =
     deps.purgeRecoveryIntervalMs ?? DEFAULT_PURGE_RECOVERY_INTERVAL_MS;
   const purgeRecoveryLimit = deps.purgeRecoveryLimit ?? DEFAULT_PURGE_RECOVERY_LIMIT;
-  const coalescingEnabled =
-    deps.coalescingEnabled ?? (() => isEnabled(process.env.ENABLE_AGENT_EVENT_COALESCING));
-  const actorMailboxEnabled =
-    deps.actorMailboxEnabled ?? (() => isEnabled(process.env.ENABLE_AGENT_EVENT_ACTOR_MAILBOX));
+  const supportsDetachedActionCompletion = deps.supportsDetachedActionCompletion ?? (() => false);
   if (!Number.isSafeInteger(userDrainTimeoutMs) || userDrainTimeoutMs <= 0) {
     throw new TypeError('userDrainTimeoutMs must be a positive integer');
   }
@@ -220,8 +241,11 @@ export function createAgentTriggerService(deps: AgentTriggerServiceDeps = {}): A
   let stopping = false;
   const isPrincipalActive = deps.isPrincipalActive;
   const host: AgentTriggerExecutionHost = createAgentTriggerExecutionHost({
-    getBaseUrl: () => {
-      const origin = process.env.AGENT_TRIGGERS_SELF_URL ?? boundOrigin;
+    getBaseUrl: (options) => {
+      const origin =
+        options?.localOnly === true
+          ? boundOrigin
+          : (process.env.AGENT_TRIGGERS_SELF_URL ?? boundOrigin);
       if (origin == null) {
         throw new Error('Agent trigger service has not been initialized with a listener address');
       }
@@ -398,7 +422,7 @@ export function createAgentTriggerService(deps: AgentTriggerServiceDeps = {}): A
         }
         deliveryEngine = createAgentTriggerDeliveryEngine(
           {
-            store: createDeliveryStore(methods),
+            store: createDeliveryStore(methods, supportsDetachedActionCompletion),
             dispatch: dispatchForActivePrincipal,
           },
           deps.deliveryOptions,
@@ -416,12 +440,8 @@ export function createAgentTriggerService(deps: AgentTriggerServiceDeps = {}): A
     dispatch: dispatchForActivePrincipal,
     enqueue: async (envelope, options) => {
       const methods = requireMethods();
-      if (options?.coalesce != null && !coalescingEnabled()) {
-        throw new AgentTriggerDeliveryError('Agent event coalescing is not enabled on this server');
-      }
       const prepared = prepareAgentTriggerDelivery(envelope, options);
       const awaitTerminalHandling =
-        actorMailboxEnabled() &&
         prepared.envelope.mode === 'continue' &&
         prepared.envelope.target.bindingId != null &&
         prepared.envelope.target.sourceKeyId != null;

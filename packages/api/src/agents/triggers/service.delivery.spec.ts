@@ -1,4 +1,8 @@
-import { getTenantId, SYSTEM_TENANT_ID } from '@librechat/data-schemas';
+import {
+  AGENT_TRIGGER_WORKER_CAPABILITY_DETACHED_ACTION_V1,
+  getTenantId,
+  SYSTEM_TENANT_ID,
+} from '@librechat/data-schemas';
 import type { AgentTriggerDeliveryPersistence, AgentTriggerStoredRecord } from './service';
 import { AgentTriggerServiceUnavailableError, createAgentTriggerService } from './service';
 import { __resetShutdownStateForTests } from '../../app/shutdown';
@@ -142,24 +146,6 @@ describe('durable agent trigger service', () => {
     await service.stop();
   });
 
-  it('rejects coalesced work before persistence unless every worker has the capability', async () => {
-    const methods = deliveryMethods();
-    const service = createAgentTriggerService({
-      methods,
-      coalescingEnabled: () => false,
-      deliveryOptions: { concurrency: 1, tickMs: 60_000 },
-    });
-    await service.initialize({
-      address: { address: '127.0.0.1', family: 'IPv4', port: 3080 },
-    });
-
-    await expect(
-      service.enqueue(envelope(), { coalesce: { key: 'championship-commentary' } }),
-    ).rejects.toThrow('Agent event coalescing is not enabled on this server');
-    expect(methods.enqueueAgentTriggerDelivery).not.toHaveBeenCalled();
-    await service.stop();
-  });
-
   it('refuses to arm without a reachable self origin', async () => {
     const service = createAgentTriggerService({ methods: deliveryMethods() });
 
@@ -175,6 +161,7 @@ describe('durable agent trigger service', () => {
       methods,
       mintToken: () => 'token',
       fetch: async () => new Response('{}', { status: 500 }),
+      supportsDetachedActionCompletion: () => true,
       deliveryOptions: { concurrency: 1, tickMs: 60_000 },
     });
 
@@ -186,6 +173,11 @@ describe('durable agent trigger service', () => {
 
     expect(methods.ensureAgentTriggerDeliveryIndexes).toHaveBeenCalledTimes(1);
     expect(methods.claimNextAgentTriggerDelivery).toHaveBeenCalled();
+    expect(methods.claimNextAgentTriggerDelivery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workerCapabilities: [AGENT_TRIGGER_WORKER_CAPABILITY_DETACHED_ACTION_V1],
+      }),
+    );
     expect(methods.enqueueAgentTriggerDelivery).toHaveBeenCalledWith(
       expect.objectContaining({
         deliveryKey: expect.stringMatching(/^trigger_/),
@@ -205,11 +197,26 @@ describe('durable agent trigger service', () => {
     await service.stop();
   });
 
-  it('persists terminal handling serialization only for opted-in bound continuations', async () => {
+  it('does not advertise detached completion capability without durable generation storage', async () => {
     const methods = deliveryMethods();
     const service = createAgentTriggerService({
       methods,
-      actorMailboxEnabled: () => true,
+      supportsDetachedActionCompletion: () => false,
+      deliveryOptions: { concurrency: 1, tickMs: 60_000 },
+    });
+
+    await service.initialize({ address: { address: '127.0.0.1', family: 'IPv4', port: 3080 } });
+
+    expect(methods.claimNextAgentTriggerDelivery).toHaveBeenCalledWith(
+      expect.objectContaining({ workerCapabilities: [] }),
+    );
+    await service.stop();
+  });
+
+  it('persists terminal handling serialization only for bound continuations', async () => {
+    const methods = deliveryMethods();
+    const service = createAgentTriggerService({
+      methods,
       deliveryOptions: { concurrency: 1, tickMs: 60_000 },
     });
     await service.initialize({ address: { address: '127.0.0.1', family: 'IPv4', port: 3080 } });
@@ -223,23 +230,6 @@ describe('durable agent trigger service', () => {
     );
     expect(methods.enqueueAgentTriggerDelivery).toHaveBeenNthCalledWith(
       2,
-      expect.not.objectContaining({ awaitTerminalHandling: expect.anything() }),
-    );
-    await service.stop();
-  });
-
-  it('does not persist mailbox semantics before the rollout is enabled', async () => {
-    const methods = deliveryMethods();
-    const service = createAgentTriggerService({
-      methods,
-      actorMailboxEnabled: () => false,
-      deliveryOptions: { concurrency: 1, tickMs: 60_000 },
-    });
-    await service.initialize({ address: { address: '127.0.0.1', family: 'IPv4', port: 3080 } });
-
-    await service.enqueue(boundEnvelope());
-
-    expect(methods.enqueueAgentTriggerDelivery).toHaveBeenCalledWith(
       expect.not.objectContaining({ awaitTerminalHandling: expect.anything() }),
     );
     await service.stop();

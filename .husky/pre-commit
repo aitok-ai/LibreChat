@@ -1,33 +1,10 @@
 #!/bin/sh
 [ -n "$CI" ] && exit 0
 
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+# Formats, sorts and lints the exact staged content of each changed file.
+npx lint-staged --config ./.husky/lint-staged.config.js || exit 1
 
-if ! command -v node >/dev/null 2>&1; then
-  if [ -s "$HOME/.nvm/nvm.sh" ]; then
-    . "$HOME/.nvm/nvm.sh"
-    nvm use --silent >/dev/null 2>&1 || true
-  fi
-fi
-
-if ! command -v node >/dev/null 2>&1 && [ -s "$HOME/.asdf/asdf.sh" ]; then
-  . "$HOME/.asdf/asdf.sh"
-fi
-
-if ! command -v node >/dev/null 2>&1 && [ -d "$HOME/.volta/bin" ]; then
-  export PATH="$HOME/.volta/bin:$PATH"
-fi
-
-if ! command -v node >/dev/null 2>&1; then
-  echo "Error: node not found in PATH. Install Node.js or configure ~/.config/husky/init.sh"
-  exit 1
-fi
-
-if [ -x "./node_modules/.bin/lint-staged" ]; then
-  ./node_modules/.bin/lint-staged --config ./.husky/lint-staged.config.js
-elif command -v npm >/dev/null 2>&1; then
-  npm exec -- lint-staged --config ./.husky/lint-staged.config.js
-else
-  echo "Error: lint-staged not found. Run npm install first."
-  exit 1
-fi
+# The rest of the Static Checks CI job, gated on the paths this commit touches.
+# Add STATIC_CHECKS_FULL=1 for the slow gates (TypeScript, config migration
+# tests, unused i18n keys, unused npm packages).
+node scripts/static-checks.mts --skip eslint,prettier,imports
