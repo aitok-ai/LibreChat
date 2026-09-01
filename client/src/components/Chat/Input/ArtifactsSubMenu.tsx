@@ -89,8 +89,11 @@ const ArtifactsSubMenu = React.forwardRef<HTMLButtonElement, ArtifactsSubMenuPro
             <Ariakit.Menu
               portal={true}
               unmountOnHide={true}
+              gutter={12}
+              shift={24}
+              flip="left bottom-end top-end"
               className={cn(
-                'animate-popover-left z-40 mt-6 ml-3 flex min-w-[250px] flex-col rounded-xl',
+                'animate-popover-left z-40 flex max-w-[calc(100vw-1rem)] min-w-[min(250px,calc(100vw-1rem))] flex-col rounded-xl',
                 'border-border-light bg-surface-secondary border shadow-lg',
               )}
             >

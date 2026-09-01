@@ -4,13 +4,12 @@ import { useWatch } from 'react-hook-form';
 import { apiBaseUrl } from 'librechat-data-provider';
 import { useRecoilState, useRecoilValue, useRecoilCallback } from 'recoil';
 import { Constants, isAssistantsEndpoint, isAgentsEndpoint } from 'librechat-data-provider';
+import { composerSurfaceClasses, composerSurfaceShadow, TextareaAutosize } from '@librechat/client';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardPortal,
   HoverCardTrigger,
-  TextareaAutosize,
-  TooltipAnchor,
   useToastContext,
 } from '@librechat/client';
 import type { TChatProject, TMessage, TConversation } from 'librechat-data-provider';
@@ -62,9 +61,10 @@ import TextareaHeader from './TextareaHeader';
 import PromptsCommand from './PromptsCommand';
 import SkillsCommand from './SkillsCommand';
 import AudioRecorder from './AudioRecorder';
+import AutoPlayAudio from './AutoPlayAudio';
 import CollapseChat from './CollapseChat';
-import QuoteButton from './QuoteButton';
 import StreamAudio from './StreamAudio';
+import QuoteButton from './QuoteButton';
 import TokenUsage from './TokenUsage';
 import StopButton from './StopButton';
 import SendButton from './SendButton';
@@ -125,11 +125,7 @@ const ChatForm = memo(function ChatForm({
   const [badges, setBadges] = useRecoilState(store.chatBadges);
   const [isEditingBadges, setIsEditingBadges] = useRecoilState(store.isEditingBadges);
   const [showStopButton, setShowStopButton] = useRecoilState(store.showStopButtonByIndex(index));
-  const [text, setText] = useRecoilState(store.textByIndex(index)); // 从Recoil获取到text状态
-  const [showPlusPopover, setShowPlusPopover] = useRecoilState(store.showPlusPopoverFamily(index));
-  const [showMentionPopover, setShowMentionPopover] = useRecoilState(
-    store.showMentionPopoverFamily(index),
-  );
+  const [, setText] = useRecoilState(store.textByIndex(index));
   const plusPopoverAtom = useMemo(() => store.showPlusPopoverFamily(index), [index]);
   const mentionPopoverAtom = useMemo(() => store.showMentionPopoverFamily(index), [index]);
 
@@ -182,12 +178,7 @@ const ChatForm = memo(function ChatForm({
   const videoJobIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastDisconnectToastRef = useRef(0);
   const badgeMenuStoresRef = useRef<{ mcpMenuStore?: MenuStore; videoMenuStore?: MenuStore }>({});
-  const handleBadgeMenuStores = useCallback(
-    (stores: { mcpMenuStore: MenuStore; videoMenuStore: MenuStore }) => {
-      badgeMenuStoresRef.current = stores;
-    },
-    [],
-  );
+  // badgeMenuStoresRef is populated by parent components via context
 
   const isRTL = useMemo(
     () => (chatDirection != null ? chatDirection?.toLowerCase() === 'rtl' : false),
@@ -568,6 +559,7 @@ const ChatForm = memo(function ChatForm({
     videoPreset,
     videoSubmitting,
     videoTemplate,
+    localize,
   ]);
 
   const showVideoNotice = useCallback((message: string) => {
@@ -673,7 +665,7 @@ const ChatForm = memo(function ChatForm({
     videoJobUIState.stepStatus,
   ]);
 
-  const videoJobStatusText = useMemo(() => {
+  const _videoJobStatusText = useMemo(() => {
     if (!videoJobUIState.jobId) {
       return '';
     }
@@ -726,7 +718,7 @@ const ChatForm = memo(function ChatForm({
     });
   }, [localize, showToast, videoJobStatusKey]);
 
-  const videoJobIndicator = useMemo(() => {
+  const _videoJobIndicator = useMemo(() => {
     if (!showVideoJobIndicator || !videoJobStatusKey) {
       return null;
     }
@@ -809,7 +801,7 @@ const ChatForm = memo(function ChatForm({
     return () => {
       sse.close();
     };
-  }, [setVideoJobUIState, videoJobUIState.streamId]);
+  }, [localize, setVideoJobUIState, videoJobUIState.streamId]);
 
   useEffect(() => {
     if (textAreaRef.current) {
@@ -817,7 +809,7 @@ const ChatForm = memo(function ChatForm({
       const lineHeight = parseFloat(style.lineHeight);
       setVisualRowCount(Math.floor(textAreaRef.current.scrollHeight / lineHeight));
     }
-  }, [textValue]);
+  }, [textValue, localize]);
 
   useEffect(() => {
     if (isEditingBadges && backupBadges.length === 0) {
@@ -950,11 +942,12 @@ const ChatForm = memo(function ChatForm({
             <div
               onClick={handleContainerClick}
               className={cn(
-                'text-text-primary relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border pb-4 transition-all duration-200 sm:rounded-3xl sm:pb-0',
-                isTextAreaFocused ? 'shadow-lg' : 'shadow-md',
-                isTemporary
-                  ? 'border-violet-800/60 bg-violet-950/10'
-                  : 'border-border-light bg-surface-chat',
+                'relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl pb-4 sm:rounded-3xl sm:pb-0',
+                composerSurfaceClasses(),
+                isTextAreaFocused ? composerSurfaceShadow.focused : composerSurfaceShadow.blurred,
+                /* Temporary-chat accent is a ChatForm-only override, not part of
+                   the shared composer-surface decision. */
+                isTemporary && 'border-violet-800/60 bg-violet-950/10',
               )}
             >
               {project ? <ProjectLandingChip project={project} /> : null}
@@ -1125,7 +1118,7 @@ const ChatForm = memo(function ChatForm({
                       )}
                 </div>
               </div>
-              {TextToSpeech && automaticPlayback && <StreamAudio index={index} />}
+              {TextToSpeech && automaticPlayback && <AutoPlayAudio index={index} />}
             </div>
           </div>
           {activeVideoNotice && (

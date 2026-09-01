@@ -336,6 +336,8 @@ export type Agent = {
   stateful_code_sessions?: boolean;
   /** Stateful workspace sharing scope. Defaults to one workspace per user. */
   stateful_code_environment?: StatefulCodeEnvironment;
+  /** Operator-configured managed or attached stateful execution environment. */
+  code_environment_id?: string | null;
   artifacts?: ArtifactModes;
   recursion_limit?: number;
   isPublic?: boolean;
@@ -391,6 +393,7 @@ export type AgentCreateParams = {
   | 'hide_sequential_outputs'
   | 'stateful_code_sessions'
   | 'stateful_code_environment'
+  | 'code_environment_id'
   | 'artifacts'
   | 'recursion_limit'
   | 'category'
@@ -421,6 +424,7 @@ export type AgentUpdateParams = {
   | 'hide_sequential_outputs'
   | 'stateful_code_sessions'
   | 'stateful_code_environment'
+  | 'code_environment_id'
   | 'artifacts'
   | 'recursion_limit'
   | 'category'
@@ -725,6 +729,9 @@ export type TMessageContentParts =
       reasoning_label_revision?: number;
       /** Whether the reasoning step can still produce a newer label. */
       reasoning_label_status?: 'streaming' | 'complete';
+      /** The reasoning happened but its text is not available to this view
+       *  (e.g. detached subagent projections retain only a marker). */
+      reasoning_unavailable?: boolean;
     } & ContentMetadata)
   | (SteerContentPart & ContentMetadata)
   | ({

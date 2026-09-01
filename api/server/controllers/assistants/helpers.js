@@ -49,7 +49,17 @@ const getCurrentVersion = async (req, endpoint) => {
  */
 const _listAssistants = async ({ req, res, version, query }) => {
   const { openai } = await getOpenAIClient({ req, res, version });
-  return openai.beta.assistants.list(query);
+  try {
+    return await openai.beta.assistants.list(query);
+  } catch (error) {
+    if (error.status === 404) {
+      logger.warn(
+        '[/assistants] Assistants API returned 404 (beta feature may not be enabled). Returning empty list.',
+      );
+      return { data: [], has_more: false, first_id: null, last_id: null };
+    }
+    throw error;
+  }
 };
 
 /**
@@ -74,10 +84,21 @@ const listAllAssistants = async ({ req, res, version, query }) => {
   let hasMore = true;
 
   while (hasMore) {
-    const response = await openai.beta.assistants.list({
-      ...query,
-      after: afterToken,
-    });
+    let response;
+    try {
+      response = await openai.beta.assistants.list({
+        ...query,
+        after: afterToken,
+      });
+    } catch (error) {
+      if (error.status === 404) {
+        logger.warn(
+          '[/assistants] Assistants API returned 404 during pagination (beta feature may not be enabled).',
+        );
+        return { data: [], has_more: false, first_id: null, last_id: null };
+      }
+      throw error;
+    }
 
     allAssistants.push(...response.data);
     hasMore = response.has_more;

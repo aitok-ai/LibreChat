@@ -4,6 +4,7 @@ import type {
   TPendingSteer,
   UserSubmittedMessageFieldPath,
 } from 'librechat-data-provider';
+import type { ICompactionSemanticIndexProjection } from '@librechat/data-schemas';
 import type { RunStep, StandardGraph } from '@librechat/agents';
 import type { AgentEventDetachedTerminalEvidence } from '~/agents/triggers/types';
 import type { ActivityPhaseSnapshot } from '~/agents/activityPhases/runtime';
@@ -174,6 +175,8 @@ export interface SerializableJobData {
   discoveredTools?: string[];
   /** Bounded collector state for continuing a phase across HITL resume. */
   activityPhaseSnapshot?: ActivityPhaseSnapshot;
+  /** Exact bounded compaction guidance captured atomically with a HITL pause. */
+  compactionSemanticIndex?: ICompactionSemanticIndexProjection;
   /**
    * Whether the replica that OWNS this generation can seal mid-stream
    * (`PreemptBoundary` wiring). Recorded at createJob because the steer route
@@ -452,6 +455,7 @@ export type JobMetadataPatch = Partial<
     | 'promptTokens'
     | 'discoveredTools'
     | 'activityPhaseSnapshot'
+    | 'compactionSemanticIndex'
     | 'preemptCapable'
     | 'steerQuotesCapable'
     | 'steerQuotesExecutionId'
@@ -556,6 +560,15 @@ export type SteerEnqueueReceiptResult = SteerReceipt | SteerEnqueueResult | numb
 export interface SteerEnqueueResult {
   item: SteerQueueItem;
   position: number;
+}
+
+export type TerminalSteerAdmissionResult =
+  | { outcome: 'claimed'; items: SteerQueueItem[] }
+  | { outcome: 'open' | 'sealed' | 'unavailable' };
+
+export interface TerminalSteerAdmissionPolicy {
+  allowClaim: boolean;
+  keepOpenWhenEmpty: boolean;
 }
 
 export type SteerEnqueueVersionedResult = SteerEnqueueResult | number;
@@ -884,6 +897,15 @@ export interface IJobStore {
     ttlSeconds: number,
   ): Promise<IdempotencyClaimResult>;
   releaseIdempotencyKey(key: string): Promise<void>;
+
+  /** Read-only existence probe used to identify a confirmed retry before
+   * request-rate admission. Optional stores keep the conservative behavior
+   * where every request remains subject to the limiter. */
+  hasIdempotencyKey?(key: string): Promise<boolean>;
+
+  /** Read-only claim receipt used by durable source reconcilers. Optional
+   * stores fall back to inspecting the current generation only. */
+  getIdempotencyClaim?(key: string): Promise<IdempotencyClaimValue | null>;
 
   deleteJob(streamId: string, expectedCreatedAt?: number): Promise<boolean>;
   hasJob(streamId: string): Promise<boolean>;
@@ -1378,6 +1400,21 @@ export interface IJobStoreV2 extends IJobStore {
     items: SteerQueueItem[],
     expectedCreatedAt?: number,
   ): Promise<boolean>;
+
+  /**
+   * Terminal admission fence. When `allowClaim` and queued work are both
+   * present, atomically claim the FIFO batch while leaving admission open for
+   * the continued run. Otherwise atomically close admission so a racing steer
+   * is rejected and remains an ordinary follow-up, unless
+   * `keepOpenWhenEmpty` proves another folded Stop hook already planned a
+   * continuation. V1 generations always seal because they lack
+   * crash-recoverable claimed-steer receipts.
+   */
+  admitTerminalSteers(
+    streamId: string,
+    policy: TerminalSteerAdmissionPolicy,
+    expectedCreatedAt?: number,
+  ): Promise<TerminalSteerAdmissionResult>;
 
   /**
    * Atomically CLOSE the queue to new steers, then take all queued items
