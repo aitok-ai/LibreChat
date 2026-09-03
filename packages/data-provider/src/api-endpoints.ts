@@ -58,6 +58,11 @@ export const userById = (id: string) => {
 export const userPlugins = () => `${BASE_URL}/api/user/plugins`;
 
 export const deleteUser = () => `${BASE_URL}/api/user/delete`;
+export const codeEnvironments = () => `${BASE_URL}/api/code-environments`;
+export const codeEnvironmentPairings = () => `${codeEnvironments()}/pairings`;
+export const codeEnvironmentById = (id: string) =>
+  `${codeEnvironments()}/${encodeURIComponent(id)}`;
+export const codeEnvironmentSettings = (id: string) => `${codeEnvironmentById(id)}/settings`;
 
 const messagesRoot = `${BASE_URL}/api/messages`;
 

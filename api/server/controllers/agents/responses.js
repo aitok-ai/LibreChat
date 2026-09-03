@@ -13,7 +13,7 @@ const {
   createRun,
   applyContextToAgent,
   buildInitialToolSessions,
-  buildToolSet,
+  buildRunToolSet,
   AgentRunEnvelopeError,
   createAgentRunEnvelope,
   createAgentExecutionContext,
@@ -53,6 +53,7 @@ const {
   getSafeErrorMetadata,
   getUserFacingProviderError,
   createToolExecuteHandler,
+  resolveRecursionLimit,
   getRemoteAgentPermissions,
   resolveAgentScopedSkillIds,
   // Responses API
@@ -1004,7 +1005,13 @@ const executeResponse = async (envelope, { req, res }) => {
       // Merge previous messages with new input
       const allMessages = [...previousMessages, ...inputMessages];
 
-      const toolSet = buildToolSet(primaryConfig);
+      const toolSet = buildRunToolSet(
+        primaryConfig,
+        handoffAgentConfigs.values(),
+        undefined,
+        allMessages,
+        true,
+      );
       const formatted = formatAgentMessages(stripActivityLabelParts(allMessages), {}, toolSet);
       const formattedMessages = formatted.messages;
       const initialSummary = formatted.summary;
@@ -1195,6 +1202,7 @@ const executeResponse = async (envelope, { req, res }) => {
             requestBody: mcpRequestBody,
             ...(userMCPAuthMap != null && { userMCPAuthMap }),
           },
+          recursionLimit: resolveRecursionLimit(agentsEConfig, agent),
           signal: execution.signal,
           streamMode: 'values',
           version: 'v2',
@@ -1405,6 +1413,7 @@ const executeResponse = async (envelope, { req, res }) => {
             requestBody: mcpRequestBody,
             ...(userMCPAuthMap != null && { userMCPAuthMap }),
           },
+          recursionLimit: resolveRecursionLimit(agentsEConfig, agent),
           signal: execution.signal,
           streamMode: 'values',
           version: 'v2',
@@ -1527,7 +1536,7 @@ const createResponse = async (req, res) => {
       protocol: 'responses',
       requestId: req.requestId ?? req.id ?? `agent-run-${nanoid()}`,
       receivedAt,
-      principal: req.user,
+      principal: req.tenantId == null ? req.user : { ...req.user, tenantId: req.tenantId },
       payload: validation.request,
     });
   } catch (error) {

@@ -208,7 +208,7 @@ export default function Breakdown({
               : formatTokens(usedTokens)}
             <ChevronDown
               aria-hidden="true"
-              className="text-text-tertiary size-3.5 shrink-0 transition-transform duration-300 ease-[cubic-bezier(0,0,0.2,1)] group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+              className="text-text-tertiary size-3.5 shrink-0 transition-transform duration-300 ease-out group-data-[state=open]:rotate-180 motion-reduce:transition-none"
             />
           </span>
         </CollapsibleTrigger>

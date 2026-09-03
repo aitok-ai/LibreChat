@@ -13,7 +13,7 @@ const {
   createRun,
   createChunk,
   applyContextToAgent,
-  buildToolSet,
+  buildRunToolSet,
   buildInitialToolSessions,
   buildAgentScopedContext,
   buildInlineMemoryContext,
@@ -806,7 +806,13 @@ const executeOpenAIChatCompletion = async (envelope, { req, res }) => {
 
       const openaiMessages = convertMessages(request.messages);
 
-      const toolSet = buildToolSet(primaryConfig);
+      const toolSet = buildRunToolSet(
+        primaryConfig,
+        handoffAgentConfigs.values(),
+        undefined,
+        openaiMessages,
+        true,
+      );
       const formatted = formatAgentMessages(stripActivityLabelParts(openaiMessages), {}, toolSet);
       const formattedMessages = formatted.messages;
       const initialSummary = formatted.summary;
@@ -1203,7 +1209,7 @@ const OpenAIChatCompletionController = async (req, res) => {
       protocol: 'chat.completions',
       requestId: req.requestId ?? req.id ?? `agent-run-${nanoid()}`,
       receivedAt,
-      principal: req.user,
+      principal: req.tenantId == null ? req.user : { ...req.user, tenantId: req.tenantId },
       payload: validation.request,
     });
   } catch (error) {

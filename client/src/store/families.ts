@@ -342,11 +342,6 @@ const showPromptsPopoverFamily = atomFamily<boolean, string | number | null>({
   default: false,
 });
 
-const showSkillsPopoverFamily = atomFamily<boolean, string | number | null>({
-  key: 'showSkillsPopoverByIndex',
-  default: false,
-});
-
 /**
  * Per-conversation queue of skill names the user invoked manually via the
  * `$` popover for the next submission. Structured channel that the submit
@@ -872,7 +867,6 @@ export default {
   activePromptByIndex,
   useClearSubmissionState,
   showPromptsPopoverFamily,
-  showSkillsPopoverFamily,
   pendingComposerTextByConvoId,
   pendingManualSkillsByConvoId,
   pendingQuotesByConvoId,

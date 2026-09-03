@@ -767,6 +767,7 @@ export async function processMemory({
   streamId = null,
   jobCreatedAt,
   user,
+  tenantId,
 }: {
   res: ServerResponse;
   setMemory: MemoryMethods['setMemory'];
@@ -795,6 +796,7 @@ export async function processMemory({
   streamId?: string | null;
   jobCreatedAt?: number;
   user?: IUser;
+  tenantId?: string;
 }): Promise<(TAttachment | null)[] | undefined> {
   try {
     const submittedMessages = (inspectionMessages ?? messages).filter(
@@ -918,6 +920,7 @@ ${memory ?? 'No existing memories'}`;
     resolveConfigHeaders({
       llmConfig: finalLLMConfig as unknown as RunLLMConfig,
       user: user ? createSafeUser(user) : undefined,
+      tenantId,
       body: { conversationId, messageId },
     });
 
@@ -1030,6 +1033,7 @@ export async function createMemoryProcessor({
   streamId = null,
   jobCreatedAt,
   user,
+  tenantId,
 }: {
   res: ServerResponse;
   messageId: string;
@@ -1043,6 +1047,7 @@ export async function createMemoryProcessor({
   streamId?: string | null;
   jobCreatedAt?: number;
   user?: IUser;
+  tenantId?: string;
 }): Promise<
   [
     string,
@@ -1095,6 +1100,7 @@ export async function createMemoryProcessor({
           setMemory: memoryMethods.setMemory,
           deleteMemory: memoryMethods.deleteMemory,
           user,
+          tenantId,
         });
       } catch (error) {
         logger.error('Memory Agent failed to process memory', getSafeErrorMetadata(error));
