@@ -174,6 +174,48 @@ describe('Conversation Operations', () => {
       expect(savedConvo?.title).toBe('Test Conversation');
     });
 
+    it('sets immutable agent attribution from server metadata only on insert', async () => {
+      await saveConvo(
+        mockCtx,
+        {
+          ...mockConversationData,
+          agent_id: 'agent-a',
+          initial_agent_id: 'forged-agent',
+        },
+        { initialAgentId: 'agent-a' },
+      );
+      await saveConvo(
+        mockCtx,
+        {
+          conversationId: mockConversationData.conversationId,
+          agent_id: 'agent-b',
+          initial_agent_id: 'forged-agent-b',
+        },
+        { initialAgentId: 'agent-b' },
+      );
+
+      const saved = await Conversation.findOne({
+        conversationId: mockConversationData.conversationId,
+        user: mockCtx.userId,
+      })
+        .select('+initial_agent_id')
+        .lean();
+      expect(saved?.initial_agent_id).toBe('agent-a');
+      expect(saved?.agent_id).toBe('agent-b');
+    });
+
+    it('stores explicit null attribution for a new non-agent conversation', async () => {
+      await saveConvo(mockCtx, mockConversationData);
+
+      const saved = await Conversation.findOne({
+        conversationId: mockConversationData.conversationId,
+        user: mockCtx.userId,
+      })
+        .select('+initial_agent_id')
+        .lean();
+      expect(saved).toHaveProperty('initial_agent_id', null);
+    });
+
     it('should query messages when saving a conversation', async () => {
       // Mock messages as ObjectIds
       const mockMessages = [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()];
@@ -273,6 +315,24 @@ describe('Conversation Operations', () => {
 
       const refreshedProject = await ChatProject.findById(project._id).lean<IChatProject>();
       expect(refreshedProject?.conversationCount).toBe(1);
+    });
+
+    it('bulkSaveConvos strips supplied attribution and stores explicit null on insert', async () => {
+      const conversationId = uuidv4();
+
+      await methods.bulkSaveConvos([
+        {
+          conversationId,
+          user: mockCtx.userId,
+          endpoint: EModelEndpoint.openAI,
+          initial_agent_id: 'forged-agent',
+        },
+      ]);
+
+      const saved = await Conversation.findOne({ conversationId, user: mockCtx.userId })
+        .select('+initial_agent_id')
+        .lean();
+      expect(saved).toHaveProperty('initial_agent_id', null);
     });
 
     it('refreshes both projects when a save moves a conversation between them', async () => {
@@ -3662,6 +3722,72 @@ describe('Conversation Operations', () => {
       const result = await getConvosByCursor('user123', {});
 
       expect(result.conversations).toHaveLength(2);
+    });
+  });
+
+  describe('getConvosByCursor page size bounds', () => {
+    const TOTAL = 105;
+    const user = 'page-size-user';
+
+    beforeEach(async () => {
+      const baseTime = new Date('2026-06-01T00:00:00.000Z').getTime();
+      await Conversation.collection.insertMany(
+        Array.from({ length: TOTAL }, (_, index) => ({
+          conversationId: uuidv4(),
+          user,
+          title: `Conversation ${index}`,
+          endpoint: EModelEndpoint.openAI,
+          expiredAt: null,
+          isArchived: false,
+          createdAt: new Date(baseTime + index * 1000),
+          updatedAt: new Date(baseTime + index * 1000),
+        })),
+      );
+    });
+
+    afterEach(async () => {
+      await Conversation.deleteMany({ user });
+    });
+
+    /** `.limit(limit + 1)` turned a -1 page size into `.limit(0)`, which MongoDB reads as
+     * "no limit" — the query returned the caller's entire collection in one response. */
+    it.each([
+      ['negative', -1],
+      ['zero', 0],
+      ['oversized', 999999999],
+    ])('bounds a %s page size', async (_label, limit) => {
+      const result = await getConvosByCursor(user, { limit });
+
+      expect(result.conversations.length).toBeLessThanOrEqual(100);
+      expect(result.conversations.length).toBeGreaterThan(0);
+      expect(result.nextCursor).not.toBeNull();
+    });
+
+    it('caps an oversized page size at the ceiling and still pages the remainder', async () => {
+      const first = await getConvosByCursor(user, { limit: Number.MAX_SAFE_INTEGER });
+
+      expect(first.conversations).toHaveLength(100);
+      expect(first.nextCursor).not.toBeNull();
+
+      const second = await getConvosByCursor(user, {
+        limit: Number.MAX_SAFE_INTEGER,
+        cursor: first.nextCursor,
+      });
+
+      expect(second.conversations).toHaveLength(TOTAL - 100);
+      expect(second.nextCursor).toBeNull();
+
+      const ids = new Set(
+        [...first.conversations, ...second.conversations].map((convo) => convo.conversationId),
+      );
+      expect(ids.size).toBe(TOTAL);
+    });
+
+    it('serves a page size inside the range unchanged', async () => {
+      const result = await getConvosByCursor(user, { limit: 10 });
+
+      expect(result.conversations).toHaveLength(10);
+      expect(result.nextCursor).not.toBeNull();
     });
   });
 

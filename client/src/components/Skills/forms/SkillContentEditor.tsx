@@ -3,11 +3,11 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import supersub from 'remark-supersub';
+import { Check, SquarePen } from 'lucide';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
-import { EditIcon, Check } from 'lucide-react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { TextareaAutosize, Button, TooltipAnchor } from '@librechat/client';
+import { TextareaAutosize, Button, MorphIcon, TooltipAnchor } from '@librechat/client';
 import type { RegisterOptions } from 'react-hook-form';
 import type { PluggableList } from 'unified';
 import { codeNoExecution } from '~/components/Chat/Messages/Content/MarkdownComponents';
@@ -53,8 +53,6 @@ const SkillContentEditor: React.FC<SkillContentEditorProps> = ({
     formState: { errors },
   } = useFormContext();
 
-  const EditorIcon = isEditing ? Check : EditIcon;
-
   return (
     <div className="flex max-h-[85vh] flex-col sm:max-h-[85vh]">
       <h2 className="sr-only">{localize('com_ui_skill_content')}</h2>
@@ -77,7 +75,10 @@ const SkillContentEditor: React.FC<SkillContentEditorProps> = ({
                 aria-label={isEditing ? localize('com_ui_save') : localize('com_ui_edit')}
                 className="hover:bg-surface-tertiary size-8 p-0"
               >
-                <EditorIcon className="text-text-secondary size-4" aria-hidden="true" />
+                <MorphIcon
+                  icon={isEditing ? Check : SquarePen}
+                  className="text-text-secondary size-4"
+                />
               </Button>
             }
           />
@@ -133,7 +134,7 @@ const SkillContentEditor: React.FC<SkillContentEditorProps> = ({
                 )}
                 <div className="pointer-events-none sticky bottom-1/2 z-10 flex translate-y-1/2 items-center justify-center opacity-0 transition-all duration-200 group-hover/preview:opacity-100">
                   <div className="border-border-light bg-surface-primary flex items-center gap-2 rounded-lg border px-3 py-1.5 shadow-md">
-                    <EditIcon className="text-text-secondary size-4" aria-hidden="true" />
+                    <MorphIcon icon={SquarePen} className="text-text-secondary size-4" />
                     <span className="text-text-primary text-sm font-medium">
                       {localize('com_ui_click_to_edit')}
                     </span>

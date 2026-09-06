@@ -268,6 +268,8 @@ export interface IConversation extends Document {
   likedBy?: object;
   isPrivate?: boolean;
   viewCount?: number;
+  /** Immutable primary persisted-agent attribution for Insights. */
+  initial_agent_id?: string | null;
   subagentThread?: TSubagentThreadLineage;
   /** Internal execution fence. Excluded from ordinary conversation reads. */
   subagentThreadLease?: ISubagentThreadLease;

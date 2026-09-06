@@ -1,10 +1,10 @@
 import React, { useState, useMemo, memo } from 'react';
+import { Copy, Check } from 'lucide';
 import { useRecoilState } from 'recoil';
 import {
   Button,
   EditIcon,
-  CheckMark,
-  Clipboard,
+  MorphIcon,
   ContinueIcon,
   TooltipAnchor,
   RegenerateIcon,
@@ -135,7 +135,6 @@ const HoverButtons = ({
 }: THoverButtons) => {
   const localize = useLocalize();
   const [isCopied, setIsCopied] = useState(false);
-  const [playbackStatus, setPlaybackStatus] = useState({ isPaused: false, isStopped: true });
   //   const [TextToSpeech] = useRecoilState<boolean>(store.TextToSpeech);
   const [TextToSpeech] = useRecoilState<boolean>(store.textToSpeech);
 
@@ -217,7 +216,7 @@ const HoverButtons = ({
           title={
             isCopied ? localize('com_ui_copied_to_clipboard') : localize('com_ui_copy_to_clipboard')
           }
-          icon={isCopied ? <CheckMark className="h-[18px] w-[18px]" /> : <Clipboard size="19" />}
+          icon={<MorphIcon icon={isCopied ? Check : Copy} size={19} />}
           isLast={isLast}
           disabled={!canCopy}
           className={cn(

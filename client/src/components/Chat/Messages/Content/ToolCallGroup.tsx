@@ -356,7 +356,7 @@ export default function ToolCallGroup({
            *  rather than "tools". */
           <div
             className={cn(
-              'text-text-secondary flex h-5 w-5 shrink-0 items-center justify-center',
+              'text-text-secondary flex size-4 shrink-0 items-center justify-center',
               !allCompleted && isSubmitting && 'text-text-primary animate-pulse',
             )}
             aria-hidden="true"

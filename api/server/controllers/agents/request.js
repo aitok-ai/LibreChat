@@ -271,6 +271,7 @@ async function saveErrorTurn(
     liveUserMessage,
     liveResponseMessageId,
     sender,
+    initialAgentId,
   },
 ) {
   try {
@@ -412,7 +413,15 @@ async function saveErrorTurn(
     await saveConvo(
       reqCtx,
       { conversationId, ...convoFields },
-      seedConvo ? { context } : { context, noUpsert: true },
+      seedConvo
+        ? {
+            context,
+            initialAgentId:
+              typeof initialAgentId === 'string' && !isEphemeralAgentId(initialAgentId)
+                ? initialAgentId
+                : null,
+          }
+        : { context, noUpsert: true },
     );
   } catch (err) {
     logger.error('[AgentController] Failed to persist error turn', err);
@@ -1370,6 +1379,7 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
   });
 
   let client = null;
+  let verifiedInitialAgentId = null;
   let jobCreatedAt;
   let providerExecutionId;
   let releaseEventChildLease;
@@ -1762,6 +1772,12 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
     });
     startupTelemetry?.mark('client_initialized');
     client = result.client;
+    if (
+      typeof client?.options?.agent?.id === 'string' &&
+      !isEphemeralAgentId(client.options.agent.id)
+    ) {
+      verifiedInitialAgentId = client.options.agent.id;
+    }
 
     /** Request-shape validation rejects every known edit/regenerate path, but
      * the client owns the final persistence decision. Fail closed if a future
@@ -2996,6 +3012,7 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
                     liveUserMessage: userMessage,
                     liveResponseMessageId,
                     sender: client?.sender,
+                    initialAgentId: verifiedInitialAgentId,
                   }),
               })) === true;
             /** A true completion means this owner won the terminal CAS and
@@ -3200,6 +3217,7 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
                 endpointOption,
                 isNewConvo,
                 errorText: initializationError,
+                initialAgentId: verifiedInitialAgentId,
               }),
           })
         : GenerationJobManager.completeJob(streamId, initializationError, jobCreatedAt);
