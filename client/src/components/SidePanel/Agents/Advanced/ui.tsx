@@ -23,11 +23,18 @@ export function CountPill({ children }: { children: ReactNode }) {
   );
 }
 
-/** "Beta" accent pill. */
+/**
+ * "Beta" accent pill.
+ *
+ * Semantic `brand-purple` rather than the raw purple ramp: the label renders at
+ * 10px on a tinted fill, so it has to keep clearing the text floor on every
+ * canvas, and `purple-600/40` edges sit at 1.89:1 on the high contrast light
+ * page. A palette utility does not move when the theme does.
+ */
 export function BetaPill() {
   const localize = useLocalize();
   return (
-    <span className="rounded-full border border-purple-600/40 bg-purple-500/10 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-purple-700 uppercase dark:text-purple-400">
+    <span className="border-brand-purple/40 bg-brand-purple/10 text-brand-purple rounded-full border px-1.5 py-0.5 text-[10px] font-medium tracking-wide uppercase">
       {localize('com_ui_beta')}
     </span>
   );

@@ -269,7 +269,7 @@ export default function ActionsInput({
           className="border-border-light focus-visible:border-border-heavy block min-h-[12rem] w-full resize-y rounded-lg border bg-transparent p-3 font-mono text-xs leading-relaxed transition-colors focus-visible:ring-0"
         />
         {validationError && (
-          <div className="mt-1.5 text-xs text-red-500">
+          <div className="text-text-destructive mt-1.5 text-xs">
             {validationError.split('\n').map((line: string, i: number) => (
               <div key={i}>{line}</div>
             ))}
@@ -323,7 +323,7 @@ export default function ActionsInput({
             />
           </div>
           {validationError && (
-            <div className="max-h-24 shrink-0 overflow-y-auto text-xs text-red-500">
+            <div className="text-text-destructive max-h-24 shrink-0 overflow-y-auto text-xs">
               {validationError.split('\n').map((line: string, i: number) => (
                 <div key={i}>{line}</div>
               ))}

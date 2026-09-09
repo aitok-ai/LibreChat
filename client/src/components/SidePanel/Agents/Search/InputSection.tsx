@@ -103,7 +103,7 @@ export default function InputSection({
                   href={config.link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="text-link hover:text-link-hover underline"
                 >
                   {config.link.text}
                 </a>

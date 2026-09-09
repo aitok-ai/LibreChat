@@ -317,7 +317,7 @@ export default function Search() {
   }
 
   return (
-    <div className="relative flex h-full w-full flex-col bg-white pt-4 dark:bg-gray-800">
+    <div className="bg-presentation relative flex h-full w-full flex-col pt-4">
       <div className="sr-only" role="alert" aria-atomic="true">
         {resultsAnnouncement}
       </div>
@@ -333,7 +333,10 @@ export default function Search() {
           onRowsRendered={handleRowsRendered}
           overscanRowCount={10}
           aria-label={localize('com_nav_search_placeholder')}
-          className={cn('outline-none', showingStale && 'opacity-70')}
+          className={cn(
+            'focus-visible:ring-ring-primary outline-none focus-visible:ring-2 focus-visible:ring-inset',
+            showingStale && 'opacity-70',
+          )}
           style={{ outline: 'none' }}
         />
       </div>
@@ -342,7 +345,7 @@ export default function Search() {
           <Spinner className="text-text-primary" />
         </div>
       )}
-      <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-[5%] bg-gradient-to-t from-gray-50 to-transparent dark:from-gray-800" />
+      <div className="from-presentation pointer-events-none absolute right-0 bottom-0 left-0 h-[5%] bg-gradient-to-t to-transparent" />
     </div>
   );
 }

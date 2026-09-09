@@ -81,9 +81,7 @@ export default function Settings({ conversation, setOption, models, readonly }: 
         assistant_id: assistantValue.value,
       } as Partial<TPreset>);
     }
-
-    // Reason: `setOption` causes a re-render on every update
-  }, [assistantValue]);
+  }, [assistantValue, setOption]); // setOption is a stable atom reader, safe in deps
 
   if (!conversation) {
     return null;
@@ -151,7 +149,9 @@ export default function Settings({ conversation, setOption, models, readonly }: 
         <div className="grid w-full items-center gap-2">
           <Label htmlFor="promptPrefix" className="text-left text-sm font-medium">
             {localize('com_endpoint_prompt_prefix_assistants')}{' '}
-            <small className="opacity-40">({localize('com_endpoint_default_blank')})</small>
+            <small className="high-contrast:opacity-100 opacity-40">
+              ({localize('com_endpoint_default_blank')})
+            </small>
           </Label>
           <TextareaAutosize
             id="promptPrefix"
@@ -168,7 +168,9 @@ export default function Settings({ conversation, setOption, models, readonly }: 
         <div className="grid w-full items-center gap-2">
           <Label htmlFor="instructions" className="text-left text-sm font-medium">
             {localize('com_endpoint_instructions_assistants')}{' '}
-            <small className="opacity-40">({localize('com_endpoint_default_blank')})</small>
+            <small className="high-contrast:opacity-100 opacity-40">
+              ({localize('com_endpoint_default_blank')})
+            </small>
           </Label>
           <TextareaAutosize
             id="instructions"

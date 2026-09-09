@@ -174,6 +174,8 @@ jest.mock('@librechat/agents', () => ({
 
 jest.mock('@librechat/api', () => ({
   createAgentExecutionContext: (context) => context,
+  /** Grants both by default; the capability set is what these specs vary. */
+  resolveToolRoleGrants: jest.fn(async () => ({ runCode: true, fileSearch: true })),
   collectReachableAgents: (roots) => {
     const agents = [];
     const pending = [...roots];
@@ -194,6 +196,9 @@ jest.mock('@librechat/api', () => ({
    *  export or the call throws before the assertions run. */
   stripActivityLabelParts: jest.fn((payload) => payload),
   writeSSE: jest.fn(),
+  createOwnedToolEndHandler: jest.fn(
+    (...args) => new (require('@librechat/agents').ToolEndHandler)(...args),
+  ),
   createRun: jest.fn().mockResolvedValue({
     processStream: mockProcessStream,
   }),
@@ -625,7 +630,11 @@ describe('OpenAIChatCompletionController', () => {
     );
     const { createRun } = require('@librechat/api');
     expect(createRun).toHaveBeenCalledWith(
-      expect.objectContaining({ initialSessions: mockInitialSessions }),
+      expect.objectContaining({
+        initialSessions: mockInitialSessions,
+        user: expect.objectContaining({ id: 'user-123' }),
+        traceContext: { endpoint: 'agents' },
+      }),
     );
     expect(createSubagentUsageSink).toHaveBeenCalledWith(expect.any(Array));
   });

@@ -78,7 +78,7 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
   };
 
   const errorBadge = error === true && (
-    <span className="bg-status-error absolute top-[20px] right-0 -mr-2 flex h-3 w-3 items-center justify-center rounded-full border border-white text-[10px] text-white">
+    <span className="border-surface-primary bg-status-error-strong text-text-on-status absolute top-[20px] right-0 -mr-2 flex h-3 w-3 items-center justify-center rounded-full border text-[10px]">
       !
     </span>
   );

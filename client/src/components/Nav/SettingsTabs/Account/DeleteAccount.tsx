@@ -186,7 +186,7 @@ const renderDeleteButton = (
       'bg-surface-tertiary text-text-primary hover:bg-surface-tertiary mt-4 w-full gap-0 transition-all duration-200',
       isLocked
         ? 'cursor-not-allowed opacity-30 disabled:opacity-30'
-        : 'bg-surface-destructive hover:bg-surface-destructive-hover text-white disabled:opacity-100',
+        : 'bg-surface-destructive text-text-on-status hover:bg-surface-destructive-hover disabled:opacity-100',
     )}
     onClick={handleDeleteUser}
     disabled={isDeleting || isLocked}

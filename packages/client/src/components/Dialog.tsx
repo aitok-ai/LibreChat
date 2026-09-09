@@ -60,7 +60,9 @@ const DialogContent: React.ForwardRefExoticComponent<
         <DialogPrimitive.Content
           ref={ref}
           className={cn(
-            'bg-surface-dialog animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 fixed z-[999] grid w-full gap-4 rounded-b-lg pb-6 sm:rounded-lg',
+            /** The dialog surface is otherwise borderless: in high contrast it sits
+             *  on a canvas of its own colour, so it needs a drawn edge. */
+            'bg-surface-dialog animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 high-contrast:border high-contrast:border-solid high-contrast:border-border-medium fixed z-[999] grid w-full gap-4 rounded-b-lg pb-6 sm:rounded-lg',
             isSmallScreen
               ? 'bg-surface-dialog fixed top-1/2 left-1/2 z-[999] m-auto grid w-11/12 -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl pb-6'
               : '',

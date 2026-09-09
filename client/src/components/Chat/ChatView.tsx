@@ -1,10 +1,10 @@
-import { memo, useCallback } from 'react';
+import { memo, useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { useForm } from 'react-hook-form';
 import { Spinner } from '@librechat/client';
 import { useParams } from 'react-router-dom';
 import { Constants, buildTree } from 'librechat-data-provider';
-import type { TChatProject, TMessage } from 'librechat-data-provider';
+import type { TChatProject } from 'librechat-data-provider';
 import type { ChatFormValues } from '~/common';
 import {
   useAddedResponse,
@@ -17,7 +17,9 @@ import {
 import { ChatContext, AddedChatContext, ChatFormProvider, useFileMapContext } from '~/Providers';
 import ConversationStarters from './Input/ConversationStarters';
 import { useGetMessagesByConvoId } from '~/data-provider';
+import { AskAnswerHostProvider } from './ask/state';
 import MessagesView from './Messages/MessagesView';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import ChatWidget from '../Input/ChatWidgetMenu';
 import Presentation from './Presentation';
 import ChatForm from './Input/ChatForm';
@@ -42,6 +44,7 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
   const localize = useLocalize();
   const rootSubmission = useRecoilValue(store.submissionByIndex(index));
   const isSubmitting = useRecoilValue(store.isSubmittingFamily(index));
+  const saveDrafts = useRecoilValue(store.saveDrafts);
   const centerFormOnLanding = useRecoilValue(store.centerFormOnLanding);
 
   const methods = useForm<ChatFormValues>({
@@ -51,19 +54,12 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
   const fileMap = useFileMapContext();
 
   const {
-    data: messagesTree = null,
+    data: messages = null,
     isLoading,
     isFetching,
   } = useGetMessagesByConvoId(
     conversationId ?? '',
     {
-      select: useCallback(
-        (data: TMessage[]) => {
-          const dataTree = buildTree({ messages: data, fileMap });
-          return dataTree?.length === 0 ? null : (dataTree ?? null);
-        },
-        [fileMap],
-      ),
       enabled: !!conversationId && conversationId !== Constants.SEARCH,
       /** Refetch stale caches on mount: navigation invalidates (not removes)
        * messages now, so a warm conversation renders instantly from cache and
@@ -72,6 +68,10 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
     },
     { isStreaming: isSubmitting },
   );
+  const messagesTree = useMemo(() => {
+    const dataTree = buildTree({ messages, fileMap });
+    return dataTree?.length === 0 ? null : (dataTree ?? null);
+  }, [messages, fileMap]);
 
   const chatHelpers = useChatHelpers(index, conversationId);
   const addedChatHelpers = useAddedResponse();
@@ -105,7 +105,7 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
   } else if ((isLoading || isNavigating) && !isLandingPage) {
     content = <LoadingSpinner />;
   } else if (!isLandingPage) {
-    content = <MessagesView messagesTree={messagesTree} />;
+    content = <MessagesView messagesTree={messagesTree} messages={messages} />;
   } else {
     content = <Landing centerFormOnLanding={centerFormOnLanding} />;
   }
@@ -130,61 +130,65 @@ function ChatView({ index = 0, project }: { index?: number; project?: TChatProje
   const isSubagentThreadReadOnly = activeSubagentThread != null;
 
   return (
-    <ChatFormProvider {...methods}>
-      <ChatContext.Provider value={chatHelpers}>
-        <AddedChatContext.Provider value={addedChatHelpers}>
-          <Presentation>
-            <div className="relative flex h-full w-full flex-col">
-              <h1 className="sr-only">{pageHeading}</h1>
-              <Header
-                parentConversationId={parentConversationId}
-                readOnly={isSubagentThreadReadOnly}
-              />
-              <>
-                <div
-                  className={cn(
-                    'flex flex-1 flex-col overflow-y-auto',
-                    isLandingPage ? 'items-center justify-center' : '',
-                  )}
-                >
-                  {content}
-                </div>
-                <div className="relative mt-auto flex w-full flex-col items-center">
-                  <div className="relative w-full">
-                    <ChatWidget />
-                  </div>
+    <AskAnswerHostProvider saveDrafts={saveDrafts}>
+      <ChatFormProvider {...methods}>
+        <ChatContext.Provider value={chatHelpers}>
+          <AddedChatContext.Provider value={addedChatHelpers}>
+            <Presentation>
+              <div className="relative flex h-full w-full flex-col">
+                <h1 className="sr-only">{pageHeading}</h1>
+                <Header
+                  parentConversationId={parentConversationId}
+                  readOnly={isSubagentThreadReadOnly}
+                />
+                <>
                   <div
                     className={cn(
-                      'w-full',
-                      !isLandingPage && 'scrollbar-gutter-spacer',
-                      isLandingPage && 'max-w-3xl transition-all duration-200 xl:max-w-4xl',
+                      'flex flex-col',
+                      isLandingPage
+                        ? 'flex-1 items-center justify-end sm:justify-center'
+                        : 'h-full overflow-y-auto',
                     )}
                   >
-                    {isLandingPage && <ConversationStarters />}
-                    {isSubagentThreadReadOnly ? (
-                      <div
-                        className="text-text-secondary mx-auto w-full max-w-3xl px-4 py-3 text-center text-sm xl:max-w-4xl"
-                        role="note"
-                      >
-                        {localize('com_ui_subagent_thread_read_only')}
-                      </div>
-                    ) : (
-                      <ChatForm
-                        index={index}
-                        placeholder={chatFormPlaceholder}
-                        project={isProjectLandingPage ? project : undefined}
-                      />
-                    )}
-                    {!isLandingPage && <Footer />}
+                    {content}
+                    {/* Named + opaque so a view transition (the ask_user_question
+                        popover ⇄ chat-card morph) paints the whole composer band
+                        over the travelling card instead of letting it show
+                        through below the composer. The background matches the
+                        page, so normal rendering is unchanged. */}
+                    <div
+                      className={cn(
+                        'bg-presentation w-full [view-transition-name:chat-form]',
+                        !isLandingPage && 'scrollbar-gutter-spacer',
+                        isLandingPage && 'max-w-3xl transition-all duration-200 xl:max-w-4xl',
+                      )}
+                    >
+                      {isLandingPage && <ConversationStarters />}
+                      {isSubagentThreadReadOnly ? (
+                        <div
+                          className="text-text-secondary mx-auto w-full max-w-3xl px-4 py-3 text-center text-sm xl:max-w-4xl"
+                          role="note"
+                        >
+                          {localize('com_ui_subagent_thread_read_only')}
+                        </div>
+                      ) : (
+                        <ChatForm
+                          index={index}
+                          placeholder={chatFormPlaceholder}
+                          project={isProjectLandingPage ? project : undefined}
+                        />
+                      )}
+                      {!isLandingPage && <Footer />}
+                    </div>
                   </div>
-                </div>
-              </>
-              {isLandingPage && <Footer />}
-            </div>
-          </Presentation>
-        </AddedChatContext.Provider>
-      </ChatContext.Provider>
-    </ChatFormProvider>
+                  {isLandingPage && <Footer />}
+                </>
+              </div>
+            </Presentation>
+          </AddedChatContext.Provider>
+        </ChatContext.Provider>
+      </ChatFormProvider>
+    </AskAnswerHostProvider>
   );
 }
 

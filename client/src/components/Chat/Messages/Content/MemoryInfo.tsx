@@ -47,52 +47,40 @@ export default function MemoryInfo({ memoryArtifacts }: { memoryArtifacts: Memor
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-3 p-3">
       {updatedMemories.length > 0 && (
-        <div>
-          <h4 className="text-text-primary mb-2 text-sm font-semibold">
-            {localize('com_ui_memory_updated_items')}
-          </h4>
-          <div className="space-y-2">
-            {updatedMemories.map((artifact) => (
-              <div key={`update-${artifact.key}`} className="rounded-lg p-3">
-                <div className="text-text-secondary mb-1 text-xs font-medium tracking-wide uppercase">
-                  {artifact.key}
-                </div>
-                <div className="text-text-primary text-sm whitespace-pre-wrap">
-                  {artifact.value}
-                </div>
+        <div className="space-y-3">
+          {updatedMemories.map((artifact) => (
+            <div key={`update-${artifact.key}`}>
+              <div className="text-text-secondary mb-1 text-xs font-bold tracking-wide uppercase">
+                {artifact.key}
               </div>
-            ))}
-          </div>
+              <div className="text-text-primary text-sm whitespace-pre-wrap">{artifact.value}</div>
+            </div>
+          ))}
         </div>
       )}
 
       {deletedMemories.length > 0 && (
-        <div>
-          <h4 className="text-text-primary mb-2 text-sm font-semibold">
-            {localize('com_ui_memory_deleted_items')}
-          </h4>
-          <div className="space-y-2">
-            {deletedMemories.map((artifact) => (
-              <div key={`delete-${artifact.key}`} className="rounded-lg p-3 opacity-60">
-                <div className="text-text-secondary mb-1 text-xs font-medium tracking-wide uppercase">
-                  {artifact.key}
-                </div>
-                <div className="text-text-secondary text-sm italic">
-                  {localize('com_ui_memory_deleted')}
-                </div>
+        <div className="space-y-3">
+          {deletedMemories.map((artifact) => (
+            <div key={`delete-${artifact.key}`} className="opacity-60">
+              <div className="text-text-secondary mb-1 text-xs font-bold tracking-wide uppercase">
+                {artifact.key}
               </div>
-            ))}
-          </div>
+              <div className="text-text-secondary text-sm italic">
+                {localize('com_ui_memory_deleted')}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {errorMessages.length > 0 && (
         <div>
-          <h4 className="text-text-destructive mb-2 text-sm font-semibold">
+          <p className="text-status-error mb-2 text-sm font-semibold">
             {localize('com_ui_memory_storage_full')}
-          </h4>
+          </p>
           <div className="space-y-2">
             {errorMessages.map((errorMessage) => (
               <Alert key={errorMessage} variant="error" icon={false} className="rounded-md p-3">

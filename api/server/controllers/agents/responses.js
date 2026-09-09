@@ -1,7 +1,7 @@
 const { nanoid } = require('nanoid');
 const { v4: uuidv4 } = require('uuid');
 const { logger } = require('@librechat/data-schemas');
-const { Callback, ToolEndHandler, formatAgentMessages } = require('@librechat/agents');
+const { Callback, formatAgentMessages } = require('@librechat/agents');
 const {
   EModelEndpoint,
   ResourceType,
@@ -53,6 +53,7 @@ const {
   getSafeErrorMetadata,
   getUserFacingProviderError,
   createToolExecuteHandler,
+  createOwnedToolEndHandler,
   resolveRecursionLimit,
   getRemoteAgentPermissions,
   resolveAgentScopedSkillIds,
@@ -79,6 +80,7 @@ const {
   CHILD_THREAD_READ_ONLY_ERROR,
   executeAgentRun,
   waitForAgentExecutionWrites,
+  resolveToolRoleGrants,
 } = require('@librechat/api');
 const {
   createResponsesToolEndCallback,
@@ -735,12 +737,24 @@ const executeResponse = async (envelope, { req, res }) => {
       };
 
       const enabledCapabilities = new Set(agentsEConfig?.capabilities);
+      const codeCapabilityEnabled = enabledCapabilities.has(AgentCapabilities.execute_code);
+      /** Started before the memory read rather than awaited on its own line, so
+       *  the role lookup overlaps that query instead of preceding it. Skipped
+       *  when the deployment has the capability off — the flag is false either
+       *  way, so the read would be pure load on every request. */
+      const toolRoleGrants = codeCapabilityEnabled
+        ? resolveToolRoleGrants({ req, getRoleByName: db.getRoleByName })
+        : null;
       const memoryAvailable = await resolveMemoryAvailability({
         enabledCapabilities,
         memoryConfig: appConfig?.memory,
         user: req.user,
         getRoleByName: db.getRoleByName,
       });
+      /** The deployment switch AND the role grant: `initializeAgent` rebuilds
+       *  `bash_tool`, `read_file` and the workspace file tools from this flag,
+       *  and forwards the code-environment context to their handlers. */
+      const codeEnvAvailable = codeCapabilityEnabled && (await toolRoleGrants)?.runCode === true;
       const skillsCapabilityEnabled = enabledCapabilities.has(AgentCapabilities.skills);
       const ephemeralSkillsToggle = request.ephemeralAgent?.skills === true;
       const accessibleSkillIds = skillsCapabilityEnabled
@@ -805,7 +819,7 @@ const executeResponse = async (envelope, { req, res }) => {
             skillsCapabilityEnabled,
             ephemeralSkillsToggle,
           }),
-          codeEnvAvailable: enabledCapabilities.has(AgentCapabilities.execute_code),
+          codeEnvAvailable,
           backgroundToolsAvailable: enabledCapabilities.has(AgentCapabilities.run_in_background),
           toolIntentsAvailable: enabledCapabilities.has(AgentCapabilities.tool_intents),
           statefulSessionsAvailable: enabledCapabilities.has(
@@ -884,7 +898,7 @@ const executeResponse = async (envelope, { req, res }) => {
             }),
           skillStates,
           defaultActiveOnShare,
-          codeEnvAvailable: enabledCapabilities.has(AgentCapabilities.execute_code),
+          codeEnvAvailable,
           backgroundToolsAvailable: enabledCapabilities.has(AgentCapabilities.run_in_background),
           toolIntentsAvailable: enabledCapabilities.has(AgentCapabilities.tool_intents),
           statefulSessionsAvailable: enabledCapabilities.has(
@@ -1155,7 +1169,7 @@ const executeResponse = async (envelope, { req, res }) => {
               }
             },
           },
-          on_tool_end: new ToolEndHandler(toolEndCallback, logger),
+          on_tool_end: createOwnedToolEndHandler(toolEndCallback, logger),
           on_run_step_completed: { handle: () => {} },
           on_chain_stream: { handle: () => {} },
           on_chain_end: { handle: () => {} },
@@ -1184,7 +1198,8 @@ const executeResponse = async (envelope, { req, res }) => {
           customHandlers: handlers,
           initialSessions,
           requestBody: mcpRequestBody,
-          user: { id: userId },
+          user: { ...createSafeUser(req.user), id: userId },
+          traceContext: { endpoint: EModelEndpoint.agents },
           tenantId: principal.tenantId,
           /** Bills subagent child-run model calls (reported outside the
            *  streamEvents loop) into the same collectedUsage array. */
@@ -1368,7 +1383,7 @@ const executeResponse = async (envelope, { req, res }) => {
               }
             },
           },
-          on_tool_end: new ToolEndHandler(toolEndCallback, logger),
+          on_tool_end: createOwnedToolEndHandler(toolEndCallback, logger),
           on_run_step_completed: { handle: () => {} },
           on_chain_stream: { handle: () => {} },
           on_chain_end: { handle: () => {} },
@@ -1396,7 +1411,8 @@ const executeResponse = async (envelope, { req, res }) => {
           customHandlers: handlers,
           initialSessions,
           requestBody: mcpRequestBody,
-          user: { id: userId },
+          user: { ...createSafeUser(req.user), id: userId },
+          traceContext: { endpoint: EModelEndpoint.agents },
           tenantId: principal.tenantId,
           /** Bills subagent child-run model calls (reported outside the
            *  streamEvents loop) into the same collectedUsage array. */

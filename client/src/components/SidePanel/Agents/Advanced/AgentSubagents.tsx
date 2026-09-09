@@ -158,7 +158,7 @@ const AgentSubagents: React.FC<AgentSubagentsProps> = ({ field, currentAgentId, 
           </div>
 
           {nothingToSpawn && (
-            <p className="flex items-center gap-2 text-xs text-amber-600 italic dark:text-amber-400">
+            <p className="text-text-warning flex items-center gap-2 text-xs italic">
               <Users size={14} aria-hidden="true" />
               {localize('com_ui_agent_subagents_empty')}
             </p>

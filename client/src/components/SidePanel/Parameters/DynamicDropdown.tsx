@@ -80,7 +80,7 @@ function DynamicDropdown({
               >
                 {labelCode ? (localize(label as TranslationKeys) ?? label) : label || settingKey}
                 {showDefault && (
-                  <small className="opacity-40">
+                  <small className="high-contrast:opacity-100 opacity-40">
                     ({localize('com_endpoint_default')}: {defaultValue})
                   </small>
                 )}

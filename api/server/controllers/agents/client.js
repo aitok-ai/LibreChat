@@ -148,6 +148,7 @@ const {
   resolveRunFadingTiers,
   createContextMetaPublisher,
   selectRunContextMetaToPublish,
+  resolveToolRoleGrants,
 } = require('@librechat/api');
 const {
   Run,
@@ -249,6 +250,24 @@ function normalizeEventActorContextMeta(contextMeta) {
  * tier and the per-agent map are both passed; the SDK restores each agent from
  * its own entry and falls back to the default tier for the first agent.
  */
+/**
+ * Request values `langfuse.trace.conversationMetadataFields` may export.
+ * The model label rides the trace-only `options.traceContext`: the
+ * initialized agent's `model_parameters` drop it (`extractLibreChatParams`),
+ * and a top-level `modelLabel` option would also rename the assistant in
+ * formatted messages. A module function rather than a method so partial
+ * client contexts (tests, resume) need no prototype.
+ * @param {AgentClient['options'] | undefined} options
+ */
+function buildTraceContext(options) {
+  return {
+    endpoint: options?.endpoint,
+    endpointType: options?.endpointType,
+    modelLabel: options?.traceContext?.modelLabel ?? options?.modelLabel,
+    spec: options?.spec,
+  };
+}
+
 function resolveRunSeeds(client) {
   const prevMeta = client.contextMeta;
   if (prevMeta == null) {
@@ -2851,6 +2870,19 @@ class AgentClient extends BaseClient {
      *  tool registered unconditionally; without this passthrough the
      *  memory path would silently lose code-execution tooling). */
     const memoryCapabilities = new Set(appConfig?.endpoints?.[EModelEndpoint.agents]?.capabilities);
+    const memoryCodeEnabled = memoryCapabilities.has(AgentCapabilities.execute_code);
+    /** Same pairing as the chat initializers: the capability is the deployment
+     *  switch, the grant is the role's. Skipped when the capability is off, so a
+     *  deployment without code execution adds no role read to the shared memory
+     *  context. Request-memoized otherwise, so it joins the lookup the tool
+     *  loader already made. */
+    const memoryToolGrants = memoryCodeEnabled
+      ? await resolveToolRoleGrants({
+          req: this.options.req,
+          getRoleByName: db.getRoleByName,
+          context: 'memoryAgent',
+        })
+      : null;
     const agent = await initializeAgent(
       {
         req: this.options.req,
@@ -2862,7 +2894,7 @@ class AgentClient extends BaseClient {
             ? EModelEndpoint.agents
             : memoryConfig.agent?.provider,
         },
-        codeEnvAvailable: memoryCapabilities.has(AgentCapabilities.execute_code),
+        codeEnvAvailable: memoryCodeEnabled && memoryToolGrants?.runCode === true,
         statefulSessionsAvailable: memoryCapabilities.has(AgentCapabilities.stateful_code_sessions),
       },
       {
@@ -4390,6 +4422,7 @@ class AgentClient extends BaseClient {
           customHandlers: reasoningLabel?.handlers(activityHandlers) ?? activityHandlers,
           requestBody: config.configurable.requestBody,
           user: createSafeUser(this.options.req?.user),
+          traceContext: buildTraceContext(this.options),
           tenantId: resolveRequestTenantId(this.options.req ?? {}),
           summarizationConfig: appConfig?.summarization,
           appConfig,
@@ -4924,6 +4957,7 @@ class AgentClient extends BaseClient {
         customHandlers: reasoningLabel?.handlers(activityHandlers) ?? activityHandlers,
         requestBody: config.configurable.requestBody,
         user: createSafeUser(this.options.req?.user),
+        traceContext: buildTraceContext(this.options),
         tenantId: resolveRequestTenantId(this.options.req ?? {}),
         summarizationConfig: appConfig?.summarization,
         appConfig,
@@ -5432,5 +5466,7 @@ class AgentClient extends BaseClient {
     return 'o200k_base';
   }
 }
+
+AgentClient.buildTraceContext = buildTraceContext;
 
 module.exports = AgentClient;

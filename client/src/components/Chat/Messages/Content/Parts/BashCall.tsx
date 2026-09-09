@@ -7,6 +7,7 @@ import ProgressText from '~/components/Chat/Messages/Content/ProgressText';
 import parseJsonField, { areToolCallArgsComplete } from './parseJsonField';
 import CopyButton from '~/components/Messages/Content/CopyButton';
 import LangIcon from '~/components/Messages/Content/LangIcon';
+import { toolPanelSpacingClassName } from '../disclosure';
 import { sandboxStartingByToolCallId } from '~/store';
 import useToolCallState from './useToolCallState';
 import useLazyHighlight from './useLazyHighlight';
@@ -14,6 +15,7 @@ import useFollowScroll from './useFollowScroll';
 import { ERROR_PATTERNS } from './ExecuteCode';
 import { AttachmentGroup } from './Attachment';
 import { useToolCallIntent } from './intent';
+import { TOOL_ROW_CLASSES } from '../rows';
 import PtcToolTrace from './PtcToolTrace';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
@@ -121,7 +123,7 @@ export default function BashCall({
 
   return (
     <>
-      <div className="relative my-1.5 flex h-5 shrink-0 items-center gap-2.5">
+      <div className={TOOL_ROW_CLASSES}>
         <ProgressText
           phase={phase}
           onClick={toggleCode}
@@ -155,26 +157,33 @@ export default function BashCall({
       </div>
       <div style={expandStyle}>
         <div className="overflow-hidden" ref={expandRef}>
-          <div className="border-border-light my-2 overflow-hidden rounded-lg border">
+          <div
+            className={cn(
+              toolPanelSpacingClassName,
+              'border-border-light overflow-hidden rounded-lg border',
+            )}
+          >
             {command && (
-              <div
-                ref={commandPaneRef}
-                onScroll={onCommandPaneScroll}
-                className="bg-surface-tertiary relative max-h-[300px] overflow-auto dark:bg-gray-950"
-              >
+              <div className="bg-surface-tertiary relative dark:bg-gray-950">
                 <CopyButton
                   iconOnly
                   isCopied={isCopied}
                   onClick={handleCopy}
-                  className="sticky top-1 right-0 float-right mt-1 mr-1.5"
+                  className="absolute top-1 right-1.5"
                   label={localize('com_ui_copy_code')}
                 />
-                <pre className="px-3 py-2.5 pr-10 font-mono text-xs break-words whitespace-pre-wrap">
-                  <span className="text-text-tertiary select-none" aria-hidden="true">
-                    {'$ '}
-                  </span>
-                  <code className="hljs language-bash">{highlighted ?? command}</code>
-                </pre>
+                <div
+                  ref={commandPaneRef}
+                  onScroll={onCommandPaneScroll}
+                  className="max-h-[300px] overflow-auto"
+                >
+                  <pre className="px-3 py-2.5 pr-10 font-mono text-xs break-words whitespace-pre-wrap">
+                    <span className="text-text-tertiary select-none" aria-hidden="true">
+                      {'$ '}
+                    </span>
+                    <code className="hljs language-bash">{highlighted ?? command}</code>
+                  </pre>
+                </div>
               </div>
             )}
             <PtcToolTrace

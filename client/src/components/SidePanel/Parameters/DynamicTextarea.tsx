@@ -62,7 +62,7 @@ function DynamicTextarea({
             >
               {labelCode ? (localize(label as TranslationKeys) ?? label) : label || settingKey}{' '}
               {showDefault && (
-                <small className="opacity-40">
+                <small className="high-contrast:opacity-100 opacity-40">
                   (
                   {typeof defaultValue === 'undefined' || !(defaultValue as string).length
                     ? localize('com_endpoint_default_blank')

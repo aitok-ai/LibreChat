@@ -53,9 +53,9 @@ function SkillPills({
           className="border-border-light bg-surface-secondary text-text-secondary inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs"
         >
           {source === 'always-apply' ? (
-            <Pin className="h-3 w-3 text-cyan-500" aria-hidden="true" />
+            <Pin className="text-status-info h-3 w-3" aria-hidden="true" />
           ) : (
-            <ScrollText className="h-3 w-3 text-cyan-500" aria-hidden="true" />
+            <ScrollText className="text-status-info h-3 w-3" aria-hidden="true" />
           )}
           <span className="max-w-[12rem] truncate">{name}</span>
         </span>

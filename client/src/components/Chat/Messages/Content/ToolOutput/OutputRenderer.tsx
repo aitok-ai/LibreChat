@@ -114,32 +114,34 @@ export default function OutputRenderer({ text }: OutputRendererProps) {
   const structured = !isJson && isStructuredText(displayText);
 
   return (
-    <div className="relative">
-      {isJson ? (
-        <pre className="max-h-[300px] overflow-auto rounded text-xs">
-          <code className="hljs language-json !break-words !whitespace-pre-wrap">
+    <div>
+      <div className="relative pr-10">
+        {isJson ? (
+          <pre className="max-h-[300px] overflow-auto rounded text-xs">
+            <code className="hljs language-json !break-words !whitespace-pre-wrap">
+              {visibleText}
+            </code>
+          </pre>
+        ) : (
+          <pre
+            className={cn(
+              'max-h-[300px] overflow-auto text-xs break-words whitespace-pre-wrap',
+              error && 'text-status-error font-mono',
+              !error && structured && 'text-text-secondary font-mono',
+              !error && !structured && 'text-text-primary font-sans text-sm',
+            )}
+          >
             {visibleText}
-          </code>
-        </pre>
-      ) : (
-        <pre
-          className={cn(
-            'max-h-[300px] overflow-auto text-xs break-words whitespace-pre-wrap',
-            error && 'text-status-error font-mono',
-            !error && structured && 'text-text-secondary font-mono',
-            !error && !structured && 'text-text-primary font-sans text-sm',
-          )}
-        >
-          {visibleText}
-        </pre>
-      )}
-      <div className="absolute right-0 bottom-0">
-        <CopyButton
-          isCopied={isCopied}
-          onClick={handleCopy}
-          iconOnly
-          label={localize('com_ui_copy')}
-        />
+          </pre>
+        )}
+        <div className="absolute top-1/2 right-0 -translate-y-1/2">
+          <CopyButton
+            isCopied={isCopied}
+            onClick={handleCopy}
+            iconOnly
+            label={localize('com_ui_copy')}
+          />
+        </div>
       </div>
       {needsTruncation && (
         <Button

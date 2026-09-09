@@ -1,18 +1,31 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useRecoilValue } from 'recoil';
 import { Tools } from 'librechat-data-provider';
-import { Globe, ChevronDown } from 'lucide-react';
+import { Globe, ChevronDown, Info } from 'lucide-react';
+import {
+  Button,
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardPortal,
+  HoverCardContent,
+  disclosureChevronVariants,
+} from '@librechat/client';
 import type {
   TAttachment,
   ValidSource,
   SearchResultData,
   PartMetadata,
+  AnswerBoxResult,
 } from 'librechat-data-provider';
 import { FaviconImage, getCleanDomain } from '~/components/Web/SourceHovercard';
 import { useLocalize, useExpandCollapse, useLazyCollapseBody } from '~/hooks';
 import { StackedFavicons } from '~/components/Web/Sources';
+import { toolPanelSpacingClassName } from './disclosure';
+import parseJsonField from './Parts/parseJsonField';
 import { useToolCallIntent } from './Parts/intent';
 import { useSearchContext } from '~/Providers';
+import SearchVerticals from './verticals';
+import { ROW_GLYPH_SLOT } from './rows';
 import cn from '~/utils/cn';
 import store from '~/store';
 
@@ -89,6 +102,7 @@ export default function WebSearch({
   args,
   output,
   attachments,
+  hideAttachments = false,
   onExpand,
   runStepStatus,
 }: {
@@ -98,6 +112,7 @@ export default function WebSearch({
   output?: string | null;
   initialProgress: number;
   attachments?: TAttachment[];
+  hideAttachments?: boolean;
   onExpand?: () => void;
   runStepStatus?: PartMetadata['runStepStatus'];
 }) {
@@ -154,7 +169,7 @@ export default function WebSearch({
   }, [attachments]);
 
   const allSources = useMemo((): ValidSource[] => {
-    if (attachments) {
+    if (attachments != null) {
       const turnMap: Record<string, SearchResultData> = {};
       for (const att of attachments) {
         if (att.type === Tools.web_search && att[Tools.web_search]) {
@@ -163,15 +178,36 @@ export default function WebSearch({
           turnMap[key] = data;
         }
       }
-      if (Object.keys(turnMap).length > 0) {
-        return collectSources(turnMap);
-      }
+      return collectSources(turnMap);
     }
     if (searchResults?.[ownTurn]) {
       return collectSources({ [ownTurn]: searchResults[ownTurn] });
     }
     return [];
   }, [searchResults, attachments, ownTurn]);
+
+  /** Direct-answer card shown at the top of the source list. Attachment-only:
+   *  answer boxes are provider extras (Serper) that never carry citations, so
+   *  the streaming path does not need them. */
+  const answerBox = useMemo((): AnswerBoxResult | undefined => {
+    if (!attachments) {
+      return undefined;
+    }
+    for (const att of attachments) {
+      const answer = att.type === Tools.web_search ? att[Tools.web_search]?.answerBox : undefined;
+      if (answer) {
+        return answer;
+      }
+    }
+    return undefined;
+  }, [attachments]);
+  /** `snippet` and `snippetHighlighted` are independently optional, and
+   *  `hasDetails` opens the card for ANY answer box, so a provider result
+   *  carrying only highlights rendered a heading with an empty body. */
+  const answerText = useMemo(
+    () => answerBox?.snippet || answerBox?.snippetHighlighted?.join(' ') || undefined,
+    [answerBox],
+  );
 
   // Show favicons from the raw SERP results immediately rather than waiting for
   // each source to flip to `processed`; the agents scrape barrier would otherwise
@@ -180,12 +216,8 @@ export default function WebSearch({
     if (complete && !finalizing) {
       return [];
     }
-    const result = searchResults?.[ownTurn];
-    if (!result) {
-      return [];
-    }
-    return [...(result.organic || []), ...(result.topStories || [])];
-  }, [searchResults, complete, finalizing, ownTurn]);
+    return allSources;
+  }, [allSources, complete, finalizing]);
 
   const showSources = streamingSources.length > 0;
   /** Stable phase text: the live region must not re-announce the growing
@@ -206,6 +238,7 @@ export default function WebSearch({
 
   const autoExpand = useRecoilValue(store.autoExpandTools);
   const sourceCount = allSources.length;
+  const [showDetails, setShowDetails] = useState(false);
   const [showSourceList, setShowSourceList] = useState(() => autoExpand && sourceCount > 0);
   const { style: sourceExpandStyle, ref: sourceExpandRef } = useExpandCollapse(showSourceList);
   const { shouldRenderBody, mountBody, handleTransitionEnd } = useLazyCollapseBody(showSourceList);
@@ -234,52 +267,123 @@ export default function WebSearch({
   if (complete) {
     const hasSourceData = sourceCount > 0;
     const completedText = intent ?? localize('com_ui_web_searched');
+    const query = parseJsonField(args, 'query');
+    const hasDetails = !!query || !!answerBox;
 
     return (
-      <div className="mb-2">
+      <div className="group/websearch my-1">
         <span className="sr-only" aria-live="polite" aria-atomic="true">
           {completedText}
         </span>
-        <button
-          type="button"
-          className={cn(
-            'tool-status-text group flex items-center gap-2 rounded-full py-1 transition-colors',
-            hasSourceData
-              ? 'text-text-secondary focus-visible:ring-border-heavy focus-visible:ring-2 focus-visible:outline-none'
-              : 'text-text-secondary pointer-events-none',
-          )}
-          disabled={!hasSourceData}
-          onClick={hasSourceData ? handleToggleSources : undefined}
-          aria-expanded={hasSourceData ? showSourceList : undefined}
-          aria-label={
-            hasSourceData
-              ? `${completedText} - ${localize(sourceCount === 1 ? 'com_ui_web_search_source' : 'com_ui_web_search_sources', { count: sourceCount })}`
-              : completedText
-          }
-        >
-          {hasSourceData ? (
-            <SourceFaviconStack sources={allSources} />
-          ) : (
-            <Globe className="text-text-secondary size-4 shrink-0" aria-hidden="true" />
-          )}
-          <span className="min-w-0 truncate font-medium">{completedText}</span>
-          {hasSourceData && (
-            <ChevronDown
-              className={cn(
-                'text-text-secondary size-3.5 shrink-0 transition-transform duration-200',
-                showSourceList && 'rotate-180',
+        <div className="relative flex h-5 items-center gap-1.5">
+          <Button
+            variant="ghost"
+            className={cn(
+              'tool-status-text group/disclosure text-text-secondary h-5 min-w-0 justify-start gap-2 rounded-full p-0 font-normal hover:bg-transparent',
+              /** This row is a status line, not a padded control: the shared
+               *  recipe's color transition would turn its hover into a fade,
+               *  and the chevron reveal beside it is deliberately instant. */
+              'transition-none',
+              !hasSourceData && 'pointer-events-none disabled:opacity-100',
+            )}
+            disabled={!hasSourceData}
+            onClick={hasSourceData ? handleToggleSources : undefined}
+            aria-expanded={hasSourceData ? showSourceList : undefined}
+            aria-label={
+              hasSourceData
+                ? `${completedText} - ${localize(sourceCount === 1 ? 'com_ui_web_search_source' : 'com_ui_web_search_sources', { count: sourceCount })}`
+                : completedText
+            }
+          >
+            <span className={ROW_GLYPH_SLOT} aria-hidden="true">
+              {hasSourceData ? (
+                <SourceFaviconStack sources={allSources} />
+              ) : (
+                <Globe className="text-text-secondary size-4 shrink-0" />
               )}
-              aria-hidden="true"
-            />
+            </span>
+            <span className="min-w-0 truncate font-medium">{completedText}</span>
+            {hasSourceData && (
+              <ChevronDown
+                className={cn(disclosureChevronVariants({ expanded: showSourceList }), 'size-3.5')}
+                aria-hidden="true"
+              />
+            )}
+          </Button>
+          {hasDetails && (
+            <HoverCard openDelay={50} open={showDetails} onOpenChange={setShowDetails}>
+              {/* Composed through `asChild` so the shared Button owns the
+                  rounding, hover fill, focus ring and motion (and gives a real
+                  <button> instead of Radix's default anchor). Only the
+                  hover-card reveal and the icon geometry stay local. */}
+              <HoverCardTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    'text-text-secondary ml-auto size-auto cursor-help rounded-md p-1 opacity-0',
+                    'group-focus-within/websearch:opacity-100 group-hover/websearch:opacity-100',
+                    'focus-visible:opacity-100',
+                  )}
+                  onFocus={() => setShowDetails(true)}
+                  onBlur={() => setShowDetails(false)}
+                  aria-label={localize('com_ui_web_search_details')}
+                >
+                  <Info className="size-3.5" aria-hidden="true" />
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardPortal>
+                <HoverCardContent side="top" className="z-[999] w-80">
+                  <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+                    {query && (
+                      <div>
+                        <div className="text-text-secondary text-[10px] font-medium tracking-wide uppercase">
+                          {localize('com_ui_search_query')}
+                        </div>
+                        <div className="text-text-primary mt-0.5 text-sm">{query}</div>
+                      </div>
+                    )}
+                    <div className="text-text-secondary text-xs">
+                      {localize(
+                        sourceCount === 1
+                          ? 'com_ui_web_search_source'
+                          : 'com_ui_web_search_sources',
+                        { count: sourceCount },
+                      )}
+                    </div>
+                    {answerBox && (answerBox.title || answerText) && (
+                      <div className="border-border-light border-t pt-2">
+                        {answerBox.title && (
+                          <div className="text-text-primary text-sm font-medium">
+                            {answerBox.title}
+                          </div>
+                        )}
+                        {answerText && (
+                          <div className="text-text-secondary mt-1 text-xs leading-relaxed">
+                            {answerText}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </HoverCardContent>
+              </HoverCardPortal>
+            </HoverCard>
           )}
-        </button>
+        </div>
         {hasSourceData && (
           <div style={sourceExpandStyle} onTransitionEnd={handleTransitionEnd}>
             <div className="overflow-hidden" ref={sourceExpandRef}>
               {shouldRenderBody && (
-                <div className="border-border-light my-2 max-h-[280px] overflow-y-auto rounded-lg border">
+                <div
+                  className={cn(
+                    toolPanelSpacingClassName,
+                    'border-border-light mt-1.5 max-h-[280px] overflow-y-auto rounded-lg border',
+                  )}
+                >
                   {allSources.map((source, i) => {
                     const domain = getCleanDomain(source.link);
+                    const snippet = 'snippet' in source ? source.snippet : undefined;
                     return (
                       <a
                         key={source.link}
@@ -287,15 +391,33 @@ export default function WebSearch({
                         target="_blank"
                         rel="noopener noreferrer"
                         className={cn(
-                          'hover:bg-surface-hover flex items-center gap-2.5 px-3 py-2 transition-colors',
+                          'hover:bg-surface-hover flex gap-2.5 px-3 py-2 transition-colors',
+                          snippet ? 'items-start' : 'items-center',
                           i > 0 && 'border-border-light border-t',
                         )}
                       >
-                        <FaviconImage domain={domain} className="size-4 shrink-0 rounded-sm" />
-                        <span className="text-text-primary min-w-0 flex-1 truncate text-xs font-medium">
-                          {source.title || domain}
+                        <FaviconImage
+                          domain={domain}
+                          className={cn('size-4 shrink-0 rounded-sm', snippet && 'mt-0.5')}
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="text-text-primary block truncate text-xs font-medium">
+                            {source.title || domain}
+                          </span>
+                          {snippet && (
+                            <span className="text-text-secondary mt-0.5 line-clamp-2 block text-[11px] leading-relaxed">
+                              {snippet}
+                            </span>
+                          )}
                         </span>
-                        <span className="text-text-secondary shrink-0 text-[11px]">{domain}</span>
+                        <span className="shrink-0 text-right">
+                          <span className="text-text-secondary block text-[11px]">{domain}</span>
+                          {source.date && (
+                            <span className="text-text-secondary block text-[10px]">
+                              {source.date}
+                            </span>
+                          )}
+                        </span>
                       </a>
                     );
                   })}
@@ -304,17 +426,20 @@ export default function WebSearch({
             </div>
           </div>
         )}
+        {!hideAttachments && <SearchVerticals attachments={attachments} />}
       </div>
     );
   }
 
   return (
-    <div className="my-1 flex items-center gap-2.5">
+    <div className="relative my-1 flex h-5 shrink-0 items-center gap-2">
       <span className="sr-only" aria-live="polite" aria-atomic="true">
         {genericProgressText}
       </span>
-      {showSources && <StackedFavicons sources={streamingSources} start={-5} />}
-      <Globe className="text-text-secondary size-4 shrink-0" aria-hidden="true" />
+      <span className={ROW_GLYPH_SLOT} aria-hidden="true">
+        {showSources && <StackedFavicons sources={streamingSources} start={-5} />}
+        <Globe className="text-text-secondary size-4 shrink-0" />
+      </span>
       <span className="tool-status-text shimmer text-text-secondary min-w-0 truncate font-medium">
         {progressText}
       </span>
