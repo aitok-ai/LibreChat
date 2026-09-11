@@ -46,6 +46,8 @@ const {
   createAgentEventActionRecorder,
   createAgentEventActorDetachedActionLifecycle,
   findAgentEventAppliedAction,
+  assertCodeExecutionApprovalBinding,
+  collectReachableAgents,
 } = require('@librechat/api');
 const { disposeClient } = require('~/server/cleanup');
 const { decryptMetadata } = require('~/server/services/ActionService');
@@ -310,7 +312,9 @@ async function persistRePauseProgress({ req, client, job, streamId, conversation
     {
       userId,
       isTemporary: meta.isTemporary ?? req.body?.isTemporary,
-      expiredAt: req._agentEventBindingRetention?.expiredAt,
+      expiredAt:
+        req._agentEventBindingRetention?.expiredAt ??
+        (meta.retentionExpiresAt ? new Date(meta.retentionExpiresAt) : undefined),
       interfaceConfig: req?.config?.interfaceConfig,
     },
     {
@@ -533,7 +537,9 @@ async function finalizeResumedTurn({
       {
         userId,
         isTemporary,
-        expiredAt: req._agentEventBindingRetention?.expiredAt,
+        expiredAt:
+          req._agentEventBindingRetention?.expiredAt ??
+          (meta.retentionExpiresAt ? new Date(meta.retentionExpiresAt) : undefined),
         interfaceConfig: req?.config?.interfaceConfig,
       },
       responseMessage,
@@ -1890,10 +1896,19 @@ const ResumeAgentController = async (req, res, next, initializeClient, addTitle)
         createMCPRuntimeRequestBody({
           messageId: job.metadata.responseMessageId,
           conversationId: streamId,
+          codeWorkspaces: req.body.codeWorkspaces ?? req.resolvedConversation?.codeWorkspaces,
           parentMessageId: job.metadata.userMessage?.messageId ?? Constants.NO_PARENT,
         }),
     });
     client = result.client;
+
+    // The user approved the code action against the route/session selected at
+    // pause time. Re-resolve it on this replica and fail before provider/tool
+    // execution if the environment, worker, or workspace scope moved.
+    assertCodeExecutionApprovalBinding(
+      pendingAction.codeExecutionBinding,
+      collectReachableAgents([client.options?.agent, ...(client.agentConfigs?.values() ?? [])]),
+    );
 
     // Bind the rebuilt client to the in-flight turn's identity (no new user message).
     client.conversationId = streamId;
@@ -2036,6 +2051,7 @@ const ResumeAgentController = async (req, res, next, initializeClient, addTitle)
             jobCreatedAt: job.createdAt,
             status: 'requires_action',
             conversationId,
+            checkpointNamespace: client.checkpointNamespace,
           });
         }
       } else {

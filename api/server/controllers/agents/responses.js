@@ -18,6 +18,8 @@ const {
   createAgentRunEnvelope,
   createAgentExecutionContext,
   createMCPRuntimeRequestBody,
+  getCodeWorkspaceSelections,
+  collectReachableAgents,
   buildAgentScopedContext,
   buildInlineMemoryContext,
   buildAgentContextAttachmentsByAgentId,
@@ -107,6 +109,8 @@ const {
   resolveMemoryAvailability,
   enrichLoadedToolsWithAgentContext,
 } = require('~/server/services/Endpoints/agents/skillDeps');
+const { createProvisionFilesCallback } = require('~/server/services/Files/provisionCallback');
+const { checkSessionsAlive, loadCodeApiKey } = require('~/server/services/Files/provision');
 const { getModelsConfig } = require('~/server/controllers/ModelController');
 const { filterFilesByAgentAccess } = require('~/server/services/Files/permissions');
 const { resolveConfigServers, getAccessibleMcpServerNames } = require('~/server/services/MCP');
@@ -444,18 +448,20 @@ async function saveResponseOutput(
  * @param {object} agent
  * @returns {Promise<void>}
  */
-async function saveConversation(req, conversationId, agentId, agent) {
+async function saveConversation(req, conversationId, agentId, agent, codeWorkspaces) {
   const title = resolveConversationTitle(req, agent?.name || 'Open Responses Conversation');
   await db.saveConvo(
     {
       userId: req?.user?.id,
-      isTemporary: req?.body?.isTemporary,
+      isTemporary: req?.resolvedConversation?.isTemporary ?? req?.body?.isTemporary,
+      expiredAt: req?.resolvedConversation?.expiredAt,
       interfaceConfig: req?.config?.interfaceConfig,
     },
     {
       conversationId,
       endpoint: EModelEndpoint.agents,
       agent_id: agentId,
+      ...(codeWorkspaces !== undefined && { codeWorkspaces }),
       ...(title != null && { title }),
       model: agent?.model,
     },
@@ -678,6 +684,7 @@ const executeResponse = async (envelope, { req, res }) => {
         if (!previousConversation) {
           return sendResponsesErrorResponse(res, 404, 'Conversation not found', 'not_found');
         }
+        req.resolvedConversation = previousConversation;
         if (previousConversation.subagentThread != null) {
           return sendResponsesErrorResponse(
             res,
@@ -693,6 +700,7 @@ const executeResponse = async (envelope, { req, res }) => {
       const mcpRequestBody = createMCPRuntimeRequestBody({
         messageId: responseId,
         conversationId,
+        codeWorkspaces: request.code_workspaces ?? req.resolvedConversation?.codeWorkspaces,
       });
       const agentsEConfig = appConfig?.endpoints?.[EModelEndpoint.agents];
       const previousMessages = request.previous_response_id
@@ -729,6 +737,9 @@ const executeResponse = async (envelope, { req, res }) => {
         updateFilesUsage: db.updateFilesUsage,
         getUserKeyValues: db.getUserKeyValues,
         getUserCodeFiles: db.getUserCodeFiles,
+        getDeferredProvisionFiles: db.getDeferredProvisionFiles,
+        checkSessionsAlive,
+        loadCodeApiKey,
         getToolFilesByIds: db.getToolFilesByIds,
         getCodeGeneratedFiles: db.getCodeGeneratedFiles,
         listSkillsByAccess: skillDbMethods.listSkillsByAccess,
@@ -738,13 +749,16 @@ const executeResponse = async (envelope, { req, res }) => {
 
       const enabledCapabilities = new Set(agentsEConfig?.capabilities);
       const codeCapabilityEnabled = enabledCapabilities.has(AgentCapabilities.execute_code);
+      const fileSearchCapabilityEnabled = enabledCapabilities.has(AgentCapabilities.file_search);
       /** Started before the memory read rather than awaited on its own line, so
        *  the role lookup overlaps that query instead of preceding it. Skipped
-       *  when the deployment has the capability off — the flag is false either
-       *  way, so the read would be pure load on every request. */
-      const toolRoleGrants = codeCapabilityEnabled
-        ? resolveToolRoleGrants({ req, getRoleByName: db.getRoleByName })
-        : null;
+       *  when the deployment has both capabilities off — both flags are false
+       *  either way, so the read would be pure load on every request. One
+       *  lookup answers both. */
+      const toolRoleGrants =
+        codeCapabilityEnabled || fileSearchCapabilityEnabled
+          ? resolveToolRoleGrants({ req, getRoleByName: db.getRoleByName })
+          : null;
       const memoryAvailable = await resolveMemoryAvailability({
         enabledCapabilities,
         memoryConfig: appConfig?.memory,
@@ -755,6 +769,11 @@ const executeResponse = async (envelope, { req, res }) => {
        *  `bash_tool`, `read_file` and the workspace file tools from this flag,
        *  and forwards the code-environment context to their handlers. */
       const codeEnvAvailable = codeCapabilityEnabled && (await toolRoleGrants)?.runCode === true;
+      /** The same pairing for the other gated tool, read only by the resend-file
+       *  priming: `false` skips re-hydrating prior-turn `file_search` files for
+       *  a tool the loader is about to drop. */
+      const fileSearchAvailable =
+        fileSearchCapabilityEnabled && (await toolRoleGrants)?.fileSearch === true;
       const skillsCapabilityEnabled = enabledCapabilities.has(AgentCapabilities.skills);
       const ephemeralSkillsToggle = request.ephemeralAgent?.skills === true;
       const accessibleSkillIds = skillsCapabilityEnabled
@@ -820,6 +839,7 @@ const executeResponse = async (envelope, { req, res }) => {
             ephemeralSkillsToggle,
           }),
           codeEnvAvailable,
+          fileSearchAvailable,
           backgroundToolsAvailable: enabledCapabilities.has(AgentCapabilities.run_in_background),
           toolIntentsAvailable: enabledCapabilities.has(AgentCapabilities.tool_intents),
           statefulSessionsAvailable: enabledCapabilities.has(
@@ -899,6 +919,7 @@ const executeResponse = async (envelope, { req, res }) => {
           skillStates,
           defaultActiveOnShare,
           codeEnvAvailable,
+          fileSearchAvailable,
           backgroundToolsAvailable: enabledCapabilities.has(AgentCapabilities.run_in_background),
           toolIntentsAvailable: enabledCapabilities.has(AgentCapabilities.tool_intents),
           statefulSessionsAvailable: enabledCapabilities.has(
@@ -988,6 +1009,10 @@ const executeResponse = async (envelope, { req, res }) => {
         agentIds: modelBoundAgents.map(({ id }) => id),
         attachmentsByAgentId: agentContextAttachmentsByAgentId,
         req,
+        endpoint: primaryConfig.endpoint,
+        endpointsByAgentId: new Map(
+          modelBoundAgents.map((runAgent) => [runAgent.id, { endpoint: runAgent.endpoint }]),
+        ),
       });
 
       const mcpManager = getMCPManager();
@@ -1119,6 +1144,11 @@ const executeResponse = async (envelope, { req, res }) => {
 
         // Create tool execute options for event-driven tool execution
         const toolExecuteOptions = {
+          provisionFiles: createProvisionFilesCallback({
+            req,
+            agentToolContexts,
+            resolvePrimaryAgentId: () => primaryConfig.id,
+          }),
           loadTools: async (toolNames, agentId, _configurable, callerCapabilityProjection) => {
             const ctx =
               agentToolContexts.get(agentId) ?? agentToolContexts.get(primaryConfig.id) ?? {};
@@ -1283,7 +1313,15 @@ const executeResponse = async (envelope, { req, res }) => {
         if (request.store === true) {
           try {
             // Save conversation
-            await saveConversation(req, conversationId, agentId, agent);
+            await saveConversation(
+              req,
+              conversationId,
+              agentId,
+              agent,
+              getCodeWorkspaceSelections(
+                collectReachableAgents(runAgents).map((config) => config.codeExecutionContext),
+              ),
+            );
 
             // Save input messages
             await saveInputMessages(req, conversationId, inputMessages, agentId);
@@ -1334,6 +1372,11 @@ const executeResponse = async (envelope, { req, res }) => {
         });
 
         const toolExecuteOptions = {
+          provisionFiles: createProvisionFilesCallback({
+            req,
+            agentToolContexts,
+            resolvePrimaryAgentId: () => primaryConfig.id,
+          }),
           loadTools: async (toolNames, agentId, _configurable, callerCapabilityProjection) => {
             const ctx =
               agentToolContexts.get(agentId) ?? agentToolContexts.get(primaryConfig.id) ?? {};
@@ -1500,7 +1543,15 @@ const executeResponse = async (envelope, { req, res }) => {
 
         if (request.store === true) {
           try {
-            await saveConversation(req, conversationId, agentId, agent);
+            await saveConversation(
+              req,
+              conversationId,
+              agentId,
+              agent,
+              getCodeWorkspaceSelections(
+                collectReachableAgents(runAgents).map((config) => config.codeExecutionContext),
+              ),
+            );
 
             await saveInputMessages(req, conversationId, inputMessages, agentId);
 

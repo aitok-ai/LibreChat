@@ -1,11 +1,12 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useRef, useMemo, useEffect } from 'react';
 import * as Ariakit from '@ariakit/react';
 import { ChevronDown } from 'lucide-react';
-import { TooltipAnchor } from '@librechat/client';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
+import { TooltipAnchor, composerControlClasses } from '@librechat/client';
 import MCPServerMenuItem from '~/components/MCP/MCPServerMenuItem';
 import MCPConfigDialog from '~/components/MCP/MCPConfigDialog';
 import StackedMCPIcons from '~/components/MCP/StackedMCPIcons';
+import { useMCPRefresh } from '~/hooks/MCP/useMCPRefresh';
 import { useHasAccess, useLocalize } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
 import { cn } from '~/utils';
@@ -19,6 +20,28 @@ function MCPSelectContent() {
   const fallbackMenuStore = Ariakit.useMenuStore({ focusLoop: true });
   const menuStore = mcpMenuStore ?? fallbackMenuStore;
   const isOpen = menuStore.useState('open');
+  const configDialogOpen = manager?.getConfigDialogProps()?.isOpen === true;
+  useMCPRefresh({
+    enabled: (isOpen || configDialogOpen) && (manager?.availableMCPServers.length ?? 0) > 0,
+  });
+
+  /**
+   * The menu closes with the dialog it launched. Ariakit only takes Escape for
+   * a menu when the event target is the menu, its trigger, or `body`, so while
+   * the config dialog holds focus the menu never sees it — the Escape that
+   * closes the dialog leaves the menu open behind it, and `disabled={isOpen}`
+   * then makes its trigger unclickable, stranding the reader
+   * (`mcp-oauth-readiness` e2e). Keyed on the dialog CLOSING, not opening: the
+   * menu stays mounted underneath while the dialog is up, which is where its
+   * server rows are read from.
+   */
+  const configDialogWasOpen = useRef(false);
+  useEffect(() => {
+    if (configDialogWasOpen.current && !configDialogOpen) {
+      menuStore.hide();
+    }
+    configDialogWasOpen.current = configDialogOpen;
+  }, [configDialogOpen, menuStore]);
 
   const selectedServers = useMemo(() => {
     if (!manager?.mcpValues || manager.mcpValues.length === 0) {
@@ -74,11 +97,8 @@ function MCPSelectContent() {
           render={
             <Ariakit.MenuButton
               className={cn(
-                'group gap-theme-compact relative inline-flex items-center justify-center',
-                'border-border-medium border text-sm font-medium transition-all',
-                'h-theme-control min-w-theme-control rounded-theme-control-round bg-transparent px-2.5 shadow-sm',
-                'hover:bg-surface-hover hover:shadow-md active:shadow-inner',
-                'md:px-theme-normal md:w-fit md:justify-start',
+                composerControlClasses(),
+                'min-w-theme-control md:px-theme-normal px-2.5 md:w-fit md:justify-start',
                 isOpen && 'bg-surface-hover',
               )}
             />

@@ -173,6 +173,8 @@ jest.mock('@librechat/agents', () => ({
 }));
 
 jest.mock('@librechat/api', () => ({
+  /* Provisioning moved into this package; the controllers build the callback from it. */
+  createProvisionFilesCallback: () => async () => {},
   createAgentExecutionContext: (context) => context,
   /** Grants both by default; the capability set is what these specs vary. */
   resolveToolRoleGrants: jest.fn(async () => ({ runCode: true, fileSearch: true })),
@@ -212,9 +214,15 @@ jest.mock('@librechat/api', () => ({
   buildInitialToolSessions: jest.fn().mockReturnValue(mockInitialSessions),
   AgentRunEnvelopeError: MockAgentRunEnvelopeError,
   createAgentRunEnvelope: (...args) => mockCreateAgentRunEnvelope(...args),
-  createMCPRuntimeRequestBody: ({ messageId, conversationId, parentMessageId }) => ({
+  createMCPRuntimeRequestBody: ({
     messageId,
     conversationId,
+    parentMessageId,
+    codeWorkspaces,
+  }) => ({
+    messageId,
+    conversationId,
+    ...(codeWorkspaces !== undefined && { codeWorkspaces }),
     ...(parentMessageId !== undefined && {
       parentMessageId: parentMessageId ?? '00000000-0000-0000-0000-000000000000',
     }),
@@ -1168,6 +1176,35 @@ describe('OpenAIChatCompletionController', () => {
   });
 
   describe('conversation ownership validation', () => {
+    it.each([false, true])(
+      'propagates explicit or owned persisted workspaces: continuation=%s',
+      async (continuation) => {
+        const api = require('@librechat/api');
+        const selections = [{ environmentId: 'machine', workspaceId: 'project' }];
+        api.validateRequest.mockReturnValueOnce({
+          request: {
+            model: 'agent-123',
+            messages: [],
+            stream: false,
+            ...(continuation ? { conversation_id: 'convo-abc' } : { code_workspaces: selections }),
+          },
+        });
+        if (continuation)
+          require('~/models').getConvo.mockResolvedValueOnce({
+            conversationId: 'convo-abc',
+            codeWorkspaces: selections,
+          });
+        await OpenAIChatCompletionController(req, res);
+        expect(api.initializeAgent).toHaveBeenCalledWith(
+          expect.objectContaining({
+            requestBody: expect.objectContaining({ codeWorkspaces: selections }),
+          }),
+          expect.anything(),
+        );
+        if (continuation)
+          expect(require('~/models').getConvo).toHaveBeenCalledWith('user-123', 'convo-abc');
+      },
+    );
     it('should skip ownership check when conversation_id is not provided', async () => {
       const { getConvo } = require('~/models');
       await OpenAIChatCompletionController(req, res);
@@ -1655,6 +1692,70 @@ describe('OpenAIChatCompletionController', () => {
           fileAuthoringToolNames: ['create_file', 'edit_file'],
         },
       });
+    });
+  });
+
+  describe('file search role gating', () => {
+    const setCapabilities = (capabilities) => {
+      req.config.endpoints.agents.capabilities = capabilities;
+    };
+
+    it('reports file search available when the capability and the grant agree', async () => {
+      const { initializeAgent } = require('@librechat/api');
+      setCapabilities(['file_search']);
+
+      await OpenAIChatCompletionController(req, res);
+
+      expect(initializeAgent).toHaveBeenCalledWith(
+        expect.objectContaining({ fileSearchAvailable: true }),
+        expect.anything(),
+      );
+    });
+
+    /** `initializeAgent` re-hydrates prior-turn `file_search` files from this
+     *  flag, so a denied role must reach it — dropping the tool downstream still
+     *  leaves the files read, their usage bumped and their resources primed. */
+    it('withholds it when the role is denied FILE_SEARCH', async () => {
+      const { initializeAgent, resolveToolRoleGrants } = require('@librechat/api');
+      resolveToolRoleGrants.mockResolvedValueOnce({ runCode: true, fileSearch: false });
+      setCapabilities(['file_search']);
+
+      await OpenAIChatCompletionController(req, res);
+
+      expect(initializeAgent).toHaveBeenCalledWith(
+        expect.objectContaining({ fileSearchAvailable: false }),
+        expect.anything(),
+      );
+    });
+
+    /** Both flags are false without their capability, so the role read would be
+     *  pure load on every request. */
+    it('reads no role at all when neither capability is enabled', async () => {
+      const { initializeAgent, resolveToolRoleGrants } = require('@librechat/api');
+      setCapabilities([]);
+
+      await OpenAIChatCompletionController(req, res);
+
+      expect(resolveToolRoleGrants).not.toHaveBeenCalled();
+      expect(initializeAgent).toHaveBeenCalledWith(
+        expect.objectContaining({ fileSearchAvailable: false, codeEnvAvailable: false }),
+        expect.anything(),
+      );
+    });
+
+    /** One lookup answers both grants, so enabling either capability pays for
+     *  the other's pairing too. */
+    it('pairs both flags from a single role read', async () => {
+      const { initializeAgent, resolveToolRoleGrants } = require('@librechat/api');
+      setCapabilities(['file_search', 'execute_code']);
+
+      await OpenAIChatCompletionController(req, res);
+
+      expect(resolveToolRoleGrants).toHaveBeenCalledTimes(1);
+      expect(initializeAgent).toHaveBeenCalledWith(
+        expect.objectContaining({ fileSearchAvailable: true, codeEnvAvailable: true }),
+        expect.anything(),
+      );
     });
   });
 });

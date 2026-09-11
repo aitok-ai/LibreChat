@@ -42,13 +42,28 @@ import {
   refreshChatProjectStatsForUser,
   updateChatProjectLastConversationForUser,
 } from './chatProject';
+import { createChatExpirationDate, createTempChatExpirationDate } from '~/utils/tempChatRetention';
 import { isAgentFadingTier, isAgentFadingTierEntries } from '~/utils/fading';
 import { isCompactionSemanticIndexProjection } from '~/types/compaction';
-import { createTempChatExpirationDate } from '~/utils/tempChatRetention';
 import { tenantSafeBulkWrite } from '~/utils/tenantBulkWrite';
 import { isValidObjectIdString } from '~/utils/objectId';
 import { decrementTagCounts } from './conversationTag';
 import logger from '~/config/winston';
+
+const ACTOR_CHECKPOINT_FIELDS = [
+  'agentEventActor',
+  'agentEventActorCleanup',
+  'agentEventActorReconciliations',
+  'agentEventActorSuspension',
+] as const;
+
+function stripActorCheckpointFields(record: Record<string, unknown>): void {
+  for (const key of Object.keys(record)) {
+    if (ACTOR_CHECKPOINT_FIELDS.some((field) => key === field || key.startsWith(`${field}.`))) {
+      delete record[key];
+    }
+  }
+}
 
 const AGENT_EVENT_ACTOR_RECEIPT_RETENTION_MS = 90 * 24 * 60 * 60_000;
 const MAX_AGENT_EVENT_ACTOR_SUSPENSION_BYTES = 64 * 1_024;
@@ -471,7 +486,7 @@ export interface ConversationMethods {
   getConvoRetention(
     user: string,
     conversationId: string,
-  ): Promise<Pick<IConversation, 'expiredAt'> | null>;
+  ): Promise<Pick<IConversation, 'expiredAt' | 'isTemporary'> | null>;
   getConvoTitle(user: string, conversationId: string): Promise<string | null>;
   deleteConvos(
     user: string,
@@ -641,6 +656,15 @@ export function createConversationMethods(
     };
   }
 
+  function readableActorSuspension(
+    suspension: IConversation['agentEventActorSuspension'],
+  ): IAgentEventActorSnapshot['suspension'] {
+    if (suspension == null) return null;
+    if (suspension.status === 'pending_owned') return { ...suspension, status: 'pending' };
+    if (suspension.status === 'claimed_owned') return { ...suspension, status: 'claimed' };
+    return suspension;
+  }
+
   /** Reads the private actor head and every fail-closed reconciliation marker. */
   async function getAgentEventActorSnapshot(input: {
     user: string;
@@ -666,7 +690,7 @@ export function createConversationMethods(
           state: conversation.agentEventActor ?? null,
           reconciliations: conversation.agentEventActorReconciliations ?? [],
           legacyTurn: conversation.agentEventActorLegacyTurn ?? null,
-          suspension: conversation.agentEventActorSuspension ?? null,
+          suspension: readableActorSuspension(conversation.agentEventActorSuspension),
           epoch: conversation.agentEventActorEpoch ?? 0,
         };
   }
@@ -702,7 +726,7 @@ export function createConversationMethods(
             ],
           }
         : {
-            'agentEventActorSuspension.status': 'claimed',
+            'agentEventActorSuspension.status': { $in: ['claimed', 'claimed_owned'] },
             'agentEventActorSuspension.suspension.suspensionId': input.previous.suspensionId,
             'agentEventActorSuspension.suspension.attempt': input.previous.attempt,
             'agentEventActorSuspension.resumeAttemptId': input.previous.resumeAttemptId,
@@ -729,7 +753,7 @@ export function createConversationMethods(
       handlingGenerationCreatedAt: input.handlingGenerationCreatedAt ?? input.jobCreatedAt,
       actionId: input.actionId,
       jobCreatedAt: input.jobCreatedAt,
-      status: 'pending' as const,
+      status: 'pending_owned' as const,
       observedAt: new Date(),
     };
     const storeUpdate = {
@@ -795,7 +819,7 @@ export function createConversationMethods(
         conversationId: input.conversationId,
         subagentThread: { $exists: true },
         agentEventBinding: { $exists: true },
-        'agentEventActorSuspension.status': 'pending',
+        'agentEventActorSuspension.status': { $in: ['pending', 'pending_owned'] },
         'agentEventActorSuspension.suspension.suspensionId': input.suspensionId,
         'agentEventActorSuspension.suspension.attempt': input.attempt,
         'agentEventActorSuspension.actionId': input.actionId,
@@ -805,7 +829,7 @@ export function createConversationMethods(
       },
       {
         $set: {
-          'agentEventActorSuspension.status': 'claimed',
+          'agentEventActorSuspension.status': 'claimed_owned',
           'agentEventActorSuspension.resumeAttemptId': input.resumeAttemptId,
           'agentEventActorSuspension.observedAt': new Date(),
         },
@@ -837,7 +861,7 @@ export function createConversationMethods(
       {
         user: input.user,
         conversationId: input.conversationId,
-        'agentEventActorSuspension.status': 'claimed',
+        'agentEventActorSuspension.status': { $in: ['claimed', 'claimed_owned'] },
         'agentEventActorSuspension.suspension.suspensionId': input.suspensionId,
         'agentEventActorSuspension.suspension.attempt': input.attempt,
         'agentEventActorSuspension.resumeAttemptId': input.resumeAttemptId,
@@ -904,9 +928,9 @@ export function createConversationMethods(
     const Conversation = mongoose.models.Conversation as Model<IConversation>;
     const suspensionOwner =
       input.claimedResumeAttemptId == null
-        ? { 'agentEventActorSuspension.status': 'pending' }
+        ? { 'agentEventActorSuspension.status': { $in: ['pending', 'pending_owned'] } }
         : {
-            'agentEventActorSuspension.status': 'claimed',
+            'agentEventActorSuspension.status': { $in: ['claimed', 'claimed_owned'] },
             'agentEventActorSuspension.resumeAttemptId': input.claimedResumeAttemptId,
           };
     const cancelled = await Conversation.findOneAndUpdate(
@@ -1049,6 +1073,9 @@ export function createConversationMethods(
             'agentEventActor.checkpoint.threadId': input.expected.checkpoint.threadId,
             'agentEventActor.checkpoint.checkpointId': input.expected.checkpoint.checkpointId,
             'agentEventActor.checkpoint.checkpointNs': input.expected.checkpoint.checkpointNs,
+            'agentEventActor.previousCheckpoint': input.expected.previousCheckpoint ?? {
+              $exists: false,
+            },
             ...(input.expected.contextFingerprint == null
               ? { 'agentEventActor.contextFingerprint': { $exists: false } }
               : {
@@ -1084,7 +1111,7 @@ export function createConversationMethods(
       input.settlementAuthority == null
         ? {}
         : {
-            'agentEventActorSuspension.status': 'claimed',
+            'agentEventActorSuspension.status': { $in: ['claimed', 'claimed_owned'] },
             'agentEventActorSuspension.suspension.suspensionId':
               input.settlementAuthority.suspensionId,
             'agentEventActorSuspension.suspension.attempt': input.settlementAuthority.attempt,
@@ -1138,6 +1165,11 @@ export function createConversationMethods(
                 'agentEventActorSuspension.observedAt': new Date(),
               }),
         },
+        ...(input.expected?.previousCheckpoint == null
+          ? {}
+          : {
+              $addToSet: { agentEventActorCleanup: input.expected.previousCheckpoint },
+            }),
         $unset: { 'agentEventActorReconciliations.$.error': 1 },
       },
       { new: false, timestamps: false },
@@ -2037,11 +2069,11 @@ export function createConversationMethods(
   async function getConvoRetention(
     user: string,
     conversationId: string,
-  ): Promise<Pick<IConversation, 'expiredAt'> | null> {
+  ): Promise<Pick<IConversation, 'expiredAt' | 'isTemporary'> | null> {
     try {
       const Conversation = mongoose.models.Conversation as Model<IConversation>;
-      return await Conversation.findOne({ user, conversationId }, 'expiredAt').lean<
-        Pick<IConversation, 'expiredAt'>
+      return await Conversation.findOne({ user, conversationId }, 'expiredAt isTemporary').lean<
+        Pick<IConversation, 'expiredAt' | 'isTemporary'>
       >();
     } catch (error) {
       logger.error('[getConvoRetention] Error getting conversation retention fields', error);
@@ -2140,7 +2172,10 @@ export function createConversationMethods(
 
       const appendMessageIds = metadata?.appendMessageIds;
       const update: Record<string, unknown> = { ...convo, user: userId };
+      delete update.isTemporary;
+      delete update.expiredAt;
       delete update.initial_agent_id;
+      stripActorCheckpointFields(update);
       if (appendMessageIds == null) {
         update.messages = await getMessages({ conversationId, user: userId }, '_id');
       } else {
@@ -2148,6 +2183,7 @@ export function createConversationMethods(
       }
       const unsetFields: Record<string, number> = { ...(metadata?.unsetFields ?? {}) };
       delete unsetFields.initial_agent_id;
+      stripActorCheckpointFields(unsetFields);
 
       if (Object.prototype.hasOwnProperty.call(update, 'chatProjectId') && update.chatProjectId) {
         const chatProjectId = typeof update.chatProjectId === 'string' ? update.chatProjectId : '';
@@ -2184,6 +2220,7 @@ export function createConversationMethods(
         update.conversationId = newConversationId;
       }
 
+      let retentionOnInsert: { expiredAt: Date; isTemporary: false } | undefined;
       if (expiredAt instanceof Date && !Number.isNaN(expiredAt.getTime())) {
         if (typeof isTemporary === 'boolean') {
           update.isTemporary = isTemporary;
@@ -2193,12 +2230,31 @@ export function createConversationMethods(
         if (typeof isTemporary === 'boolean') {
           update.isTemporary = isTemporary;
         }
-        try {
-          update.expiredAt = createTempChatExpirationDate(interfaceConfig);
-        } catch (err) {
-          logger.error('Error creating temporary chat expiration date:', err);
-          logger.info(`---\`saveConvo\` context: ${metadata?.context}`);
-          update.expiredAt = createFallbackRetentionDate();
+        if (
+          typeof isTemporary === 'boolean' ||
+          interfaceConfig.generalChatRetention === undefined
+        ) {
+          try {
+            update.expiredAt = createChatExpirationDate(interfaceConfig, isTemporary);
+          } catch (err) {
+            logger.error('Error creating chat expiration date:', err);
+            logger.info(`---\`saveConvo\` context: ${metadata?.context}`);
+            update.expiredAt = createFallbackRetentionDate();
+          }
+        } else {
+          try {
+            retentionOnInsert = {
+              expiredAt: createChatExpirationDate(interfaceConfig, false),
+              isTemporary: false,
+            };
+          } catch (err) {
+            logger.error('Error creating chat expiration date:', err);
+            logger.info(`---\`saveConvo\` context: ${metadata?.context}`);
+            retentionOnInsert = {
+              expiredAt: createFallbackRetentionDate(),
+              isTemporary: false,
+            };
+          }
         }
       } else if (isTemporary === true) {
         update.isTemporary = true;
@@ -2256,6 +2312,7 @@ export function createConversationMethods(
           : createdAtOnInsert;
         operation.$setOnInsert = {
           initial_agent_id: initialAgentId,
+          ...retentionOnInsert,
           ...(createdAtForInsert ? { createdAt: createdAtForInsert } : {}),
         };
         return operation;
@@ -2340,6 +2397,31 @@ export function createConversationMethods(
       if (!conversation) {
         logger.debug('[saveConvo] Conversation not found, skipping update');
         return null;
+      }
+
+      /** Reuse the saved row's chat type when callers omit it, preserving existing deadlines. */
+      if (
+        interfaceConfig?.retentionMode === RetentionMode.ALL &&
+        interfaceConfig.generalChatRetention !== undefined &&
+        typeof isTemporary !== 'boolean' &&
+        conversation.expiredAt == null
+      ) {
+        const deadline = createChatExpirationDate(
+          interfaceConfig,
+          conversation.isTemporary === true,
+        );
+        const result = await Conversation.updateOne(
+          {
+            _id: conversation._id,
+            expiredAt: null,
+            isTemporary: conversation.isTemporary === true ? true : { $ne: true },
+          },
+          { $set: { expiredAt: deadline } },
+          { timestamps: false },
+        );
+        if (result.modifiedCount > 0) {
+          conversation.expiredAt = deadline;
+        }
       }
 
       if (
@@ -2521,6 +2603,7 @@ export function createConversationMethods(
       const bulkOps = conversations.map((convo) => {
         const sanitized = { ...convo };
         delete sanitized.initial_agent_id;
+        stripActorCheckpointFields(sanitized);
         if (typeof sanitized.user === 'string' && typeof sanitized.chatProjectId === 'string') {
           if (ownedProjects.has(`${sanitized.user}:${sanitized.chatProjectId}`)) {
             affectedProjectStats.set(`${sanitized.user}:${sanitized.chatProjectId}`, {
@@ -2989,7 +3072,7 @@ export function createConversationMethods(
           ),
           getMessages({ user, conversationId: filter.conversationId }, '_id', { limit: 1 }),
         ]);
-        if (descendants.length === 0 && rootMessages.length === 0) {
+        if (descendants.length === 0 && rootMessages.length === 0 && options?.allowEmpty !== true) {
           throw new Error('Conversation not found or already deleted.');
         }
         conversations = descendants;

@@ -19,6 +19,7 @@
  * ```
  */
 import { nanoid } from 'nanoid';
+import { isCodeWorkspaceSelections } from 'librechat-data-provider';
 import { AgentCapabilities, EModelEndpoint } from 'librechat-data-provider';
 import type {
   FiltersConfig,
@@ -121,9 +122,10 @@ export interface ChatCompletionDependencies {
    */
   appConfig?: AppConfig;
   /**
-   * Supply to have `codeEnvAvailable` respect the caller's `RUN_CODE` grant as
-   * well as the deployment capability. Optional so existing embedders keep
-   * their current behavior; without it this route is gated by capability alone.
+   * Supply to have `codeEnvAvailable` and `fileSearchAvailable` respect the
+   * caller's `RUN_CODE` / `FILE_SEARCH` grants as well as the deployment
+   * capabilities. Optional so existing embedders keep their current behavior;
+   * without it this route is gated by capability alone.
    */
   getRoleByName?: Parameters<typeof resolveToolRoleGrants>[0]['getRoleByName'];
   /** Tool execute options for event-driven tool execution */
@@ -202,6 +204,13 @@ interface InitializeAgentParams {
    * skips the expansion (same semantics as the in-repo controllers).
    */
   codeEnvAvailable?: boolean;
+  /**
+   * Whether `file_search` is available to this caller — the capability AND, when
+   * the embedder wires `getRoleByName`, the `FILE_SEARCH` grant. Read only when
+   * re-hydrating a conversation's prior-turn files; absent / `undefined` leaves
+   * that priming unconditional.
+   */
+  fileSearchAvailable?: boolean;
   /**
    * Whether the admin-level `stateful_code_sessions` capability is enabled.
    * Threaded to `initializeAgent` alongside `codeEnvAvailable` so this
@@ -527,6 +536,15 @@ export function validateRequest(body: unknown): ChatCompletionValidationResult {
   if (request.conversation_id !== undefined && typeof request.conversation_id !== 'string') {
     return { valid: false, error: 'conversation_id must be a string' };
   }
+  if (
+    request.code_workspaces !== undefined &&
+    !isCodeWorkspaceSelections(request.code_workspaces)
+  ) {
+    return {
+      valid: false,
+      error: 'code_workspaces must contain unique environment/workspace selections',
+    };
+  }
 
   if (request.parent_message_id !== undefined && typeof request.parent_message_id !== 'string') {
     return { valid: false, error: 'parent_message_id must be a string' };
@@ -635,6 +653,7 @@ export async function createAgentChatCompletion(
   const mcpRequestBody = createMCPRuntimeRequestBody({
     messageId: requestId,
     conversationId,
+    codeWorkspaces: request.code_workspaces,
     parentMessageId: mcpParentMessageId,
   });
   const created = Math.floor(Date.now() / 1000);
@@ -684,6 +703,14 @@ export async function createAgentChatCompletion(
       capabilityAllowsCodeEnv === true && deps.getRoleByName != null
         ? (await resolveToolRoleGrants({ req, getRoleByName: deps.getRoleByName })).runCode
         : capabilityAllowsCodeEnv;
+    const capabilityAllowsFileSearch = capabilityEnabled(AgentCapabilities.file_search);
+    /** The same pairing for the other gated tool, read only by the resend-file
+     *  priming inside `initializeAgent`. The grant resolution is memoized on the
+     *  request, so pairing both flags costs one role read. */
+    const fileSearchAvailable =
+      capabilityAllowsFileSearch === true && deps.getRoleByName != null
+        ? (await resolveToolRoleGrants({ req, getRoleByName: deps.getRoleByName })).fileSearch
+        : capabilityAllowsFileSearch;
     /** Mirror `codeEnvAvailable` for the stateful-session gate so this route
      *  also carries each agent's trusted stateful endpoint/profile selection
      *  into tool loading and prewarming. */
@@ -732,6 +759,7 @@ export async function createAgentChatCompletion(
       allowedProviders,
       isInitialAgent: true,
       codeEnvAvailable,
+      fileSearchAvailable,
       statefulSessionsAvailable,
       allowedStatefulCodeEnvironments,
       backgroundToolsAvailable,

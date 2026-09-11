@@ -27,6 +27,8 @@ describe('excludedKeys', () => {
     'conversationId',
     'agentEventBinding',
     'agentEventActor',
+    'agentEventActorCleanup',
+    'agentEventActorSuspension',
     'agentEventActorReconciliations',
     '__v',
   ])('excludes system field "%s"', (field) => {
@@ -1150,5 +1152,27 @@ describe('bedrockModels defaults', () => {
   it('keeps Opus 5 available as a global profile', () => {
     expect(bedrockModels).toContain('global.anthropic.claude-opus-5');
     expect(bedrockModels).not.toContain('anthropic.claude-opus-5');
+  });
+});
+
+describe('MCP UI refresh configuration', () => {
+  it('preserves configured intervals, including zero to disable polling', () => {
+    const result = configSchema.parse({
+      version: '1.3.5',
+      interface: { mcpServers: { toolsRefreshInterval: 0, statusRefreshInterval: 60_000 } },
+    });
+    expect(result.interface?.mcpServers).toMatchObject({
+      toolsRefreshInterval: 0,
+      statusRefreshInterval: 60_000,
+    });
+  });
+
+  it.each([-1, 1.5, 2_147_483_648])('rejects invalid timer intervals: %s', (interval) => {
+    expect(
+      configSchema.safeParse({
+        version: '1.3.5',
+        interface: { mcpServers: { statusRefreshInterval: interval } },
+      }).success,
+    ).toBe(false);
   });
 });

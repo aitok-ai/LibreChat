@@ -10,6 +10,11 @@ import type {
   ReasoningResponseKey,
   ReasoningParameterFormat,
 } from './schemas';
+import type {
+  CodeWorkspaceDescriptor,
+  CodeWorkspaceOperation,
+  CodeWorkspaceSelection,
+} from './code/workspace';
 import type { CodeEnvironmentUserConfigSchema, CodeEnvironmentUserSettings } from './config';
 import type { Agent, EToolResources, StatefulCodeEnvironment } from './types/assistants';
 import type { CodeApprovalMode } from './code/approval';
@@ -134,6 +139,9 @@ export type TPayload = Partial<TMessage> &
   Partial<TEndpointOption> & {
     isContinued: boolean;
     isRegenerate?: boolean;
+    /** Manual context compaction: summarize the branch up to `parentMessageId`
+     *  and end without a reply. No user message is created. */
+    compact?: boolean;
     conversationId: string | null;
     messages?: TMessages;
     isTemporary: boolean;
@@ -150,6 +158,8 @@ export type TPayload = Partial<TMessage> &
     manualSkills?: string[];
     /** Conversation-scoped preference for code tool approval behavior. */
     codeApprovalMode?: CodeApprovalMode;
+    /** Conversation-selected workspaces, with at most one binding per environment. */
+    codeWorkspaces?: CodeWorkspaceSelection[];
     /** Browser IANA timezone (e.g. `America/New_York`) used to resolve local-time prompt variables server-side. */
     timezone?: string;
     /**
@@ -190,6 +200,9 @@ export type TSubmission = {
   /** Client-only full message context used to restore branch siblings after scoped regenerate. */
   regenerateMessages?: TMessage[];
   isRegenerate?: boolean;
+  /** Manual context compaction; shaped like a regenerate on the client (no new
+   *  user bubble) and sent to the server as a summarize-only turn. */
+  compact?: boolean;
   initialResponse?: TMessage;
   conversation: Partial<TConversation>;
   endpointOption: TEndpointOption;
@@ -228,6 +241,8 @@ export type TSubmission = {
   manualSkills?: string[];
   /** Conversation-scoped preference for code tool approval behavior. */
   codeApprovalMode?: CodeApprovalMode;
+  /** Conversation-selected workspaces, with at most one binding per environment. */
+  codeWorkspaces?: CodeWorkspaceSelection[];
   /** Stable per-submission idempotency key (uuid) forwarded to the server to dedup retried start-generation requests. */
   clientRequestId?: string;
   /** Client-only carry-through for a receipt-bound queued recovery. */
@@ -584,10 +599,12 @@ export type TCodeEnvironmentPairingResponse = {
 export type TCodeEnvironmentStatusResponse = {
   environmentId: string;
   status: 'offline' | 'starting' | 'ready';
+  statefulWorkspace?: boolean;
   leaseExpiresInMs?: number;
   sandboxProfile?: string;
   runtimes?: string[];
-  operations?: string[];
+  operations?: CodeWorkspaceOperation[];
+  workspaces?: CodeWorkspaceDescriptor[];
 };
 
 export type TConfig = {
@@ -616,6 +633,9 @@ export type TConfig = {
   statefulCodeSessions?: {
     allowedEnvironments: StatefulCodeEnvironment[];
     environments?: TPublicCodeEnvironment[];
+    approvalsEnabled?: boolean;
+    /** Approval modes the endpoint policy permits the client to offer. */
+    approvalModes?: CodeApprovalMode[];
   };
   /** Effective subagents-per-agent cap served from `endpoints.agents.maxSubagents`. */
   maxSubagents?: number;

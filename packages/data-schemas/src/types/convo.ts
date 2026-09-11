@@ -1,4 +1,8 @@
-import type { TSubagentThreadLineage } from 'librechat-data-provider';
+import type {
+  CodeApprovalMode,
+  CodeWorkspaceSelection,
+  TSubagentThreadLineage,
+} from 'librechat-data-provider';
 import type { Document, Types } from 'mongoose';
 import type { ICompactionSemanticIndexProjection } from './compaction';
 
@@ -188,7 +192,8 @@ export interface IAgentEventActorSuspension {
   handlingGenerationCreatedAt?: number;
   actionId: string;
   jobCreatedAt: number;
-  status: 'pending' | 'claimed' | 'closed';
+  /** Owned states fence legacy replicas; snapshot readers expose pending/claimed. */
+  status: 'pending' | 'claimed' | 'pending_owned' | 'claimed_owned' | 'closed';
   resumeAttemptId?: string;
   outcome?: 'committed' | 'stale' | 'settled' | 'cancelled';
   closedAt?: Date;
@@ -268,6 +273,8 @@ export interface IConversation extends Document {
   likedBy?: object;
   isPrivate?: boolean;
   viewCount?: number;
+  codeApprovalMode?: CodeApprovalMode;
+  codeWorkspaces?: CodeWorkspaceSelection[];
   /** Immutable primary persisted-agent attribution for Insights. */
   initial_agent_id?: string | null;
   subagentThread?: TSubagentThreadLineage;
@@ -277,6 +284,8 @@ export interface IConversation extends Document {
   agentEventBinding?: IAgentEventBinding;
   /** Internal event-actor checkpoint head. Excluded from ordinary conversation reads. */
   agentEventActor?: IAgentEventActorState;
+  /** Prune work persisted atomically before the actor rotates its predecessor. */
+  agentEventActorCleanup?: IAgentEventActorCheckpoint[];
   /** Private invocation proof: active lifecycle fences plus settled same-ID receipts. */
   agentEventActorReconciliations?: IAgentEventActorReconciliation[];
   /** Private invalidation epoch; see {@link IAgentEventActorSnapshot.epoch}. */

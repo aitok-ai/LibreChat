@@ -13,6 +13,7 @@ import {
   useToastContext,
 } from '@librechat/client';
 import type { TChatProject, TMessage, TConversation } from 'librechat-data-provider';
+import type { SetterOrUpdater } from 'recoil';
 import type { ExtendedFile, FileSetter, ConvoGenerator } from '~/common';
 import type { QueuedMessageContext } from '~/hooks/Chat/useSteering';
 import {
@@ -24,6 +25,7 @@ import {
   useQueryParams,
   useSubmitMessage,
   useFocusChatEffect,
+  useCodeWorkspace,
 } from '~/hooks';
 import {
   cn,
@@ -40,6 +42,10 @@ import {
   useAddedChatContext,
   useAssistantsMapContext,
 } from '~/Providers';
+import {
+  PendingToolApprovalButton,
+  PendingToolApprovalPanel,
+} from '~/components/Chat/approval/Review';
 import PendingManualSkillsChips from './PendingManualSkillsChips';
 import usePastedTextEdit from '~/hooks/Files/usePastedTextEdit';
 import useAskAnswerMode from '~/hooks/Input/useAskAnswerMode';
@@ -54,7 +60,9 @@ import { mainTextareaId, BadgeItem } from '~/common';
 import PendingSteerChips from './PendingSteerChips';
 import PendingQuoteChips from './PendingQuoteChips';
 import AttachFileChat from './Files/AttachFileChat';
+import CodeWorkspaceMenu from './CodeWorkspaceMenu';
 import useSteering from '~/hooks/Chat/useSteering';
+import CodeApprovalMenu from './CodeApprovalMenu';
 import FileFormChat from './Files/FileFormChat';
 import InFlightSteers from './InFlightSteers';
 import TextareaHeader from './TextareaHeader';
@@ -83,6 +91,7 @@ interface ChatFormProps {
   files: Map<string, ExtendedFile>;
   setFiles: FileSetter;
   conversation: TConversation | null;
+  setConversation: SetterOrUpdater<TConversation | null>;
   isSubmitting: boolean;
   setFilesLoading: React.Dispatch<React.SetStateAction<boolean>>;
   newConversation: ConvoGenerator;
@@ -114,6 +123,7 @@ const ChatForm = memo(function ChatForm({
   files,
   setFiles,
   conversation,
+  setConversation,
   isSubmitting,
   setFilesLoading,
   newConversation,
@@ -314,6 +324,7 @@ const ChatForm = memo(function ChatForm({
   );
 
   const { submitMessage, submitPrompt } = useSubmitMessage();
+  const codeWorkspace = useCodeWorkspace(conversation, addedConvo);
 
   /** Queued/steered sends carry their FULL submission context: explicit
    *  (possibly empty) overrides stop `ask` from vacuuming quotes or skill
@@ -974,6 +985,9 @@ const ChatForm = memo(function ChatForm({
             {index === 0 && (
               <AskUserQuestionPopover conversationId={conversationId} textAreaRef={textAreaRef} />
             )}
+            {index === 0 && conversationId != null && (
+              <PendingToolApprovalPanel conversationId={conversationId} />
+            )}
             <SkillsCommand
               index={index}
               textAreaRef={textAreaRef}
@@ -1127,6 +1141,21 @@ const ChatForm = memo(function ChatForm({
                     Array.isArray(conversation?.messages) && conversation.messages.length >= 1
                   }
                 />
+                <CodeApprovalMenu
+                  conversation={conversation}
+                  addedConversation={addedConvo}
+                  setConversation={setConversation}
+                  disabled={disableInputs || isSubmitting}
+                />
+                <CodeWorkspaceMenu
+                  conversation={conversation}
+                  setConversation={setConversation}
+                  workspace={codeWorkspace}
+                  disabled={disableInputs || isSubmitting}
+                />
+                {index === 0 && conversationId != null && (
+                  <PendingToolApprovalButton conversationId={conversationId} />
+                )}
                 <div className="mx-auto flex" />
                 <TokenUsage index={index} conversation={conversation} isSubmitting={isSubmitting} />
                 {SpeechToText && (
@@ -1162,6 +1191,7 @@ const ChatForm = memo(function ChatForm({
                           disabled={
                             filesLoading ||
                             disableInputs ||
+                            (codeWorkspace.required && codeWorkspace.state !== 'ready') ||
                             isNotAppendable ||
                             answerMode.composerLocked ||
                             (isSubmitting && !answerMode.composerAnswers)
@@ -1227,6 +1257,7 @@ function ChatFormWrapper({
     files,
     setFiles,
     conversation,
+    setConversation,
     isSubmitting,
     setFilesLoading,
     newConversation,
@@ -1252,6 +1283,8 @@ function ChatFormWrapper({
       conversation?.useResponsesApi,
       conversation?.model,
       conversation?.maxContextTokens,
+      conversation?.codeApprovalMode,
+      conversation?.codeWorkspaces,
       hasMessages,
     ],
   );
@@ -1286,6 +1319,7 @@ function ChatFormWrapper({
       files={files}
       setFiles={setFiles}
       conversation={stableConversation}
+      setConversation={setConversation}
       isSubmitting={isSubmitting}
       setFilesLoading={setFilesLoading}
       newConversation={stableNewConversation}

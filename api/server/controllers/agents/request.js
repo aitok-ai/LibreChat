@@ -1,4 +1,4 @@
-const { logger, tenantStorage } = require('@librechat/data-schemas');
+const { logger, tenantStorage, createChatExpirationDate } = require('@librechat/data-schemas');
 const { v5: uuidv5 } = require('uuid');
 const {
   Constants,
@@ -40,6 +40,7 @@ const {
   isHITLEnabled,
   agentRequestsAskUserQuestion,
   resolveAgentTurnExecutionPlan,
+  logAgentMemorySnapshot,
 } = require('@librechat/api');
 const { disposeClient } = require('~/server/cleanup');
 const {
@@ -136,6 +137,93 @@ async function attachConversationCreatedAt(req, conversationId, conversationAnch
   }
 }
 
+function getPreliminaryResponseMessageId({ messageId, responseMessageId }) {
+  if (typeof responseMessageId === 'string' && responseMessageId.length > 0) {
+    return responseMessageId;
+  }
+
+  if (typeof messageId !== 'string' || messageId.length === 0) {
+    return null;
+  }
+
+  return `${messageId.replace(/_+$/, '')}_`;
+}
+
+/**
+ * Manual compaction runs as a summarize-only turn hung off the branch's leaf.
+ * It needs an existing branch to summarize, and it cannot be combined with the
+ * turn shapes that create or rewrite a user message.
+ * @returns {{ status: number, code: string, error: string } | null}
+ */
+function getCompactionRejection(req, { conversationId, parentMessageId }) {
+  if (req.config?.summarization?.enabled === false) {
+    return {
+      status: 400,
+      code: 'COMPACTION_DISABLED',
+      error: 'Context compaction is disabled for this deployment.',
+    };
+  }
+  if (!conversationId || conversationId === Constants.NEW_CONVO) {
+    return {
+      status: 400,
+      code: 'INVALID_COMPACTION_REQUEST',
+      error: 'Compaction requires an existing conversation.',
+    };
+  }
+  if (
+    typeof parentMessageId !== 'string' ||
+    parentMessageId.length === 0 ||
+    parentMessageId === Constants.NO_PARENT
+  ) {
+    return {
+      status: 400,
+      code: 'INVALID_COMPACTION_REQUEST',
+      error: 'Compaction requires the message to compact up to.',
+    };
+  }
+  const { isContinued, isRegenerate, editedContent, responseMessageId } = req.body ?? {};
+  if (isContinued || isRegenerate || editedContent != null || responseMessageId) {
+    return {
+      status: 400,
+      code: 'INVALID_COMPACTION_REQUEST',
+      error: 'Compaction cannot be combined with an edit, regenerate, or continue.',
+    };
+  }
+  return null;
+}
+
+/**
+ * The leaf a compaction hangs off, in the user-message slot the job metadata
+ * and the abort path read before the branch is loaded. Identity only: the
+ * client validates the leaf against the history it loads anyway, and the job
+ * must not carry the leaf's content.
+ */
+function projectCompactionAnchor({ messageId, conversationId }) {
+  return { messageId, conversationId, text: '' };
+}
+
+/**
+ * The id the turn's user message is created under. A compaction creates no
+ * user message: its "user message" slot holds the leaf it summarizes up to,
+ * and a bound event turn keys the id off its task.
+ * @returns {string}
+ */
+function resolvePreallocatedUserMessageId({
+  isCompaction,
+  parentMessageId,
+  eventTaskId,
+  overrideUserMessageId,
+  overrideParentMessageId,
+}) {
+  if (isCompaction) {
+    return parentMessageId;
+  }
+  if (eventTaskId != null) {
+    return `${eventTaskId}:user`;
+  }
+  return overrideUserMessageId ?? overrideParentMessageId ?? crypto.randomUUID();
+}
+
 function getPreliminaryUserMessage(
   { messageId, parentMessageId, text, quotes, files, manualSkills, alwaysAppliedSkills },
   conversationId,
@@ -201,17 +289,6 @@ function getAgentEventTriggerProjection(agentEventDelivery) {
     occurredAt,
     ...(expectedActionToolName == null ? {} : { expectedActionToolName }),
   };
-}
-
-function getPreliminaryResponseMessageId(partial) {
-  if (!partial || typeof partial !== 'object') {
-    return null;
-  }
-  const { messageId } = partial;
-  if (typeof messageId !== 'string' || messageId.length === 0) {
-    return null;
-  }
-  return `${messageId}_`;
 }
 
 function getRequestModelSpec(req, endpointOption) {
@@ -290,7 +367,16 @@ async function saveErrorTurn(
     let userMessage = null;
     let errorMessageId = null;
     let errorParentMessageId = null;
-    if (isRegenerate) {
+    if (req.body?.compact === true) {
+      /** The anchor is the persisted leaf, never rewritten. Without the
+       *  loaded anchor (the branch failed to load) there is nothing safe
+       *  to parent an error row onto, so nothing is written. */
+      if (liveUserMessage?.messageId == null) {
+        return;
+      }
+      errorMessageId = getPreliminaryResponseMessageId({ messageId: liveUserMessage.messageId });
+      errorParentMessageId = liveUserMessage.messageId;
+    } else if (isRegenerate) {
       errorMessageId =
         typeof responseMessageId === 'string' && responseMessageId.length > 0
           ? responseMessageId
@@ -346,8 +432,12 @@ async function saveErrorTurn(
 
     const reqCtx = {
       userId,
-      isTemporary: req?._agentEventBindingRetention?.isTemporary ?? req?.body?.isTemporary,
-      expiredAt: req?._agentEventBindingRetention?.expiredAt,
+      isTemporary:
+        req?._agentEventBindingRetention?.isTemporary ??
+        req?.resolvedConversation?.isTemporary ??
+        req?.body?.isTemporary,
+      expiredAt:
+        req?._agentEventBindingRetention?.expiredAt ?? req?.resolvedConversation?.expiredAt,
       interfaceConfig: req?.config?.interfaceConfig,
     };
     const context = 'api/server/controllers/agents/request.js - failed turn';
@@ -613,6 +703,22 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
 
   const userId = req.user.id;
   const tenantId = req.user.tenantId;
+  const isCompaction = req.body?.compact === true;
+  if (isCompaction) {
+    const rejection = getCompactionRejection(req, {
+      conversationId: reqConversationId,
+      parentMessageId,
+    });
+    if (rejection) {
+      startupTelemetry?.end('rejected');
+      return sendGenerationJson(
+        res,
+        rejection.status,
+        { code: rejection.code, error: rejection.error },
+        generationProtocolVersion,
+      );
+    }
+  }
   const rawClientRequestId = req.body?.clientRequestId;
   if (
     rawClientRequestId != null &&
@@ -1353,10 +1459,13 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
   if (eventTaskId != null) {
     req._agentEventTaskId = eventTaskId;
   }
-  const preallocatedUserMessageId =
-    eventTaskId == null
-      ? (overrideUserMessageId ?? overrideParentMessageId ?? crypto.randomUUID())
-      : `${eventTaskId}:user`;
+  const preallocatedUserMessageId = resolvePreallocatedUserMessageId({
+    isCompaction,
+    parentMessageId,
+    eventTaskId,
+    overrideUserMessageId,
+    overrideParentMessageId,
+  });
   const overrideConversationId = rawOverrideConversationId
     ? rawOverrideConversationId.split(Constants.COMMON_DIVIDER)[0]
     : undefined;
@@ -1374,6 +1483,7 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
   const mcpRequestBody = createMCPRuntimeRequestBody({
     messageId: preallocatedResponseMessageId,
     conversationId: effectiveConversationId,
+    codeWorkspaces: req.body.codeWorkspaces ?? req.resolvedConversation?.codeWorkspaces,
     parentMessageId:
       editedContent != null ? preallocatedResponseMessageId : preallocatedUserMessageId,
   });
@@ -1398,6 +1508,9 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
       jobCreatedAt,
       status,
       conversationId,
+      ...(status === 'requires_action' && client?.checkpointNamespace != null
+        ? { checkpointNamespace: client.checkpointNamespace }
+        : {}),
       clearConversationId,
       error,
     });
@@ -1439,11 +1552,13 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
 
     const endpointIconURL = getEndpointIconURL(req, endpointOption);
     const responseModel = getAgentResponseModel(req, endpointOption);
-    const preliminaryUserMessage = getPreliminaryUserMessage(
-      { ...req.body, messageId: preallocatedUserMessageId },
-      conversationId,
-      req._agentEventTriggerProjection,
-    );
+    const preliminaryUserMessage = isCompaction
+      ? projectCompactionAnchor({ messageId: parentMessageId, conversationId })
+      : getPreliminaryUserMessage(
+          { ...req.body, messageId: preallocatedUserMessageId },
+          conversationId,
+          req._agentEventTriggerProjection,
+        );
     const job = await GenerationJobManager.createJob(streamId, userId, conversationId, {
       startupTelemetry,
       ...(recoveredSteerId && { recoveredSteerId }),
@@ -1473,7 +1588,24 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
         agent_id: endpointOption.agent_id ?? req.body?.agent_id,
         // Persist temporary-chat state so a HITL resume keeps the resumed response
         // non-persisted instead of trusting the resume request to re-send the flag.
-        isTemporary: req._agentEventBindingRetention?.isTemporary ?? req.body?.isTemporary,
+        isTemporary:
+          req._agentEventBindingRetention?.isTemporary ??
+          req.resolvedConversation?.isTemporary ??
+          req.body?.isTemporary,
+        ...((req._agentEventBindingRetention?.expiredAt ?? req.resolvedConversation?.expiredAt) !=
+          null && {
+          retentionExpiresAt: new Date(
+            req._agentEventBindingRetention?.expiredAt ?? req.resolvedConversation.expiredAt,
+          ).toISOString(),
+        }),
+        ...((req._agentEventBindingRetention?.expiredAt ?? req.resolvedConversation?.expiredAt) ==
+          null &&
+          req.config?.interfaceConfig?.retentionMode === 'all' && {
+            retentionExpiresAt: createChatExpirationDate(
+              req.config.interfaceConfig,
+              req.resolvedConversation?.isTemporary ?? req.body?.isTemporary,
+            ).toISOString(),
+          }),
         ...(agentEventDelivery != null && {
           agentEventDeliveryKey: agentEventDelivery.deliveryKey,
           ...(internalDetachedCompletion == null
@@ -1491,7 +1623,10 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
             }),
           }),
         }),
-        ...(isRegenerate && { isRegenerate: true }),
+        /** A compaction is regenerate-shaped for every consumer of the job:
+         *  no user message of its own, the response parented onto an
+         *  existing message. A reconnecting client rebuilds it that way. */
+        ...((isRegenerate || isCompaction) && { isRegenerate: true }),
         ...(scheduleId
           ? {
               scheduleId,
@@ -1732,8 +1867,12 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
           saveMessage(
             {
               userId,
-              isTemporary: req?._agentEventBindingRetention?.isTemporary ?? req?.body?.isTemporary,
-              expiredAt: req?._agentEventBindingRetention?.expiredAt,
+              isTemporary:
+                req?._agentEventBindingRetention?.isTemporary ??
+                req?.resolvedConversation?.isTemporary ??
+                req?.body?.isTemporary,
+              expiredAt:
+                req?._agentEventBindingRetention?.expiredAt ?? req?.resolvedConversation?.expiredAt,
               interfaceConfig: req?.config?.interfaceConfig,
             },
             partialMessage,
@@ -2147,6 +2286,7 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
           getReqData,
           isContinued,
           isRegenerate,
+          isCompaction,
           editedContent,
           conversationId,
           parentMessageId,
@@ -2515,8 +2655,12 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
                     {
                       userId,
                       isTemporary:
-                        req?._agentEventBindingRetention?.isTemporary ?? req?.body?.isTemporary,
-                      expiredAt: req?._agentEventBindingRetention?.expiredAt,
+                        req?._agentEventBindingRetention?.isTemporary ??
+                        req?.resolvedConversation?.isTemporary ??
+                        req?.body?.isTemporary,
+                      expiredAt:
+                        req?._agentEventBindingRetention?.expiredAt ??
+                        req?.resolvedConversation?.expiredAt,
                       interfaceConfig: req?.config?.interfaceConfig,
                     },
                     userMessage,
@@ -2537,8 +2681,12 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
                 {
                   userId,
                   isTemporary:
-                    req?._agentEventBindingRetention?.isTemporary ?? req?.body?.isTemporary,
-                  expiredAt: req?._agentEventBindingRetention?.expiredAt,
+                    req?._agentEventBindingRetention?.isTemporary ??
+                    req?.resolvedConversation?.isTemporary ??
+                    req?.body?.isTemporary,
+                  expiredAt:
+                    req?._agentEventBindingRetention?.expiredAt ??
+                    req?.resolvedConversation?.expiredAt,
                   interfaceConfig: req?.config?.interfaceConfig,
                 },
                 {
@@ -2716,10 +2864,25 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
         // where client refetch happens before database is updated
         const reqCtx = {
           userId: req?.user?.id,
-          isTemporary: req?._agentEventBindingRetention?.isTemporary ?? req?.body?.isTemporary,
-          expiredAt: req?._agentEventBindingRetention?.expiredAt,
+          isTemporary:
+            req?._agentEventBindingRetention?.isTemporary ??
+            req?.resolvedConversation?.isTemporary ??
+            req?.body?.isTemporary,
+          expiredAt:
+            req?._agentEventBindingRetention?.expiredAt ?? req?.resolvedConversation?.expiredAt,
           interfaceConfig: req?.config?.interfaceConfig,
         };
+        const terminalMemoryContext = {
+          ...(client?.attachmentMemoryContext ?? {}),
+          req,
+          conversationId: conversation?.conversationId,
+          messageId: response?.messageId,
+          attachments:
+            client?.attachmentMemoryContext?.attachments ??
+            client?.modelBoundCurrentFiles ??
+            req.body.files,
+        };
+        logAgentMemorySnapshot('before_terminal_save', terminalMemoryContext);
 
         if (!client.skipSaveUserMessage) {
           if (!userMessage) {
@@ -2772,6 +2935,7 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
               : 'Response message could not be persisted before terminal publication',
           );
         }
+        logAgentMemorySnapshot('after_terminal_save', terminalMemoryContext);
         if (appliedEventActor != null) {
           const recorded = await recordAgentEventActorReconciliation({
             user: userId,
@@ -2857,10 +3021,12 @@ const ResumableAgentController = async (req, res, next, initializeClient, addTit
           );
 
           terminalPublicationStarted = true;
+          logAgentMemorySnapshot('before_final_publish', terminalMemoryContext);
           const publication = await GenerationJobManager.publishTerminalClaim(
             terminalClaim,
             finalEvent,
           );
+          logAgentMemorySnapshot('after_final_publish', terminalMemoryContext);
           let terminalOutcome = 'completed_without_delta';
           if (publication.persistenceFailed) {
             terminalOutcome = 'error';

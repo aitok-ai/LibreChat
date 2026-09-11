@@ -21,6 +21,7 @@ const {
   collectCodeExecutionProfileRoutes,
   getLazySubagentConfigId,
   resolveCodeExecutionContext,
+  resolveCodeExecutionWorkspaceContext,
   createStatefulCodeEnvironmentPolicyError,
   buildSubagentThreadTaskConfig,
   backgroundCompletionWakeupsEnabled,
@@ -64,6 +65,13 @@ const {
   resolveMemoryAvailability,
   enrichLoadedToolsWithAgentContext,
 } = require('./skillDeps');
+const {
+  loadCodeApiKey,
+  provisionToCodeEnv,
+  provisionToVectorDB,
+  checkSessionsAlive,
+} = require('~/server/services/Files/provision');
+const { createProvisionFilesCallback } = require('~/server/services/Files/provisionCallback');
 const { getModelsConfig } = require('~/server/controllers/ModelController');
 const { checkPermission, findAccessibleResources } = require('~/server/services/PermissionService');
 const AgentClient = require('~/server/controllers/agents/client');
@@ -76,6 +84,7 @@ const {
 } = require('./backgroundCompletion');
 const { logViolation } = require('~/cache');
 const db = require('~/models');
+const { getAppConfig } = require('~/server/services/Config');
 
 const SUBAGENT_GRAPH_LOAD_CONCURRENCY = 4;
 
@@ -228,14 +237,16 @@ const initializeClient = async ({
   const enabledCapabilities = new Set(appConfig?.endpoints?.[EModelEndpoint.agents]?.capabilities);
   const skillsCapabilityEnabled = enabledCapabilities.has(AgentCapabilities.skills);
   const codeCapabilityEnabled = enabledCapabilities.has(AgentCapabilities.execute_code);
+  const fileSearchCapabilityEnabled = enabledCapabilities.has(AgentCapabilities.file_search);
   /** Started here but joined into the startup `Promise.all` below rather than
-   *  awaited inline: `codeEnvAvailable` is not read until agent construction, so
-   *  the role lookup overlaps the memory, skill and conversation queries instead
-   *  of delaying them. Skipped entirely when the deployment has the capability
-   *  off, since the flag is false either way. */
-  const toolRoleGrantsPromise = codeCapabilityEnabled
-    ? resolveToolRoleGrants({ req, getRoleByName: db.getRoleByName, context: 'initializeClient' })
-    : null;
+   *  awaited inline: neither flag is read until agent construction, so the role
+   *  lookup overlaps the memory, skill and conversation queries instead of
+   *  delaying them. Skipped entirely when the deployment has both capabilities
+   *  off, since both flags are false either way. One lookup answers both. */
+  const toolRoleGrantsPromise =
+    codeCapabilityEnabled || fileSearchCapabilityEnabled
+      ? resolveToolRoleGrants({ req, getRoleByName: db.getRoleByName, context: 'initializeClient' })
+      : null;
   const backgroundToolsAvailable = enabledCapabilities.has(AgentCapabilities.run_in_background);
   const toolIntentsAvailable = enabledCapabilities.has(AgentCapabilities.tool_intents);
   const deferredToolsAvailable = enabledCapabilities.has(AgentCapabilities.deferred_tools);
@@ -391,6 +402,11 @@ const initializeClient = async ({
 
   const invokedSkillIdentities = new Map();
   const toolExecuteOptions = {
+    // Keep foreground cancellation owned by this request even when the agents
+    // SDK rebuilds a graph for approval resume. The SDK event's breaker signal
+    // is composed with this authoritative job signal by the handler.
+    runSignal: signal,
+    foregroundRunId: runtimeRequestBody?.messageId,
     loadTools: async (toolNames, agentId, _configurable, callerCapabilityProjection) => {
       const ctx = agentToolContexts.get(agentId) ?? {};
       logger.debug(`[ON_TOOL_EXECUTE] ctx found: ${!!ctx.userMCPAuthMap}, agent: ${ctx.agent?.id}`);
@@ -474,6 +490,11 @@ const initializeClient = async ({
       }
     },
     ...getSkillToolDeps(),
+    provisionFiles: createProvisionFilesCallback({
+      req,
+      agentToolContexts,
+      resolvePrimaryAgentId: () => primaryConfig?.id,
+    }),
   };
 
   const summarizationOptions =
@@ -537,6 +558,11 @@ const initializeClient = async ({
    *  forwards the code-environment context to their handlers — so the grant has
    *  to travel with the flag, not just with the tool list. */
   const codeEnvAvailable = codeCapabilityEnabled && toolRoleGrants?.runCode === true;
+  /** The same pairing for the other gated tool. Read only by the resend-file
+   *  priming inside `initializeAgent`: `false` skips re-hydrating prior-turn
+   *  `file_search` files, whose usage counters would otherwise be bumped and
+   *  whose resources primed for a tool the loader is about to drop. */
+  const fileSearchAvailable = fileSearchCapabilityEnabled && toolRoleGrants?.fileSearch === true;
 
   const agentConfigs = new Map();
   const allowedProviders = new Set(appConfig?.endpoints?.[EModelEndpoint.agents]?.allowedProviders);
@@ -621,6 +647,7 @@ const initializeClient = async ({
       accessibleSkillIds: primaryScopedSkillIds,
       skillAuthoringAvailable: primarySkillAuthoringAvailable,
       codeEnvAvailable,
+      fileSearchAvailable,
       backgroundToolsAvailable,
       toolIntentsAvailable,
       statefulSessionsAvailable,
@@ -639,12 +666,18 @@ const initializeClient = async ({
       updateFilesUsage: db.updateFilesUsage,
       getUserKeyValues: db.getUserKeyValues,
       getUserCodeFiles: db.getUserCodeFiles,
+      getDeferredProvisionFiles: db.getDeferredProvisionFiles,
       getToolFilesByIds: db.getToolFilesByIds,
       getCodeGeneratedFiles: db.getCodeGeneratedFiles,
       filterFilesByAgentAccess,
       listSkillsByAccess: skillDbMethods.listSkillsByAccess,
       listAlwaysApplySkills: skillDbMethods.listAlwaysApplySkills,
       getSkillByName: skillDbMethods.getSkillByName,
+      provisionToCodeEnv,
+      provisionToVectorDB,
+      checkSessionsAlive,
+      loadCodeApiKey,
+      updateFile: db.updateFile,
     },
   );
 
@@ -703,6 +736,7 @@ const initializeClient = async ({
       skillStates,
       defaultActiveOnShare,
       codeEnvAvailable,
+      fileSearchAvailable,
       backgroundToolsAvailable,
       toolIntentsAvailable,
       statefulSessionsAvailable,
@@ -722,12 +756,18 @@ const initializeClient = async ({
         updateFilesUsage: db.updateFilesUsage,
         getUserKeyValues: db.getUserKeyValues,
         getUserCodeFiles: db.getUserCodeFiles,
+        getDeferredProvisionFiles: db.getDeferredProvisionFiles,
         getToolFilesByIds: db.getToolFilesByIds,
         getCodeGeneratedFiles: db.getCodeGeneratedFiles,
         filterFilesByAgentAccess,
         listSkillsByAccess: skillDbMethods.listSkillsByAccess,
         listAlwaysApplySkills: skillDbMethods.listAlwaysApplySkills,
         getSkillByName: skillDbMethods.getSkillByName,
+        provisionToCodeEnv,
+        provisionToVectorDB,
+        checkSessionsAlive,
+        loadCodeApiKey,
+        updateFile: db.updateFile,
       },
       // The callback fires during BFS, before the helper prunes agents
       // whose edges end up filtered. Don't populate `agentConfigs` here —
@@ -781,6 +821,7 @@ const initializeClient = async ({
     skillStates,
     defaultActiveOnShare,
     codeEnvAvailable,
+    fileSearchAvailable,
     backgroundToolsAvailable,
     toolIntentsAvailable,
     statefulSessionsAvailable,
@@ -976,7 +1017,7 @@ const initializeClient = async ({
     const hasConfiguredCodeEnvironment =
       agent.code_environment_id != null ||
       configuredCodeEnvironments?.some((environment) => environment.default === true) === true;
-    const codeExecutionContext =
+    const baseCodeExecutionContext =
       lazyCodeEnvAvailable && (!statefulCodeSessions || hasConfiguredCodeEnvironment)
         ? resolveCodeExecutionContext({
             statefulSessions: statefulCodeSessions,
@@ -988,6 +1029,15 @@ const initializeClient = async ({
             conversationId,
           })
         : undefined;
+    const codeExecutionContext = baseCodeExecutionContext
+      ? await resolveCodeExecutionWorkspaceContext({
+          context: baseCodeExecutionContext,
+          requestedSelections: runtimeRequestBody?.codeWorkspaces,
+          persistedSelections: req.resolvedConversation?.codeWorkspaces,
+          environments: configuredCodeEnvironments,
+          getAppConfig,
+        })
+      : undefined;
     const {
       alwaysApplySkillPrimes,
       historicalToolNames,
@@ -1149,6 +1199,7 @@ const initializeClient = async ({
             ephemeralSkillsToggle,
           }),
           codeEnvAvailable,
+          fileSearchAvailable,
           backgroundToolsAvailable,
           toolIntentsAvailable,
           statefulSessionsAvailable,
@@ -1166,12 +1217,18 @@ const initializeClient = async ({
           updateFilesUsage: db.updateFilesUsage,
           getUserKeyValues: db.getUserKeyValues,
           getUserCodeFiles: db.getUserCodeFiles,
+          getDeferredProvisionFiles: db.getDeferredProvisionFiles,
           getToolFilesByIds: db.getToolFilesByIds,
           getCodeGeneratedFiles: db.getCodeGeneratedFiles,
           filterFilesByAgentAccess,
           listSkillsByAccess: skillDbMethods.listSkillsByAccess,
           listAlwaysApplySkills: skillDbMethods.listAlwaysApplySkills,
           getSkillByName: skillDbMethods.getSkillByName,
+          provisionToCodeEnv,
+          provisionToVectorDB,
+          checkSessionsAlive,
+          loadCodeApiKey,
+          updateFile: db.updateFile,
         },
       ),
       context.signal,

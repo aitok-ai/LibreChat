@@ -17,8 +17,8 @@ import {
   CodeBridgeLifecycleError,
   CodeBridgePairingError,
   CodeBridgeStatusError,
+  createCodeBridgeStatusPoller,
   createCodeBridgePairing,
-  getCodeBridgeWorkerStatus,
   readCodeBridgeSecret,
   revokeCodeBridgeWorker,
 } from './bridge';
@@ -183,6 +183,12 @@ function pairingErrorResponse(error: unknown, res: Response): Response {
   });
 }
 
+function statusErrorCode(reason: CodeBridgeStatusError['reason']): number {
+  if (reason === 'timeout') return 504;
+  if (reason === 'busy') return 503;
+  return 502;
+}
+
 export function createCodeEnvironmentHttpHandlers(deps: CodeEnvironmentHttpDeps): {
   list: (req: ServerRequest, res: Response) => Promise<Response>;
   register: (req: ServerRequest, res: Response) => Promise<Response>;
@@ -197,6 +203,7 @@ export function createCodeEnvironmentHttpHandlers(deps: CodeEnvironmentHttpDeps)
   const principalAuthEnabled = deps.principalAuthEnabled ?? isCodeApiJwtAuthEnabled;
   const principalAuthReady = deps.principalAuthReady ?? assertCodeApiJwtSigningReady;
   const principalIsActive = deps.principalIsActive ?? (async () => true);
+  const workerStatus = createCodeBridgeStatusPoller({ fetchImpl: deps.fetchImpl });
 
   async function list(req: ServerRequest, res: Response): Promise<Response> {
     const principal = actor(req);
@@ -654,6 +661,7 @@ export function createCodeEnvironmentHttpHandlers(deps: CodeEnvironmentHttpDeps)
 
     let configuration: AccessibleCodeEnvironmentConfiguration | undefined;
     let controlPlane: ConfiguredCodeEnvironment | undefined;
+    let workerId: string | undefined;
     try {
       const principals = await deps.registry.resolvePrincipals?.(principal);
       const resolvedPrincipal = principals == null ? principal : { ...principal, principals };
@@ -677,30 +685,41 @@ export function createCodeEnvironmentHttpHandlers(deps: CodeEnvironmentHttpDeps)
         effectiveControlPlane == null || controlPlaneId == null
           ? undefined
           : configuredAttachedControlPlane(deploymentConfig, controlPlaneId);
+      workerId = configuration?.workerId;
+      if (configuration == null) {
+        const effectiveEnvironment = configuredControlPlane(effectiveConfig, environmentId);
+        const deploymentEnvironment = configuredControlPlane(deploymentConfig, environmentId);
+        if (
+          effectiveEnvironment != null &&
+          deploymentEnvironment != null &&
+          effectiveEnvironment.pairing?.workerId === deploymentEnvironment.pairing?.workerId
+        ) {
+          controlPlane = deploymentEnvironment;
+          workerId = deploymentEnvironment.pairing?.workerId;
+        }
+      }
     } catch (error) {
       logger.error('[codeEnvironments] status policy resolution failed:', error);
       return res.status(503).json({ error: 'Code environment policy is unavailable' });
     }
-    if (configuration?.workerId == null || controlPlane == null) {
+    if (workerId == null || controlPlane == null) {
       return res.status(404).json({ error: 'Code environment was not found' });
     }
-    const workerId = configuration.workerId;
     const tokenEnv = controlPlane.pairing?.tokenEnv;
     const token = tokenEnv == null ? undefined : readSecret(tokenEnv)?.trim();
     if (!token) {
       return res.status(503).json({ error: 'Code environment status is not configured' });
     }
     try {
-      const workerStatus = await getCodeBridgeWorkerStatus({
+      const currentStatus = await workerStatus({
         baseURL: controlPlane.baseURL,
         token,
         workerId,
-        fetchImpl: deps.fetchImpl,
       });
-      return res.status(200).json({ environmentId, ...workerStatus });
+      return res.status(200).json({ environmentId, ...currentStatus });
     } catch (error) {
       if (error instanceof CodeBridgeStatusError) {
-        return res.status(error.reason === 'timeout' ? 504 : 502).json({
+        return res.status(statusErrorCode(error.reason)).json({
           error: 'Code environment status is unavailable',
           ...(error.upstreamStatus == null ? {} : { upstreamStatus: error.upstreamStatus }),
         });

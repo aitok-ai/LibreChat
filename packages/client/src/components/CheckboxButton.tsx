@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { Checkbox, useStoreState, useCheckboxStore } from '@ariakit/react';
+import { composerControlClasses } from '~/utils/composer';
 import { cn } from '~/utils';
 
 const CheckboxButton: React.ForwardRefExoticComponent<
@@ -61,11 +62,8 @@ const CheckboxButton: React.ForwardRefExoticComponent<
       store={checkbox}
       onChange={onChange}
       className={cn(
-        // Base styling from MultiSelect's selectClassName
-        'group gap-theme-compact relative inline-flex items-center justify-center',
-        'rounded-theme-control-round border-border-medium border text-sm font-medium',
-        'size-theme-control p-theme-compact md:px-theme-normal max-w-fit transition-all md:w-full',
-        'hover:bg-surface-hover bg-transparent shadow-sm hover:shadow-md active:shadow-inner',
+        composerControlClasses(),
+        'w-theme-control p-theme-compact md:px-theme-normal max-w-fit md:w-full',
 
         // Checked state styling
         isChecked && isCheckedClassName && isCheckedClassName,

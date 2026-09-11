@@ -116,6 +116,8 @@ export interface IMessage extends Document {
       kind: 'manual' | 'wakeup';
       claimId: string;
       claimedAt: Date;
+      /** Response generation that owns a manual delivery claim. */
+      generationId?: string;
     };
     controlReceipts?: ISubagentTaskControlReceipt[];
   };
