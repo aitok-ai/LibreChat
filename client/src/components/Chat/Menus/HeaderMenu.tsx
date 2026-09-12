@@ -1,9 +1,9 @@
 import { useState, useId } from 'react';
 import * as Ariakit from '@ariakit/react';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
+import { Ellipsis, PlusCircle, HatGlasses, Check } from 'lucide-react';
 import { DropdownPopup, TooltipAnchor, Button } from '@librechat/client';
 import { BookmarkFilledIcon, BookmarkIcon } from '@radix-ui/react-icons';
-import { Ellipsis, PlusCircle, MessageCircleDashed, Check } from 'lucide-react';
 import type { TStartupConfig } from 'librechat-data-provider';
 import type * as t from '~/common';
 import { BookmarkContext } from '~/Providers/BookmarkContext';
@@ -100,7 +100,7 @@ export default function HeaderMenu({
       icon: temporary.isTemporary ? (
         <Check className="text-text-primary size-4" />
       ) : (
-        <MessageCircleDashed className="text-text-secondary size-4" />
+        <HatGlasses className="text-text-secondary size-4" />
       ),
       onClick: temporary.toggle,
     });

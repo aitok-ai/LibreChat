@@ -31,6 +31,7 @@ const {
   getAgentCheckpointer,
   isContentFilterError,
   preflightResumeContent,
+  reportLocatorTraversalFailure,
   getResumeProvenance,
   getUserFacingResumeError,
   decrementPendingRequest,
@@ -197,6 +198,7 @@ async function deleteFailedResumeCheckpoint(args, context) {
 const GENERIC_RESUME_ERROR = 'Resume failed';
 
 const resumeContentProtectionDependencies = {
+  onTraversalFailure: reportLocatorTraversalFailure,
   getAgentCheckpointer,
   checkAccess,
   getMessages,
@@ -1884,6 +1886,14 @@ const ResumeAgentController = async (req, res, next, initializeClient, addTitle)
       );
     }
 
+    const mcpRequestBody =
+      job.metadata.mcpRequestBody ??
+      createMCPRuntimeRequestBody({
+        messageId: job.metadata.responseMessageId,
+        conversationId: streamId,
+        codeWorkspaces: req.body.codeWorkspaces ?? req.resolvedConversation?.codeWorkspaces,
+        parentMessageId: job.metadata.userMessage?.messageId ?? Constants.NO_PARENT,
+      });
     const result = await initializeClient({
       req,
       res,
@@ -1891,14 +1901,8 @@ const ResumeAgentController = async (req, res, next, initializeClient, addTitle)
       signal: job.abortController.signal,
       jobCreatedAt: job.createdAt,
       checkpointNamespace,
-      requestBody:
-        job.metadata.mcpRequestBody ??
-        createMCPRuntimeRequestBody({
-          messageId: job.metadata.responseMessageId,
-          conversationId: streamId,
-          codeWorkspaces: req.body.codeWorkspaces ?? req.resolvedConversation?.codeWorkspaces,
-          parentMessageId: job.metadata.userMessage?.messageId ?? Constants.NO_PARENT,
-        }),
+      foregroundRunId: mcpRequestBody.messageId,
+      requestBody: mcpRequestBody,
     });
     client = result.client;
 

@@ -18,6 +18,9 @@ type Kwargs = {
 
 type FavoriteItemBaseProps = {
   onRemoveFocus?: () => void;
+  /** Shortcuts an owning list handles for this row, declared here because this
+   *  is the element that takes focus. */
+  keyShortcuts?: string;
 };
 
 type AgentFavoriteProps = FavoriteItemBaseProps & {
@@ -44,7 +47,7 @@ type SpecFavoriteProps = FavoriteItemBaseProps & {
 type FavoriteItemProps = AgentFavoriteProps | ModelFavoriteProps | SpecFavoriteProps;
 
 export default function FavoriteItem(props: FavoriteItemProps) {
-  const { onRemoveFocus } = props;
+  const { onRemoveFocus, keyShortcuts } = props;
   const localize = useLocalize();
   const { removeFavoriteAgent, removeFavoriteModel, removeFavoriteSpec } = useFavorites();
 
@@ -127,6 +130,7 @@ export default function FavoriteItem(props: FavoriteItemProps) {
       role="button"
       tabIndex={0}
       aria-label={ariaLabel}
+      aria-keyshortcuts={keyShortcuts}
       className="group text-text-primary hover:bg-surface-active-alt focus-visible:ring-text-primary relative flex w-full cursor-pointer items-center justify-between rounded-lg p-2 text-sm outline-none focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
       onClick={handleClick}
       onKeyDown={handleKeyDown}

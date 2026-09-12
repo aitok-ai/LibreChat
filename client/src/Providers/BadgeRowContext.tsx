@@ -44,6 +44,7 @@ interface BadgeRowProviderProps {
     videoMenuStore: ReturnType<typeof Ariakit.useMenuStore>;
   }) => void;
   specName?: string | null;
+  observeToolAuthorization?: boolean;
 }
 
 export default function BadgeRowProvider({
@@ -52,6 +53,7 @@ export default function BadgeRowProvider({
   conversationId,
   onMenuStores,
   specName,
+  observeToolAuthorization = false,
 }: BadgeRowProviderProps) {
   const lastContextKeyRef = useRef<string>('');
   const hasInitializedRef = useRef(false);
@@ -289,6 +291,7 @@ export default function BadgeRowProvider({
     storageContextKey,
     specName,
     ownsChatSelection: true,
+    observeToolAuthorization,
   });
 
   const value: BadgeRowContextType = {

@@ -50,6 +50,7 @@ const {
   isContentTraversalProtected,
   isContentTraversalLimitError,
   assertModelBoundContent,
+  reportLocatorTraversalFailure,
   hasModelBoundContentProtection,
   isContentFilterError,
   getSafeErrorMetadata,
@@ -466,6 +467,8 @@ const executeOpenAIChatCompletion = async (envelope, { req, res }) => {
 
       const agentsEConfig = appConfig?.endpoints?.[EModelEndpoint.agents];
       const allowedProviders = new Set(agentsEConfig?.allowedProviders);
+      const ordinaryToolCancellationEnabled =
+        agentsEConfig?.backgroundTasks?.ordinaryToolCancellation === true;
 
       // Create tool loader
       const loadTools = createToolLoader({ req, res, signal: execution.signal });
@@ -748,6 +751,7 @@ const executeOpenAIChatCompletion = async (envelope, { req, res }) => {
       const manualSkillPrimes = primaryConfig.manualSkillPrimes;
       const alwaysApplySkillPrimes = primaryConfig.alwaysApplySkillPrimes;
       assertModelBoundContent({
+        onTraversalFailure: reportLocatorTraversalFailure,
         filters: appConfig?.filters,
         legacyPii: appConfig?.messageFilter?.pii,
         submittedMessages: request.messages,
@@ -801,12 +805,21 @@ const executeOpenAIChatCompletion = async (envelope, { req, res }) => {
        agent never gains sandbox access even if the admin enabled the
        capability globally. */
       const toolExecuteOptions = {
+        runSignal: execution.signal,
+        foregroundRunId: responseId,
+        ordinaryToolCancellation: ordinaryToolCancellationEnabled,
         provisionFiles: createProvisionFilesCallback({
           req,
           agentToolContexts,
           resolvePrimaryAgentId: () => primaryConfig.id,
         }),
-        loadTools: async (toolNames, agentId, _configurable, callerCapabilityProjection) => {
+        loadTools: async (
+          toolNames,
+          agentId,
+          _configurable,
+          callerCapabilityProjection,
+          runSignal,
+        ) => {
           const ctx =
             agentToolContexts.get(agentId) ?? agentToolContexts.get(primaryConfig.id) ?? {};
           const result = await loadToolsForExecution({
@@ -817,7 +830,7 @@ const executeOpenAIChatCompletion = async (envelope, { req, res }) => {
             requestBody: mcpRequestBody,
             toolNames,
             agent: ctx.agent ?? agent,
-            signal: execution.signal,
+            signal: runSignal,
             toolRegistry: ctx.toolRegistry,
             callerCapabilityProjection,
             backgroundToolNames: ctx.backgroundToolNames,

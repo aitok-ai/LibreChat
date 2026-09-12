@@ -50,6 +50,7 @@ const {
   isContentTraversalLimitError,
   prependContentTraversalFragments,
   assertModelBoundContent,
+  reportLocatorTraversalFailure,
   hasModelBoundContentProtection,
   isContentFilterError,
   getSafeErrorMetadata,
@@ -703,11 +704,14 @@ const executeResponse = async (envelope, { req, res }) => {
         codeWorkspaces: request.code_workspaces ?? req.resolvedConversation?.codeWorkspaces,
       });
       const agentsEConfig = appConfig?.endpoints?.[EModelEndpoint.agents];
+      const ordinaryToolCancellationEnabled =
+        agentsEConfig?.backgroundTasks?.ordinaryToolCancellation === true;
       const previousMessages = request.previous_response_id
         ? await loadPreviousMessages(request.previous_response_id, principal.userId)
         : [];
       if (request.previous_response_id) {
         assertModelBoundContent({
+          onTraversalFailure: reportLocatorTraversalFailure,
           filters: appConfig?.filters,
           legacyPii: appConfig?.messageFilter?.pii,
           storedMessages: previousMessages,
@@ -998,6 +1002,7 @@ const executeResponse = async (envelope, { req, res }) => {
       const modelBoundAgents = [...modelBoundAgentsById.values()];
       const mergedMCPAuthMap = discoveredMCPAuthMap ?? primaryConfig.userMCPAuthMap;
       assertModelBoundContent({
+        onTraversalFailure: reportLocatorTraversalFailure,
         filters: appConfig?.filters,
         legacyPii: appConfig?.messageFilter?.pii,
         agents: modelBoundAgents,
@@ -1092,6 +1097,7 @@ const executeResponse = async (envelope, { req, res }) => {
       }
 
       assertModelBoundContent({
+        onTraversalFailure: reportLocatorTraversalFailure,
         filters: appConfig?.filters,
         legacyPii: appConfig?.messageFilter?.pii,
         submittedMessages: inputMessages,
@@ -1144,12 +1150,21 @@ const executeResponse = async (envelope, { req, res }) => {
 
         // Create tool execute options for event-driven tool execution
         const toolExecuteOptions = {
+          runSignal: execution.signal,
+          foregroundRunId: responseId,
+          ordinaryToolCancellation: ordinaryToolCancellationEnabled,
           provisionFiles: createProvisionFilesCallback({
             req,
             agentToolContexts,
             resolvePrimaryAgentId: () => primaryConfig.id,
           }),
-          loadTools: async (toolNames, agentId, _configurable, callerCapabilityProjection) => {
+          loadTools: async (
+            toolNames,
+            agentId,
+            _configurable,
+            callerCapabilityProjection,
+            runSignal,
+          ) => {
             const ctx =
               agentToolContexts.get(agentId) ?? agentToolContexts.get(primaryConfig.id) ?? {};
             const result = await loadToolsForExecution({
@@ -1160,7 +1175,7 @@ const executeResponse = async (envelope, { req, res }) => {
               requestBody: mcpRequestBody,
               toolNames,
               agent: ctx.agent ?? agent,
-              signal: execution.signal,
+              signal: runSignal,
               toolRegistry: ctx.toolRegistry,
               callerCapabilityProjection,
               backgroundToolNames: ctx.backgroundToolNames,
@@ -1372,12 +1387,21 @@ const executeResponse = async (envelope, { req, res }) => {
         });
 
         const toolExecuteOptions = {
+          runSignal: execution.signal,
+          foregroundRunId: responseId,
+          ordinaryToolCancellation: ordinaryToolCancellationEnabled,
           provisionFiles: createProvisionFilesCallback({
             req,
             agentToolContexts,
             resolvePrimaryAgentId: () => primaryConfig.id,
           }),
-          loadTools: async (toolNames, agentId, _configurable, callerCapabilityProjection) => {
+          loadTools: async (
+            toolNames,
+            agentId,
+            _configurable,
+            callerCapabilityProjection,
+            runSignal,
+          ) => {
             const ctx =
               agentToolContexts.get(agentId) ?? agentToolContexts.get(primaryConfig.id) ?? {};
             const result = await loadToolsForExecution({
@@ -1388,7 +1412,7 @@ const executeResponse = async (envelope, { req, res }) => {
               requestBody: mcpRequestBody,
               toolNames,
               agent: ctx.agent ?? agent,
-              signal: execution.signal,
+              signal: runSignal,
               toolRegistry: ctx.toolRegistry,
               callerCapabilityProjection,
               backgroundToolNames: ctx.backgroundToolNames,

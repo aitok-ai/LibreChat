@@ -15,6 +15,7 @@ const crypto = require('crypto');
 const Conversation = require('~/db/models');
 const { sleep } = require('@librechat/agents');
 const {
+  reportLocatorTraversalFailure,
   isEnabled,
   normalizeLimit,
   openCheckpointDeletion,
@@ -89,10 +90,12 @@ const parentSubagentIndexHandler = createParentSubagentIndexHandler({
   listSubagentTasksForThreads: db.listSubagentTasksForThreads,
 });
 const filterConversationTitle = createContentFilter({
+  onTraversalFailure: reportLocatorTraversalFailure,
   getFilters: (req) => req.config?.filters,
   extract: (req) => extractConversationTitleContent(req.body),
 });
 const filterSubagentControlMessage = createContentFilter({
+  onTraversalFailure: reportLocatorTraversalFailure,
   getFilters: (req) => req.config?.filters,
   getLegacyPii: (req) => req.config?.messageFilter?.pii,
   extract: (req) =>

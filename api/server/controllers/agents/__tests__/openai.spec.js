@@ -1281,6 +1281,7 @@ describe('OpenAIChatCompletionController', () => {
       const { loadAgentTools, loadToolsForExecution } = require('~/server/services/ToolService');
       const { filterFilesByAgentAccess } = require('~/server/services/Files/permissions');
 
+      req.config.endpoints.agents.backgroundTasks = { ordinaryToolCancellation: true };
       await OpenAIChatCompletionController(req, res);
 
       const [initializeParams, dbMethods] = initializeAgent.mock.calls.at(-1);
@@ -1308,12 +1309,34 @@ describe('OpenAIChatCompletionController', () => {
       );
 
       const toolExecuteOptions = createToolExecuteHandler.mock.calls.at(-1)[0];
-      await toolExecuteOptions.loadTools(['file_search'], 'agent-123');
+      expect(toolExecuteOptions.ordinaryToolCancellation).toBe(true);
+      expect(toolExecuteOptions.runSignal).toBe(mockExecution.signal);
+      expect(toolExecuteOptions.foregroundRunId).toBe(initializeParams.requestBody.messageId);
+      const effectiveSignal = new AbortController().signal;
+      await toolExecuteOptions.loadTools(
+        ['file_search'],
+        'agent-123',
+        undefined,
+        undefined,
+        effectiveSignal,
+      );
       expect(loadToolsForExecution).toHaveBeenLastCalledWith(
         expect.objectContaining({
           agentResourceType: ResourceType.REMOTE_AGENT,
           requestBody: initializeParams.requestBody,
+          signal: effectiveSignal,
         }),
+      );
+      mockExecution.abort();
+      await toolExecuteOptions.loadTools(
+        ['file_search'],
+        'agent-123',
+        undefined,
+        undefined,
+        undefined,
+      );
+      expect(loadToolsForExecution).toHaveBeenLastCalledWith(
+        expect.objectContaining({ signal: undefined }),
       );
     });
 

@@ -1,7 +1,6 @@
 require('dotenv').config();
-const { isEnabled, instrumentMongooseQueryMetrics } = require('@librechat/api');
+const { optionalEnabled, instrumentMongooseQueryMetrics } = require('@librechat/api');
 const { logger, dropSupersededTenantIndexes } = require('@librechat/data-schemas');
-
 const mongoose = require('mongoose');
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -21,25 +20,12 @@ const maxIdleTimeMS = parseInt(process.env.MONGO_MAX_IDLE_TIME_MS) || undefined;
 /** The maximum time in milliseconds that a thread can wait for a connection to become available. */
 const waitQueueTimeoutMS = parseInt(process.env.MONGO_WAIT_QUEUE_TIMEOUT_MS) || undefined;
 /** Set to false to disable automatic index creation for all models associated with this connection. */
-const autoIndex =
-  process.env.MONGO_AUTO_INDEX != undefined
-    ? isEnabled(process.env.MONGO_AUTO_INDEX) || false
-    : undefined;
+const autoIndex = optionalEnabled(process.env.MONGO_AUTO_INDEX);
 
 /** Set to `false` to disable Mongoose automatically calling `createCollection()` on every model created on this connection. */
-const autoCreate =
-  process.env.MONGO_AUTO_CREATE != undefined
-    ? isEnabled(process.env.MONGO_AUTO_CREATE) || false
-    : undefined;
-
-/**
- * Whether Mongoose index management is enabled. When the operator has not
- * explicitly opted out via `MONGO_AUTO_INDEX=false`, we defer Mongoose's
- * automatic index builds until after superseded legacy indexes are dropped —
- * otherwise the new non-unique `messageId_1`/`conversationId_1` index builds
- * collide with the old unique indexes of the same name and fail at startup.
- */
 const shouldAutoIndex = autoIndex !== false;
+const autoCreate = optionalEnabled(process.env.MONGO_AUTO_CREATE);
+
 /**
  * Global is used here to maintain a cached connection across hot reloads
  * in development. This prevents connections growing exponentially

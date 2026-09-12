@@ -273,6 +273,9 @@ jest.mock('@librechat/api', () => ({
   buildMessageFiles: jest.fn(() => []),
   resolveTitleTiming: jest.fn(() => 'immediate'),
   resolveConversationAnchor: jest.requireActual('@librechat/api').resolveConversationAnchor,
+  resolveRunCodeWorkspaces: jest.requireActual('@librechat/api').resolveRunCodeWorkspaces,
+  getCodeWorkspaceSelectionErrorDetails:
+    jest.requireActual('@librechat/api').getCodeWorkspaceSelectionErrorDetails,
   GenerationJobManager: mockGenerationJobManager,
   getReferencedQuotes: jest.fn((quotes) => {
     if (!Array.isArray(quotes)) {
@@ -948,6 +951,9 @@ describe('ResumableAgentController resume metadata', () => {
     expect(initializeClient).toHaveBeenCalledWith(
       expect.objectContaining({ checkpointNamespace: '1000', jobCreatedAt: 1000 }),
     );
+    const [{ foregroundRunId, requestBody }] = initializeClient.mock.calls[0];
+    expect(foregroundRunId).toBe(requestBody.messageId);
+    expect(foregroundRunId).not.toBe(req.body.messageId);
     expect(req.turnStartedAt).toBe(1000);
     expect(mockGenerationJobManager.updateMetadata).not.toHaveBeenCalled();
     const startupMilestones = mockStartupTelemetry.mark.mock.calls.map(([milestone]) => milestone);
@@ -2664,6 +2670,45 @@ describe('ResumableAgentController resume metadata', () => {
     );
   });
 
+  it.each([
+    ['required', 'required'],
+    ['future_reason', undefined],
+  ])('serializes only allowlisted workspace reason %s', async (reason, expectedReason) => {
+    const workspaceError = Object.assign(new Error('Choose an attached workspace'), {
+      code: ErrorTypes.CODE_WORKSPACE_UNAVAILABLE,
+      reason,
+      status: 409,
+      statusCode: 409,
+    });
+    const initializeClient = jest.fn().mockRejectedValue(workspaceError);
+    const req = {
+      user: { id: 'user-123' },
+      body: {
+        text: 'Edit the project.',
+        messageId: 'user-msg',
+        clientRequestId: 'req-abc',
+        conversationId: 'conversation-123',
+        endpointOption: { endpoint: 'agents', modelOptions: { model: 'gpt-4.1' } },
+      },
+      config: {},
+    };
+    const res = createResumableResponse();
+
+    await AgentController(req, res, jest.fn(), initializeClient, null);
+
+    expect(mockGenerationJobManager.completeJob).toHaveBeenCalledWith(
+      'conversation-123',
+      JSON.stringify({
+        status: 409,
+        code: ErrorTypes.CODE_WORKSPACE_UNAVAILABLE,
+        ...(expectedReason == null ? {} : { reason: expectedReason }),
+        error: 'Choose an attached workspace',
+      }),
+      1000,
+      expect.objectContaining({ beforeErrorPublication: expect.any(Function) }),
+    );
+  });
+
   it('preserves a stateful scope policy denial in the durable initialization error', async () => {
     const policyError = Object.assign(
       new Error('Stateful code environment is not allowed by this deployment: conversation'),
@@ -4207,7 +4252,7 @@ describe('ResumableAgentController resume metadata', () => {
     );
   });
 
-  it.each(['submitted', 'persisted'])(
+  it.each(['submitted', 'persisted', 'overridden'])(
     'preserves %s workspace selections in the runtime envelope',
     async (source) => {
       mockGenerationJobManager.claimGeneration.mockResolvedValue(wonGenerationClaim());
@@ -4215,9 +4260,12 @@ describe('ResumableAgentController resume metadata', () => {
       const codeWorkspaces = [{ environmentId: 'machine-a', workspaceId: 'project-b' }];
       const req = {
         user: { id: 'user-123' },
-        ...(source === 'persisted' ? { resolvedConversation: { codeWorkspaces } } : {}),
+        ...(source !== 'submitted'
+          ? { resolvedConversation: { conversationId: 'conversation-123', codeWorkspaces } }
+          : {}),
         body: {
           ...(source === 'submitted' ? { codeWorkspaces } : {}),
+          ...(source === 'overridden' ? { overrideConvoId: 'target-conversation' } : {}),
           text: 'Fresh submission.',
           messageId: 'user-msg',
           clientRequestId: 'req-abc',
@@ -4239,8 +4287,13 @@ describe('ResumableAgentController resume metadata', () => {
 
       expect(initializeClient).toHaveBeenCalledWith(
         expect.objectContaining({
-          requestBody: expect.objectContaining({ codeWorkspaces }),
+          requestBody: expect.objectContaining({
+            conversationId: source === 'overridden' ? 'target-conversation' : 'conversation-123',
+          }),
         }),
+      );
+      expect(initializeClient.mock.calls[0][0].requestBody.codeWorkspaces).toEqual(
+        source === 'overridden' ? undefined : codeWorkspaces,
       );
       expect(mockCheckAndIncrementPendingRequest).toHaveBeenCalledWith('user-123');
       expect(mockGenerationJobManager.createJob).toHaveBeenCalledWith(

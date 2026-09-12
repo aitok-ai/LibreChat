@@ -11,7 +11,6 @@ import React, {
 import * as Ariakit from '@ariakit/react';
 import { Badge } from '@librechat/client';
 import { useRecoilValue, useRecoilCallback } from 'recoil';
-import { atom } from 'recoil'; // Import atom if not already imported
 import type { LucideIcon } from 'lucide-react';
 import type { BadgeItem } from '~/common';
 import useVideoPinned from '~/hooks/Video/useVideoPinned';
@@ -29,11 +28,6 @@ import Memory from './Memory';
 import Skills from './Skills';
 import store from '~/store';
 
-// Define a default atom to use when badge.atom is undefined
-const defaultBadgeAtom = atom({
-  key: 'defaultBadgeAtom',
-  default: false,
-});
 interface BadgeRowProps {
   showEphemeralBadges?: boolean;
   onChange: (badges: Pick<BadgeItem, 'id'>[]) => void;
@@ -344,6 +338,7 @@ function BadgeRow({
       onMenuStores={onMenuStores}
       specName={specName}
       isSubmitting={isSubmitting}
+      observeToolAuthorization={showEphemeralBadges === true}
     >
       <div ref={containerRef} className="relative flex flex-wrap items-center gap-2">
         {showEphemeralBadges === true && <ToolsDropdown />}
