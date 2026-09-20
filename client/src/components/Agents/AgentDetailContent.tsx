@@ -20,6 +20,7 @@ import {
 import type t from 'librechat-data-provider';
 import { renderAgentAvatar, clearMessagesCache, specDisplayFieldReset } from '~/utils';
 import { useLocalize, useDefaultConvo, useFavorites } from '~/hooks';
+import Description from '~/components/ui/Description';
 import { useChatContext } from '~/Providers';
 import AgentContact from './AgentContact';
 
@@ -121,9 +122,10 @@ const AgentDetailContent: React.FC<AgentDetailContentProps> = ({ agent }) => {
       <AgentContact agent={agent} className="mt-1 justify-center text-center text-sm" />
 
       {/* Agent description */}
-      <div className="text-text-primary mt-4 px-6 text-center text-base whitespace-pre-wrap">
-        {agent?.description}
-      </div>
+      <Description
+        description={agent?.description}
+        className="text-text-primary mt-4 px-6 text-center text-base whitespace-pre-wrap [&_a]:underline [&_a]:underline-offset-2 [&_img]:inline-block [&_img]:max-w-full"
+      />
 
       {/* Action button */}
       <div className="mt-6 mb-4 flex justify-center gap-2">

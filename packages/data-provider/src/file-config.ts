@@ -620,6 +620,7 @@ export const endpointFileConfigSchema = z.object({
   supportedMimeTypes: supportedMimeTypesSchema.optional(),
   defaultLLMDeliveryPath: defaultLLMDeliveryPathSchema.optional(),
   legacyFileUploadUX: z.boolean().optional(),
+  textFallbackWithoutTools: z.boolean().optional(),
 });
 
 const skillFileConfigSchema = z.object({
@@ -661,6 +662,7 @@ export const fileConfigSchema = z.object({
     .optional(),
   defaultLLMDeliveryPath: defaultLLMDeliveryPathSchema.optional(),
   legacyFileUploadUX: z.boolean().optional(),
+  textFallbackWithoutTools: z.boolean().optional(),
 });
 
 export type TFileConfig = z.infer<typeof fileConfigSchema>;
@@ -709,6 +711,18 @@ export const isPermissiveMimeConfig = (types?: RegexLike[]): boolean => {
     return false;
   }
   return types.some((regex) => regex.test('x-librechat/x-probe'));
+};
+
+/**
+ * Detects whether an endpoint's `supportedMimeTypes` were set by the admin rather than inherited
+ * from the built-in default list. Inheritance is signaled by referential identity with
+ * `supportedMimeTypes`, which `mergeWithDefault` preserves for unconfigured endpoints.
+ */
+export const isExplicitMimeConfig = (types?: RegexLike[]): types is RegexLike[] => {
+  if (!types || types.length === 0) {
+    return false;
+  }
+  return types !== supportedMimeTypes;
 };
 
 /** The kind of content a provider upload path can actually send to the model. */
@@ -995,6 +1009,8 @@ function mergeWithDefault(
       defaultConfig.defaultLLMDeliveryPath,
     ),
     legacyFileUploadUX: endpointConfig.legacyFileUploadUX ?? defaultConfig.legacyFileUploadUX,
+    textFallbackWithoutTools:
+      endpointConfig.textFallbackWithoutTools ?? defaultConfig.textFallbackWithoutTools,
   };
 }
 
@@ -1085,6 +1101,8 @@ export function getEndpointFileConfig(params: {
       baseDefaultConfig.defaultLLMDeliveryPath,
     ),
     legacyFileUploadUX: mergedFileConfig.legacyFileUploadUX ?? baseDefaultConfig.legacyFileUploadUX,
+    textFallbackWithoutTools:
+      mergedFileConfig.textFallbackWithoutTools ?? baseDefaultConfig.textFallbackWithoutTools,
   };
   const userDefaultConfig = mergedFileConfig.endpoints.default;
   const defaultConfig = userDefaultConfig
@@ -1209,6 +1227,10 @@ export function mergeFileConfig(dynamic: z.infer<typeof fileConfigSchema> | unde
     mergedConfig.legacyFileUploadUX = dynamic.legacyFileUploadUX;
   }
 
+  if (dynamic.textFallbackWithoutTools !== undefined) {
+    mergedConfig.textFallbackWithoutTools = dynamic.textFallbackWithoutTools;
+  }
+
   if (dynamic.serverFileSizeLimit !== undefined) {
     mergedConfig.serverFileSizeLimit = mbToBytes(dynamic.serverFileSizeLimit);
   }
@@ -1323,6 +1345,10 @@ export function mergeFileConfig(dynamic: z.infer<typeof fileConfigSchema> | unde
 
     if (dynamicEndpoint.legacyFileUploadUX !== undefined) {
       mergedEndpoint.legacyFileUploadUX = dynamicEndpoint.legacyFileUploadUX;
+    }
+
+    if (dynamicEndpoint.textFallbackWithoutTools !== undefined) {
+      mergedEndpoint.textFallbackWithoutTools = dynamicEndpoint.textFallbackWithoutTools;
     }
   }
 

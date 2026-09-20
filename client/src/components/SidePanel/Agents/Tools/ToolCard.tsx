@@ -1,5 +1,6 @@
 import { memo, useState } from 'react';
-import { BadgeCheck, Check, Globe, Info, Settings, Star, User } from 'lucide-react';
+import { VerifiedIcon } from '@librechat/client';
+import { Check, Globe, Info, Settings, Star, User } from 'lucide-react';
 import type { TranslationKeys } from '~/hooks/useLocalize';
 import type { AgentItem } from './items/types';
 import { hasConfigurableSettings } from './items/configurable';
@@ -128,9 +129,8 @@ function ToolCardImpl({
               <p className="text-text-primary flex min-w-0 flex-1 items-center gap-1 text-sm font-semibold">
                 <span className="truncate">{name}</span>
                 {isNative && (
-                  <BadgeCheck
-                    className="fill-status-success-strong text-text-on-status size-4 shrink-0"
-                    strokeWidth={2}
+                  <VerifiedIcon
+                    className="text-status-verified size-3.5 shrink-0"
                     aria-label={localize('com_ui_tools_native')}
                   />
                 )}

@@ -303,6 +303,76 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
       expect(await Agent.countDocuments()).toBe(0);
     });
 
+    test('rejects a workspace default without an explicit attached environment', async () => {
+      mockReq.config = {
+        endpoints: {
+          agents: {
+            statefulCodeSessions: {
+              allowedEnvironments: ['user'],
+              environments: [
+                {
+                  id: 'default-vm',
+                  name: 'Default VM',
+                  type: 'attached',
+                  baseURL: 'https://code.example.com/v1',
+                  default: true,
+                },
+              ],
+            },
+          },
+        },
+      };
+      mockReq.body = {
+        name: 'Unbound Workspace Agent',
+        provider: 'openai',
+        model: 'gpt-4',
+        code_workspace_id: 'project-a',
+      };
+
+      await createAgentHandler(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Code workspace defaults require an explicit attached code environment',
+      });
+      expect(await Agent.countDocuments()).toBe(0);
+    });
+
+    test('rejects a workspace default for a managed environment', async () => {
+      mockReq.config = {
+        endpoints: {
+          agents: {
+            statefulCodeSessions: {
+              allowedEnvironments: ['user'],
+              environments: [
+                {
+                  id: 'managed-runtime',
+                  name: 'Managed Runtime',
+                  type: 'managed',
+                  baseURL: 'https://code.example.com/v1',
+                },
+              ],
+            },
+          },
+        },
+      };
+      mockReq.body = {
+        name: 'Managed Workspace Agent',
+        provider: 'openai',
+        model: 'gpt-4',
+        code_environment_id: 'managed-runtime',
+        code_workspace_id: 'project-a',
+      };
+
+      await createAgentHandler(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Code workspace defaults require an explicit attached code environment',
+      });
+      expect(await Agent.countDocuments()).toBe(0);
+    });
+
     test('should block configured agent instruction content before persistence', async () => {
       mockReq.config = {
         filters: {
@@ -1449,12 +1519,74 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
       expect(agentInDb.code_environment_id).toBeUndefined();
     });
 
+    test('allows a workspace-only update for an existing attached environment', async () => {
+      await Agent.updateOne({ id: existingAgentId }, { code_environment_id: 'attached-vm' });
+      mockReq.user.id = existingAgentAuthorId.toString();
+      mockReq.params.id = existingAgentId;
+      mockReq.config = {
+        endpoints: {
+          agents: {
+            statefulCodeSessions: {
+              allowedEnvironments: ['user'],
+              environments: [
+                {
+                  id: 'attached-vm',
+                  name: 'Attached VM',
+                  type: 'attached',
+                  baseURL: 'https://bridge.example.com/v1',
+                },
+              ],
+            },
+          },
+        },
+      };
+      mockReq.body = { code_workspace_id: 'project-a' };
+
+      await updateAgentHandler(mockReq, mockRes);
+
+      expect(mockRes.status).not.toHaveBeenCalledWith(400);
+      const agentInDb = await Agent.findOne({ id: existingAgentId });
+      expect(agentInDb.code_environment_id).toBe('attached-vm');
+      expect(agentInDb.code_workspace_id).toBe('project-a');
+    });
+
+    test('rejects a workspace-only update without an attached environment', async () => {
+      mockReq.user.id = existingAgentAuthorId.toString();
+      mockReq.params.id = existingAgentId;
+      mockReq.config = {
+        endpoints: {
+          agents: {
+            statefulCodeSessions: {
+              allowedEnvironments: ['user'],
+              environments: [
+                {
+                  id: 'default-vm',
+                  name: 'Default VM',
+                  type: 'attached',
+                  baseURL: 'https://bridge.example.com/v1',
+                  default: true,
+                },
+              ],
+            },
+          },
+        },
+      };
+      mockReq.body = { code_workspace_id: 'project-a' };
+
+      await updateAgentHandler(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      const agentInDb = await Agent.findOne({ id: existingAgentId });
+      expect(agentInDb.code_workspace_id).toBeUndefined();
+    });
+
     test('allows disabling stateful sessions after the configured environment is removed', async () => {
       await Agent.updateOne(
         { id: existingAgentId },
         {
           stateful_code_sessions: true,
           code_environment_id: 'removed-vm',
+          code_workspace_id: 'project-a',
         },
       );
       mockReq.user.id = existingAgentAuthorId.toString();
@@ -1472,6 +1604,7 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
       mockReq.body = {
         stateful_code_sessions: false,
         code_environment_id: 'removed-vm',
+        code_workspace_id: 'project-a',
       };
 
       await updateAgentHandler(mockReq, mockRes);
@@ -1480,6 +1613,7 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
       const agentInDb = await Agent.findOne({ id: existingAgentId });
       expect(agentInDb.stateful_code_sessions).toBe(false);
       expect(agentInDb.code_environment_id).toBe('removed-vm');
+      expect(agentInDb.code_workspace_id).toBe('project-a');
     });
 
     test('restores the deployment-default code environment', async () => {
@@ -1488,6 +1622,7 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
         {
           stateful_code_sessions: true,
           code_environment_id: 'attached-vm',
+          code_workspace_id: 'project-a',
         },
       );
       mockReq.user.id = existingAgentAuthorId.toString();
@@ -1517,6 +1652,7 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
       expect(mockRes.status).not.toHaveBeenCalledWith(400);
       const agentInDb = await Agent.findOne({ id: existingAgentId });
       expect(agentInDb.code_environment_id).toBeUndefined();
+      expect(agentInDb.code_workspace_id).toBe('');
     });
 
     test('clears a configured Git identity', async () => {
@@ -2206,6 +2342,67 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
       expect(mockRes.json.mock.calls[0][0].agent.tool_options).toEqual({});
     });
 
+    test('duplicateAgentHandler preserves a disabled stale workspace binding', async () => {
+      const sourceAgent = await Agent.create({
+        id: `agent_${uuidv4()}`,
+        name: 'Disabled BYOM Agent',
+        provider: 'openai',
+        model: 'gpt-4',
+        author: mockReq.user.id,
+        stateful_code_sessions: false,
+        code_environment_id: 'removed-vm',
+        code_workspace_id: 'project-a',
+      });
+      jest.spyOn(db, 'getActions').mockResolvedValueOnce([]);
+      mockReq.config = {
+        endpoints: {
+          agents: {
+            statefulCodeSessions: { environments: [] },
+          },
+        },
+      };
+      mockReq.params.id = sourceAgent.id;
+
+      await duplicateAgentHandler(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(201);
+      expect(mockRes.json.mock.calls[0][0].agent).toEqual(
+        expect.objectContaining({
+          stateful_code_sessions: false,
+          code_environment_id: 'removed-vm',
+          code_workspace_id: 'project-a',
+        }),
+      );
+    });
+
+    test('duplicateAgentHandler rejects an active stale workspace binding', async () => {
+      const sourceAgent = await Agent.create({
+        id: `agent_${uuidv4()}`,
+        name: 'Active BYOM Agent',
+        provider: 'openai',
+        model: 'gpt-4',
+        author: mockReq.user.id,
+        stateful_code_sessions: true,
+        code_environment_id: 'removed-vm',
+        code_workspace_id: 'project-a',
+      });
+      mockReq.config = {
+        endpoints: {
+          agents: {
+            statefulCodeSessions: { environments: [] },
+          },
+        },
+      };
+      mockReq.params.id = sourceAgent.id;
+
+      await duplicateAgentHandler(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Code workspace defaults require an explicit attached code environment',
+      });
+    });
+
     test('revertAgentVersionHandler removes restored programmatic options without Code Interpreter', async () => {
       const agent = await Agent.create({
         id: `agent_${uuidv4()}`,
@@ -2232,6 +2429,83 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
 
       expect(mockRes.json).toHaveBeenCalled();
       expect(mockRes.json.mock.calls[0][0].tool_options).toEqual({});
+    });
+
+    test('revertAgentVersionHandler restores a disabled stale workspace binding', async () => {
+      const agent = await Agent.create({
+        id: `agent_${uuidv4()}`,
+        name: 'Current Agent',
+        provider: 'openai',
+        model: 'gpt-4',
+        author: mockReq.user.id,
+        versions: [
+          {
+            name: 'Disabled Historical BYOM Agent',
+            provider: 'openai',
+            model: 'gpt-4',
+            stateful_code_sessions: false,
+            code_environment_id: 'removed-vm',
+            code_workspace_id: 'project-a',
+          },
+        ],
+      });
+      mockReq.config = {
+        endpoints: {
+          agents: {
+            statefulCodeSessions: { environments: [] },
+          },
+        },
+      };
+      mockReq.params.id = agent.id;
+      mockReq.body = { version_index: 0 };
+
+      await revertAgentVersionHandler(mockReq, mockRes);
+
+      expect(mockRes.status).not.toHaveBeenCalledWith(400);
+      const persisted = await Agent.findOne({ id: agent.id }).lean();
+      expect(persisted).toEqual(
+        expect.objectContaining({
+          stateful_code_sessions: false,
+          code_environment_id: 'removed-vm',
+          code_workspace_id: 'project-a',
+        }),
+      );
+    });
+
+    test('revertAgentVersionHandler rejects a stale binding that inherits active sessions', async () => {
+      const agent = await Agent.create({
+        id: `agent_${uuidv4()}`,
+        name: 'Current Agent',
+        provider: 'openai',
+        model: 'gpt-4',
+        author: mockReq.user.id,
+        stateful_code_sessions: true,
+        versions: [
+          {
+            name: 'Historical BYOM Agent',
+            provider: 'openai',
+            model: 'gpt-4',
+            code_environment_id: 'removed-vm',
+            code_workspace_id: 'project-a',
+          },
+        ],
+      });
+      mockReq.config = {
+        endpoints: {
+          agents: {
+            statefulCodeSessions: { environments: [] },
+          },
+        },
+      };
+      mockReq.params.id = agent.id;
+      mockReq.body = { version_index: 0 };
+
+      await revertAgentVersionHandler(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Code workspace defaults require an explicit attached code environment',
+      });
     });
 
     test('revertAgentVersionHandler does not update unchanged tool options', async () => {
@@ -2671,16 +2945,20 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
       expect(Object.keys(agent).sort()).toEqual(
         [
           '_id',
+          'agent_ids',
           'author',
           'avatar',
           'category',
           'conversation_starters',
           'description',
+          'edges',
           'id',
           'isEditable',
           'is_promoted',
           'name',
+          'subagents',
           'support_contact',
+          'tools',
           'updatedAt',
         ].sort(),
       );
@@ -2692,6 +2970,9 @@ describe('Agent Controllers - Mass Assignment Protection', () => {
           author: userA.toString(),
           category: 'general',
           is_promoted: true,
+          tools: ['execute_code'],
+          edges: [{ from: agentA1.id, to: agentA2.id }],
+          subagents: { enabled: true, agent_ids: [agentA2.id] },
         }),
       );
     });

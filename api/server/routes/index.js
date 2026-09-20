@@ -28,6 +28,7 @@ const banner = require('./banner');
 const search = require('./search');
 const models = require('./models');
 const convos = require('./convos');
+const traces = require('./traces');
 const config = require('./config');
 const leaderboard = require('./leaderboard');
 const files = require('./files');
@@ -73,6 +74,7 @@ module.exports = {
   agents,
   videoJobs,
   convos,
+  traces,
   search,
   config,
   models,

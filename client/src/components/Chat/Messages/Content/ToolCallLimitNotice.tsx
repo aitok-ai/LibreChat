@@ -1,5 +1,5 @@
 import { useContext, useId, useState } from 'react';
-import { Button } from '@librechat/client';
+import { Button, TooltipAnchor } from '@librechat/client';
 import { FastForward, Gauge, MessageSquareText, X } from 'lucide-react';
 import type { TMessage } from 'librechat-data-provider';
 import { ChatContext } from '~/Providers/ChatContext';
@@ -68,16 +68,22 @@ export default function ToolCallLimitNotice({ message }: { message: TMessage }) 
       aria-labelledby={titleId}
       className="border-border-light bg-surface-secondary relative my-2 flex w-full flex-col rounded-xl border p-3"
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-xs"
-        aria-label={localize('com_ui_dismiss')}
-        className="text-text-secondary absolute top-1.5 right-1.5 focus-visible:ring-offset-0 focus-visible:ring-inset"
-        onClick={() => setDismissed(true)}
-      >
-        <X className="h-4 w-4" aria-hidden="true" />
-      </Button>
+      <TooltipAnchor
+        description={localize('com_ui_tool_call_limit_dismiss')}
+        side="left"
+        render={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={localize('com_ui_tool_call_limit_dismiss')}
+            className="text-text-secondary absolute top-1.5 right-1.5 focus-visible:ring-offset-0 focus-visible:ring-inset"
+            onClick={() => setDismissed(true)}
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        }
+      />
       <p
         id={titleId}
         className="text-text-primary flex min-w-0 items-center gap-2 pr-8 text-sm font-medium"

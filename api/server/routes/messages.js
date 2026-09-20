@@ -27,6 +27,7 @@ const {
   mergeUserSubmittedPaths,
   mergeUserSubmittedMessageFieldPaths,
   isContentFilterError,
+  withoutTraceRefs,
 } = require('@librechat/api');
 const subagentThreadTaskStore = require('~/server/services/Endpoints/agents/subagentThreadStore');
 const { findAllArtifacts, replaceArtifactContent } = require('~/server/services/Artifacts/update');
@@ -557,7 +558,8 @@ router.post('/:conversationId', storedMessageMutationMiddleware, async (req, res
     if (await rejectSubagentThreadWrite(req, res, req.params.conversationId)) {
       return;
     }
-    const message = { ...req.body, conversationId: req.params.conversationId };
+    /** Trace sampling fields are ownership claims only the server writes. */
+    const message = withoutTraceRefs({ ...req.body, conversationId: req.params.conversationId });
     delete message.isUserSubmitted;
     delete message.userSubmittedPaths;
     delete message.userSubmittedMessageFieldPaths;
@@ -751,7 +753,7 @@ router.put(
       // Best-effort: Assistants messages do not have deterministic AgentRun traces.
       if (!isAssistantsEndpoint(updatedMessage.endpoint)) {
         sendFeedbackScore({
-          traceId: traceIdForMessage(messageId),
+          traceId: traceIdForMessage(updatedMessage.langfuseRunId ?? messageId),
           sampled: updatedMessage.langfuseSampled,
           destinationIds: updatedMessage.langfuseDestinationIds,
           feedback: updatedMessage.feedback,

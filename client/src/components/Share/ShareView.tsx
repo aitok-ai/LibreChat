@@ -263,7 +263,9 @@ function SharedView() {
     );
 
   return (
-    <ShareContext.Provider value={{ isSharedConvo: true, shareId }}>
+    <ShareContext.Provider
+      value={{ isSharedConvo: true, shareId, hasConfiguredSender: data?.hasConfiguredSender }}
+    >
       <AppChatSurface>
         <div className="dark:bg-surface-secondary relative flex h-screen w-full overflow-hidden">
           <main className="dark:bg-surface-secondary relative flex w-full grow overflow-hidden">
