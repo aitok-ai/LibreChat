@@ -308,6 +308,37 @@ export default function CodeSettings() {
           )}
           {showGitIdentity && (
             <div className="border-border-light space-y-2 border-t pt-3">
+              <label
+                htmlFor="repository-instructions"
+                className="text-text-secondary text-xs font-medium"
+              >
+                {localize('com_ui_repository_instructions')}
+              </label>
+              <Select
+                value={watch('repositoryInstructions') ?? 'prefer'}
+                onValueChange={(value) => {
+                  if (value === 'prefer' || value === 'defer' || value === 'off')
+                    setValue('repositoryInstructions', value, { shouldDirty: true });
+                }}
+              >
+                <SelectTrigger id="repository-instructions">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="prefer">
+                    {localize('com_ui_repository_instructions_prefer')}
+                  </SelectItem>
+                  <SelectItem value="defer">
+                    {localize('com_ui_repository_instructions_defer')}
+                  </SelectItem>
+                  <SelectItem value="off">
+                    {localize('com_ui_repository_instructions_off')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-text-tertiary text-xs">
+                {localize('com_ui_repository_instructions_description')}
+              </p>
               <div className="text-text-secondary text-xs font-medium">
                 {localize('com_ui_agent_git_identity')}
               </div>

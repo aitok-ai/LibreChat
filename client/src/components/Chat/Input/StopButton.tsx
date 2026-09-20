@@ -1,7 +1,6 @@
 import { memo } from 'react';
-import { TooltipAnchor } from '@librechat/client';
+import { composerSubmitClasses, TooltipAnchor } from '@librechat/client';
 import { useLocalize } from '~/hooks';
-import { cn } from '~/utils';
 
 export default memo(function StopButton({
   stop,
@@ -19,9 +18,7 @@ export default memo(function StopButton({
         <button
           type="button"
           data-testid="stop-generation-button"
-          className={cn(
-            'size-theme-control rounded-theme-control-round bg-text-primary p-theme-compact text-text-primary duration-theme-normal disabled:text-text-secondary outline-offset-4 transition-all disabled:cursor-not-allowed disabled:opacity-10',
-          )}
+          className={composerSubmitClasses()}
           aria-label={localize('com_nav_stop_generating')}
           onClick={(e) => {
             setShowStopButton(false);
