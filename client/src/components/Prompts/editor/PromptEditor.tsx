@@ -74,7 +74,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
           <button
             type="button"
             aria-label={localize('com_ui_edit')}
-            className="focus-visible:ring-ring-primary absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2"
+            className="focus-visible:ring-ring-primary absolute inset-0 z-0 rounded-xl focus:outline-hidden focus-visible:ring-2"
             onClick={() => setIsEditing(true)}
           />
         )}
@@ -84,6 +84,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
           render={({ field }) =>
             isEditing ? (
               <TextareaAutosize
+                focusOutline="hidden"
                 {...field}
                 ref={(el: HTMLTextAreaElement | null) => {
                   field.ref(el);
@@ -91,7 +92,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
                 }}
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus
-                className="text-text-primary placeholder:text-text-tertiary focus-visible:ring-ring-primary w-full resize-none overflow-y-auto bg-transparent font-mono text-sm leading-relaxed focus:outline-none focus-visible:ring-2 sm:text-base"
+                className="text-text-primary placeholder:text-text-tertiary focus-visible:ring-ring-primary w-full resize-none overflow-y-auto bg-transparent font-mono text-sm leading-relaxed focus-visible:ring-2 sm:text-base"
                 minRows={4}
                 maxRows={16}
                 onBlur={(e) => {

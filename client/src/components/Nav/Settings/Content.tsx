@@ -33,7 +33,7 @@ export default function Content({ activeTab, query, ctx }: ContentProps) {
             {localize('com_ui_settings_no_results')}
           </p>
         ) : (
-          <div className="divide-border-light border-border-light text-text-primary divide-y overflow-hidden rounded-xl border text-sm">
+          <div className="text-text-primary overflow-hidden rounded-xl text-sm">
             {results.map(({ entry, label }) => {
               const Cmp = entry.Component;
               const tabMeta = TABS.find((t) => t.id === entry.tab)!;

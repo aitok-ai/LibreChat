@@ -11,7 +11,7 @@ import {
 } from '@librechat/client';
 import CopyButton from '~/components/Messages/Content/CopyButton';
 import { useLocalize, useCopyToClipboard } from '~/hooks';
-import { cn } from '~/utils';
+import { cn, openInNewTab } from '~/utils';
 
 interface McpOAuthDialogProps {
   open: boolean;
@@ -48,11 +48,11 @@ export default function McpOAuthDialog({
 
   return (
     <OGDialog open={open} onOpenChange={onOpenChange}>
-      <OGDialogContent className="w-11/12 max-w-md overflow-hidden rounded-2xl">
+      <OGDialogContent className="w-11/12 max-w-md overflow-x-hidden overflow-y-auto rounded-2xl">
         <div className="flex items-center gap-2">
           {iconUrl && !iconError && (
             <span
-              className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white"
+              className="bg-surface-fixed flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-md"
               aria-hidden="true"
             >
               <img
@@ -64,7 +64,7 @@ export default function McpOAuthDialog({
               />
             </span>
           )}
-          <OGDialogTitle className="text-text-primary text-base leading-6 font-semibold">
+          <OGDialogTitle className="text-base leading-6 font-semibold">
             {localize('com_nav_mcp_connect_server', { 0: serverName })}
           </OGDialogTitle>
         </div>
@@ -72,7 +72,7 @@ export default function McpOAuthDialog({
           {localize('com_ui_mcp_oauth_description')}
         </OGDialogDescription>
 
-        <div className="flex flex-col gap-3 p-1">
+        <div className="flex min-w-0 flex-col gap-3 p-1">
           {/* Auto-height reveal via grid-template-rows 0fr -> 1fr so the QR slides
            * open smoothly without a hardcoded height, matching MCPToolItem. */}
           <div
@@ -88,10 +88,13 @@ export default function McpOAuthDialog({
                   showQR ? 'opacity-100' : 'opacity-0',
                 )}
               >
-                <div className="rounded-2xl bg-white p-4 shadow-lg">
+                <div className="bg-surface-qr max-w-full min-w-0 rounded-2xl p-4 shadow-lg">
+                  {/* size is only the no-CSS fallback; the rem width is what renders,
+                      so the code follows the dialog instead of staying at 180px. */}
                   <QRCodeSVG
                     value={oauthUrl}
                     size={180}
+                    className="h-auto w-[11.25rem] max-w-full"
                     marginSize={2}
                     title={localize('com_ui_mcp_oauth_qr_code_description')}
                   />
@@ -127,7 +130,7 @@ export default function McpOAuthDialog({
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
@@ -142,11 +145,11 @@ export default function McpOAuthDialog({
             <Button
               type="button"
               variant="submit"
-              className="flex-1"
-              onClick={() => window.open(oauthUrl, '_blank', 'noopener,noreferrer')}
+              className="h-auto min-h-10 min-w-0 flex-1 basis-40 whitespace-normal"
+              onClick={() => openInNewTab(oauthUrl)}
             >
               {localize('com_ui_continue_oauth')}
-              <ExternalLink className="size-4" aria-hidden="true" />
+              <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
             </Button>
           </div>
         </div>

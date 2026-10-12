@@ -104,7 +104,7 @@ export default function WorkspaceChanges({
   return (
     <div className="my-2 max-w-xl">
       <Button
-        variant="ghost"
+        variant="disclosure"
         aria-expanded={isExpanded}
         aria-controls={panelId}
         aria-label={`${localize('com_ui_workspace_changes')}: ${countLabel}`}

@@ -171,20 +171,20 @@ export default function ArchivedChatsTable() {
               to={`/c/${conversationId ?? ''}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="group text-text-primary focus-visible:ring-text-primary flex items-center gap-1.5 truncate rounded-sm font-medium underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:outline-none"
+              className="group text-text-primary focus-visible:ring-text-primary flex items-center gap-1.5 truncate rounded-sm font-medium underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:outline-hidden"
               aria-label={localize('com_ui_open_archived_chat_new_tab_title', {
                 title: title ?? localize('com_ui_untitled'),
               })}
             >
               <span className="truncate">{title}</span>
               <ExternalLink
-                className="text-text-tertiary group-hover:text-text-secondary size-3.5 flex-shrink-0 transition-colors"
+                className="text-text-tertiary group-hover:text-text-secondary size-3.5 shrink-0 transition-colors"
                 aria-hidden="true"
               />
             </Link>
           );
           return (
-            <div className="flex items-center gap-2.5">
+            <div className="flex w-0 min-w-full items-center gap-2.5">
               <MinimalIcon
                 endpoint={row.original.endpoint}
                 size={28}

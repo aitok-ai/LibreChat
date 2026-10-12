@@ -114,7 +114,7 @@ const UIResourceCarousel: React.FC<UIResourceCarouselProps> = React.memo(({ uiRe
           return (
             <div
               key={index}
-              className="animate-in fade-in-0 slide-in-from-bottom-5 flex-shrink-0 transform-gpu transition-all duration-300 ease-out"
+              className="animate-in fade-in-0 slide-in-from-bottom-5 shrink-0 transform-gpu transition-all duration-300 ease-out"
               style={{
                 width: `${width}px`,
                 minHeight: `${height}px`,

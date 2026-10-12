@@ -1,14 +1,17 @@
 import type { JSX } from 'react';
 
-interface UserIconProps {
-  className?: string;
-  'aria-hidden'?: boolean;
-}
-
+/**
+ * `size-[1.125rem]` is the 18px default expressed in rem: the CSS dimensions win over
+ * the attributes below, so the glyph follows every scaled container it sits in without
+ * each caller having to size it.
+ */
 export default function UserIcon({
-  className,
+  className = 'size-[1.125rem]',
   'aria-hidden': ariaHidden,
-}: UserIconProps): JSX.Element {
+}: {
+  className?: string | undefined;
+  'aria-hidden'?: boolean | undefined;
+} = {}): JSX.Element {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

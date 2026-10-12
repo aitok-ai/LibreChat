@@ -23,26 +23,21 @@ export default function MemoryCard({ memory, hasUpdateAccess }: MemoryCardProps)
   return (
     <div
       className={cn(
-        'rounded-lg px-3 py-2.5',
-        'border-border-light border bg-transparent',
-        'hover:bg-surface-secondary',
+        'group rounded-lg px-3 py-2.5',
+        /** No border: a column of boxed rows reads as a stack of cards rather than
+         *  as one list. The hover fill is what says "row" instead. */
+        'hover:bg-surface-active-alt bg-transparent',
       )}
     >
-      {/* Row 1: Key + Agent badge + Token count + Actions */}
+      {/* Row 1: Key + Agent badge + Actions */}
       <div className="flex items-center gap-2">
-        <span className="text-text-primary truncate text-sm font-semibold">{displayKey}</span>
+        <span className="text-text-primary truncate text-sm font-medium">{displayKey}</span>
         {memory.agentId != null && (
           <span
-            className="border-border-light text-text-secondary shrink-0 truncate rounded-full border px-2 py-0.5 text-xs"
+            className="bg-surface-tertiary text-text-secondary shrink-0 truncate rounded-full px-2 py-0.5 text-xs"
             title={localize('com_ui_memory_agent_badge')}
           >
             {memory.agentName ?? memory.agentId}
-          </span>
-        )}
-        {memory.tokenCount !== undefined && (
-          <span className="text-text-secondary shrink-0 text-xs">
-            {memory.tokenCount}{' '}
-            {localize(memory.tokenCount === 1 ? 'com_ui_token' : 'com_ui_tokens')}
           </span>
         )}
         {hasUpdateAccess && (

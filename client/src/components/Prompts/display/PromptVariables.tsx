@@ -3,7 +3,7 @@ import { Variable, ChevronRight } from 'lucide-react';
 import { specialVariables } from 'librechat-data-provider';
 import type { TSpecialVarLabel } from 'librechat-data-provider';
 import { getSpecialVariableIcon } from '~/components/Prompts/utils';
-import { extractUniqueVariables } from '~/utils';
+import { extractUniqueVariables, cn } from '~/utils';
 import { useLocalize } from '~/hooks';
 
 interface ParsedVariable {
@@ -37,7 +37,7 @@ const DropdownVariableCard = ({ parsed }: { parsed: ParsedVariable }) => {
 
   return (
     <div
-      className="bg-surface-secondary/50 border-border-medium hover:bg-surface-secondary rounded-lg border p-2.5"
+      className="border-border-medium bg-surface-secondary/50 hover:bg-surface-secondary rounded-lg border p-2.5"
       role="listitem"
       aria-label={localize('com_ui_variable_with_options', {
         name: parsed.name,
@@ -99,7 +99,7 @@ const SpecialVariableChip = ({ parsed }: { parsed: ParsedVariable }) => {
 
 const SimpleVariableChip = ({ parsed }: { parsed: ParsedVariable }) => (
   <span
-    className="bg-surface-secondary/50 border-border-medium text-text-primary hover:bg-surface-tertiary inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium"
+    className="border-border-medium bg-surface-secondary/50 text-text-primary hover:bg-surface-tertiary inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium"
     role="listitem"
   >
     <Variable className="text-text-secondary size-3" aria-hidden="true" />
@@ -107,8 +107,15 @@ const SimpleVariableChip = ({ parsed }: { parsed: ParsedVariable }) => (
   </span>
 );
 
-const PromptVariables = ({ promptText }: { promptText: string }) => {
+const PromptVariables = ({
+  promptText,
+  inset = false,
+}: {
+  promptText: string;
+  inset?: boolean;
+}) => {
   const localize = useLocalize();
+  const frame = inset ? 'border-border-inset-medium' : 'border-border-medium';
 
   const variables = useMemo(() => {
     return extractUniqueVariables(promptText || '');
@@ -138,8 +145,8 @@ const PromptVariables = ({ promptText }: { promptText: string }) => {
   }
 
   return (
-    <div className="border-border-medium overflow-hidden rounded-xl border">
-      <header className="border-border-medium flex items-center justify-between border-b p-3">
+    <div className={cn(frame, 'overflow-hidden rounded-xl border')}>
+      <header className={cn(frame, 'flex items-center justify-between border-b p-3')}>
         <div className="flex items-center gap-2">
           <Variable className="text-text-secondary size-4" aria-hidden="true" />
           <h4 className="text-text-primary text-sm font-semibold">

@@ -18,7 +18,7 @@ const AuthorHeader = memo(function AuthorHeader({
   return (
     <div className="relative flex min-h-7 w-full items-center gap-2" data-testid="author-header">
       <div
-        className="flex size-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-full"
+        className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full"
         aria-hidden="true"
       >
         {icon}

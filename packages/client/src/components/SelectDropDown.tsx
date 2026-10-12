@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { JSX } from 'react/jsx-runtime';
 import {
   Label,
@@ -9,9 +9,9 @@ import {
   ListboxOptions,
 } from '@headlessui/react';
 import type { Option, OptionWithIcon, DropdownValueSetter } from '~/common';
+import { cn, disabledFillClasses } from '~/utils';
 import { useMultiSearch } from './MultiSearch';
 import { CheckMark } from '~/svgs';
-import { cn } from '~/utils';
 
 type SelectDropDownProps = {
   id?: string;
@@ -99,8 +99,6 @@ function SelectDropDown({
   const options = hasSearchRender ? filteredValues : values;
   const renderIcon = showOptionIcon && value != null && (value as OptionWithIcon).icon != null;
 
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
   return (
     <div className={cn('flex items-center justify-center gap-2', containerClassName ?? '')}>
       <div className={cn('relative w-full', subContainerClassName ?? '')}>
@@ -108,18 +106,21 @@ function SelectDropDown({
           {({ open }) => (
             <>
               <ListboxButton
-                ref={buttonRef}
                 data-testid="select-dropdown-button"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (!open && buttonRef.current) {
-                      buttonRef.current.click();
-                    }
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') {
+                    return;
+                  }
+                  event.preventDefault();
+                  if (!open) {
+                    event.currentTarget.dispatchEvent(
+                      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+                    );
                   }
                 }}
                 className={cn(
-                  'border-border-light bg-surface-secondary focus-visible:ring-text-primary disabled:bg-surface-secondary relative flex w-full cursor-default flex-col rounded-md border py-2 pr-10 pl-3 text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none sm:text-sm',
+                  'border-border-control bg-surface-secondary focus-visible:ring-focus-control disabled:bg-surface-secondary relative flex w-full cursor-default flex-col rounded-md border py-2 pr-10 pl-3 text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:text-sm',
+                  disabledFillClasses,
                   className ?? '',
                 )}
               >
@@ -201,7 +202,7 @@ function SelectDropDown({
                       key={'listbox-render-option'}
                       value={null}
                       className={cn(
-                        'group text-text-primary hover:bg-surface-hover relative flex h-[42px] cursor-pointer items-center overflow-hidden pr-9 pl-3 select-none',
+                        'group text-text-primary hover:bg-surface-hover relative flex h-[2.625rem] cursor-pointer items-center overflow-hidden pr-9 pl-3 select-none',
                         optionsClass ?? '',
                       )}
                     >
@@ -230,7 +231,7 @@ function SelectDropDown({
                         value={option}
                         className={({ active }) =>
                           cn(
-                            'group text-text-primary hover:bg-surface-hover relative flex h-[42px] cursor-pointer items-center overflow-hidden pr-9 pl-3 select-none',
+                            'group text-text-primary hover:bg-surface-hover relative flex h-[2.625rem] cursor-pointer items-center overflow-hidden pr-9 pl-3 select-none',
                             active ? 'bg-surface-active text-text-primary' : '',
                             optionsClass ?? '',
                           )
@@ -256,7 +257,7 @@ function SelectDropDown({
                             )}
                             {currentLabel}
                           </span>
-                          {currentValue === activeValue && (
+                          {value != null && currentValue === activeValue && (
                             <span
                               className={cn(
                                 'text-text-primary absolute inset-y-0 flex items-center',

@@ -1,17 +1,16 @@
 import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
-import { useRecoilValue } from 'recoil';
 import { HatGlasses } from 'lucide-react';
 import { easings } from '@react-spring/web';
 import { EModelEndpoint } from 'librechat-data-provider';
-import { BirthdayIcon, TooltipAnchor, SplitText } from '@librechat/client';
+import { BirthdayIcon, TooltipAnchor, SplitText, useRemScale } from '@librechat/client';
 import { useChatContext, useAgentsMapContext, useAssistantsMapContext } from '~/Providers';
 import Description, { isHtmlDescription } from '~/components/ui/Description';
 import { useGetEndpointsQuery, useGetStartupConfig } from '~/data-provider';
 import { getIconEndpoint, getEntity, getModelSpec } from '~/utils';
 import { useLocalize, useAuthContext, useGreeting } from '~/hooks';
+import { useChatSettings } from '~/Providers/ChatSettingsContext';
 import AgentContact from '~/components/Agents/AgentContact';
 import ConvoIcon from '~/components/Endpoints/ConvoIcon';
-import temporaryStore from '~/store/temporary';
 
 const containerClassName =
   'shadow-stroke relative flex h-full items-center justify-center rounded-full bg-presentation text-text-primary dark:after:shadow-none ';
@@ -45,7 +44,8 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
   const { data: endpointsConfig } = useGetEndpointsQuery();
   const { user } = useAuthContext();
   const localize = useLocalize();
-  const isTemporary = useRecoilValue(temporaryStore.isTemporary);
+  const remScale = useRemScale();
+  const { isTemporary } = useChatSettings();
 
   const [textHasMultipleLines, setTextHasMultipleLines] = useState(false);
   const [lineCount, setLineCount] = useState(1);
@@ -103,7 +103,7 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
     if (contentRef.current) {
       setContentHeight(contentRef.current.offsetHeight);
     }
-  }, [lineCount, description, selectedAgent]);
+  }, [lineCount, description, selectedAgent, remScale]);
 
   const getDynamicMargin = useMemo(() => {
     let margin = 'mb-0';
@@ -161,7 +161,7 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
             )}
             {startupConfig?.showBirthdayIcon && (
               <TooltipAnchor
-                className="absolute right-2 bottom-[27px]"
+                className="absolute right-2 bottom-[1.6875rem]"
                 description={localize('com_ui_happy_birthday')}
                 aria-label={localize('com_ui_happy_birthday')}
               >

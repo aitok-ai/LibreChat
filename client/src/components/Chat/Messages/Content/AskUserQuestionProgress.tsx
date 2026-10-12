@@ -4,6 +4,7 @@ import parseJsonField, { parseJsonFieldOccurrences } from './Parts/parseJsonFiel
 import { collectLiveAskToolCallIds } from '~/utils/approval';
 import { useGetMessagesByConvoId } from '~/data-provider';
 import { ChatContext } from '~/Providers/ChatContext';
+import { useToolPreparation } from './preparation';
 import { useLocalize } from '~/hooks';
 
 /**
@@ -28,6 +29,7 @@ export default function AskUserQuestionProgress({
   toolCallId?: string;
 }) {
   const localize = useLocalize();
+  const preparationText = useToolPreparation();
   const conversationId = useContext(ChatContext)?.conversation?.conversationId;
   const enabled = conversationId != null && conversationId !== 'new';
   const { data: livePauses } = useGetMessagesByConvoId(enabled ? conversationId : '', {
@@ -74,7 +76,7 @@ export default function AskUserQuestionProgress({
         role="status"
       >
         <MessageCircleQuestion className="h-4 w-4 animate-pulse" aria-hidden="true" />
-        <span className="shimmer">{localize('com_ui_asking')}</span>
+        <span className="shimmer">{preparationText ?? localize('com_ui_asking')}</span>
       </div>
       {question.length > 0 ? (
         <p className="text-text-primary text-sm font-medium [overflow-wrap:anywhere]">{question}</p>

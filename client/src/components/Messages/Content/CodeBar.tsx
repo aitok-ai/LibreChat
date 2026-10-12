@@ -16,7 +16,7 @@ const CodeBar: React.FC<CodeBarProps> = React.memo(
     const { isDownloaded, handleDownload } = useDownloadCode(codeRef, lang);
 
     return (
-      <div className="bg-surface-primary-alt text-text-secondary [.user-turn_&]:bg-surface-code flex items-center justify-between px-1.5 py-1.5 font-sans text-xs dark:bg-transparent">
+      <div className="bg-surface-code text-text-secondary flex items-center justify-between px-1.5 py-1.5 font-sans text-xs">
         <span className="flex items-center gap-1.5 text-xs font-medium">
           <LangIcon lang={lang} className="size-3.5" />
           {lang}

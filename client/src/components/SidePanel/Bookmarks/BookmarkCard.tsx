@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
 import { GripVertical } from 'lucide-react';
+import { useDrag, useDrop } from 'react-dnd';
+import { useToastContext } from '@librechat/client';
 import type { TConversationTag } from 'librechat-data-provider';
-import { TooltipAnchor, useToastContext } from '@librechat/client';
 import { useConversationTagMutation } from '~/data-provider';
-import { NotificationSeverity } from '~/common';
 import BookmarkCardActions from './BookmarkCardActions';
+import { NotificationSeverity } from '~/common';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -77,9 +77,8 @@ export default function BookmarkCard({ bookmark, position, moveRow }: BookmarkCa
     <div
       ref={ref}
       className={cn(
-        'flex cursor-move items-center gap-2 rounded-lg px-3 py-2.5',
-        'border-border-light border bg-transparent',
-        'hover:bg-surface-secondary',
+        'group flex cursor-move items-center gap-2 rounded-lg px-3 py-2.5',
+        'hover:bg-surface-active-alt bg-transparent',
         isDragging && 'opacity-50',
       )}
     >
@@ -87,25 +86,12 @@ export default function BookmarkCard({ bookmark, position, moveRow }: BookmarkCa
       <GripVertical className="text-text-tertiary size-4 shrink-0" aria-hidden="true" />
 
       {/* Tag name */}
-      <span className="text-text-primary min-w-0 flex-1 truncate text-sm font-semibold">
+      <span className="text-text-primary min-w-0 flex-1 truncate text-sm font-medium">
         {bookmark.tag}
       </span>
 
-      {/* Count badge */}
-      <TooltipAnchor
-        description={`${bookmark.count} ${localize(bookmark.count === 1 ? 'com_ui_conversation' : 'com_ui_conversations')}`}
-        side="top"
-        render={
-          <span className="bg-surface-tertiary text-text-secondary shrink-0 rounded-full px-2 py-0.5 text-xs">
-            {bookmark.count}
-          </span>
-        }
-      />
-
       {/* Actions */}
-      <div className="shrink-0">
-        <BookmarkCardActions bookmark={bookmark} />
-      </div>
+      <BookmarkCardActions bookmark={bookmark} />
     </div>
   );
 }

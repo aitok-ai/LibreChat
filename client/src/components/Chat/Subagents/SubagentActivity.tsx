@@ -80,12 +80,27 @@ function SubagentControlHistory({
             key={control.invocationId}
             className="border-border-light bg-surface-secondary rounded-lg border px-3 py-2 text-sm"
           >
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <StatusIcon size={14} aria-hidden className="text-text-secondary shrink-0" />
-              <span className="font-medium">{localize(CONTROL_ACTION_LABELS[control.action])}</span>
-              <span className="text-text-secondary ml-auto text-xs" aria-live="polite">
+              <span className="min-w-0 flex-1 font-medium">
+                {localize(CONTROL_ACTION_LABELS[control.action])}
+              </span>
+              <span className="text-text-secondary ml-auto shrink-0 text-xs" aria-live="polite">
                 {localize(CONTROL_STATUS_LABELS[control.status])}
               </span>
+              {control.status === 'accepted' &&
+                control.controlId != null &&
+                onCancelControl != null && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 shrink-0 px-2 text-xs"
+                    onClick={() => onCancelControl(control.controlId as string)}
+                  >
+                    {localize('com_ui_subagent_control_withdraw')}
+                  </Button>
+                )}
             </div>
             {control.message != null && control.message !== '' && (
               <div className="text-text-secondary mt-1 break-words">
@@ -105,19 +120,6 @@ function SubagentControlHistory({
                 )}
               </div>
             )}
-            {control.status === 'accepted' &&
-              control.controlId != null &&
-              onCancelControl != null && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="mt-1 h-7 px-2 text-xs"
-                  onClick={() => onCancelControl(control.controlId as string)}
-                >
-                  {localize('com_ui_subagent_control_withdraw')}
-                </Button>
-              )}
           </div>
         );
       })}
@@ -177,7 +179,7 @@ export function SubagentActivityScrollSurface({
         className={cn('min-h-0 flex-1 overflow-y-auto', padded && 'px-4 py-4')}
         data-subagent-activity-scroll-surface
       >
-        <div ref={contentRef} className={cn(headerInset && 'pt-[52px]')}>
+        <div ref={contentRef} className={cn(headerInset && 'pt-13')}>
           {children}
         </div>
       </div>
@@ -248,6 +250,16 @@ const toContentPart = (item: ChildActivityItem): TMessageContentParts => {
       output: item.output ?? '',
       progress: item.status === 'running' ? 0.1 : 1,
       ...(item.status === 'running' ? {} : { runStepStatus: item.status }),
+      ...(item.toolPreparationStartedAt == null
+        ? {}
+        : { toolPreparationStartedAt: item.toolPreparationStartedAt }),
+      ...(item.toolDispatchedAt == null ? {} : { toolDispatchedAt: item.toolDispatchedAt }),
+      ...(item.toolPreparationDurationMs == null
+        ? {}
+        : { toolPreparationDurationMs: item.toolPreparationDurationMs }),
+      ...(item.toolExecutionDurationMs == null
+        ? {}
+        : { toolExecutionDurationMs: item.toolExecutionDurationMs }),
       ...(item.inputValidationError === true ? { inputValidationError: true } : {}),
       ...(item.approval == null ? {} : { approval: item.approval }),
     },
@@ -265,7 +277,7 @@ function SubagentPrompt({ prompt }: { prompt: string }) {
       aria-labelledby={headingId}
       className="border-border-light bg-surface-secondary text-text-primary mb-3 shrink-0 overflow-hidden rounded-lg border"
     >
-      <div className="border-border-light flex min-h-[2.75rem] items-center justify-between gap-3 border-b px-3 py-2">
+      <div className="border-border-inset flex min-h-[2.75rem] items-center justify-between gap-3 border-b px-3 py-2">
         <h3 id={headingId} className="text-text-primary text-sm font-medium">
           {localize('com_ui_prompt')}
         </h3>
@@ -277,7 +289,7 @@ function SubagentPrompt({ prompt }: { prompt: string }) {
           aria-expanded={expanded}
           aria-label={toggleLabel}
           title={toggleLabel}
-          className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary focus:ring-text-primary h-8 gap-1.5 rounded-md px-2 text-xs font-medium transition focus:ring-2 focus:outline-none"
+          className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary focus:ring-text-primary h-8 gap-1.5 rounded-md px-2 text-xs font-medium transition focus:ring-2"
         >
           {expanded ? <Minimize2 size={14} aria-hidden /> : <Maximize2 size={14} aria-hidden />}
           <span className="hidden sm:inline">{toggleLabel}</span>
@@ -359,6 +371,7 @@ export function SubagentActivityContent({
         isSubmitting={isSubmitting}
         showThinking={showThinking}
         isLatestMessage={isSubmitting}
+        foldLiveActivity={false}
       />
     );
   }
@@ -407,6 +420,7 @@ export default function SubagentActivity({
   showPrompt = true,
   headerInset = false,
   onCancelControl,
+  notice,
 }: {
   activity: ChildActivity;
   activityId?: string;
@@ -414,6 +428,7 @@ export default function SubagentActivity({
   embedded?: boolean;
   showPrompt?: boolean;
   headerInset?: boolean;
+  notice?: React.ReactNode;
   onCancelControl?: (controlId: string) => void;
 }) {
   const statusHeader = isAbnormalTerminalStatus(activity.status) ? (
@@ -422,13 +437,16 @@ export default function SubagentActivity({
     </div>
   ) : null;
   const content = (
-    <SubagentActivityContent
-      activity={activity}
-      activityId={activityId}
-      state={state}
-      showPrompt={showPrompt}
-      onCancelControl={onCancelControl}
-    />
+    <>
+      {notice}
+      <SubagentActivityContent
+        activity={activity}
+        activityId={activityId}
+        state={state}
+        showPrompt={showPrompt}
+        onCancelControl={onCancelControl}
+      />
+    </>
   );
 
   if (embedded) {

@@ -177,12 +177,12 @@ export default function CreateSkillForm({
                     aria-invalid={errors.name ? 'true' : 'false'}
                     aria-describedby={errors.name ? 'skill-name-error' : undefined}
                   />
-                  <Label
+                  <label
                     htmlFor="skill-name"
-                    className="bg-presentation text-text-secondary peer-focus:text-text-primary pointer-events-none absolute -top-1 left-3 origin-[0] translate-y-3 scale-100 rounded px-1 text-base transition-transform duration-200 peer-placeholder-shown:translate-y-3 peer-placeholder-shown:scale-100 peer-focus:-translate-y-2 peer-focus:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-2 peer-[:not(:placeholder-shown)]:scale-75"
+                    className="bg-surface-primary-alt text-text-secondary peer-focus:text-text-primary pointer-events-none absolute -top-1 left-3 origin-[0] translate-y-3 scale-100 rounded px-1 text-base transition-transform duration-200 peer-placeholder-shown:translate-y-3 peer-placeholder-shown:scale-100 peer-focus:-translate-y-2 peer-focus:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-2 peer-[:not(:placeholder-shown)]:scale-75"
                   >
                     {localize('com_ui_name')}*
-                  </Label>
+                  </label>
                   <div
                     id="skill-name-error"
                     className={cn(
@@ -225,6 +225,7 @@ export default function CreateSkillForm({
                   <span className="text-text-destructive ml-0.5">*</span>
                 </Label>
                 <TextareaAutosize
+                  focusOutline="hidden"
                   {...field}
                   id="skill-description"
                   minRows={2}
@@ -233,7 +234,7 @@ export default function CreateSkillForm({
                   aria-label={localize('com_ui_description')}
                   aria-invalid={errors.description ? 'true' : 'false'}
                   aria-describedby={errors.description ? 'skill-description-error' : undefined}
-                  className="border-border-medium text-text-primary placeholder:text-text-secondary focus-visible:ring-ring-primary w-full resize-none rounded-xl border bg-transparent p-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                  className="border-border-medium text-text-primary placeholder:text-text-secondary focus-visible:ring-ring-primary w-full resize-none rounded-xl border bg-transparent p-3 text-sm focus-visible:ring-2"
                 />
                 <p className="text-text-secondary mt-1 text-xs">
                   {localize('com_ui_skill_description_field_hint')}

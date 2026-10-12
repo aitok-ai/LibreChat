@@ -42,10 +42,12 @@ interface FilePreviewDialogProps {
   fileSource?: string;
   fileSize?: number;
   deliveryPath?: TFile['llmDeliveryPath'];
+  /** Where focus returns on close when the dialog is opened without a trigger. */
+  triggerRef?: React.RefObject<HTMLElement | null>;
 }
 
 /** Formats bytes with unit suffix (differs from ~/utils/formatBytes which returns a raw number). */
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
   if (bytes >= 1048576) {
     return `${(bytes / 1048576).toFixed(1)} MB`;
   }
@@ -55,25 +57,31 @@ function formatBytes(bytes: number): string {
   return `${bytes} B`;
 }
 
-function getDisplayType(fileType?: string, fileName?: string): string {
+/** A file's kind for display: acronyms and extensions as they are, words
+ *  through the locale. */
+export function getDisplayType(
+  localize: ReturnType<typeof useLocalize>,
+  fileType?: string,
+  fileName?: string,
+): string {
   if (fileType) {
     if (fileType.includes('pdf')) {
       return 'PDF';
     }
     if (fileType.includes('word') || fileType.includes('document')) {
-      return 'Document';
+      return localize('com_ui_file_type_document');
     }
     if (fileType.includes('spreadsheet') || fileType.includes('excel')) {
-      return 'Spreadsheet';
+      return localize('com_ui_file_type_spreadsheet');
     }
     if (fileType.includes('presentation') || fileType.includes('powerpoint')) {
-      return 'Presentation';
+      return localize('com_ui_file_type_presentation');
     }
     if (fileType.includes('image')) {
-      return 'Image';
+      return localize('com_ui_file_type_image');
     }
     if (fileType.startsWith('text/')) {
-      return fileType.split('/')[1]?.toUpperCase() || 'Text';
+      return fileType.split('/')[1]?.toUpperCase() || localize('com_ui_file_type_text');
     }
     if (fileType.includes('json')) {
       return 'JSON';
@@ -83,7 +91,7 @@ function getDisplayType(fileType?: string, fileName?: string): string {
     }
   }
   const ext = fileName ? getFileExtension(fileName) : '';
-  return ext ? ext.toUpperCase() : 'File';
+  return ext ? ext.toUpperCase() : localize('com_ui_file');
 }
 
 export default function FilePreviewDialog({
@@ -98,6 +106,7 @@ export default function FilePreviewDialog({
   fileSource,
   fileSize,
   deliveryPath,
+  triggerRef,
 }: FilePreviewDialogProps) {
   const localize = useLocalize();
   const user = useRecoilValue(store.user);
@@ -231,7 +240,10 @@ export default function FilePreviewDialog({
     setTimeout(() => setIsCopied(false), 3000);
   }, [displayedText]);
 
-  const displayType = useMemo(() => getDisplayType(fileType, fileName), [fileType, fileName]);
+  const displayType = useMemo(
+    () => getDisplayType(localize, fileType, fileName),
+    [localize, fileType, fileName],
+  );
   const sortedPages = useMemo(
     () => (pages && pageRelevance ? sortPagesByRelevance(pages, pageRelevance) : pages),
     [pages, pageRelevance],
@@ -249,7 +261,7 @@ export default function FilePreviewDialog({
   }
 
   return (
-    <OGDialog open={open} onOpenChange={onOpenChange}>
+    <OGDialog open={open} onOpenChange={onOpenChange} triggerRef={triggerRef}>
       <OGDialogContent
         className="flex w-full max-w-4xl flex-col !overflow-hidden p-0"
         showCloseButton={true}
@@ -264,7 +276,7 @@ export default function FilePreviewDialog({
               <button
                 type="button"
                 onClick={handleDownload}
-                className="text-text-secondary hover:text-text-primary focus-visible:ring-border-heavy inline-flex shrink-0 items-center gap-1 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="text-text-secondary hover:text-text-primary focus-visible:ring-focus-subtle inline-flex shrink-0 items-center gap-1 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
                 aria-label={`${localize('com_ui_download')} ${fileName}`}
               >
                 <Download className="size-3" aria-hidden="true" />

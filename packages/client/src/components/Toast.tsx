@@ -1,8 +1,31 @@
+import * as React from 'react';
 import { X } from 'lucide-react';
 import { JSX } from 'react/jsx-runtime';
 import * as RadixToast from '@radix-ui/react-toast';
 import { NotificationSeverity } from '~/common';
 import { useToast, useLocalize } from '~/hooks';
+import { cn } from '~/utils';
+
+/**
+ * Shared by the app shell and undocked artifacts window so toast viewport
+ * positioning stays in sync between both hosts.
+ */
+const ToastViewport: React.ForwardRefExoticComponent<
+  RadixToast.ToastViewportProps & React.RefAttributes<HTMLOListElement>
+> = React.forwardRef<
+  React.ElementRef<typeof RadixToast.Viewport>,
+  React.ComponentPropsWithoutRef<typeof RadixToast.Viewport>
+>(({ className, ...props }, ref) => (
+  <RadixToast.Viewport
+    ref={ref}
+    className={cn(
+      'pointer-events-none fixed inset-x-0 top-0 z-[1000] mx-auto my-2 flex max-w-[560px] flex-col items-stretch justify-start',
+      className,
+    )}
+    {...props}
+  />
+));
+ToastViewport.displayName = RadixToast.Viewport.displayName;
 
 export function Toast(): JSX.Element {
   const { toast, onOpenChange } = useToast();
@@ -29,12 +52,12 @@ export function Toast(): JSX.Element {
     >
       <div className="w-full p-1 text-center md:w-auto md:text-justify">
         <div
-          className={`alert-root text-text-on-status pointer-events-auto inline-flex flex-row gap-2 rounded-md border px-3 py-2 font-bold ${
+          className={`alert-root text-text-on-status border-border-light pointer-events-auto inline-flex flex-row gap-2 rounded-md border px-3 py-2 font-bold ${
             severityClassName[toast.severity]
           }`}
         >
           {toast.showIcon && (
-            <div className="mt-1 flex-shrink-0 flex-grow-0">
+            <div className="mt-1 shrink-0 grow-0">
               <svg
                 stroke="currentColor"
                 fill="none"
@@ -59,7 +82,7 @@ export function Toast(): JSX.Element {
           {persistent && (
             <RadixToast.Close
               aria-label={localize('com_ui_close')}
-              className="ml-2 inline-flex flex-shrink-0 flex-grow-0 items-center justify-center self-center rounded-sm opacity-80 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-current focus-visible:outline-none"
+              className="ml-2 inline-flex shrink-0 grow-0 items-center justify-center self-center rounded-sm opacity-80 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-current focus-visible:outline-hidden"
             >
               <X className="h-4 w-4" strokeWidth={3} />
             </RadixToast.Close>
@@ -69,3 +92,4 @@ export function Toast(): JSX.Element {
     </RadixToast.Root>
   );
 }
+export { ToastViewport };

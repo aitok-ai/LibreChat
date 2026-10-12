@@ -31,7 +31,7 @@ export default function SkillFilePreview({ skillId, nodeId, fileName }: SkillFil
       <div className="border-border-light flex items-center gap-2 border-b px-4 py-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           {isImage ? (
-            <FileImage className="size-4 shrink-0 text-pink-400" aria-hidden="true" />
+            <FileImage className="text-series-5 size-4 shrink-0" aria-hidden="true" />
           ) : (
             <File className="text-text-tertiary size-4 shrink-0" aria-hidden="true" />
           )}

@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 import { FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller, FormProvider } from 'react-hook-form';
+import { Button, Spinner, TextareaAutosize, Input } from '@librechat/client';
 import { LocalStorageKeys, PermissionTypes, Permissions } from 'librechat-data-provider';
-import { Button, Spinner, TextareaAutosize, Input, useMediaQuery } from '@librechat/client';
 import OpenSidebar from '~/components/Chat/Menus/OpenSidebar';
+import useDrawerViewport from '~/hooks/Nav/useDrawerViewport';
 import VariablesDropdown from '../editor/VariablesDropdown';
 import CategorySelector from '../fields/CategorySelector';
 import PromptVariables from '../display/PromptVariables';
@@ -45,7 +46,7 @@ const CreatePromptForm = ({
 }) => {
   const localize = useLocalize();
   const navigate = useNavigate();
-  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isSmallScreen = useDrawerViewport();
   const { hasAccess: hasUseAccess } = usePromptGroupsContext() ?? {};
   const hasCreateAccess = useHasAccess({
     permissionType: PermissionTypes.PROMPTS,
@@ -94,7 +95,7 @@ const CreatePromptForm = ({
   const isCreating = createPromptMutation.isLoading;
   const isBlocked = !isDirty || isSubmitting || !isValid || isCreating;
   /** Floating labels notch out the surface behind them: the dialog sits on `surface-primary`, the page on `presentation` */
-  const labelBgClassName = isDialog ? 'bg-surface-primary' : 'bg-presentation';
+  const labelBgClassName = isDialog ? 'bg-surface-primary' : 'bg-surface-primary-alt';
 
   const onSubmit = (data: CreateFormValues) => {
     const { name, category, oneliner, command, ...rest } = data;
@@ -194,8 +195,9 @@ const CreatePromptForm = ({
                 render={({ field }) => (
                   <div>
                     <TextareaAutosize
+                      focusOutline="hidden"
                       {...field}
-                      className="text-text-primary placeholder:text-text-tertiary focus-visible:ring-ring-primary w-full resize-none overflow-y-auto bg-transparent font-mono text-sm leading-relaxed focus:outline-none focus-visible:ring-2 sm:text-base"
+                      className="text-text-primary placeholder:text-text-tertiary focus-visible:ring-ring-primary w-full resize-none overflow-y-auto bg-transparent font-mono text-sm leading-relaxed focus-visible:ring-2 sm:text-base"
                       minRows={isDialog ? 10 : 4}
                       maxRows={16}
                       tabIndex={0}
@@ -216,7 +218,7 @@ const CreatePromptForm = ({
               />
             </div>
           </div>
-          <PromptVariables promptText={promptText} />
+          <PromptVariables promptText={promptText} inset />
           <Description
             onValueChange={(value) => methods.setValue('oneliner', value)}
             tabIndex={0}

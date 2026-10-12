@@ -15,7 +15,7 @@ import { cn } from '~/utils';
 
 const addButtonClassName = cn(
   'inline-flex h-7 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-text-secondary transition-colors',
-  'hover:bg-surface-secondary hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring-primary',
+  'hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-2 focus-visible:ring-ring-primary',
   'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-text-secondary',
 );
 
@@ -114,7 +114,7 @@ function FileContext({
         <Ariakit.MenuButton
           disabled={disabledUploadButton}
           aria-label={addLabel}
-          className={addButtonClassName}
+          className={cn(addButtonClassName, 'focus:outline-hidden')}
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
           {localize('com_ui_add')}
@@ -152,14 +152,14 @@ function FileContext({
                 <button
                   type="button"
                   aria-label={localize('com_agents_file_context_description')}
-                  className="text-text-tertiary hover:text-text-secondary focus-visible:ring-ring-primary flex size-4 shrink-0 items-center justify-center rounded transition-colors focus:outline-none focus-visible:ring-2"
+                  className="text-text-tertiary hover:text-text-secondary focus-visible:ring-ring-primary flex size-4 shrink-0 items-center justify-center rounded transition-colors focus:outline-hidden focus-visible:ring-2"
                 >
                   <Info className="size-3.5" aria-hidden="true" />
                 </button>
               }
             />
             {fileCount > 0 && (
-              <span className="bg-surface-tertiary text-text-secondary inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1.5 text-[10px] font-medium">
+              <span className="bg-surface-tertiary text-text-secondary inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1.5 text-[10px] font-medium">
                 {fileCount}
               </span>
             )}

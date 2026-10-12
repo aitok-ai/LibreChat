@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import { Button } from '@librechat/client';
+import { reportBoundaryError } from '~/lib/rum/logs';
 import { useLocalize } from '~/hooks';
 
 interface Props {
@@ -44,6 +45,7 @@ class SourcesErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Sources error:', error);
+    reportBoundaryError('sources', error);
     this.props.onError?.(error, errorInfo);
   }
 

@@ -170,7 +170,7 @@ function DynamicInput({
       }`}
     >
       <HoverCard openDelay={300}>
-        <HoverCardTrigger className="grid w-full items-center gap-2">
+        <HoverCardTrigger className="grid h-full w-full content-between items-center gap-2">
           <div className="flex w-full justify-between">
             <Label
               htmlFor={`${settingKey}-dynamic-input`}

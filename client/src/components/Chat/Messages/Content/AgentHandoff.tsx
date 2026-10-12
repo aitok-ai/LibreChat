@@ -5,10 +5,14 @@ import { Button } from '@librechat/client';
 import { EModelEndpoint, Constants } from 'librechat-data-provider';
 import type { TMessage } from 'librechat-data-provider';
 import type { TranslationKeys } from '~/hooks';
+import {
+  useToolContentRequest,
+  useToolContentPending,
+  toolPanelSpacingClassName,
+} from './disclosure';
 import CopyButton from '~/components/Messages/Content/CopyButton';
 import { unescapeJsonString } from './Parts/parseJsonField';
 import MessageIcon from '~/components/Share/MessageIcon';
-import { toolPanelSpacingClassName } from './disclosure';
 import { useLocalize, useExpandCollapse } from '~/hooks';
 import { useAgentsMapContext } from '~/Providers';
 import { cn } from '~/utils';
@@ -107,6 +111,7 @@ const AgentHandoff: React.FC<AgentHandoffProps> = ({ name, args: _args = '' }) =
   const localize = useLocalize();
   const agentsMap = useAgentsMapContext();
   const [showInfo, setShowInfo] = useState(false);
+  useToolContentRequest(showInfo);
   const [isCopied, setIsCopied] = useState(false);
   const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const contentId = useId();
@@ -147,14 +152,15 @@ const AgentHandoff: React.FC<AgentHandoffProps> = ({ name, args: _args = '' }) =
    *  non-secure origin (a LAN deployment served over http), where
    *  dereferencing it throws before any rejection handler can run and the
    *  button silently does nothing. */
+  const contentPending = useToolContentPending();
   const handleCopy = useCallback(() => {
-    if (!copy(copyText, { format: 'text/plain' })) {
+    if (contentPending || !copy(copyText, { format: 'text/plain' })) {
       return;
     }
     clearTimeout(copiedTimerRef.current);
     setIsCopied(true);
     copiedTimerRef.current = setTimeout(() => setIsCopied(false), 2000);
-  }, [copyText]);
+  }, [contentPending, copyText]);
 
   return (
     <div className="my-2">
@@ -214,6 +220,7 @@ const AgentHandoff: React.FC<AgentHandoffProps> = ({ name, args: _args = '' }) =
                   isCopied={isCopied}
                   iconOnly
                   onClick={handleCopy}
+                  disabled={contentPending}
                   label={localize('com_ui_copy_to_clipboard')}
                   copiedLabel={localize('com_ui_copied_to_clipboard')}
                   /** Only the reveal-on-hover behavior is local; the icon

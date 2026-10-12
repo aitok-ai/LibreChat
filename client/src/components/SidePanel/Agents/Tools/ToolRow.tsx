@@ -15,7 +15,6 @@ interface Props {
 }
 
 function getSuffix(item: AgentItem): string | null {
-  if (item.kind === 'mcp' && item.toolCount > 0) return `· ${item.toolCount}`;
   if (item.kind === 'action' && item.endpointCount > 0) return `· ${item.endpointCount}`;
   return null;
 }
@@ -27,7 +26,7 @@ function RowIcon({ item }: { item: AgentItem }) {
   if (iconUrl && !imgError) {
     return (
       <span
-        className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white"
+        className="bg-surface-fixed flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md"
         aria-hidden="true"
       >
         <img
@@ -69,14 +68,14 @@ function ToolRowImpl({ item, onInfo, onRemove }: Props) {
       </div>
       {item.status === 'needs_setup' && (
         <span role="status" className="flex shrink-0 items-center">
-          <span className="size-1.5 rounded-full bg-red-500" aria-hidden="true" />
+          <span className="bg-status-error size-1.5 rounded-full" aria-hidden="true" />
           <span className="sr-only">{localize('com_ui_tools_needs_setup')}</span>
         </span>
       )}
       <div
         className={cn(
-          'flex shrink-0 items-center gap-0.5 opacity-0',
-          'group-focus-within:opacity-100 group-hover:opacity-100',
+          'flex shrink-0 items-center gap-0.5',
+          'no-touch:opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
         )}
       >
         <Button

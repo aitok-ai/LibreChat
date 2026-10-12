@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { LockIcon, Trash } from 'lucide-react';
-import { REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import {
   InputOTPSeparator,
   OGDialogContent,
@@ -17,6 +17,7 @@ import {
   Input,
 } from '@librechat/client';
 import type { TDeleteUserRequest } from 'librechat-data-provider';
+import BackupCodeInput, { isBackupCode } from '~/components/Auth/BackupCodeInput';
 import { useDeleteUserMutation } from '~/data-provider';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { LocalizeFunction } from '~/common';
@@ -59,7 +60,7 @@ const DeleteAccount = ({ disabled = false }: { title?: string; disabled?: boolea
     [user?.email],
   );
 
-  const otpReady = !needs2FA || otpToken.length === (useBackup ? 8 : 6);
+  const otpReady = !needs2FA || (useBackup ? isBackupCode(otpToken) : otpToken.length === 6);
 
   return (
     <>
@@ -104,25 +105,16 @@ const DeleteAccount = ({ disabled = false }: { title?: string; disabled?: boolea
                   {localize('com_ui_2fa_verification_required')}
                 </Label>
                 <div className="flex justify-center">
-                  <InputOTP
-                    value={otpToken}
-                    onChange={setOtpToken}
-                    maxLength={useBackup ? 8 : 6}
-                    pattern={useBackup ? REGEXP_ONLY_DIGITS_AND_CHARS : REGEXP_ONLY_DIGITS}
-                    className="gap-2"
-                  >
-                    {useBackup ? (
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                        <InputOTPSlot index={6} />
-                        <InputOTPSlot index={7} />
-                      </InputOTPGroup>
-                    ) : (
+                  {useBackup ? (
+                    <BackupCodeInput value={otpToken} onChange={setOtpToken} />
+                  ) : (
+                    <InputOTP
+                      value={otpToken}
+                      onChange={setOtpToken}
+                      maxLength={6}
+                      pattern={REGEXP_ONLY_DIGITS}
+                      className="gap-2"
+                    >
                       <>
                         <InputOTPGroup>
                           <InputOTPSlot index={0} />
@@ -136,8 +128,8 @@ const DeleteAccount = ({ disabled = false }: { title?: string; disabled?: boolea
                           <InputOTPSlot index={5} />
                         </InputOTPGroup>
                       </>
-                    )}
-                  </InputOTP>
+                    </InputOTP>
+                  )}
                 </div>
                 <Button
                   type="button"

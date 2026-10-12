@@ -1,7 +1,8 @@
 import { useState, memo, useRef, useCallback, useId, useMemo } from 'react';
 import * as Ariakit from '@ariakit/react';
+import { PermissionBits } from 'librechat-data-provider';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PermissionBits, ResourceType } from 'librechat-data-provider';
+import { hasPermissions } from 'librechat-data-provider/react-query';
 import { Ellipsis, Eye, SquarePen, Trash, EarthIcon, User } from 'lucide-react';
 import {
   Label,
@@ -14,22 +15,24 @@ import {
   useToastContext,
 } from '@librechat/client';
 import type { TPromptGroup } from 'librechat-data-provider';
-import { useLocalize, useAuthContext, useSubmitMessage, useResourcePermissions } from '~/hooks';
+import { detectVariables, cn, rowActionClasses, rowActionSlotClasses } from '~/utils';
 import { useRecordPromptUsage, useDeletePromptGroup } from '~/data-provider';
+import { useLocalize, useAuthContext, useSubmitMessage } from '~/hooks';
 import VariableDialog from '../dialogs/VariableDialog';
 import PreviewPrompt from '../dialogs/PreviewPrompt';
 import CategoryIcon from '../utils/CategoryIcon';
 import { useLiveAnnouncer } from '~/Providers';
-import { detectVariables, cn } from '~/utils';
 
 const PROMPT_PATH = '/prompts';
 
 function ChatGroupItem({
   group,
   isChatRoute = true,
+  permissionBits = 0,
 }: {
   group: TPromptGroup;
   isChatRoute?: boolean;
+  permissionBits?: number;
 }) {
   const localize = useLocalize();
   const navigate = useNavigate();
@@ -49,9 +52,8 @@ function ChatGroupItem({
 
   const groupIsGlobal = group.isPublic === true;
 
-  const { hasPermission } = useResourcePermissions(ResourceType.PROMPTGROUP, group._id || '');
-  const canEdit = hasPermission(PermissionBits.EDIT);
-  const canDelete = hasPermission(PermissionBits.DELETE);
+  const canEdit = hasPermissions(permissionBits, PermissionBits.EDIT);
+  const canDelete = hasPermissions(permissionBits, PermissionBits.DELETE);
 
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -138,14 +140,16 @@ function ChatGroupItem({
     <>
       <div
         className={cn(
-          'group/prompt border-border-light hover:bg-surface-secondary relative mb-1.5 rounded-xl border bg-transparent transition-colors',
-          !isChatRoute && params.promptId === group._id && 'bg-surface-hover',
+          'group relative mb-0.5 rounded-lg bg-transparent',
+          !isChatRoute && params.promptId === group._id
+            ? 'bg-surface-nav-selected'
+            : 'hover:bg-surface-nav-hover',
         )}
       >
         {/* Clickable overlay for card */}
         <button
           type="button"
-          className="focus-visible:ring-ring-primary absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2"
+          className="focus-visible:ring-ring-primary absolute inset-0 z-0 rounded-xl focus:outline-hidden focus-visible:ring-2"
           onClick={onCardClick}
           aria-label={ariaLabel}
         />
@@ -161,7 +165,7 @@ function ChatGroupItem({
                 description={group.name}
                 side="top"
                 render={
-                  <span className="text-text-primary truncate text-sm font-semibold">
+                  <span className="text-text-primary truncate text-sm font-medium">
                     {group.name}
                   </span>
                 }
@@ -198,37 +202,36 @@ function ChatGroupItem({
                   }
                 />
               )}
+              {/* The menu shares the title's line, so only the title gives way to it.
+                  The snippet below keeps the full width of the row either way. */}
+              <div
+                className={cn(rowActionSlotClasses({ open: menuOpen }), 'relative z-10 ml-auto')}
+              >
+                <DropdownPopup
+                  portal={true}
+                  menuId={menuId}
+                  focusLoop={true}
+                  className="z-[125]"
+                  unmountOnHide={true}
+                  isOpen={menuOpen}
+                  setIsOpen={setMenuOpen}
+                  trigger={
+                    <Ariakit.MenuButton
+                      ref={menuButtonRef}
+                      aria-label={localize('com_nav_convo_menu_options')}
+                      className={rowActionClasses({ open: menuOpen })}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Ellipsis className="size-4" aria-hidden="true" />
+                    </Ariakit.MenuButton>
+                  }
+                  items={dropdownItems}
+                />
+              </div>
             </div>
             <p className="text-text-secondary mt-0.5 line-clamp-2 text-xs leading-relaxed">
               {snippet}
             </p>
-          </div>
-          <div className="relative z-10 shrink-0">
-            <DropdownPopup
-              portal={true}
-              menuId={menuId}
-              focusLoop={true}
-              className="z-[125]"
-              unmountOnHide={true}
-              isOpen={menuOpen}
-              setIsOpen={setMenuOpen}
-              trigger={
-                <Ariakit.MenuButton
-                  ref={menuButtonRef}
-                  aria-label={localize('com_nav_convo_menu_options')}
-                  className={cn(
-                    'text-text-secondary hover:bg-surface-hover focus-visible:ring-ring-primary flex size-7 items-center justify-center rounded-md transition-opacity focus-visible:ring-2 focus-visible:outline-none',
-                    menuOpen
-                      ? 'opacity-100'
-                      : 'opacity-0 group-hover/prompt:opacity-100 focus-visible:opacity-100',
-                  )}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Ellipsis className="size-4" aria-hidden="true" />
-                </Ariakit.MenuButton>
-              }
-              items={dropdownItems}
-            />
           </div>
         </div>
       </div>

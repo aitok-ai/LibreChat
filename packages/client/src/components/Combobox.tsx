@@ -13,8 +13,8 @@ import {
 import type { OptionWithIcon } from '~/common';
 import { SelectTrigger, SelectValue, SelectScrollDownButton } from './Select';
 import { useNestedPopoverStyle } from './OriginalDialog';
+import { cn, disabledInkClasses } from '~/utils';
 import { useCombobox } from '~/hooks';
-import { cn } from '~/utils';
 
 export default function ComboboxComponent({
   selectedValue,
@@ -80,11 +80,11 @@ export default function ComboboxComponent({
         <SelectTrigger
           aria-label={ariaLabel}
           className={cn(
-            'flex items-center gap-2 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0 [&>span]:line-clamp-1 [&>span]:flex [&>span]:w-full [&>span]:items-center [&>span]:gap-1 [&>span]:truncate',
+            '[&_svg]:size-theme-icon flex items-center gap-2 [&_svg]:shrink-0 [&>span]:line-clamp-1 [&>span]:flex [&>span]:w-full [&>span]:items-center [&>span]:gap-1 [&>span]:truncate',
             isCollapsed
-              ? 'flex h-9 w-9 shrink-0 items-center justify-center p-0 [&>span]:w-auto [&>svg]:hidden'
+              ? 'size-theme-control min-h-theme-target min-w-theme-target flex shrink-0 items-center justify-center p-0 [&>span]:w-auto [&>svg]:hidden'
               : '',
-            'bg-surface-secondary text-text-primary hover:bg-surface-hover focus-visible:ring-text-primary focus-visible:ring-2',
+            'bg-surface-secondary text-text-primary hover:bg-surface-hover focus-visible:ring-focus-control focus-visible:ring-2',
           )}
         >
           <SelectValue placeholder={selectPlaceholder}>
@@ -119,7 +119,7 @@ export default function ComboboxComponent({
                 <Combobox
                   autoSelect
                   placeholder={searchPlaceholder}
-                  className="focus:ring-border-medium flex-1 rounded-md border-none bg-transparent px-2.5 py-2 text-sm focus:ring-1 focus:outline-none"
+                  className="focus:ring-border-medium flex-1 rounded-md border-none bg-transparent px-2.5 py-2 text-sm focus:ring-1 focus:outline-hidden"
                   // Ariakit's Combobox manually triggers a blur event on virtually
                   // blurred items, making them work as if they had actual DOM
                   // focus. These blur events might happen after the corresponding
@@ -144,7 +144,8 @@ export default function ComboboxComponent({
                   <RadixSelect.Item key={value} value={`${value ?? ''}`} asChild>
                     <ComboboxItem
                       className={cn(
-                        'focus:bg-surface-hover focus:text-text-primary relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                        'focus:bg-surface-hover focus:text-text-primary relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                        disabledInkClasses,
                         'hover:bg-surface-hover rounded-lg',
                       )}
                       /** Hacky fix for radix-ui Android issue: https://github.com/radix-ui/primitives/issues/1658  */
@@ -155,11 +156,11 @@ export default function ComboboxComponent({
                     >
                       <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
                         <RadixSelect.ItemIndicator>
-                          <CheckIcon className="h-4 w-4" />
+                          <CheckIcon className="size-theme-icon" />
                         </RadixSelect.ItemIndicator>
                       </span>
                       <RadixSelect.ItemText>
-                        <div className="[&_svg]:text-text-primary flex items-center justify-center gap-3 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0">
+                        <div className="[&_svg]:text-text-primary [&_svg]:size-theme-icon flex items-center justify-center gap-3 [&_svg]:shrink-0">
                           <div className="assistant-item overflow-hidden rounded-full">
                             {icon && icon}
                           </div>

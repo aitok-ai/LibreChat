@@ -66,7 +66,7 @@ export default function AgentTool({
   return (
     <OGDialog>
       <div
-        className="group relative flex w-full items-center gap-1 rounded-lg p-1 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50"
+        className="group hover:bg-surface-secondary relative flex w-full items-center gap-1 rounded-lg p-1 text-sm"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         onFocus={() => setIsFocused(true)}
@@ -78,10 +78,10 @@ export default function AgentTool({
         }}
       >
         <div className="flex grow items-center">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full">
             {currentTool.icon ? (
               <div
-                className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-center bg-no-repeat dark:bg-white/20"
+                className="bg-surface-tertiary flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-center bg-no-repeat"
                 style={{
                   backgroundImage: `url(${currentTool.icon})`,
                   backgroundSize: 'cover',
@@ -121,7 +121,7 @@ export default function AgentTool({
       <OGDialogTemplate
         showCloseButton={false}
         title={localize('com_ui_delete_tool')}
-        className="max-w-[450px]"
+        className="max-w-[28.125rem]"
         main={
           <>
             <div className="text-text-secondary flex w-full flex-col items-start gap-2 text-sm">
@@ -131,7 +131,7 @@ export default function AgentTool({
               </p>
               {currentTool.description && (
                 <div className="flex items-start gap-2">
-                  <CircleHelpIcon className="text-text-secondary h-4 w-4 flex-shrink-0" />
+                  <CircleHelpIcon className="text-text-secondary h-4 w-4 shrink-0" />
                   <p className="text-sm">{currentTool.description}</p>
                 </div>
               )}

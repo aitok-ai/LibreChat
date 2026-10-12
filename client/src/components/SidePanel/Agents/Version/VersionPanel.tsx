@@ -54,6 +54,7 @@ export default function VersionPanel() {
       name: agentWithVersions.name,
       description: agentWithVersions.description,
       instructions: agentWithVersions.instructions,
+      instructionsPrompt: agentWithVersions.instructionsPrompt,
       artifacts: agentWithVersions.artifacts,
       capabilities: agentWithVersions.capabilities,
       tools: agentWithVersions.tools,
@@ -145,9 +146,10 @@ export default function VersionPanel() {
         <Button
           variant="subtle"
           size="icon"
+          shape="theme"
           onClick={() => setActivePanel(Panel.builder)}
           aria-label={localize('com_ui_back_to_builder')}
-          className="text-text-secondary hover:text-text-primary flex-shrink-0"
+          className="text-text-secondary hover:text-text-primary shrink-0"
         >
           <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
         </Button>
@@ -161,7 +163,10 @@ export default function VersionPanel() {
             </p>
           )}
         </div>
-        <span aria-hidden="true" className="h-10 w-10" />
+        <span
+          aria-hidden="true"
+          className="size-theme-button min-h-theme-target min-w-theme-target"
+        />
       </header>
       <div className="flex flex-col px-2 pt-2">
         <VersionContent

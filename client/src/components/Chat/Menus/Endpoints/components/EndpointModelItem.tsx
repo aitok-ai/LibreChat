@@ -93,7 +93,7 @@ function EndpointModelItemComponent({
     }
 
     return (
-      <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center overflow-hidden rounded-full">
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full">
         {content}
       </div>
     );
@@ -119,7 +119,7 @@ function EndpointModelItemComponent({
         onClick={handleFavoriteClick}
         aria-label={isFavorite ? localize('com_ui_unpin') : localize('com_ui_pin')}
         className={cn(
-          'hover:bg-surface-hover focus-visible:ring-ring-primary rounded-md p-1 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset',
+          'hover:bg-surface-hover focus-visible:ring-ring-primary rounded-md p-1 focus-visible:ring-2 focus-visible:outline-hidden focus-visible:ring-inset',
           isFavorite
             ? 'visible'
             : // Visible by default so it's tappable on touch (no hover to

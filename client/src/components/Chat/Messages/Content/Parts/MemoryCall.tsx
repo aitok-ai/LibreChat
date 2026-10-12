@@ -8,6 +8,7 @@ import useToolCallState from './useToolCallState';
 import { AttachmentGroup } from './Attachment';
 import parseJsonField from './parseJsonField';
 import MemoryInfo from '../MemoryInfo';
+import BareStatus from './BareStatus';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -63,11 +64,12 @@ export default function MemoryCall({
   }, [attachments]);
   const memoryFailed = isMemoryFailureOutput(toolName, output) || memoryErrors.length > 0;
 
-  const { showCode, toggleCode, expandStyle, expandRef, phase } = useToolCallState({
+  const { showCode, toggleCode, expandStyle, expandRef, phase, bare, rowRef } = useToolCallState({
     initialProgress,
     isSubmitting,
     output,
     hasInput: hasPanel || memoryFailed || runStepStatus === 'failed',
+    panelReady: hasPanel,
     onExpand,
     runStepStatus,
     extraError: memoryFailed,
@@ -81,27 +83,30 @@ export default function MemoryCall({
 
   return (
     <>
-      <div className="relative my-1 flex h-5 shrink-0 items-center gap-2.5">
-        <ProgressText
-          phase={phase}
-          onClick={toggleCode}
-          inProgressText={localize(isSave ? 'com_ui_memory_saving' : 'com_ui_memory_deleting')}
-          finishedText={finishedText}
-          durationMs={runStepDurationMs}
-          subtitle={memoryKey || undefined}
-          icon={
-            <Brain
-              className={cn(
-                'text-text-secondary size-4 shrink-0',
-                phase === 'running' && 'animate-pulse',
-              )}
-              aria-hidden="true"
-            />
-          }
-          hasInput={hasPanel || phase === 'failed'}
-          isExpanded={showCode}
-        />
-      </div>
+      <BareStatus active={bare} text={finishedText} />
+      {!bare && (
+        <div className="relative my-1 flex h-5 shrink-0 items-center gap-2.5" ref={rowRef}>
+          <ProgressText
+            phase={phase}
+            onClick={toggleCode}
+            inProgressText={localize(isSave ? 'com_ui_memory_saving' : 'com_ui_memory_deleting')}
+            finishedText={finishedText}
+            durationMs={runStepDurationMs}
+            subtitle={memoryKey || undefined}
+            icon={
+              <Brain
+                className={cn(
+                  'text-text-secondary size-4 shrink-0',
+                  phase === 'running' && 'animate-pulse',
+                )}
+                aria-hidden="true"
+              />
+            }
+            hasInput={hasPanel || phase === 'failed'}
+            isExpanded={showCode}
+          />
+        </div>
+      )}
       <div style={expandStyle}>
         <div className="overflow-hidden" ref={expandRef}>
           {(hasPanel || phase === 'failed') && (

@@ -4,6 +4,7 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { Button, Spinner, Checkbox, Skeleton } from '@librechat/client';
 import {
   AgentCapabilities,
+  getToolApprovalConstraint,
   Constants,
   splitMCPToolKey,
   normalizeServerName,
@@ -26,6 +27,7 @@ import { getStatusColor, getStatusTextKey } from '~/components/MCP/mcpServerUtil
 import MCPServerStatusIcon from '~/components/MCP/MCPServerStatusIcon';
 import MCPConfigDialog from '~/components/MCP/MCPConfigDialog';
 import McpOAuthDialog from '~/components/MCP/McpOAuthDialog';
+import ApprovalOption from '../../../ApprovalOption';
 import { useAgentPanelContext } from '~/Providers';
 import { getIconForItem } from '../../items/icons';
 import OptionToggle from '../../../OptionToggle';
@@ -108,6 +110,7 @@ export default function McpSection({ item }: Props) {
     toggleProgrammaticAll,
     toggleBackgroundAll,
     toggleIntentAll,
+    setToolApprovalMode,
   } = useMCPToolOptions();
 
   const serverName = item.server.serverName;
@@ -228,6 +231,11 @@ export default function McpSection({ item }: Props) {
    * edit persists it.
    */
   const formToolOptions = useWatch({ control, name: 'tool_options' });
+  const approvalsEnabled = agentsConfig?.toolApproval?.agentModes === true;
+  const approvalModes = new Set(
+    tools.map((tool) => formToolOptions?.[tool.tool_id]?.approval_mode),
+  );
+  const bulkApprovalMode = approvalModes.size > 1 ? 'mixed' : approvalModes.values().next().value;
   useEffect(() => {
     if (!formToolOptions) {
       return;
@@ -344,6 +352,7 @@ export default function McpSection({ item }: Props) {
   const isConnected = connectionState === 'connected' || liveServer.isConnected === true;
   const isReadyForAgent = liveServer.isReadyForAgent ?? isConnected;
   const isBusy = isInitializing || connectionState === 'connecting';
+  const canCancel = statusIconProps?.canCancel === true;
 
   /** Close + clear the OAuth dialog once the server is ready, and don't let it
    * reopen on its own if the connection later drops. No useEffect — adjust state
@@ -429,6 +438,13 @@ export default function McpSection({ item }: Props) {
     }
   };
 
+  const handleCancel = (e: MouseEvent) => {
+    setAutoSelectPending(false);
+    setOauthOpen(false);
+    setOauthUrl(null);
+    statusIconProps?.onCancel(e);
+  };
+
   return (
     <div className="flex flex-col gap-5">
       {item.description && (
@@ -463,22 +479,24 @@ export default function McpSection({ item }: Props) {
           <div className="min-h-0 overflow-hidden">
             <Button
               type="button"
-              variant="submit"
+              variant={canCancel ? 'outline' : 'submit'}
               className="mt-5 w-full gap-2"
-              disabled={isBusy}
+              disabled={isBusy && !canCancel}
               tabIndex={isReadyForAgent ? -1 : undefined}
               aria-hidden={isReadyForAgent || undefined}
-              onClick={handleConnect}
+              onClick={canCancel ? handleCancel : handleConnect}
             >
-              {isBusy && <Spinner className="size-4" />}
-              {localize('com_nav_mcp_connect_server', { 0: serverName })}
+              {isBusy && !canCancel && <Spinner className="size-4" />}
+              {canCancel
+                ? localize('com_ui_cancel')
+                : localize('com_nav_mcp_connect_server', { 0: serverName })}
             </Button>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex min-h-7 items-center justify-between">
+        <div className="flex min-h-7 flex-wrap items-center justify-between gap-x-2 gap-y-1">
           <span className="text-text-secondary text-[11px] font-medium tracking-wide uppercase">
             {localize('com_ui_tools_mcp_tools_section')}
           </span>
@@ -490,7 +508,7 @@ export default function McpSection({ item }: Props) {
                   size="md"
                   pressed={allDeferred}
                   label={localize(allDeferred ? 'com_ui_mcp_undefer_all' : 'com_ui_mcp_defer_all')}
-                  activeBorderClass="border-series-4"
+                  activeClass="border-series-4 text-series-4 hover:text-series-4"
                   onToggle={() => toggleDeferAll(tools)}
                 />
               )}
@@ -500,7 +518,7 @@ export default function McpSection({ item }: Props) {
                   size="md"
                   pressed={allProgrammatic}
                   label={programmaticBulkLabel}
-                  activeBorderClass="border-series-6"
+                  activeClass="border-series-6 text-series-6 hover:text-series-6"
                   tooltip={programmaticBulkTooltip}
                   disabled={!programmaticToolsAvailable && !allProgrammatic}
                   onToggle={() => toggleProgrammaticAll(tools)}
@@ -514,7 +532,7 @@ export default function McpSection({ item }: Props) {
                   label={localize(
                     allBackground ? 'com_ui_mcp_unbackground_all' : 'com_ui_mcp_background_all',
                   )}
-                  activeBorderClass="border-series-1"
+                  activeClass="border-series-1 text-series-1 hover:text-series-1"
                   onToggle={() => toggleBackgroundAll(tools)}
                 />
               )}
@@ -525,8 +543,21 @@ export default function McpSection({ item }: Props) {
                   pressed={allIntent}
                   disabled={intentEligibleTools.length === 0}
                   label={localize(allIntent ? 'com_ui_mcp_unintent_all' : 'com_ui_mcp_intent_all')}
-                  activeBorderClass="border-series-3"
+                  activeClass="border-series-3 text-series-3 hover:text-series-3"
                   onToggle={() => toggleIntentAll(intentEligibleTools)}
+                />
+              )}
+              {hasTools && (
+                <ApprovalOption
+                  bulk={true}
+                  mode={bulkApprovalMode}
+                  disabled={!approvalsEnabled}
+                  onChange={(mode) =>
+                    setToolApprovalMode(
+                      tools.map((tool) => tool.tool_id),
+                      mode,
+                    )
+                  }
                 />
               )}
               {hasTools &&
@@ -547,7 +578,7 @@ export default function McpSection({ item }: Props) {
                       ? localize('com_ui_tools_mcp_deselect_all')
                       : localize('com_ui_tools_mcp_select_all')
                   }
-                  className="border-border-medium size-4 rounded border"
+                  className="border-border-medium rounded border"
                 />
                 <span>
                   {(hasTools ? allSelected : isWildcardAttached)
@@ -568,6 +599,14 @@ export default function McpSection({ item }: Props) {
                 <MCPToolItem
                   key={tool.tool_id}
                   tool={tool}
+                  approvalAgentId={getValues('id')}
+                  approvalConstraint={getToolApprovalConstraint(
+                    agentsConfig?.toolApproval,
+                    tool.tool_id,
+                  )}
+                  approvalMode={formToolOptions?.[tool.tool_id]?.approval_mode}
+                  approvalsEnabled={approvalsEnabled}
+                  onApprovalModeChange={(mode) => setToolApprovalMode([tool.tool_id], mode)}
                   isSelected={selectedTools.includes(tool.tool_id)}
                   isDeferred={deferredToolsEnabled && isToolDeferred(tool.tool_id)}
                   isProgrammatic={programmaticToolsEnabled && isToolProgrammatic(tool.tool_id)}

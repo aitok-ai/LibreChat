@@ -82,7 +82,7 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
               </a>
             }
           />
-          <Ariakit.HovercardDisclosure className="text-text-primary focus:ring-text-primary absolute right-2 rounded-full focus:ring-2 focus:outline-none">
+          <Ariakit.HovercardDisclosure className="text-text-primary focus:ring-text-primary absolute right-2 rounded-full focus:ring-2 focus:outline-hidden">
             <VisuallyHidden>
               {localize('com_citation_more_details', { label: domain })}
             </VisuallyHidden>
@@ -92,7 +92,7 @@ function SourceItem({ source, expanded = false }: SourceItemProps) {
           <Ariakit.Hovercard
             gutter={16}
             className={cn(
-              'border-border-medium bg-surface-secondary text-text-primary z-[999] w-[320px] max-w-[calc(100vw-2rem)] rounded-xl border p-3 shadow-lg',
+              'border-border-medium bg-surface-secondary text-text-primary z-[999] w-[20rem] max-w-[calc(100vw-2rem)] rounded-xl border p-3 shadow-lg',
               'origin-top-left scale-95 opacity-0 transition-[opacity,transform] duration-150 ease-out',
               'data-[enter]:scale-100 data-[enter]:opacity-100',
               'data-[leave]:scale-95 data-[leave]:opacity-0',
@@ -156,7 +156,7 @@ function ImageItem({ image }: { image: ImageResult }) {
             className="size-full object-cover"
           />
           {image.title && (
-            <div className="absolute right-0 bottom-0 left-0 w-full border-none bg-gray-900/80 p-1 text-xs font-medium text-white backdrop-blur-sm">
+            <div className="bg-surface-media-overlay/80 text-text-on-media absolute right-0 bottom-0 left-0 w-full border-none p-1 text-xs font-medium backdrop-blur-xs">
               <span className="truncate">{image.title}</span>
             </div>
           )}
@@ -380,7 +380,7 @@ export function StackedFavicons({
         <FaviconImage
           key={`icon-${i}`}
           domain={getCleanDomain(source.link)}
-          className={i > 0 ? 'ml-[-6px]' : ''}
+          className={i > 0 ? 'ml-[-0.375rem]' : ''}
         />
       ))}
     </div>
@@ -408,10 +408,10 @@ const SourcesGroup = React.memo(function SourcesGroup({
   }, [sources, limit]);
 
   return (
-    <div className="grid w-full scrollbar-none grid-cols-4 gap-2 overflow-x-auto">
+    <div className="grid w-full grid-cols-4 gap-2 overflow-x-auto">
       <OGDialog>
         {visibleSources.map((source, i) => (
-          <div key={`source-${i}`} className="w-full min-w-[120px]">
+          <div key={`source-${i}`} className="w-full min-w-[7.5rem]">
             <SourceItem source={source} />
           </div>
         ))}
@@ -425,7 +425,7 @@ const SourcesGroup = React.memo(function SourcesGroup({
             </div>
           </OGDialogTrigger>
         )}
-        <OGDialogContent className="bg-surface-dialog flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[600px]">
+        <OGDialogContent className="bg-surface-dialog flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[37.5rem]">
           <div className="border-border-light bg-surface-dialog sticky top-0 z-10 flex items-center justify-between border-b px-3 py-2">
             <OGDialogTitle className="text-base font-medium">
               {localize('com_sources_title')}
@@ -447,10 +447,7 @@ const SourcesGroup = React.memo(function SourcesGroup({
                   rel="noopener noreferrer"
                   className="hover:bg-surface-tertiary flex gap-2 rounded-lg px-2 py-2 transition-colors"
                 >
-                  <FaviconImage
-                    domain={getCleanDomain(source.link)}
-                    className="h-5 w-5 flex-shrink-0"
-                  />
+                  <FaviconImage domain={getCleanDomain(source.link)} className="h-5 w-5 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <h3 className="text-text-primary mb-0.5 truncate text-sm font-medium">
                       {source.title || source.link}
@@ -465,7 +462,7 @@ const SourcesGroup = React.memo(function SourcesGroup({
                     </span>
                   </div>
                   {'imageUrl' in source && source.imageUrl && (
-                    <div className="hidden h-12 w-12 flex-shrink-0 overflow-hidden rounded-md sm:block">
+                    <div className="hidden h-12 w-12 shrink-0 overflow-hidden rounded-md sm:block">
                       <img
                         src={source.imageUrl}
                         alt={source.title || localize('com_sources_image_alt')}
@@ -500,10 +497,10 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
   const hasMoreFiles = remainingFiles.length > 0;
 
   return (
-    <div className="grid w-full scrollbar-none grid-cols-4 gap-2 overflow-x-auto">
+    <div className="grid w-full grid-cols-4 gap-2 overflow-x-auto">
       <OGDialog>
         {visibleFiles.map((file, i) => (
-          <div key={`file-${i}`} className="w-full min-w-[120px]">
+          <div key={`file-${i}`} className="w-full min-w-[7.5rem]">
             <FileItem file={file} messageId={messageId} conversationId={conversationId} />
           </div>
         ))}
@@ -512,7 +509,10 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
             <div className="flex items-center gap-2">
               <div className="relative flex">
                 {remainingFiles.slice(0, 3).map((_, i) => (
-                  <File key={`file-icon-${i}`} className={`size-4 ${i > 0 ? 'ml-[-6px]' : ''}`} />
+                  <File
+                    key={`file-icon-${i}`}
+                    className={`size-4 ${i > 0 ? 'ml-[-0.375rem]' : ''}`}
+                  />
                 ))}
               </div>
               <span className="text-text-secondary truncate text-xs font-medium">
@@ -521,7 +521,7 @@ function FilesGroup({ files, messageId, conversationId, limit = 3 }: FilesGroupP
             </div>
           </OGDialogTrigger>
         )}
-        <OGDialogContent className="bg-surface-dialog flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[600px]">
+        <OGDialogContent className="bg-surface-dialog flex max-h-[80vh] max-w-full flex-col overflow-hidden rounded-lg p-0 md:max-w-[37.5rem]">
           <div className="border-border-light bg-surface-dialog sticky top-0 z-10 flex items-center justify-between border-b px-3 py-2">
             <OGDialogTitle className="text-base font-medium">
               {localize('com_sources_agent_files')}
@@ -722,11 +722,12 @@ function SourcesComponent({ messageId, conversationId }: SourcesProps = {}) {
   return (
     <div role="region" aria-label={localize('com_sources_region_label')}>
       <AnimatedTabs
+        tone="muted"
         tabs={tabs}
         containerClassName="flex min-w-full mb-4"
         tabListClassName="flex items-center mb-2 border-b border-border-light overflow-x-auto"
-        tabPanelClassName="w-full overflow-x-auto scrollbar-none md:mx-0 md:px-0"
-        tabClassName="flex items-center whitespace-nowrap text-xs font-medium text-token-text-secondary px-1 pt-2 pb-1 border-b-2 border-transparent data-[state=active]:text-text-primary outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2"
+        tabPanelClassName="w-full overflow-x-auto md:mx-0 md:px-0"
+        tabClassName="flex items-center whitespace-nowrap text-xs font-medium px-1 pt-2 pb-1 border-b-2 border-transparent focus:ring-2 focus:ring-text-primary focus:ring-offset-2"
       />
     </div>
   );

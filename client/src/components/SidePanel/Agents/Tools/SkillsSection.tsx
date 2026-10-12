@@ -277,7 +277,7 @@ export default function SkillsSection({ items, onInfo, onRemove, onAdd }: Props)
               type="button"
               onClick={onAdd}
               aria-label={localize('com_ui_skills_add_row')}
-              className="text-text-secondary hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-ring-primary flex size-7 items-center justify-center rounded-lg transition focus:outline-none focus-visible:ring-2"
+              className="text-text-secondary hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-ring-primary flex size-7 items-center justify-center rounded-lg transition focus:outline-hidden focus-visible:ring-2"
             >
               <Plus className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
             </button>
@@ -286,7 +286,7 @@ export default function SkillsSection({ items, onInfo, onRemove, onAdd }: Props)
             options={modeOptions}
             value={mode}
             onChange={handleModeChange}
-            buttonClassName="!h-7 !px-2.5 !text-xs"
+            size="sm"
             aria-labelledby="skills-mode-label"
           />
         </div>
@@ -331,7 +331,7 @@ export default function SkillsSection({ items, onInfo, onRemove, onAdd }: Props)
               aria-controls="skills-all-list"
               className={cn(
                 ROW,
-                'hover:bg-surface-secondary focus-visible:ring-ring-primary w-full text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset',
+                'hover:bg-surface-secondary focus-visible:ring-ring-primary w-full text-left transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset',
               )}
             >
               <ChevronRight
@@ -359,7 +359,7 @@ export default function SkillsSection({ items, onInfo, onRemove, onAdd }: Props)
                         ROW,
                         // `transition-none` beats the global `all` transition, so
                         // the highlight lands on the frame the pointer enters.
-                        'hover:bg-surface-secondary focus-visible:ring-ring-primary w-full text-left transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset',
+                        'hover:bg-surface-secondary focus-visible:ring-ring-primary w-full text-left transition-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset',
                       )}
                     >
                       <SkillIcon item={item} />
@@ -388,7 +388,7 @@ export default function SkillsSection({ items, onInfo, onRemove, onAdd }: Props)
                       onClick={() => onInfo(item)}
                       className={cn(
                         ROW,
-                        'focus-visible:ring-ring-primary min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset',
+                        'focus-visible:ring-ring-primary min-w-0 flex-1 text-left focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset',
                       )}
                     >
                       <SkillIcon item={item} />
@@ -399,7 +399,7 @@ export default function SkillsSection({ items, onInfo, onRemove, onAdd }: Props)
                       data-skill-remove=""
                       onClick={() => onRemove(item)}
                       aria-label={localize('com_ui_skills_remove', { name: item.name })}
-                      className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-ring-primary mr-2 flex size-6 shrink-0 items-center justify-center rounded-md transition-colors focus:outline-none focus-visible:ring-2"
+                      className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-ring-primary mr-2 flex size-6 shrink-0 items-center justify-center rounded-md transition-colors focus:outline-hidden focus-visible:ring-2"
                     >
                       <X className="size-3.5" aria-hidden="true" />
                     </button>
@@ -413,7 +413,7 @@ export default function SkillsSection({ items, onInfo, onRemove, onAdd }: Props)
               <button
                 type="button"
                 onClick={onAdd}
-                className="border-border-light text-text-secondary hover:border-border-medium hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-ring-primary flex w-full flex-col items-center gap-1 rounded-xl border border-dashed px-2 py-4 transition-colors focus:outline-none focus-visible:ring-2"
+                className="border-border-medium text-text-secondary hover:border-border-heavy hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-ring-primary flex w-full flex-col items-center gap-1 rounded-xl border border-dashed px-2 py-4 transition-colors focus:outline-hidden focus-visible:ring-2"
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 <span className="text-xs">{localize('com_ui_skills_add_row')}</span>

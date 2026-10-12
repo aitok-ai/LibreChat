@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@librechat/client';
 import { Check, Clock, Code2, Captions, Info, Zap } from 'lucide-react';
-import type { AgentToolType } from 'librechat-data-provider';
+import type { AgentToolType, AgentToolApprovalMode } from 'librechat-data-provider';
+import ApprovalOption from './ApprovalOption';
 import OptionToggle from './OptionToggle';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
@@ -26,6 +27,11 @@ interface MCPToolItemProps {
   onToggleProgrammatic: () => void;
   onToggleBackground: () => void;
   onToggleIntent: () => void;
+  approvalConstraint?: 'ask' | 'deny';
+  approvalAgentId?: string;
+  approvalMode?: AgentToolApprovalMode;
+  approvalsEnabled?: boolean;
+  onApprovalModeChange?: (mode?: AgentToolApprovalMode) => void;
 }
 
 const iconButton = 'size-6 rounded-md';
@@ -48,6 +54,11 @@ export default function MCPToolItem({
   programmaticToolsAvailable,
   backgroundToolsEnabled,
   toolIntentsEnabled,
+  approvalMode,
+  approvalConstraint,
+  approvalAgentId,
+  approvalsEnabled,
+  onApprovalModeChange,
 }: MCPToolItemProps) {
   const localize = useLocalize();
   const [expanded, setExpanded] = useState(false);
@@ -65,7 +76,7 @@ export default function MCPToolItem({
           aria-label={tool.metadata.name}
           className={cn(
             'flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-2 text-left',
-            'focus-visible:ring-ring-primary focus:outline-none focus-visible:ring-2',
+            'focus-visible:ring-ring-primary focus:outline-hidden focus-visible:ring-2',
           )}
         >
           <span
@@ -88,7 +99,7 @@ export default function MCPToolItem({
               pressed={isDeferred}
               label={localize('com_ui_mcp_defer_loading')}
               tooltip={localize('com_ui_mcp_click_to_defer')}
-              activeBorderClass="border-series-4"
+              activeClass="border-series-4 text-series-4 hover:text-series-4"
               onToggle={onToggleDefer}
             />
           )}
@@ -102,7 +113,7 @@ export default function MCPToolItem({
                   ? 'com_ui_mcp_click_to_programmatic'
                   : 'com_ui_mcp_programmatic_requires_code',
               )}
-              activeBorderClass="border-series-6"
+              activeClass="border-series-6 text-series-6 hover:text-series-6"
               disabled={!programmaticToolsAvailable && !isProgrammatic}
               onToggle={onToggleProgrammatic}
             />
@@ -113,7 +124,7 @@ export default function MCPToolItem({
               pressed={isBackground}
               label={localize('com_ui_mcp_background')}
               tooltip={localize('com_ui_mcp_click_to_background')}
-              activeBorderClass="border-series-1"
+              activeClass="border-series-1 text-series-1 hover:text-series-1"
               onToggle={onToggleBackground}
             />
           )}
@@ -126,8 +137,18 @@ export default function MCPToolItem({
               tooltip={localize(
                 intentDisabled ? 'com_ui_mcp_intent_programmatic' : 'com_ui_mcp_click_to_intent',
               )}
-              activeBorderClass="border-series-3"
+              activeClass="border-series-3 text-series-3 hover:text-series-3"
               onToggle={onToggleIntent}
+            />
+          )}
+          {onApprovalModeChange && (
+            <ApprovalOption
+              constraint={approvalConstraint}
+              agentId={approvalAgentId}
+              toolName={tool.tool_id}
+              mode={approvalMode}
+              onChange={onApprovalModeChange}
+              disabled={!approvalsEnabled}
             />
           )}
           <Button

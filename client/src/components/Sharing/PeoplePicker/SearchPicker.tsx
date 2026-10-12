@@ -134,7 +134,7 @@ export function SearchPicker<TOption extends { key: string; value: string }>({
         autoFocusOnShow={false}
         modal={false}
         className={cn(
-          'animate-popover border-border-light bg-surface-secondary z-[9999] min-w-64 overflow-hidden rounded-2xl border shadow-lg',
+          'animate-popover border-border-light bg-surface-secondary z-[9999] max-w-[calc(100vw-1rem)] min-w-[min(16rem,calc(100vw-1rem))] overflow-hidden rounded-2xl border shadow-lg',
           '[pointer-events:auto]', // Override body's pointer-events:none when in modal
         )}
       >

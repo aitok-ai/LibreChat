@@ -51,7 +51,7 @@ export function ModelSpecItem({ spec, isSelected, posInSet, setSize }: ModelSpec
         )}
       >
         {showIconInMenu && (
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <SpecIcon
               currentSpec={spec}
               endpointsConfig={endpointsConfig}
@@ -70,7 +70,7 @@ export function ModelSpecItem({ spec, isSelected, posInSet, setSize }: ModelSpec
         onClick={handleFavoriteClick}
         aria-label={isFavorite ? localize('com_ui_unpin') : localize('com_ui_pin')}
         className={cn(
-          'hover:bg-surface-hover focus-visible:ring-ring-primary rounded-md p-1 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset',
+          'hover:bg-surface-hover focus-visible:ring-ring-primary rounded-md p-1 focus-visible:ring-2 focus-visible:outline-hidden focus-visible:ring-inset',
           isFavorite
             ? 'visible'
             : // Visible by default so it's tappable on touch (no hover to

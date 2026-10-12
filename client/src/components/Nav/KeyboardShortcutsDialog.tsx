@@ -1,6 +1,6 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import {
   Label,
   Switch,
@@ -23,6 +23,29 @@ import store from '~/store';
 type GroupedBindings = Record<string, ShortcutBindingInfo[]>;
 
 const PANELS_GROUP = 'com_shortcut_group_panels';
+
+const PLAIN_ENTER: ShortcutBinding = {
+  meta: false,
+  ctrl: false,
+  alt: false,
+  shift: false,
+  key: 'Enter',
+};
+
+/**
+ * What the composer actually submits on. With "Enter to send" active, plain
+ * Enter is the submit key and the registered modifier chord writes a newline
+ * there instead, so advertising the chord would name an action it does not
+ * perform where the user would reach for it. The binding itself is untouched:
+ * only its presentation follows the preference, so rebinding and conflict
+ * detection still operate on the real chord.
+ */
+function displayedBinding(info: ShortcutBindingInfo, enterToSend: boolean): ShortcutBinding | null {
+  if (info.id !== 'submitMessage' || info.isCustom || !enterToSend) {
+    return info.binding;
+  }
+  return PLAIN_ENTER;
+}
 
 function EditingRow({
   info,
@@ -110,7 +133,11 @@ function ShortcutRow({
 }) {
   const localize = useLocalize();
   const label = localize(info.labelKey as TranslationKeys);
-  const displayKeys = useMemo(() => bindingDisplayKeys(info.binding, isMac), [info.binding]);
+  const enterToSend = useRecoilValue<boolean>(store.enterToSend);
+  const displayKeys = useMemo(
+    () => bindingDisplayKeys(displayedBinding(info, enterToSend), isMac),
+    [info, enterToSend],
+  );
   const editAriaLabel = localize('com_shortcut_edit_aria', { 0: label });
   const isUnset = displayKeys.length === 0;
 
@@ -150,7 +177,7 @@ function ShortcutRow({
             type="button"
             disabled={disabled}
             onClick={() => resetBinding(info.id)}
-            className="text-text-secondary hover:text-text-primary focus-visible:ring-text-primary text-[11.5px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none"
+            className="text-text-secondary hover:text-text-primary focus-visible:ring-text-primary text-[11.5px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-hidden"
           >
             {localize('com_shortcut_reset')}
           </button>
@@ -162,7 +189,7 @@ function ShortcutRow({
             onClick={() => onStartEdit(info.id)}
             aria-label={editAriaLabel}
             data-testid={`edit-shortcut-${info.id}`}
-            className="border-border-medium text-text-secondary hover:border-border-heavy hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt inline-flex h-[22px] items-center gap-1 rounded-md border border-dashed bg-transparent px-2 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            className="border-border-medium text-text-secondary hover:border-border-heavy hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt inline-flex h-[1.375rem] items-center gap-1 rounded-md border border-dashed bg-transparent px-2 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
           >
             <Plus className="h-3 w-3" aria-hidden="true" />
             {localize('com_shortcut_set')}
@@ -174,7 +201,7 @@ function ShortcutRow({
             onClick={() => onStartEdit(info.id)}
             aria-label={editAriaLabel}
             data-testid={`edit-shortcut-${info.id}`}
-            className="hover:bg-surface-tertiary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt rounded-md px-1 py-0.5 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            className="hover:bg-surface-tertiary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt rounded-md px-1 py-0.5 transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
           >
             <ShortcutKeyCombo keys={displayKeys} />
           </button>
@@ -351,10 +378,13 @@ function KeyboardShortcutsDialog() {
         className="flex max-h-[85vh] w-11/12 max-w-3xl flex-col overflow-hidden p-0 lg:max-w-5xl"
       >
         <header className="flex shrink-0 items-center justify-between gap-4 px-7 pt-6">
-          <OGDialogTitle className="text-text-primary text-[16px] font-semibold">
+          <OGDialogTitle className="text-[16px] font-semibold">
             {localize('com_shortcut_keyboard_shortcuts')}
           </OGDialogTitle>
-          <OGDialogClose className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none">
+          <OGDialogClose
+            focusOutline="hidden"
+            className="text-text-secondary hover:bg-surface-tertiary hover:text-text-primary focus-visible:ring-text-primary dark:hover:bg-surface-secondary-alt inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2"
+          >
             <X className="h-4 w-4" />
             <span className="sr-only">{localize('com_ui_close')}</span>
           </OGDialogClose>
@@ -443,7 +473,7 @@ function KeyboardShortcutsDialog() {
             <button
               type="button"
               onClick={resetAll}
-              className="text-text-secondary hover:text-text-primary focus-visible:ring-text-primary text-[12px] transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className="text-text-secondary hover:text-text-primary focus-visible:ring-text-primary text-[12px] transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
             >
               {localize('com_shortcut_reset_all')}
             </button>

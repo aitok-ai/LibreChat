@@ -65,7 +65,7 @@ export default function BasicInfoSection() {
     <div className="space-y-3">
       {/* Icon + Name row */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <div className="flex-shrink-0 space-y-1.5">
+        <div className="shrink-0 space-y-1.5">
           <MCPIcon
             icon={iconValue}
             onIconChange={handleIconChange}

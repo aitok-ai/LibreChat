@@ -38,7 +38,7 @@ export default function AddedConvo({
   }
   return (
     <div className="flex items-start gap-4 py-2.5 pr-1.5 pl-3 text-sm">
-      <span className="mt-0 flex h-6 w-6 flex-shrink-0 items-center justify-center">
+      <span className="mt-0 flex h-6 w-6 shrink-0 items-center justify-center">
         <div className="icon-md">
           <EndpointIcon
             conversation={addedConvo}
@@ -50,11 +50,9 @@ export default function AddedConvo({
           />
         </div>
       </span>
-      <span className="text-token-text-secondary line-clamp-3 flex-1 py-0.5 font-semibold">
-        {title}
-      </span>
+      <span className="text-text-secondary line-clamp-3 flex-1 py-0.5 font-semibold">{title}</span>
       <button
-        className="text-token-text-secondary flex-shrink-0"
+        className="text-text-secondary shrink-0"
         type="button"
         aria-label="Close added conversation"
         onClick={() => setAddedConvo(null)}

@@ -104,7 +104,8 @@ export default function VariableEditor({
         <Label className={labelClassName} htmlFor={id}>
           {label}
         </Label>
-        <div className="flex items-center gap-0.5">
+        {/* `ml-auto` keeps the actions right-aligned when the label is visually hidden. */}
+        <div className="ml-auto flex items-center gap-0.5">
           {showVariables && (
             <DropdownPopup
               portal={portal}
@@ -118,7 +119,7 @@ export default function VariableEditor({
                   id={`${id}-variables-menu-button`}
                   aria-label={localize('com_ui_variables')}
                   title={localize('com_ui_variables')}
-                  className="text-text-secondary hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-ring-primary inline-flex h-7 w-7 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="text-text-secondary hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-ring-primary inline-flex h-7 w-7 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
                 >
                   <PlusCircle className="h-4 w-4" strokeWidth={1.75} aria-hidden={true} />
                 </Menu.MenuButton>

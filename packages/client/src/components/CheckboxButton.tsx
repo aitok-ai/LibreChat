@@ -63,7 +63,7 @@ const CheckboxButton: React.ForwardRefExoticComponent<
       onChange={onChange}
       className={cn(
         composerControlClasses(),
-        'w-theme-control p-theme-compact md:px-theme-normal max-w-fit md:w-full',
+        'w-theme-control p-theme-compact md:px-theme-control-x max-w-fit md:w-full',
 
         // Checked state styling
         isChecked && isCheckedClassName && isCheckedClassName,

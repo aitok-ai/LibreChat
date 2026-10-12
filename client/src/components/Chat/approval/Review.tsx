@@ -1,6 +1,5 @@
 import { memo, useEffect, useMemo } from 'react';
-import { atomFamily } from 'jotai/utils';
-import { atom, useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { Button, TooltipAnchor } from '@librechat/client';
 import { ChevronDown, ChevronUp, ShieldQuestion, TriangleAlert } from 'lucide-react';
 import type { Agents } from 'librechat-data-provider';
@@ -9,13 +8,14 @@ import {
   useApprovalContext,
   useResumeSubmit,
 } from '~/components/Chat/Messages/Content/ApprovalContext';
+import {
+  approvalPanelOpenFamily,
+  pendingApprovalActionFamily,
+} from '~/components/Chat/approval/state';
 import { buildApprovalPreview, buildApprovalPreviews } from '~/components/Chat/approval/preview';
-import { pendingApprovalActionFamily } from '~/components/Chat/approval/state';
 import ToolApproval from '~/components/Chat/Messages/Content/ToolApproval';
 import { useComposerOverlay } from '~/components/Chat/Input/overlay';
 import { useLocalize } from '~/hooks';
-
-const approvalPanelOpenFamily = atomFamily((_conversationId: string) => atom(false));
 
 function usePendingToolApproval(conversationId: string) {
   const pendingAction = useAtomValue(pendingApprovalActionFamily(conversationId));
@@ -95,12 +95,15 @@ export const PendingToolApprovalPanel = memo(function PendingToolApprovalPanel({
   return (
     <div
       id="pending-tool-approval-panel"
-      className="absolute bottom-28 z-10 w-full"
+      /* The absolute review layer spans the composer width, but only its card
+       * is painted and interactive. Let the thread receive clicks through the
+       * transparent remainder of the layer. */
+      className="pointer-events-none absolute bottom-28 z-10 w-full"
       role="region"
       aria-labelledby="pending-tool-approval-title"
       aria-live="polite"
     >
-      <div className="popover border-token-border-light bg-surface-primary-alt flex max-h-[70vh] flex-col rounded-2xl border shadow-lg">
+      <div className="popover border-border-light bg-surface-primary-alt rounded-theme-popover pointer-events-auto flex max-h-[70vh] flex-col border shadow-lg">
         <div className="border-border-light flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
           <p id="pending-tool-approval-title" className="text-text-primary text-sm font-medium">
             {localize(reviews.length === 1 ? 'com_ui_review_action' : 'com_ui_review_actions', {
@@ -154,11 +157,14 @@ export const PendingToolApprovalPanel = memo(function PendingToolApprovalPanel({
                   approval={{
                     actionId: pendingAction.actionId,
                     allowed_decisions: config.allowed_decisions,
+                    remember_scope: config.remember_scope,
+                    remember_unavailable: config.remember_unavailable,
                     description: preview.description,
+                    allow_always: config.allow_always === true,
                   }}
                   toolCallId={request.tool_call_id}
                   args={request.arguments}
-                  showSubmit={false}
+                  surface="composer"
                 />
               ) : (
                 <p className="text-text-warning mt-2 flex items-center text-xs" role="alert">

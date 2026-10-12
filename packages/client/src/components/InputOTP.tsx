@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Minus } from 'lucide-react';
 import { OTPInput, OTPInputContext, RenderProps } from 'input-otp';
-import { cn } from '~/utils';
+import { cn, disabledWithinFillClasses } from '~/utils';
 
 const InputOTP: React.ForwardRefExoticComponent<
   (
@@ -71,6 +71,7 @@ const InputOTP: React.ForwardRefExoticComponent<
     ref={ref}
     containerClassName={cn(
       'flex items-center gap-2 has-[:disabled]:opacity-50',
+      disabledWithinFillClasses,
       containerClassName,
     )}
     className={cn('disabled:cursor-not-allowed', className)}
@@ -109,8 +110,8 @@ const InputOTPSlot: React.ForwardRefExoticComponent<
     <div
       ref={ref}
       className={cn(
-        'border-border-medium relative flex h-11 w-11 items-center justify-center border-y border-r text-base shadow-sm transition-all first:rounded-l-xl first:border-l last:rounded-r-xl',
-        isActive && 'ring-text-primary z-10 ring-1',
+        'border-border-control relative flex h-11 w-11 items-center justify-center border-y border-r text-base shadow-xs transition-all first:rounded-l-xl first:border-l last:rounded-r-xl',
+        isActive && 'ring-focus-control z-10 ring-1',
         className,
       )}
       {...props}

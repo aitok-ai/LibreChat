@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useSearchParams } from 'react-router-dom';
 import { useToastContext } from '@librechat/client';
 import { ErrorTypes } from 'librechat-data-provider';
 import { useForm, Controller } from 'react-hook-form';
-import { REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
 import {
   Label,
   Button,
@@ -13,6 +13,7 @@ import {
   InputOTPSeparator,
 } from '@librechat/client';
 import { useVerifyTwoFactorTempMutation } from '~/data-provider';
+import BackupCodeInput from './BackupCodeInput';
 import { useLocalize } from '~/hooks';
 
 interface VerifyPayload {
@@ -100,6 +101,7 @@ const TwoFactorScreen: React.FC = React.memo(() => {
                   value={value != null ? value : ''}
                   onChange={onChange}
                   pattern={REGEXP_ONLY_DIGITS}
+                  aria-label={localize('com_ui_2fa_verification_required')}
                 >
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
@@ -126,23 +128,7 @@ const TwoFactorScreen: React.FC = React.memo(() => {
               name="backupCode"
               control={control}
               render={({ field: { onChange, value } }) => (
-                <InputOTP
-                  maxLength={8}
-                  value={value != null ? value : ''}
-                  onChange={onChange}
-                  pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                    <InputOTPSlot index={6} />
-                    <InputOTPSlot index={7} />
-                  </InputOTPGroup>
-                </InputOTP>
+                <BackupCodeInput value={value ?? ''} onChange={onChange} />
               )}
             />
             {errors.backupCode && (
@@ -154,7 +140,6 @@ const TwoFactorScreen: React.FC = React.memo(() => {
           <Button
             type="submit"
             variant="submit"
-            aria-label={localize('com_auth_continue')}
             data-testid="login-button"
             disabled={isLoading}
             className="w-full rounded-2xl px-4 py-3 text-sm font-medium disabled:opacity-80"

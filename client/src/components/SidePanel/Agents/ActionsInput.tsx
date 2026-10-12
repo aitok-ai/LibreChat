@@ -253,7 +253,7 @@ export default function ActionsInput({
                 type="button"
                 onClick={() => setIsSchemaDialogOpen(true)}
                 aria-label={localize('com_ui_expand_editor')}
-                className="text-text-secondary hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-text-primary inline-flex h-7 w-7 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="text-text-secondary hover:bg-surface-secondary hover:text-text-primary focus-visible:ring-text-primary inline-flex h-7 w-7 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
               >
                 <Maximize2 className="h-4 w-4" strokeWidth={1.75} aria-hidden={true} />
               </button>
@@ -296,7 +296,7 @@ export default function ActionsInput({
           variant="submit"
           onClick={saveAction}
           disabled={!functions || !functions.length}
-          className="min-w-[100px]"
+          className="min-w-[6.25rem]"
         >
           {getButtonContent()}
         </Button>
@@ -305,7 +305,7 @@ export default function ActionsInput({
       <OGDialog open={isSchemaDialogOpen} onOpenChange={setIsSchemaDialogOpen}>
         <OGDialogContent className="flex h-[85vh] max-h-[85vh] w-11/12 max-w-5xl flex-col gap-3 p-5">
           <OGDialogHeader className="space-y-0 pr-10">
-            <OGDialogTitle className="text-text-primary text-left text-sm font-medium">
+            <OGDialogTitle className="text-left text-sm font-medium">
               {localize('com_ui_schema')}
             </OGDialogTitle>
             <OGDialogDescription className="sr-only">

@@ -32,7 +32,7 @@ export default function ListCard({
       {onClick && (
         <button
           type="button"
-          className="focus-visible:ring-ring-primary absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2"
+          className="focus-visible:ring-ring-primary absolute inset-0 z-0 rounded-xl focus:outline-hidden focus-visible:ring-2"
           onClick={onClick}
           aria-label={ariaLabel}
           aria-describedby={snippetId}
@@ -43,7 +43,7 @@ export default function ListCard({
           <CategoryIcon category={category} className="icon-md shrink-0" aria-hidden="true" />
           <Label
             id={titleId}
-            className="text-text-primary min-w-0 truncate text-sm font-semibold select-none"
+            className="text-text-primary min-w-0 truncate text-sm font-medium select-none"
             title={name}
           >
             {name}

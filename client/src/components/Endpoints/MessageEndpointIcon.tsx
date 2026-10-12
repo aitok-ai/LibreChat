@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Feather } from 'lucide-react';
 import { EModelEndpoint, isAssistantsEndpoint } from 'librechat-data-provider';
-import { AssistantIcon, TooltipAnchor, ProviderAvatar } from '@librechat/client';
+import { pxToRem, AssistantIcon, TooltipAnchor, ProviderAvatar } from '@librechat/client';
 import type { IconProps } from '~/common';
 import { useProviderIcon } from '~/hooks/Endpoint';
 import { cn } from '~/utils';
@@ -25,8 +25,8 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
         <TooltipAnchor
           description={assistantName ?? ''}
           style={{
-            width: size,
-            height: size,
+            width: pxToRem(size),
+            height: pxToRem(size),
           }}
           className={cn('overflow-hidden rounded-full', props.className ?? '')}
         >
@@ -54,8 +54,8 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
         <TooltipAnchor
           description={agentName ?? ''}
           style={{
-            width: size,
-            height: size,
+            width: pxToRem(size),
+            height: pxToRem(size),
           }}
           className={cn('overflow-hidden rounded-full', props.className ?? '')}
         >
@@ -78,7 +78,7 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
   };
 
   const errorBadge = error === true && (
-    <span className="border-surface-primary bg-status-error-strong text-text-on-status absolute top-[20px] right-0 -mr-2 flex h-3 w-3 items-center justify-center rounded-full border text-[10px]">
+    <span className="border-surface-primary bg-status-error-strong text-text-on-status absolute top-[1.25rem] right-0 -mr-2 flex h-3 w-3 items-center justify-center rounded-full border text-[10px]">
       !
     </span>
   );
@@ -96,8 +96,8 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
       <div
         title={endpoint ?? ''}
         style={{
-          width: size,
-          height: size,
+          width: pxToRem(size),
+          height: pxToRem(size),
         }}
         className={cn(
           'text-text-primary relative flex h-9 w-9 items-center justify-center rounded-sm p-1',

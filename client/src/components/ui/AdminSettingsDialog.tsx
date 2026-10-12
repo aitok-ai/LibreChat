@@ -186,7 +186,7 @@ const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
     <Button
       size="sm"
       variant="outline"
-      className="border-border-light focus-visible:outline-text-primary relative h-9 w-full gap-2 rounded-lg font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="border-border-light relative h-9 w-full gap-2 rounded-lg font-medium"
       aria-label={localize('com_ui_admin_settings')}
     >
       <ShieldEllipsis className="size-5 cursor-pointer" aria-hidden="true" />
@@ -233,7 +233,7 @@ const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
                   trigger={
                     <Ariakit.MenuButton
                       aria-labelledby={`${roleLabelId} ${roleValueId}`}
-                      className="border-border-medium text-text-primary hover:bg-surface-hover focus-visible:ring-text-primary inline-flex h-10 w-full items-center justify-between gap-2 rounded-lg border bg-transparent px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                      className="border-border-medium text-text-primary hover:bg-surface-hover focus-visible:ring-text-primary inline-flex h-10 w-full items-center justify-between gap-2 rounded-lg border bg-transparent px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
                     >
                       <span id={roleValueId} className="truncate font-medium">
                         {selectedRole}

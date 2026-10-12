@@ -62,7 +62,7 @@ export default function GroupSidePanel({
   return (
     <div id="prompts-panel" className={cn('flex h-full w-full flex-col', className)}>
       {onClose && (
-        <div className="flex items-center justify-end px-2 py-[2px] md:py-2">
+        <div className="flex items-center justify-end px-2 py-0.5 md:py-2">
           <TooltipAnchor
             description={localize('com_nav_close_sidebar')}
             render={
@@ -83,8 +83,8 @@ export default function GroupSidePanel({
         </div>
       )}
       <div className="relative flex min-h-0 flex-1 flex-col">
-        {/* Sticky header: filter and toggles stay put while the list scrolls */}
-        <div className="text-text-primary shrink-0 space-y-2 px-3 pb-2">{children}</div>
+        {/* Sticky header: it brings its own padding via PanelHeader */}
+        <div className="text-text-primary shrink-0">{children}</div>
         <PanelContent
           ref={containerRef}
           isLoading={!!groupsQuery.isLoading}

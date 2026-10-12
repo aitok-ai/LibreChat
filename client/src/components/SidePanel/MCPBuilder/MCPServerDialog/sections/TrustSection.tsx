@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
 import { Checkbox, Label } from '@librechat/client';
+import { useFormContext, Controller } from 'react-hook-form';
+import type { MCPServerFormData } from '../hooks/useMCPServerForm';
+import { createConfigHtmlSanitizer } from '~/utils/configHtml';
 import { useLocalize, useLocalizedConfig } from '~/hooks';
 import { useGetStartupConfig } from '~/data-provider';
-import { createConfigHtmlSanitizer } from '~/utils/configHtml';
-import type { MCPServerFormData } from '../hooks/useMCPServerForm';
 
 export default function TrustSection() {
   const localize = useLocalize();
@@ -22,7 +22,7 @@ export default function TrustSection() {
   );
 
   return (
-    <div className="border-border-light bg-surface-secondary rounded-lg border p-2">
+    <div className="bg-surface-secondary rounded-lg p-2">
       <div className="flex items-start gap-3">
         <Controller
           name="trust"

@@ -57,10 +57,18 @@ export default function ToolCallLimitNotice({ message }: { message: TMessage }) 
   /**
    * Empty overrides are authoritative: a recovery prompt is not the user's next
    * compose, so `ask` must not attach or drain files, skills, or quotes already
-   * staged in the composer.
+   * staged in the composer. The agent and MCP server selection remains in scope.
    */
   const recover = (text: string) =>
-    chat?.ask({ text }, { overrideFiles: [], overrideManualSkills: [], overrideQuotes: [] });
+    chat?.ask(
+      { text },
+      {
+        overrideFiles: [],
+        overrideManualSkills: [],
+        overrideQuotes: [],
+        overrideReasoning: null,
+      },
+    );
 
   return (
     <div

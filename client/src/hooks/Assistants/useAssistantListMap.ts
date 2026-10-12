@@ -5,7 +5,7 @@ import type { AssistantListItem } from '~/common';
 import { useListAssistantsQuery } from '~/data-provider';
 
 const selectAssistantsResponse = (res: AssistantListResponse): AssistantListItem[] =>
-  res.data.map(({ id, name, metadata, model }) => ({
+  (res.data ?? []).map(({ id, name, metadata, model }) => ({
     id,
     name: name ?? '',
     metadata,

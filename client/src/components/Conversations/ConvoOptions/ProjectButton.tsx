@@ -25,6 +25,8 @@ type ProjectButtonProps = {
   setShowProjectDialog?: (value: boolean) => void;
   triggerRef?: RefObject<HTMLButtonElement>;
   setMenuOpen?: (open: boolean) => void;
+  /** Called with the new project once the assignment has landed. */
+  onAssigned?: (projectId: string) => void;
 };
 
 function ProjectConversationDialog({
@@ -32,11 +34,13 @@ function ProjectConversationDialog({
   chatProjectId,
   setMenuOpen,
   setShowProjectDialog,
+  onAssigned,
 }: {
   conversationId: string;
   chatProjectId?: string | null;
   setMenuOpen?: (open: boolean) => void;
   setShowProjectDialog: (value: boolean) => void;
+  onAssigned?: (projectId: string) => void;
 }) {
   const localize = useLocalize();
   const { showToast } = useToastContext();
@@ -79,6 +83,7 @@ function ProjectConversationDialog({
       },
       {
         onSuccess: () => {
+          onAssigned?.(selectedProjectId);
           setShowProjectDialog(false);
           setMenuOpen?.(false);
           showToast({
@@ -162,6 +167,7 @@ export default function ProjectButton({
   showProjectDialog,
   setShowProjectDialog,
   triggerRef,
+  onAssigned,
 }: ProjectButtonProps) {
   if (showProjectDialog === undefined || setShowProjectDialog === undefined) {
     return null;
@@ -178,6 +184,7 @@ export default function ProjectButton({
         chatProjectId={chatProjectId}
         setMenuOpen={setMenuOpen}
         setShowProjectDialog={setShowProjectDialog}
+        onAssigned={onAssigned}
       />
     </OGDialog>
   );

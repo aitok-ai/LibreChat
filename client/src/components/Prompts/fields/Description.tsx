@@ -11,7 +11,7 @@ const Description = ({
   onValueChange,
   disabled,
   tabIndex,
-  labelBgClassName = 'bg-presentation',
+  labelBgClassName = 'bg-surface-primary-alt',
 }: {
   initialValue?: string;
   onValueChange?: (value: string) => void;
@@ -46,7 +46,7 @@ const Description = ({
   }
 
   return (
-    <div className="border-border-medium rounded-xl border">
+    <div className="border-border-inset-medium rounded-xl border">
       <label
         htmlFor={descriptionId}
         className="text-text-secondary block px-4 pt-2 text-sm md:hidden"

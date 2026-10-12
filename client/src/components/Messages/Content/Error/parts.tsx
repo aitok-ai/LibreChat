@@ -277,7 +277,7 @@ export function ErrorDetails({ label, children }: { label: string; children: Rea
         onClick={() => setOpen((expanded) => !expanded)}
         aria-expanded={open}
         aria-controls={panelId}
-        className="text-text-secondary hover:text-text-primary focus-visible:ring-text-primary flex items-center gap-1 rounded-md text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+        className="text-text-secondary hover:text-text-primary focus-visible:ring-text-primary flex items-center gap-1 rounded-md text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
       >
         {label}
         <ChevronRight
@@ -354,10 +354,6 @@ export function ErrorAction({
 }
 
 export const formatNumber = (value: number): string => new Intl.NumberFormat().format(value);
-
-/** Token credits are a float balance; two decimals, matching the balance settings row. */
-export const formatCredits = (value: number): string =>
-  new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
 
 const isoTimestamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
 

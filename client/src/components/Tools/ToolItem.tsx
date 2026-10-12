@@ -31,7 +31,7 @@ function ToolItem({ tool, onAddTool, onRemoveTool, isInstalled = false }: ToolIt
   return (
     <div className="border-border-medium flex flex-col gap-4 rounded border bg-transparent p-6">
       <div className="flex gap-4">
-        <div className="h-[70px] w-[70px] shrink-0">
+        <div className="h-[4.375rem] w-[4.375rem] shrink-0">
           <div className="relative h-full w-full">
             {icon ? (
               <img
@@ -78,7 +78,7 @@ function ToolItem({ tool, onAddTool, onRemoveTool, isInstalled = false }: ToolIt
           )}
         </div>
       </div>
-      <div className="text-text-secondary line-clamp-3 h-[60px] text-sm">{description}</div>
+      <div className="text-text-secondary line-clamp-3 h-[3.75rem] text-sm">{description}</div>
     </div>
   );
 }

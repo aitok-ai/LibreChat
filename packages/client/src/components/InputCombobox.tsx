@@ -50,13 +50,15 @@ export const InputCombobox: React.FC<ComboboxProps> = ({
           {label}
         </Ariakit.ComboboxLabel>
       )}
-      <div className={cn('relative', isKeyboardFocus ? 'ring-ring-primary rounded-md ring-2' : '')}>
+      <div
+        className={cn('relative', isKeyboardFocus ? 'ring-focus-control rounded-md ring-2' : '')}
+      >
         <Ariakit.Combobox
           placeholder={placeholder}
           className={cn(
             'border-border-light bg-surface-primary h-10 w-full rounded-md border px-3 py-2 text-sm',
             'placeholder-text-secondary hover:bg-surface-hover',
-            'focus:outline-none',
+            'focus:outline-hidden',
             className,
           )}
           onChange={(event) => handleChange(event.target.value)}
@@ -87,14 +89,14 @@ export const InputCombobox: React.FC<ComboboxProps> = ({
           <Ariakit.ComboboxItem
             key={index}
             className={cn(
-              'relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none',
+              'relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-hidden select-none',
               'hover:bg-surface-tertiary hover:text-text-primary cursor-pointer',
               'data-[active-item]:bg-surface-tertiary data-[active-item]:text-text-primary',
             )}
             value={isOptionObject(option) ? `${option.value ?? ''}` : option}
           >
             {isOptionObject(option) && option.icon != null && (
-              <span className="mr-2 flex-shrink-0">{option.icon}</span>
+              <span className="mr-2 shrink-0">{option.icon}</span>
             )}
             {isOptionObject(option) ? option.label : option}
           </Ariakit.ComboboxItem>

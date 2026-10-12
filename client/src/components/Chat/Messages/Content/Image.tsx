@@ -28,6 +28,7 @@ const Image = ({
   imagePath,
   altText,
   className,
+  alignRight = false,
   args,
   width,
   height,
@@ -35,6 +36,7 @@ const Image = ({
   imagePath: string;
   altText: string;
   className?: string;
+  alignRight?: boolean;
   args?: {
     prompt?: string;
     quality?: 'low' | 'medium' | 'high';
@@ -94,7 +96,7 @@ const Image = ({
   const showSkeleton = hasDimensions && !paintedUrls.has(absoluteImageUrl);
 
   return (
-    <div>
+    <div className={alignRight ? 'ml-auto' : undefined}>
       <button
         ref={triggerRef}
         type="button"
@@ -103,7 +105,7 @@ const Image = ({
         onClick={() => setIsOpen(true)}
         className={cn(
           'border-border-light text-text-secondary-alt relative mt-1 w-full max-w-lg cursor-pointer overflow-hidden rounded-lg border shadow-md transition-shadow',
-          'focus-visible:ring-text-primary focus-visible:ring-offset-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'focus-visible:ring-text-primary focus-visible:ring-offset-surface-primary focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2',
           className,
         )}
         style={heightStyle}

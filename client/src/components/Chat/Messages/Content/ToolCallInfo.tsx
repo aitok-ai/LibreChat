@@ -1,13 +1,9 @@
 import { useState, useMemo } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { Tools } from 'librechat-data-provider';
-import type { TAttachment, UIResource } from 'librechat-data-provider';
-import UIResourceRenderer, { isSupportedUIResource } from '~/components/MCPUIResource/Renderer';
-import { useOptionalMessagesOperations } from '~/Providers';
 import { useLocalize, useExpandCollapse } from '~/hooks';
-import UIResourceCarousel from './UIResourceCarousel';
 import { OutputRenderer } from './ToolOutput';
-import { handleUIAction, cn } from '~/utils';
+import { hasToolParams } from './params';
+import { cn } from '~/utils';
 
 function isSimpleObject(obj: unknown): obj is Record<string, string | number | boolean | null> {
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
@@ -58,7 +54,7 @@ function ComplexInput({ data }: { data: Record<string, unknown> }) {
       {Object.entries(data).map(([key, value]) => (
         <div key={key} className="flex items-baseline gap-1.5">
           <span className="text-text-secondary font-medium">{key}</span>
-          <span className="bg-surface-tertiary text-text-primary max-w-[300px] truncate overflow-hidden rounded px-1.5 py-0.5 font-mono">
+          <span className="bg-surface-tertiary text-text-primary max-w-[18.75rem] truncate overflow-hidden rounded px-1.5 py-0.5 font-mono">
             {formatParamValue(value)}
           </span>
         </div>
@@ -92,54 +88,24 @@ function InputRenderer({ input }: { input: string }) {
   }
 }
 
-export default function ToolCallInfo({
-  input,
-  output,
-  attachments,
-}: {
-  input: string;
-  output?: string | null;
-  attachments?: TAttachment[];
-}) {
+export default function ToolCallInfo({ input, output }: { input: string; output?: string | null }) {
   const localize = useLocalize();
-  const { ask } = useOptionalMessagesOperations();
   const [showParams, setShowParams] = useState(false);
   const { style: paramsExpandStyle, ref: paramsExpandRef } = useExpandCollapse(showParams);
 
-  const hasParams = useMemo(() => {
-    if (!input || input.trim().length === 0) {
-      return false;
-    }
-    try {
-      const parsed = JSON.parse(input);
-      if (typeof parsed === 'object' && parsed !== null) {
-        return Object.keys(parsed).length > 0;
-      }
-    } catch {
-      // Not JSON
-    }
-    return input.trim().length > 0;
-  }, [input]);
-
-  const uiResources: UIResource[] =
-    attachments
-      ?.filter((attachment) => attachment.type === Tools.ui_resources)
-      .flatMap((attachment) => {
-        return attachment[Tools.ui_resources] as UIResource[];
-      })
-      .filter(isSupportedUIResource) ?? [];
+  const hasParams = useMemo(() => hasToolParams(input), [input]);
 
   return (
     <div className="w-full px-3 py-3.5">
       {output && <OutputRenderer text={output} />}
-      {output && hasParams && <div className="border-border-light my-2 border-t" />}
+      {output && hasParams && <div className="border-border-inset my-2 border-t" />}
       {hasParams && (
         <>
           <button
             type="button"
             className={cn(
               'text-text-secondary inline-flex items-center gap-1 text-xs',
-              'focus-visible:ring-border-heavy focus-visible:ring-2 focus-visible:outline-none',
+              'focus-visible:ring-focus-subtle focus-visible:ring-2 focus-visible:outline-hidden',
             )}
             onClick={() => setShowParams((prev) => !prev)}
             aria-expanded={showParams}
@@ -158,21 +124,6 @@ export default function ToolCallInfo({
               <InputRenderer input={input} />
             </div>
           </div>
-        </>
-      )}
-      {uiResources.length > 0 && (
-        <>
-          {(hasParams || output) && <div className="border-border-light my-2 border-t" />}
-          {uiResources.length > 1 && <UIResourceCarousel uiResources={uiResources} />}
-          {uiResources.length === 1 && (
-            <UIResourceRenderer
-              resource={uiResources[0]}
-              onUIAction={async (result) => handleUIAction(result, ask)}
-              htmlProps={{
-                autoResizeIframe: { width: true, height: true },
-              }}
-            />
-          )}
         </>
       )}
     </div>

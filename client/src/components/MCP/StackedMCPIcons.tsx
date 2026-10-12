@@ -14,8 +14,8 @@ interface StackedMCPIconsProps {
 
 const sizeConfig = {
   sm: {
-    icon: 'h-[18px] w-[18px]',
-    container: 'h-[22px] w-[22px]',
+    icon: 'h-[1.125rem] w-[1.125rem]',
+    container: 'h-[1.375rem] w-[1.375rem]',
     overlap: '-ml-2.5',
   },
   md: {
@@ -51,7 +51,7 @@ export default function StackedMCPIcons({
     return (
       <MCPIcon
         aria-hidden="true"
-        className={cn('text-text-primary flex-shrink-0', sizeConfig.md.icon)}
+        className={cn('text-text-primary shrink-0', sizeConfig.md.icon)}
       />
     );
   }

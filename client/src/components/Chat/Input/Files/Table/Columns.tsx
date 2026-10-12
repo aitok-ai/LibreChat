@@ -200,21 +200,21 @@ export const columns: ColumnDef<TFile>[] = [
       if (source === FileSources.openai) {
         return (
           <div className="flex flex-wrap items-center gap-2">
-            <OpenAIMinimalIcon className="icon-sm text-green-600/50" />
+            <OpenAIMinimalIcon className="icon-sm" />
             {'OpenAI'}
           </div>
         );
       } else if (source === FileSources.azure) {
         return (
           <div className="flex flex-wrap items-center gap-2">
-            <AzureMinimalIcon className="icon-sm text-cyan-700" />
+            <AzureMinimalIcon className="icon-sm" />
             {'Azure'}
           </div>
         );
       }
       return (
         <div className="flex flex-wrap items-center gap-2">
-          <Database className="icon-sm text-cyan-700" aria-hidden="true" />
+          <Database className="icon-sm" aria-hidden="true" />
           {localize('com_ui_host')}
         </div>
       );

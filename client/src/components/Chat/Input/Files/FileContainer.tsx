@@ -67,12 +67,12 @@ const FileContainer = ({
     buttonClassName,
   );
   const focusRing =
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface-primary';
+    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-text-primary focus-visible:ring-offset-1 focus-visible:ring-offset-surface-primary';
   /** The full-bleed target sits inside the surface's `overflow-hidden`, so an offset ring
    * would be clipped away entirely; the inset ring draws within the target's own box and the
    * matching radius keeps it inside the surface's rounded corners. */
   const insetFocusRing =
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-text-primary';
+    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-text-primary';
 
   const details = (
     <div className="w-56 p-1.5">

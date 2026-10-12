@@ -109,7 +109,7 @@ const PresetItems: FC<{
 
   return (
     <>
-      <div className="border-border-light bg-surface-secondary flex min-w-[300px] items-center gap-3 border-b px-3 py-2 md:min-w-[400px]">
+      <div className="border-border-light bg-surface-secondary flex min-w-[min(18.75rem,90vw)] items-center gap-3 border-b px-3 py-2 md:min-w-[min(25rem,90vw)]">
         <div className="min-w-0 flex-1">
           <p className="text-text-primary text-sm font-medium">
             {localize('com_endpoint_examples')}
@@ -136,7 +136,7 @@ const PresetItems: FC<{
               aria-label={localize('com_ui_more_options')}
               aria-expanded={isMenuOpen}
               className={cn(
-                'rounded-theme-control hover:bg-surface-hover hover:text-text-primary focus-visible:ring-text-primary inline-flex size-8 shrink-0 items-center justify-center transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                'rounded-theme-control hover:bg-surface-hover hover:text-text-primary focus-visible:ring-text-primary inline-flex size-8 shrink-0 items-center justify-center transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
                 isMenuOpen ? 'bg-surface-hover text-text-primary' : 'text-text-secondary',
               )}
             >

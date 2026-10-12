@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import { VerifiedIcon } from '@librechat/client';
 import { Check, Globe, Info, Settings, Star, User } from 'lucide-react';
 import type { TranslationKeys } from '~/hooks/useLocalize';
-import type { AgentItem } from './items/types';
+import type { AgentItem, ItemStatus } from './items/types';
 import { hasConfigurableSettings } from './items/configurable';
 import { useLocalize, useAuthContext } from '~/hooks';
 import { getIconForItem } from './items/icons';
@@ -15,6 +15,9 @@ interface ToolCardProps {
   onConfigure?: (item: AgentItem) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (item: AgentItem) => void;
+  /** A live state, such as an MCP server's connection, shown in place of the
+   *  kind label, which is redundant wherever every card shares one kind. */
+  status?: ItemStatus;
 }
 
 function useDisplayStrings(item: AgentItem): { name: string; description: string } {
@@ -47,13 +50,13 @@ function ItemIconView({ item, size }: ItemIconProps) {
 
   const tileClasses =
     size === 'md' ? 'h-10 w-10 rounded-xl text-base' : 'h-9 w-9 rounded-lg text-sm';
-  const iconClasses = size === 'md' ? 'h-[18px] w-[18px]' : 'h-[18px] w-[18px]';
+  const iconClasses = size === 'md' ? 'h-[1.125rem] w-[1.125rem]' : 'h-[1.125rem] w-[1.125rem]';
 
   if (iconUrl && !imgError) {
     return (
       <span
         className={cn(
-          'flex shrink-0 items-center justify-center overflow-hidden bg-white',
+          'bg-surface-fixed flex shrink-0 items-center justify-center overflow-hidden',
           tileClasses,
         )}
         aria-hidden="true"
@@ -86,6 +89,7 @@ function ToolCardImpl({
   onConfigure,
   isFavorited = false,
   onToggleFavorite,
+  status,
 }: ToolCardProps) {
   const localize = useLocalize();
   const { name, description } = useDisplayStrings(item);
@@ -105,12 +109,16 @@ function ToolCardImpl({
   const DetailIcon = canConfigure ? Settings : Info;
 
   return (
+    /* touch:h-36 with touch:pb-9 on the content: where a coarse pointer exists the
+     action cluster below is permanent rather than revealed on hover, so the card
+     owes it a strip of its own. Without that the last line of a three-line
+     description sits under the buttons for as long as the card is on screen. */
     <div
       className={cn(
-        'group relative flex h-32 w-full flex-col overflow-hidden rounded-2xl border',
+        'group touch:h-36 relative flex h-32 w-full flex-col overflow-hidden rounded-2xl border',
         selected
-          ? 'border-status-success bg-status-success/10 shadow-sm'
-          : 'border-border-light hover:border-border-medium hover:bg-surface-tertiary bg-transparent hover:shadow-sm',
+          ? 'border-status-success bg-status-success/10 shadow-xs'
+          : 'border-border-light hover:border-border-medium hover:bg-surface-tertiary bg-transparent hover:shadow-xs',
       )}
     >
       <button
@@ -118,8 +126,8 @@ function ToolCardImpl({
         onClick={() => onToggle(item)}
         aria-pressed={selected}
         className={cn(
-          'flex h-full w-full cursor-pointer flex-col gap-2 rounded-2xl p-4 text-left',
-          'focus-visible:ring-ring-primary focus:outline-none focus-visible:ring-2',
+          'touch:pb-9 flex h-full w-full cursor-pointer flex-col gap-2 rounded-2xl p-4 text-left',
+          'focus-visible:ring-ring-primary focus:outline-hidden focus-visible:ring-2',
         )}
       >
         <div className="flex w-full items-start gap-3">
@@ -144,9 +152,19 @@ function ToolCardImpl({
                 </span>
               )}
             </div>
-            <p className="text-text-secondary truncate text-[11px] tracking-wide uppercase">
-              {kindLabel}
-            </p>
+            {status != null ? (
+              <p className="text-text-secondary flex min-w-0 items-center gap-1.5 text-xs">
+                <span
+                  aria-hidden="true"
+                  className={cn('size-2 shrink-0 rounded-full', status.tone)}
+                />
+                <span className="truncate">{status.label}</span>
+              </p>
+            ) : (
+              <p className="text-text-secondary truncate text-[11px] tracking-wide uppercase">
+                {kindLabel}
+              </p>
+            )}
           </div>
         </div>
         {description ? (
@@ -204,9 +222,9 @@ function ToolCardImpl({
               }
               className={cn(
                 'text-text-secondary flex size-7 items-center justify-center rounded-lg',
-                'hover:bg-surface-hover hover:text-text-primary opacity-0 transition duration-150',
-                'group-focus-within:opacity-100 group-hover:opacity-100',
-                'focus-visible:ring-ring-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2',
+                'hover:bg-surface-hover hover:text-text-primary transition duration-150',
+                'no-touch:opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
+                'focus-visible:ring-ring-primary focus:outline-hidden focus-visible:opacity-100 focus-visible:ring-2',
               )}
             >
               <DetailIcon className="size-4" aria-hidden="true" />
@@ -223,10 +241,11 @@ function ToolCardImpl({
               aria-label={localize(isFavorited ? 'com_ui_unfavorite' : 'com_ui_favorite')}
               className={cn(
                 'text-text-secondary flex size-7 items-center justify-center rounded-lg',
-                'hover:bg-surface-hover hover:text-text-primary opacity-0 transition duration-150',
+                'hover:bg-surface-hover hover:text-text-primary transition duration-150',
                 'group-focus-within:opacity-100 group-hover:opacity-100',
-                'focus-visible:ring-ring-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2',
-                isFavorited && 'text-series-4 hover:text-series-4 opacity-100',
+                'focus-visible:ring-ring-primary focus:outline-hidden focus-visible:opacity-100 focus-visible:ring-2',
+                !isFavorited && 'no-touch:opacity-0',
+                isFavorited && 'text-series-4 hover:text-series-4',
               )}
             >
               <Star className={cn('size-4', isFavorited && 'fill-current')} aria-hidden="true" />

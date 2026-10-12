@@ -12,7 +12,7 @@ import {
 } from '@ariakit/react';
 import './AnimatePopover.css';
 import { JSX } from 'react/jsx-runtime';
-import { cn } from '~/utils';
+import { cn, disabledFillClasses } from '~/utils';
 
 type MultiSelectItem<T extends string> = T | { label: string; value: T };
 
@@ -40,6 +40,9 @@ interface MultiSelectProps<T extends string> {
   selectClassName?: string;
   selectIcon?: React.ReactNode;
   popoverClassName?: string;
+  /** `widget` paints the popover in the dashboard widget surface (`chart-widget-surface`), for a
+   *  picker that opens over chart widgets; `default` keeps the shared menu surface. */
+  surface?: 'default' | 'widget';
   selectItemsClassName?: string;
   selectedValues: T[];
   setSelectedValues: (values: T[]) => void;
@@ -90,6 +93,7 @@ export default function MultiSelect<T extends string>({
   labelClassName,
   selectClassName,
   popoverClassName,
+  surface = 'default',
   selectItemsClassName,
   selectedValues = [],
   setSelectedValues,
@@ -145,9 +149,10 @@ export default function MultiSelect<T extends string>({
           data-state={isPopoverOpen ? 'open' : 'closed'}
           className={cn(
             'flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm',
-            'bg-surface-tertiary text-text-primary hover:bg-surface-hover shadow-sm hover:cursor-pointer',
+            'bg-surface-tertiary text-text-primary hover:bg-surface-hover shadow-xs hover:cursor-pointer',
             'disabled:hover:bg-surface-tertiary disabled:cursor-not-allowed disabled:opacity-60',
-            'focus-visible:ring-text-primary outline-none focus-visible:ring-2 focus-visible:outline-none',
+            disabledFillClasses,
+            'focus-visible:ring-focus-control outline-hidden focus-visible:ring-2 focus-visible:outline-hidden',
             selectClassName,
             selectedValues.length > 0 && selectItemsClassName != null && selectItemsClassName,
           )}
@@ -174,11 +179,12 @@ export default function MultiSelect<T extends string>({
           unmountOnHide
           finalFocus={selectRef}
           className={cn(
-            'animate-popover z-40 flex max-h-[300px]',
-            'flex-col overflow-hidden rounded-xl',
+            'animate-popover z-40 flex max-h-[18.75rem]',
+            'flex-col overflow-auto overscroll-contain rounded-xl',
             'bg-surface-secondary text-text-primary px-1.5 py-1 shadow-lg',
             'border-border-light border',
-            'outline-none',
+            'outline-hidden',
+            surface === 'widget' && 'bg-chart-widget-surface',
             popoverClassName,
           )}
         >
@@ -191,7 +197,7 @@ export default function MultiSelect<T extends string>({
                   placeholder={searchPlaceholder}
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  className="focus-visible:ring-text-primary min-w-0 flex-1 bg-transparent text-sm outline-none focus-visible:ring-2"
+                  className="focus-visible:ring-focus-control min-w-0 flex-1 bg-transparent text-sm outline-hidden focus-visible:ring-2"
                 />
               </div>
             )}
@@ -227,7 +233,7 @@ export default function MultiSelect<T extends string>({
                   aria-label={label}
                   className={cn(
                     'flex items-center gap-2 rounded-lg px-2 py-1.5 hover:cursor-pointer',
-                    'scroll-m-1 transition-colors outline-none',
+                    'scroll-m-1 outline-hidden transition-colors',
                     'hover:bg-surface-hover',
                     'data-[active-item]:bg-surface-active',
                     'w-full min-w-0 text-sm',

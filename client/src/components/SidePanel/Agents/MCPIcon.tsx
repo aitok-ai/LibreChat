@@ -42,7 +42,7 @@ export default function MCPIcon({ icon, onIconChange, errorId }: MCPIconProps) {
         )}
       </Button>
       <div className="flex flex-col gap-1">
-        <span className="token-text-secondary text-sm">
+        <span className="text-text-secondary text-sm">
           {localize('com_ui_icon')} {localize('com_ui_optional')}
         </span>
         <span className="text-text-secondary text-xs">{localize('com_agents_mcp_icon_size')}</span>

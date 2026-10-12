@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './Dialog';
-import { cn } from '~/utils/';
+import { cn, disabledFillClasses } from '~/utils';
 
 type SelectionProps = {
   selectHandler?: () => void;
@@ -48,8 +48,10 @@ const DialogTemplate: ForwardRefExoticComponent<
   const { selectHandler, selectClasses, selectText } = selection || {};
   const Cancel = 'cancel';
 
-  const defaultSelect =
-    'bg-surface-inverted text-text-inverted transition-colors hover:bg-surface-inverted-hover disabled:cursor-not-allowed disabled:opacity-50';
+  const defaultSelect = cn(
+    'bg-surface-inverted text-text-inverted transition-colors hover:bg-surface-inverted-hover disabled:cursor-not-allowed disabled:opacity-50',
+    disabledFillClasses,
+  );
   return (
     <DialogContent
       showCloseButton={showCloseButton}

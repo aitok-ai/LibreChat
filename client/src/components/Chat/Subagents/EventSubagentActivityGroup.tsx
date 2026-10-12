@@ -172,7 +172,7 @@ function EventSubagentRows({
       <div
         id={panelId}
         hidden={!expanded}
-        className="divide-border-light border-border-light divide-y border-t"
+        className="divide-border-inset border-border-inset divide-y border-t"
       >
         {eventChildren.map((child) => {
           const agent = child.agentId == null ? undefined : agentsMap?.[child.agentId];
@@ -188,7 +188,7 @@ function EventSubagentRows({
               data-subagent-parent-message={child.parentMessageId}
               data-subagent-part-index="0"
               className={cn(
-                'focus-visible:ring-ring-primary flex w-full items-center gap-2 px-3 py-2 text-left text-sm focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset',
+                'focus-visible:ring-ring-primary flex w-full items-center gap-2 px-3 py-2 text-left text-sm focus-visible:ring-2 focus-visible:outline-hidden focus-visible:ring-inset',
                 canOpen ? 'hover:bg-surface-hover' : 'cursor-default opacity-70',
               )}
             >

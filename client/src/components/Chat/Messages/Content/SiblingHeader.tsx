@@ -108,7 +108,7 @@ export default function SiblingHeader({
   return (
     <div className="border-border-light mb-2 flex items-center justify-between gap-2 border-b pb-2">
       <div className="flex min-w-0 items-center gap-2">
-        <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center overflow-hidden rounded-full">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full">
           <MessageIcon
             message={
               {
@@ -128,9 +128,9 @@ export default function SiblingHeader({
         onClick={handleBranch}
         disabled={!messageId || !agentId || isSubmitting || branchMessage.isLoading}
         className={cn(
-          'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md',
+          'flex h-6 w-6 shrink-0 items-center justify-center rounded-md',
           'text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors',
-          'focus:ring-border-medium focus:ring-2 focus:ring-offset-1 focus:outline-none',
+          'focus:ring-border-medium focus:ring-2 focus:ring-offset-1 focus:outline-hidden',
           'disabled:cursor-not-allowed disabled:opacity-50',
           (!messageId || !agentId || isSubmitting) && 'invisible',
         )}

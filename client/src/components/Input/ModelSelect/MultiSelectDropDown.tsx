@@ -81,7 +81,7 @@ function MultiSelectDropDown({
             <>
               <ListboxButton
                 className={cn(
-                  'border-border-light bg-surface-secondary relative flex w-full cursor-default flex-col rounded-md border py-2 pr-10 pl-3 text-left focus:ring-0 focus:ring-offset-0 focus:outline-none sm:text-sm',
+                  'border-border-light bg-surface-secondary relative flex w-full cursor-default flex-col rounded-md border py-2 pr-10 pl-3 text-left focus:ring-0 focus:ring-offset-0 focus:outline-hidden sm:text-sm',
                   className ?? '',
                 )}
                 id={excludeIds[0]}
@@ -114,7 +114,7 @@ function MultiSelectDropDown({
                           <div
                             key={i}
                             className="relative"
-                            style={{ width: '16px', height: '16px' }}
+                            style={{ width: '1rem', height: '1rem' }}
                           >
                             {v.icon ? (
                               <img
@@ -161,7 +161,7 @@ function MultiSelectDropDown({
                 <ListboxOptions
                   ref={menuRef}
                   className={cn(
-                    'bg-surface-secondary ring-border-light absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded text-base text-xs ring-1 focus:outline-none md:w-[100%] dark:last:border-0',
+                    'bg-surface-secondary ring-border-light absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded text-base text-xs ring-1 focus:outline-hidden md:w-[100%] dark:last:border-0',
                     optionsClassName,
                   )}
                 >
@@ -175,7 +175,7 @@ function MultiSelectDropDown({
                       <ListboxOption
                         key={i}
                         value={option[optionValueKey]}
-                        className="group border-border-light text-text-primary hover:bg-surface-hover relative flex h-[42px] cursor-pointer items-center overflow-hidden border-b pr-9 pl-3 select-none last:border-0"
+                        className="group border-border-light text-text-primary hover:bg-surface-hover relative flex h-[2.625rem] cursor-pointer items-center overflow-hidden border-b pr-9 pl-3 select-none last:border-0"
                       >
                         <span className="flex items-center gap-1.5 truncate">
                           {!option.isButton && (

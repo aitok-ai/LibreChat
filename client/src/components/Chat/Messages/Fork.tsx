@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { memo, useState, useRef } from 'react';
 import { useRecoilState } from 'recoil';
 import * as Ariakit from '@ariakit/react';
 import { VisuallyHidden } from '@ariakit/react';
@@ -98,7 +98,7 @@ const PopoverButton: React.FC<PopoverButtonProps> = ({
             </Ariakit.Button>
           }
         />
-        <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary rounded-full focus:ring-2 focus:outline-none">
+        <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary rounded-full focus:ring-2 focus:outline-hidden">
           <VisuallyHidden>
             {localize('com_ui_fork_more_details_about', { 0: label })}
           </VisuallyHidden>
@@ -111,7 +111,7 @@ const PopoverButton: React.FC<PopoverButtonProps> = ({
             gutter={16}
             shift={40}
             flip={false}
-            className="border-border-medium bg-surface-secondary text-text-primary z-[999] w-80 rounded-2xl border p-4 shadow-md"
+            className="border-border-medium bg-surface-secondary text-text-primary rounded-theme-popover z-[999] w-[min(20rem,90vw)] border p-4 shadow-md"
             portal={true}
             unmountOnHide={true}
           >
@@ -178,7 +178,7 @@ const CheckboxOption: React.FC<CheckboxOptionProps> = ({
             </div>
           }
         />
-        <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary ml-1 rounded-full focus:ring-2 focus:outline-none">
+        <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary ml-1 rounded-full focus:ring-2 focus:outline-hidden">
           <VisuallyHidden>{localize(infoKey)}</VisuallyHidden>
           {chevronDown}
         </Ariakit.HovercardDisclosure>
@@ -187,7 +187,7 @@ const CheckboxOption: React.FC<CheckboxOptionProps> = ({
         gutter={14}
         shift={40}
         flip={false}
-        className="border-border-medium bg-surface-secondary text-text-primary z-[999] w-80 rounded-2xl border p-4 shadow-md"
+        className="border-border-medium bg-surface-secondary text-text-primary rounded-theme-popover z-[999] w-[min(20rem,90vw)] border p-4 shadow-md"
         portal={true}
         unmountOnHide={true}
       >
@@ -199,17 +199,18 @@ const CheckboxOption: React.FC<CheckboxOptionProps> = ({
   );
 };
 
-export default function Fork({
+function Fork({
   messageId,
   conversationId: _convoId,
   forkingSupported = false,
-  latestMessageId,
+  getLatestMessageId,
   isLast = false,
 }: {
   messageId: string;
   conversationId: string | null;
   forkingSupported?: boolean;
-  latestMessageId?: string;
+  /** Read when a fork starts: the split target must be the tail at click time. */
+  getLatestMessageId?: () => string | undefined;
   isLast?: boolean;
 }) {
   const localize = useLocalize();
@@ -277,7 +278,7 @@ export default function Fork({
       conversationId,
       option,
       splitAtTarget,
-      latestMessageId,
+      latestMessageId: getLatestMessageId?.(),
     });
   };
 
@@ -337,7 +338,7 @@ export default function Fork({
                   splitAtTarget,
                   conversationId,
                   option: forkSetting,
-                  latestMessageId,
+                  latestMessageId: getLatestMessageId?.(),
                 });
               } else {
                 popoverStore.toggle();
@@ -346,14 +347,14 @@ export default function Fork({
             type="button"
             aria-label={localize('com_ui_fork_open_menu')}
           >
-            <GitFork size="19" aria-hidden="true" />
+            <GitFork className="size-[1.1875rem]" aria-hidden="true" />
           </Button>
         }
       />
       <Ariakit.Popover
         store={popoverStore}
         gutter={10}
-        className={`popover-animate ${isActive ? 'open' : ''} border-border-medium bg-surface-secondary flex w-60 flex-col gap-3 overflow-hidden rounded-2xl border p-2 px-4 shadow-lg`}
+        className={`popover-animate ${isActive ? 'open' : ''} border-border-medium bg-surface-secondary rounded-theme-popover flex w-[min(15rem,90vw)] flex-col gap-3 overflow-hidden border p-2 px-4 shadow-lg`}
         style={{
           outline: 'none',
           pointerEvents: 'auto',
@@ -376,7 +377,7 @@ export default function Fork({
                   </button>
                 }
               />
-              <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary rounded-full focus:ring-2 focus:outline-none">
+              <Ariakit.HovercardDisclosure className="text-text-secondary focus:ring-text-primary rounded-full focus:ring-2 focus:outline-hidden">
                 <VisuallyHidden>{localize('com_ui_fork_more_info_options')}</VisuallyHidden>
                 {chevronDown}
               </Ariakit.HovercardDisclosure>
@@ -385,7 +386,7 @@ export default function Fork({
               gutter={19}
               shift={40}
               flip={false}
-              className="border-border-medium bg-surface-secondary text-text-primary z-[999] w-80 rounded-2xl border p-4 shadow-md"
+              className="border-border-medium bg-surface-secondary text-text-primary rounded-theme-popover z-[999] w-[min(20rem,90vw)] border p-4 shadow-md"
               portal={true}
               unmountOnHide={true}
             >
@@ -440,3 +441,6 @@ export default function Fork({
     </>
   );
 }
+
+/** Memoized: a send re-renders every row's toolbar, and nothing here depends on it. */
+export default memo(Fork);

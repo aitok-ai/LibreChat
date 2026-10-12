@@ -83,14 +83,14 @@ const ArtifactRow = forwardRef<HTMLButtonElement, ArtifactRowProps>(function Art
       <Button
         ref={ref}
         type="button"
-        variant="ghost"
+        variant="disclosure"
         aria-controls="artifact-viewer"
         aria-expanded={isSelected}
         data-artifact-trigger={artifactId}
         onClick={onOpen}
         className={cn(
           'inline-flex h-auto min-w-0 flex-1 items-center justify-start gap-2.5 rounded-none p-0',
-          'hover:text-text-primary focus-visible:ring-text-primary hover:bg-transparent focus-visible:ring-offset-0',
+          'hover:text-text-primary focus-visible:ring-text-primary focus-visible:ring-offset-0',
           isSelected && 'text-text-primary',
         )}
       >

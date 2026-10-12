@@ -1,4 +1,4 @@
-import { MCPIcon } from '@librechat/client';
+import { EmptyState, MCPIcon } from '@librechat/client';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
 import type { MCPServerStatusIconProps } from '~/components/MCP/MCPServerStatusIcon';
 import type { MCPServerDefinition } from '~/hooks';
@@ -26,24 +26,15 @@ export default function MCPServerList({
   });
 
   if (servers.length === 0) {
+    if (isFiltered) {
+      return <EmptyState icon={MCPIcon} description={localize('com_ui_no_mcp_servers_match')} />;
+    }
     return (
-      <div className="border-border-light flex flex-col items-center justify-center rounded-lg border bg-transparent p-6 text-center">
-        <div className="bg-surface-tertiary mb-2 flex size-10 items-center justify-center rounded-full">
-          <MCPIcon className="text-text-secondary size-5" aria-hidden="true" />
-        </div>
-        {isFiltered ? (
-          <p className="text-text-secondary text-sm">{localize('com_ui_no_mcp_servers_match')}</p>
-        ) : (
-          <>
-            <p className="text-text-primary text-sm font-medium">
-              {localize('com_ui_no_mcp_servers')}
-            </p>
-            <p className="text-text-secondary mt-0.5 text-xs">
-              {localize('com_ui_add_first_mcp_server')}
-            </p>
-          </>
-        )}
-      </div>
+      <EmptyState
+        icon={MCPIcon}
+        title={localize('com_ui_no_mcp_servers')}
+        description={localize('com_ui_add_first_mcp_server')}
+      />
     );
   }
 

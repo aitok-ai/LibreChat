@@ -106,7 +106,7 @@ function DynamicTags({
       }`}
     >
       <HoverCard openDelay={300}>
-        <HoverCardTrigger className="grid w-full items-center gap-2">
+        <HoverCardTrigger className="grid h-full w-full content-between items-center gap-2">
           <div className="flex w-full justify-between">
             <Label
               htmlFor={`${settingKey}-dynamic-input`}
@@ -125,7 +125,7 @@ function DynamicTags({
             </Label>
           </div>
           <div>
-            <div className="border-border-light bg-surface-secondary mb-2 flex flex-wrap rounded-lg border break-all">
+            <div className="border-border-light bg-surface-secondary flex flex-wrap rounded-lg border break-all">
               {currentTags && currentTags.length > 0 && (
                 <div className="flex w-full gap-1 p-1">
                   {currentTags.map((tag: string, index: number) => (

@@ -89,7 +89,7 @@ export default function SelectedPrincipalsList({
                 </div>
               </div>
 
-              <div className="flex w-full flex-shrink-0 items-center justify-end gap-2 sm:w-auto">
+              <div className="flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto">
                 {showInsightsAccess && onInsightsAccessChange && (
                   <div className="mr-auto flex items-center gap-2 sm:mr-1">
                     <Checkbox

@@ -118,7 +118,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
 
       {/* API Key Fields */}
       <Collapse open={authType === AuthTypeEnum.ServiceHttp} className="pt-3">
-        <div className="border-border-light space-y-3 rounded-lg border p-3">
+        <div className="bg-surface-secondary space-y-3 rounded-lg p-3">
           {/* User provides own key checkbox + admin-provided key */}
           <div>
             <div className="flex items-center gap-2">
@@ -193,7 +193,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
 
       {/* OAuth Fields */}
       <Collapse open={authType === AuthTypeEnum.OAuth} className="pt-3">
-        <div className="border-border-light space-y-3 rounded-lg border p-3">
+        <div className="bg-surface-secondary space-y-3 rounded-lg p-3">
           {/* Client ID & Secret in a grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -347,7 +347,7 @@ export default function AuthSection({ isEditMode, serverName }: AuthSectionProps
 
       {/* OBO Fields */}
       <Collapse open={authType === AuthTypeEnum.OBO} className="pt-3">
-        <div className="border-border-light space-y-3 rounded-lg border p-3">
+        <div className="bg-surface-secondary space-y-3 rounded-lg p-3">
           <div className="space-y-1.5">
             <Label htmlFor="obo_scopes" className="text-sm font-medium">
               {localize('com_ui_obo_scopes')}{' '}

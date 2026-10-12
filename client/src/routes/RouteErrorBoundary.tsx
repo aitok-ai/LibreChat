@@ -1,5 +1,10 @@
+import { useEffect } from 'react';
 import { Button } from '@librechat/client';
 import { useRouteError } from 'react-router-dom';
+import { onClientLogsStarted, reportBoundaryError } from '~/lib/rum/logs';
+import useStaleAssetRecovery from '~/lib/assets/useRecovery';
+import { isChunkLoadError } from '~/lib/assets/recovery';
+import Updating from '~/components/System/Updating';
 import { useLocalize } from '~/hooks';
 import logger from '~/utils/logger';
 
@@ -72,13 +77,21 @@ const getBrowserInfo = async () => {
 
 export default function RouteErrorBoundary() {
   const localize = useLocalize();
-  const typedError = useRouteError() as {
+  const routeError = useRouteError();
+  const updating = useStaleAssetRecovery(routeError);
+  const typedError = (routeError ?? {}) as {
     message?: string;
     stack?: string;
     status?: number;
     statusText?: string;
     data?: unknown;
   };
+
+  useEffect(() => {
+    const report = () => reportBoundaryError('route', routeError, isChunkLoadError(routeError));
+    report();
+    return onClientLogsStarted(report);
+  }, [routeError]);
 
   const errorDetails = {
     message: typedError.message ?? 'An unexpected error occurred',
@@ -123,6 +136,10 @@ export default function RouteErrorBoundary() {
       await navigator.clipboard.writeText(errorDetails.stack);
     }
   };
+
+  if (updating) {
+    return <Updating />;
+  }
 
   return (
     <div

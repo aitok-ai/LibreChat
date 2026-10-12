@@ -51,13 +51,13 @@ export default function MCPServerMenuItem({
       aria-label={accessibleLabel}
       className={cn(
         'group flex w-full cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2',
-        'transition-all duration-150 outline-none',
+        'outline-hidden transition-all duration-150',
         'hover:bg-surface-hover data-[active-item]:bg-surface-hover',
         isSelected && 'bg-surface-active-alt',
       )}
     >
       {/* Server Icon with Status Dot */}
-      <div className="relative flex-shrink-0">
+      <div className="relative shrink-0">
         {server.config?.iconPath ? (
           <CustomIcon
             src={server.config.iconPath}
@@ -91,7 +91,7 @@ export default function MCPServerMenuItem({
 
       {/* Action Button - only show when actionable */}
       {showActionButton && statusIconProps && (
-        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
           <MCPServerStatusIcon {...statusIconProps} />
         </div>
       )}
@@ -100,7 +100,7 @@ export default function MCPServerMenuItem({
       <span
         aria-hidden="true"
         className={cn(
-          'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-sm border',
+          'flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border',
           isSelected
             ? 'border-border-xheavy bg-surface-inverted text-text-inverted'
             : 'border-border-xheavy bg-transparent',

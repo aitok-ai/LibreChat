@@ -1802,6 +1802,7 @@ describe('processMCPEnv', () => {
           source: 'user',
           authorization_type: 'bearer',
         },
+        customUserVars: { MCP_API_KEY: { title: 'API Key', description: 'Per-user key' } },
         headers: {
           Authorization: 'Bearer {{MCP_API_KEY}}',
         },
@@ -1879,6 +1880,7 @@ describe('processMCPEnv', () => {
       const options: MCPOptions = {
         type: 'streamable-http',
         url: 'https://api.example.com',
+        customUserVars: { MCP_API_KEY: { title: 'API Key', description: 'Per-user key' } },
         headers: {
           Authorization: 'Bearer {{MCP_API_KEY}}',
         },
@@ -1995,6 +1997,7 @@ describe('processMCPEnv', () => {
       const options: MCPOptions = {
         type: 'streamable-http',
         url: '${DATABASE_URL}',
+        customUserVars: { MCP_API_KEY: { title: 'API Key', description: 'Per-user key' } },
         headers: {
           Authorization: 'Bearer {{MCP_API_KEY}}',
           'X-Env-Leak': '${TEST_API_KEY}',
@@ -2027,6 +2030,7 @@ describe('processMCPEnv', () => {
       const options: MCPOptions = {
         type: 'streamable-http',
         url: 'https://api.example.com',
+        customUserVars: { MCP_API_KEY: { title: 'API Key', description: 'Per-user key' } },
         headers: {
           Authorization: 'Bearer {{MCP_API_KEY}}',
           'X-Env': '${TEST_API_KEY}',
@@ -2054,6 +2058,7 @@ describe('processMCPEnv', () => {
       const options: MCPOptions = {
         type: 'stdio',
         command: 'mcp-server',
+        customUserVars: { MY_VAR: { title: 'Custom', description: 'Per-user variable' } },
         args: ['--key', '${TEST_API_KEY}', '--custom', '{{MY_VAR}}'],
         env: {
           SECRET: '${DATABASE_URL}',
@@ -2120,6 +2125,10 @@ describe('processMCPEnv', () => {
       const options: MCPOptions = {
         type: 'streamable-http',
         url: 'https://api.example.com',
+        customUserVars: {
+          MY_CLIENT_ID: { title: 'Client ID', description: 'Per-user client' },
+          MY_CLIENT_SECRET: { title: 'Client secret', description: 'Per-user secret' },
+        },
         oauth: {
           client_id: '{{MY_CLIENT_ID}}',
           client_secret: '{{MY_CLIENT_SECRET}}',
@@ -2143,6 +2152,7 @@ describe('processMCPEnv', () => {
       const options: MCPOptions = {
         type: 'streamable-http',
         url: 'https://api.example.com',
+        customUserVars: { MCP_API_KEY: { title: 'API Key', description: 'Per-user key' } },
         headers: {
           Authorization: 'Bearer {{MCP_API_KEY}}',
         },
@@ -2162,6 +2172,7 @@ describe('processMCPEnv', () => {
       const options: MCPOptions = {
         type: 'streamable-http',
         url: '${DATABASE_URL}',
+        customUserVars: { MCP_API_KEY: { title: 'API Key', description: 'Per-user key' } },
         headers: {
           Authorization: 'Bearer {{MCP_API_KEY}}',
           'X-Env': '${TEST_API_KEY}',

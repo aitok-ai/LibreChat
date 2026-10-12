@@ -217,6 +217,7 @@ export const ParallelColumns = memo(function ParallelColumns({
         return (
           <div
             key={`column-${messageId}-${groupId}-${agentId || colIdx}`}
+            data-fold-column=""
             className="border-border-light min-w-0 flex-1 rounded-lg border p-3"
           >
             <SiblingHeader

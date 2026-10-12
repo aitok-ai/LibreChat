@@ -1,11 +1,9 @@
-import { useRecoilValue } from 'recoil';
 import { useTranslation } from 'react-i18next';
 import { isReportableRunStepDuration } from 'librechat-data-provider';
 import type { TranslationKeys } from '~/hooks';
-import type { PtcTraceEntry } from '~/store';
+import type { PtcTraceEntry } from '~/common';
+import { useMessagePartsHost } from '~/Providers/MessagePartsHostContext';
 import { cn, parseToolName, getRunStepDurationLabels } from '~/utils';
-import { useMessageContext } from '~/Providers/MessageContext';
-import { ptcTraceByToolCallId, ptcTraceKey } from '~/store';
 import { useMCPServerNames } from '~/hooks/MCP';
 import useFollowScroll from './useFollowScroll';
 import { useLocalize } from '~/hooks';
@@ -120,10 +118,9 @@ export default function PtcToolTrace({
   const localize = useLocalize();
   /** Scope to this card's own message: providers reuse `tool_call_id` across
    *  turns, so the raw id alone would show a later program's calls here. */
-  const { messageId } = useMessageContext();
-  const trace = useRecoilValue(
-    ptcTraceByToolCallId(toolCallId && messageId ? ptcTraceKey(messageId, toolCallId) : ''),
-  );
+  const { useMessage, usePtcTrace } = useMessagePartsHost();
+  const { messageId } = useMessage();
+  const trace = usePtcTrace(messageId, toolCallId ?? '');
 
   /** One character per row, so the pin re-fires both when a call is appended
    *  and when one settles — a settle can add an error line and change height. */

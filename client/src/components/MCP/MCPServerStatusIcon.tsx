@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlugZap, SlidersHorizontal, X } from 'lucide-react';
+import { KeyRound, PlugZap, X } from 'lucide-react';
 import { Button, Spinner, TooltipAnchor } from '@librechat/client';
 import type { MCPServerStatus } from 'librechat-data-provider';
 import { useLocalize } from '~/hooks';
@@ -33,8 +33,8 @@ export interface MCPServerStatusIconProps {
  * Renders the appropriate status icon for an MCP server based on its state.
  *
  * Unified icon system:
- * - PlugZap: Connect/Authenticate (for disconnected servers that need connection)
- * - SlidersHorizontal: Configure (for connected servers with custom vars)
+ * - PlugZap: making the connection (for disconnected servers)
+ * - KeyRound: the credentials the server asks this user for
  * - Spinner: Loading state (during connection)
  * - X: Cancel (during OAuth flow, shown on hover over spinner)
  */
@@ -212,7 +212,7 @@ function ConnectButton({ serverName, onConfigClick }: StatusIconProps) {
   );
 }
 
-/** Configure button - shown for connected servers with custom vars. Uses SlidersHorizontal icon. */
+/** Configure button - shown for connected servers with custom vars. Uses KeyRound icon. */
 function ConfigureButton({ serverName, onConfigClick }: StatusIconProps) {
   return (
     <Button
@@ -222,7 +222,7 @@ function ConfigureButton({ serverName, onConfigClick }: StatusIconProps) {
       className="hover:bg-surface-secondary size-6 rounded p-1"
       aria-label={localize('com_nav_mcp_configure_server', { 0: serverName })}
     >
-      <SlidersHorizontal className="text-text-secondary size-4" aria-hidden="true" />
+      <KeyRound className="text-text-secondary size-4" aria-hidden="true" />
     </Button>
   );
 }

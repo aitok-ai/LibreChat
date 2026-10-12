@@ -60,13 +60,13 @@ export default function CategoryFilter({ options, value, onChange }: Props) {
             <Button
               variant="outline"
               size="default"
-              className={cn(
-                'h-10 gap-1.5 px-3 text-sm font-normal',
-                isFiltered && 'text-text-primary border-emerald-500/50',
-              )}
+              className="h-10 gap-1.5 px-3 text-sm font-normal"
               aria-label={localize('com_ui_category')}
             >
-              <Filter className="text-text-tertiary size-4" aria-hidden="true" />
+              <Filter
+                className={cn('size-4', isFiltered ? 'text-accent-primary' : 'text-text-tertiary')}
+                aria-hidden="true"
+              />
               <span className="max-w-[10ch] truncate">{label}</span>
               <ChevronDown className="text-text-tertiary size-3.5" aria-hidden="true" />
             </Button>

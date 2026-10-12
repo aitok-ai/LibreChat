@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import {
   Login,
@@ -7,18 +6,19 @@ import {
   ResetPassword,
   ApiErrorWatcher,
   TwoFactorScreen,
+  TwoFactorSetupScreen,
   RequestPasswordReset,
 } from '~/components/Auth';
-import { MarketplaceProvider } from '~/components/Agents/MarketplaceContext';
-import AgentMarketplace from '~/components/Agents/Marketplace';
 import { OAuthSuccess, OAuthError } from '~/components/OAuth';
 import Recommendations from '~/components/ui/Recommendations';
 import { AuthContextProvider } from '~/hooks/AuthContext';
 import Leaderboard from '~/components/ui/Leaderboard';
+import { importWithRecovery } from '~/lib/assets/lazy';
 import RouteErrorBoundary from './RouteErrorBoundary';
 import SharedConvo from '~/components/ui/SharedConvo';
 import StartupLayout from './Layouts/Startup';
 import Profile from '../components/Profile';
+import MarketplaceRoute from './Marketplace';
 import LoginLayout from './Layouts/Login';
 import dashboardRoutes from './Dashboard';
 import WithRum from '~/lib/rum/WithRum';
@@ -37,27 +37,27 @@ const AuthLayout = () => (
 );
 
 const loadInlinePromptsView = () =>
-  import('~/components/Prompts/layouts/InlinePromptsView').then((m) => ({
+  importWithRecovery(() => import('~/components/Prompts/layouts/InlinePromptsView')).then((m) => ({
     Component: m.default,
   }));
 
 const loadSkillsView = () =>
-  import('~/components/Skills/layouts/SkillsView').then((m) => ({
+  importWithRecovery(() => import('~/components/Skills/layouts/SkillsView')).then((m) => ({
     Component: m.default,
   }));
 
 const loadInsightsView = () =>
-  import('~/components/Insights').then((m) => ({
+  importWithRecovery(() => import('~/components/Insights')).then((m) => ({
     Component: m.default,
   }));
 
 const loadProjectsView = () =>
-  import('~/components/Projects').then((m) => ({
+  importWithRecovery(() => import('~/components/Projects')).then((m) => ({
     Component: m.ProjectsView,
   }));
 
 const loadProjectWorkspace = () =>
-  import('~/components/Projects').then((m) => ({
+  importWithRecovery(() => import('~/components/Projects')).then((m) => ({
     Component: m.ProjectWorkspace,
   }));
 
@@ -114,20 +114,29 @@ export const router = createBrowserRouter(
       errorElement: <RouteErrorBoundary />,
       children: [
         {
-          path: '/',
-          element: <LoginLayout />,
+          errorElement: <RouteErrorBoundary />,
           children: [
             {
-              path: 'login',
-              element: <Login />,
+              path: '/',
+              element: <LoginLayout />,
+              children: [
+                {
+                  path: 'login',
+                  element: <Login />,
+                },
+                {
+                  path: 'login/2fa',
+                  element: <TwoFactorScreen />,
+                },
+                {
+                  path: 'login/2fa/setup',
+                  element: <TwoFactorSetupScreen />,
+                },
+              ],
             },
-            {
-              path: 'login/2fa',
-              element: <TwoFactorScreen />,
-            },
+            dashboardRoutes,
           ],
         },
-        dashboardRoutes,
         {
           path: '/',
           element: <Root />,
@@ -199,19 +208,11 @@ export const router = createBrowserRouter(
             },
             {
               path: 'agents',
-              element: (
-                <MarketplaceProvider>
-                  <AgentMarketplace />
-                </MarketplaceProvider>
-              ),
+              element: <MarketplaceRoute />,
             },
             {
               path: 'agents/:category',
-              element: (
-                <MarketplaceProvider>
-                  <AgentMarketplace />
-                </MarketplaceProvider>
-              ),
+              element: <MarketplaceRoute />,
             },
             {
               path: 'chat/share/:conversationId',

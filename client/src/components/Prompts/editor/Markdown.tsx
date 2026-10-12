@@ -21,7 +21,7 @@ const highlightVariables = (text: string): React.ReactNode[] => {
       return (
         <b
           key={index}
-          className="text-text-warning ml-[0.5] rounded-lg bg-amber-100 p-[1px] font-medium dark:bg-transparent"
+          className="bg-status-warning-subtle text-text-warning ml-[0.5] rounded-lg p-[1px] font-medium"
         >
           {`{{${part}}}`}
         </b>

@@ -10,6 +10,7 @@ function DynamicSwitch({
   label = '',
   settingKey,
   defaultValue,
+  enumMappings,
   description = '',
   columnSpan,
   setOption,
@@ -32,7 +33,11 @@ function DynamicSwitch({
     preventDelayedUpdate: true,
   });
 
-  const selectedValue = conversation?.[settingKey] ?? defaultValue;
+  const savedValue = conversation?.[settingKey] ?? defaultValue;
+  const effectiveValue = enumMappings?.[String(savedValue)];
+  const selectedValue = typeof effectiveValue === 'boolean' ? effectiveValue : savedValue;
+  const routeIsForced =
+    typeof enumMappings?.true === 'boolean' && enumMappings.true === enumMappings.false;
 
   const handleCheckedChange = (checked: boolean) => {
     setInputValue(checked);
@@ -46,7 +51,7 @@ function DynamicSwitch({
       }`}
     >
       <HoverCard openDelay={300}>
-        <HoverCardTrigger className="grid w-full items-center gap-2">
+        <HoverCardTrigger className="grid h-full w-full content-between items-center gap-2">
           <div className="flex justify-between">
             <Label
               htmlFor={`${settingKey}-dynamic-switch`}
@@ -65,7 +70,7 @@ function DynamicSwitch({
             id={`${settingKey}-dynamic-switch`}
             checked={selectedValue}
             onCheckedChange={handleCheckedChange}
-            disabled={readonly}
+            disabled={readonly || routeIsForced}
             className="flex"
             aria-label={
               labelCode ? (localize(label as TranslationKeys) ?? label) : label || settingKey

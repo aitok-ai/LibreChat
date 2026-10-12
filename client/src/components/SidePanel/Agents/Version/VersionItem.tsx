@@ -168,7 +168,7 @@ export default function VersionItem({
                       variant="ghost"
                       size="icon"
                       aria-label={localize('com_ui_agent_version_restore')}
-                      className="border-border-light text-text-secondary hover:border-border-medium size-7 flex-shrink-0 rounded-lg border opacity-0 transition-all group-hover:opacity-100 focus:outline-none focus-visible:opacity-100"
+                      className="border-border-light text-text-secondary hover:border-border-medium size-7 shrink-0 rounded-lg border opacity-0 transition-all group-hover:opacity-100 focus-visible:opacity-100"
                     >
                       <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                     </Button>
@@ -177,7 +177,7 @@ export default function VersionItem({
               </OGDialogTrigger>
               <OGDialogTemplate
                 title={localize('com_ui_agent_version_restore_confirm')}
-                className="max-w-[450px]"
+                className="max-w-[28.125rem]"
                 main={
                   <div className="flex w-full flex-col gap-3 text-sm">
                     <Label className="text-text-primary text-left font-medium">

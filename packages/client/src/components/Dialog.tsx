@@ -2,9 +2,9 @@ import * as React from 'react';
 import { X } from 'lucide-react';
 import { JSX } from 'react/jsx-runtime';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { cn, disabledFillClasses } from '~/utils';
 import { Button, ButtonProps } from './Button';
 import { useMediaQuery } from '~/hooks';
-import { cn } from '~/utils';
 
 const Dialog: React.FC<DialogPrimitive.DialogProps> = DialogPrimitive.Root;
 
@@ -29,7 +29,7 @@ const DialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     className={cn(
-      'bg-surface-overlay/65 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in fixed inset-0 z-[999] transition-all duration-100',
+      'bg-scrim-modal data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in fixed inset-0 z-[999] transition-all duration-100',
       className ?? '',
     )}
     {...props}
@@ -73,8 +73,8 @@ const DialogContent: React.ForwardRefExoticComponent<
         >
           {children}
           {showCloseButton && (
-            <DialogPrimitive.Close className="focus:ring-text-primary data-[state=open]:bg-surface-hover absolute top-[1.6rem] right-6 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none">
-              <X className="text-text-primary h-5 w-5" aria-hidden="true" />
+            <DialogPrimitive.Close className="focus:ring-focus-control data-[state=open]:bg-surface-hover absolute top-[1.6rem] right-6 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+              <X className="text-text-primary size-theme-icon-md" aria-hidden="true" />
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
           )}
@@ -89,13 +89,7 @@ const DialogHeader: {
   ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): JSX.Element;
   displayName: string;
 } = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): JSX.Element => (
-  <div
-    className={cn(
-      'border-border-light flex flex-col space-y-2 border-b p-6 pb-4 text-left',
-      className ?? '',
-    )}
-    {...props}
-  />
+  <div className={cn('flex flex-col space-y-2 p-6 pb-4 text-left', className ?? '')} {...props} />
 );
 DialogHeader.displayName = 'DialogHeader';
 
@@ -119,7 +113,7 @@ const DialogTitle: React.ForwardRefExoticComponent<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn('text-text-primary text-lg font-semibold', className ?? '')}
+    className={cn('text-text-primary font-display text-lg font-semibold', className ?? '')}
     {...props}
   />
 ));
@@ -150,10 +144,11 @@ const DialogClose: React.ForwardRefExoticComponent<
   <DialogPrimitive.Close
     ref={ref}
     className={cn(
-      'border-border-light text-text-primary hover:bg-surface-hover mt-2 inline-flex h-10 items-center justify-center rounded-lg border bg-transparent px-4 py-2 text-sm font-semibold transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:mt-0',
+      'border-border-light text-text-primary hover:bg-surface-hover h-theme-button mt-2 inline-flex items-center justify-center rounded-lg border bg-transparent px-4 py-2 text-sm font-semibold transition-colors focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 sm:mt-0',
+      disabledFillClasses,
       className ?? '',
       /* Important: for accessibility */
-      'focus:ring-text-primary focus:ring-2 focus:ring-offset-2',
+      'focus:ring-focus-control focus:ring-2 focus:ring-offset-2',
     )}
     {...props}
   />
@@ -171,10 +166,11 @@ const DialogButton: React.ForwardRefExoticComponent<
     ref={ref}
     variant="outline"
     className={cn(
-      'border-border-light text-text-primary hover:bg-surface-hover focus:ring-text-primary mt-2 inline-flex h-10 items-center justify-center rounded-lg border bg-transparent px-4 py-2 text-sm font-semibold transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:mt-0',
+      'border-border-light text-text-primary hover:bg-surface-hover focus:ring-focus-control h-theme-button mt-2 inline-flex items-center justify-center rounded-lg border bg-transparent px-4 py-2 text-sm font-semibold transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 sm:mt-0',
+      disabledFillClasses,
       className ?? '',
       /* Important: for accessibility */
-      'focus:ring-text-primary focus:ring-2 focus:ring-offset-2',
+      'focus:ring-focus-control focus:ring-2 focus:ring-offset-2',
     )}
     {...props}
   />

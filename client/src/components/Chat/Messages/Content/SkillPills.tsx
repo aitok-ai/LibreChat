@@ -50,7 +50,7 @@ function SkillPills({
           key={name}
           role="listitem"
           data-skill-source={source}
-          className="border-border-light bg-surface-secondary text-text-secondary inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs"
+          className="border-border-chrome bg-surface-secondary text-text-secondary inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs"
         >
           {source === 'always-apply' ? (
             <Pin className="text-status-info h-3 w-3" aria-hidden="true" />

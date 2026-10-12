@@ -160,7 +160,7 @@ export default function LocalizedDateRangePicker({
         <Popover.Content
           align="end"
           sideOffset={6}
-          className="border-border-light bg-surface-primary text-text-primary z-50 w-[320px] max-w-[calc(100vw-2rem)] rounded-lg border p-4 shadow-lg"
+          className="border-border-light bg-surface-primary text-text-primary z-50 w-[20rem] max-w-[calc(100vw-2rem)] rounded-lg border p-4 shadow-lg"
         >
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -172,7 +172,7 @@ export default function LocalizedDateRangePicker({
                   max={futureDatesDisabled ? today : undefined}
                   value={pendingStartDate}
                   onChange={(event) => setPendingStartDate(event.target.value)}
-                  className="border-border-medium bg-surface-primary text-text-primary focus:border-border-heavy h-9 min-w-0 rounded-md border px-2 text-sm outline-none"
+                  className="border-border-medium bg-surface-primary text-text-primary focus:border-border-heavy h-9 min-w-0 rounded-md border px-2 text-sm outline-hidden"
                 />
               </label>
               <label className="flex min-w-0 flex-col gap-1.5">
@@ -184,7 +184,7 @@ export default function LocalizedDateRangePicker({
                   max={endDateMax}
                   value={pendingEndDate}
                   onChange={(event) => setPendingEndDate(event.target.value)}
-                  className="border-border-medium bg-surface-primary text-text-primary focus:border-border-heavy h-9 min-w-0 rounded-md border px-2 text-sm outline-none"
+                  className="border-border-medium bg-surface-primary text-text-primary focus:border-border-heavy h-9 min-w-0 rounded-md border px-2 text-sm outline-hidden"
                 />
               </label>
             </div>

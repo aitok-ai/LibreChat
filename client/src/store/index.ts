@@ -12,7 +12,6 @@ import search from './search';
 import preset from './preset';
 import lang from './language';
 import widget from './widget';
-import banner from './banner';
 import toast from './toast';
 import user from './user';
 import text from './text';
@@ -23,7 +22,6 @@ export * from './favorites';
 export * from './sandbox';
 export * from './ptc';
 export * from './usage';
-export * from './steer';
 
 export default {
   ...artifacts,
@@ -42,7 +40,6 @@ export default {
   ...settings,
   ...tabValue,
   ...widget,
-  ...banner,
   ...misc,
   ...isTemporary,
 };

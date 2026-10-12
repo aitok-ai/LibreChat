@@ -107,7 +107,7 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, isError = false,
           setIsEditing(true);
         }
       }}
-      className="text-text-primary hover:text-text-secondary h-8 min-w-0 flex-1 cursor-text truncate pl-2 text-left text-base font-semibold transition-colors focus:outline-none"
+      className="text-text-primary hover:text-text-secondary h-8 min-w-0 flex-1 cursor-text truncate pl-2 text-left text-base font-semibold transition-colors focus:outline-hidden"
       aria-label={localize('com_ui_edit') + ': ' + (newName ?? '')}
     >
       {newName}
@@ -131,7 +131,7 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, isError = false,
           onKeyDown={handleKeyDown}
           onBlur={saveName}
           disabled={isLoading}
-          className="text-text-primary focus:border-border-medium h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent pr-0 pl-2 text-base font-semibold outline-none focus:outline-none disabled:opacity-60"
+          className="text-text-primary focus:border-border-medium h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent pr-0 pl-2 text-base font-semibold disabled:opacity-60"
           aria-label={localize('com_ui_name')}
         />
       ) : (

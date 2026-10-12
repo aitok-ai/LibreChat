@@ -53,11 +53,7 @@ export default function SkillsSidePanel({ className }: SkillsSidePanelProps) {
         className,
       )}
     >
-      <FilterSkills
-        className="shrink-0 px-3 pb-2"
-        searchTerm={searchTerm}
-        onSearchChange={(e) => setSearchTerm(e.target.value)}
-      />
+      <FilterSkills searchTerm={searchTerm} onSearchChange={(e) => setSearchTerm(e.target.value)} />
 
       {/* Only the list scrolls */}
       <PanelContent
