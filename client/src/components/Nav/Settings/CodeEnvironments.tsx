@@ -1,18 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { createCodeWorkerSetupCommand, isCodeWorkerShell } from 'librechat-data-provider';
 import {
   Button,
   Chip,
   Input,
+  Dropdown,
   Label,
   OGDialog,
   OGDialogTemplate,
   OGDialogTrigger,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Spinner,
   useToastContext,
 } from '@librechat/client';
@@ -73,27 +69,22 @@ function WorkerCommand({ pairing }: { pairing: CodeEnvironmentPairingResponse['p
         <p className="text-text-primary text-sm font-medium">
           {localize('com_ui_code_environment_pairing_ready')}
         </p>
-        <Select
+        <Dropdown
           value={shell}
-          onValueChange={(value) => {
+          options={[
+            { value: 'posix', label: localize('com_ui_code_environment_shell_posix') },
+            { value: 'powershell', label: localize('com_ui_code_environment_shell_powershell') },
+          ]}
+          onChange={(value) => {
             if (isCodeWorkerShell(value)) {
               setShell(value);
             }
           }}
-        >
-          <SelectTrigger
-            className="w-auto min-w-36"
-            aria-label={localize('com_ui_code_environment_shell')}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="posix">{localize('com_ui_code_environment_shell_posix')}</SelectItem>
-            <SelectItem value="powershell">
-              {localize('com_ui_code_environment_shell_powershell')}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+          ariaLabel={localize('com_ui_code_environment_shell')}
+          testId="code-environment-shell"
+          className="shrink-0"
+          sizeClasses="z-50 min-w-48"
+        />
       </div>
       <p className="text-text-secondary text-xs">
         {localize('com_ui_code_environment_pairing_description')}
@@ -140,6 +131,7 @@ function EnvironmentPermissions({ environment }: { environment: TCodeEnvironment
   const localize = useLocalize();
   const { showToast } = useToastContext();
   const updateMutation = useUpdateCodeEnvironmentSettingsMutation();
+  const idPrefix = useId();
   const fields = environment.configSchema?.permissions;
   if (fields == null || !environment.canEdit) return null;
 
@@ -184,25 +176,24 @@ function EnvironmentPermissions({ environment }: { environment: TCodeEnvironment
         const value = effectivePermission(field, environment.settings?.permissions?.[category]);
         return (
           <div key={category} className="flex flex-col gap-1.5">
-            <Label htmlFor={`${environment.id}-${category}`}>{localize(label)}</Label>
-            <Select
+            <div id={`${idPrefix}-${category}`} className="text-text-primary text-sm font-medium">
+              {localize(label)}
+            </div>
+            <Dropdown
               value={value}
+              options={field.allowed.map((decision) => ({
+                value: decision,
+                label: localize(permissionLabels[decision]),
+              }))}
               disabled={updateMutation.isLoading}
-              onValueChange={(decision) =>
+              onChange={(decision) =>
                 updatePermission(category, decision as CodeEnvironmentPermissionDecision)
               }
-            >
-              <SelectTrigger id={`${environment.id}-${category}`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {field.allowed.map((decision) => (
-                  <SelectItem key={decision} value={decision}>
-                    {localize(permissionLabels[decision])}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              aria-labelledby={`${idPrefix}-${category}`}
+              testId={`code-environment-${category}`}
+              variant="field"
+              sizeClasses="z-50 min-w-48"
+            />
           </div>
         );
       })}
@@ -212,6 +203,8 @@ function EnvironmentPermissions({ environment }: { environment: TCodeEnvironment
 
 export default function CodeEnvironments() {
   const localize = useLocalize();
+  const nameId = useId();
+  const planeId = useId();
   const { showToast } = useToastContext();
   const query = useCodeEnvironmentsQuery();
   const pairMutation = usePairCodeEnvironmentMutation();
@@ -271,37 +264,53 @@ export default function CodeEnvironments() {
     );
   } else if (controlPlanes.length > 0) {
     pairingControls = (
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-        <Input
-          id="code-environment-name"
-          value={name}
-          maxLength={100}
-          placeholder={localize('com_ui_code_environment_name_placeholder')}
-          onChange={(event) => setName(event.target.value)}
-        />
-        <Select value={selectedControlPlane} onValueChange={setControlPlaneId}>
-          <SelectTrigger aria-label={localize('com_ui_code_environment_control_plane')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {controlPlanes.map((controlPlane) => (
-              <SelectItem key={controlPlane.id} value={controlPlane.id}>
-                {controlPlane.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button type="button" disabled={!name.trim() || pairMutation.isLoading} onClick={pair}>
+      <form
+        className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
+        onSubmit={(event) => {
+          event.preventDefault();
+          pair();
+        }}
+      >
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <Label htmlFor={nameId}>{localize('com_ui_name')}</Label>
+          <Input
+            id={nameId}
+            value={name}
+            maxLength={100}
+            placeholder={localize('com_ui_code_environment_name_placeholder')}
+            onChange={(event) => setName(event.target.value)}
+          />
+        </div>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <div id={planeId} className="text-text-primary text-sm font-medium">
+            {localize('com_ui_code_environment_control_plane')}
+          </div>
+          <Dropdown
+            value={selectedControlPlane}
+            options={controlPlanes.map((controlPlane) => ({
+              value: controlPlane.id,
+              label: controlPlane.name,
+            }))}
+            onChange={setControlPlaneId}
+            aria-labelledby={planeId}
+            testId="code-environment-control-plane"
+            variant="field"
+            sizeClasses="z-50 min-w-48"
+          />
+        </div>
+        <Button type="submit" disabled={!name.trim() || pairMutation.isLoading}>
           {pairMutation.isLoading ? <Spinner /> : localize('com_ui_code_environment_pair')}
         </Button>
-      </div>
+      </form>
     );
   }
 
   return (
     <div className="flex w-full flex-col gap-4">
       <div>
-        <Label htmlFor="code-environment-name">{localize('com_ui_code_environments')}</Label>
+        <h3 className="text-text-primary text-sm font-medium">
+          {localize('com_ui_code_environments')}
+        </h3>
         <p className="text-text-secondary mt-1 text-xs">
           {localize('com_ui_code_environments_description')}
         </p>
@@ -324,11 +333,17 @@ export default function CodeEnvironments() {
                 {environment.canDelete && (
                   <OGDialog>
                     <OGDialogTrigger asChild>
-                      <Button type="button" variant="outline" size="sm">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        aria-label={localize('com_ui_delete_var', { 0: environment.name })}
+                      >
                         {localize('com_ui_delete')}
                       </Button>
                     </OGDialogTrigger>
                     <OGDialogTemplate
+                      className="max-w-md"
                       showCloseButton={false}
                       title={localize('com_ui_code_environment_remove_title')}
                       main={

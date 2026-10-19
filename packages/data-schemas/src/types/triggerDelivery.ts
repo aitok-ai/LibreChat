@@ -159,6 +159,7 @@ export interface IAgentTriggerDelivery {
   batchRootId?: Types.ObjectId;
   batchRootRequeueCount?: number;
   batchMembersSettledAt?: Date;
+  deadLetterExpiresAt?: Date;
   /** Keeps this binding lane serialized until its admitted child turn reaches
    *  an authoritative terminal handling outcome. */
   awaitTerminalHandling?: boolean;
@@ -195,11 +196,12 @@ export interface IAgentTriggerDelivery {
 }
 
 export interface IAgentTriggerDeliveryDocument
-  extends Omit<IAgentTriggerDelivery, '_id'>,
-    Document {}
+  extends Omit<IAgentTriggerDelivery, '_id'>, Document {}
 
-export interface AgentTriggerDeliveryRecord
-  extends Omit<IAgentTriggerDelivery, '_id' | 'createdAt'> {
+export interface AgentTriggerDeliveryRecord extends Omit<
+  IAgentTriggerDelivery,
+  '_id' | 'createdAt'
+> {
   id: string;
   createdAt: Date;
 }
@@ -236,8 +238,7 @@ export interface IAgentTriggerLaneSequence {
 }
 
 export interface IAgentTriggerLaneSequenceDocument
-  extends Omit<IAgentTriggerLaneSequence, '_id'>,
-    Document<string> {}
+  extends Omit<IAgentTriggerLaneSequence, '_id'>, Document<string> {}
 
 /** Durable proof that trigger payload cleanup must survive the deleting process. */
 export interface IAgentTriggerUserPurge {
@@ -249,8 +250,7 @@ export interface IAgentTriggerUserPurge {
 }
 
 export interface IAgentTriggerUserPurgeDocument
-  extends Omit<IAgentTriggerUserPurge, '_id'>,
-    Document {}
+  extends Omit<IAgentTriggerUserPurge, '_id'>, Document {}
 
 export interface AgentTriggerDeliveryClaim extends AgentTriggerDeliveryRecord {
   claimToken: string;

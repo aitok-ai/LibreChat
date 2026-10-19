@@ -14,14 +14,13 @@ jest.mock('~/hooks/useKeyboardShortcuts', () => ({
 jest.mock('@librechat/client', () => ({
   Button: jest
     .requireActual<typeof import('react')>('react')
-    .forwardRef<
-      HTMLButtonElement,
-      React.ComponentProps<'button'>
-    >(({ children, ...props }, ref) => (
-      <button ref={ref} {...props}>
-        {children}
-      </button>
-    )),
+    .forwardRef<HTMLButtonElement, React.ComponentProps<'button'>>(
+      ({ children, ...props }, ref) => (
+        <button ref={ref} {...props}>
+          {children}
+        </button>
+      ),
+    ),
   Sidebar: (props: React.ComponentProps<'svg'>) => <svg data-testid="sidebar-icon" {...props} />,
   Skeleton: () => <div data-testid="skeleton" />,
   TooltipAnchor: ({ render: trigger }: { render: React.ReactNode }) => trigger,

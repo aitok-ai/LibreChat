@@ -67,7 +67,9 @@ const PromptTextCard = ({ mainText }: PromptTextCardProps) => {
               }
               aria-live="polite"
             >
-              <MorphIcon icon={isCopied ? Check : Copy} className="text-text-secondary size-4" />
+              <span className="text-text-secondary flex">
+                <MorphIcon icon={isCopied ? Check : Copy} className="size-4" />
+              </span>
             </Button>
           }
         />
@@ -88,7 +90,7 @@ const PromptTextCard = ({ mainText }: PromptTextCardProps) => {
           ]}
           /** @ts-ignore */
           components={{ p: PromptVariableGfm, code: codeNoExecution }}
-          className="markdown prose dark:prose-invert light text-text-primary my-1 max-w-none break-words"
+          className="markdown prose light text-text-primary my-1 max-w-none break-words"
         >
           {mainText}
         </ReactMarkdown>

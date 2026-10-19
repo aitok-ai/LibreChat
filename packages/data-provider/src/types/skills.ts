@@ -51,12 +51,7 @@ export type SkillFrontmatterObject = { [key: string]: SkillFrontmatterValue | un
  * the server bounds depth, string length and array size when validating it.
  */
 export type SkillFrontmatterValue =
-  | string
-  | number
-  | boolean
-  | null
-  | SkillFrontmatterValue[]
-  | SkillFrontmatterObject;
+  string | number | boolean | null | SkillFrontmatterValue[] | SkillFrontmatterObject;
 
 /**
  * Structured YAML frontmatter for a skill. All keys are optional on the wire
@@ -386,9 +381,7 @@ export type TSkillImportFailedFile = {
  */
 export type TSkillImportFailedResponse = {
   error:
-    | 'skill_import_incomplete'
-    | 'skill_import_rollback_failed'
-    | 'skill_import_cleanup_incomplete';
+    'skill_import_incomplete' | 'skill_import_rollback_failed' | 'skill_import_cleanup_incomplete';
   message: string;
   failedFiles: TSkillImportFailedFile[];
   /** Present when the Skill row may remain and should be surfaced for deletion. */
@@ -399,8 +392,8 @@ export type TSkillImportFailedResponse = {
 export type TDeleteSkillResponse = {
   id: string;
   deleted: true;
-  /** False when the Skill row is gone but a dependent cleanup step needs repair. */
-  cleanupComplete?: boolean;
+  /** False while provider cleanup or final removal is still pending. */
+  cleanupComplete: boolean;
 };
 
 /** Response from GET `/api/skills/:id/files`. */

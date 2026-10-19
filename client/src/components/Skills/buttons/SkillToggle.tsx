@@ -35,7 +35,8 @@ function SkillToggle({ enabled, onChange }: SkillToggleProps) {
           <Label
             id={labelId}
             htmlFor={switchId}
-            className="text-text-secondary cursor-pointer text-xs font-medium whitespace-nowrap select-none"
+            variant="secondary"
+            className="cursor-pointer text-xs font-medium whitespace-nowrap select-none"
           >
             {localize('com_ui_skill_available')}
           </Label>

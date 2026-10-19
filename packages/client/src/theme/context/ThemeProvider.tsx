@@ -537,7 +537,7 @@ export function ThemeProvider({
     props: themeProps,
     controlled: Boolean(
       (propThemeDefinition && isValidThemeDefinition(propThemeDefinition)) ||
-        (!propThemeDefinition && propThemeRGB),
+      (!propThemeDefinition && propThemeRGB),
     ),
     writes: [],
   }));

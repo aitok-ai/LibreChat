@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { Slider, InputNumber, Switch } from '@librechat/client';
-import { cn, defaultTextProps, optionText } from '~/utils/';
 import { useLocalize } from '~/hooks';
 import store from '~/store';
 
@@ -99,13 +98,8 @@ export default function AutoSendTextSelector() {
               min={0}
               max={60}
               aria-labelledby="auto-send-delay-label"
-              className={cn(
-                defaultTextProps,
-                cn(
-                  optionText,
-                  'reset-rc-number-input reset-rc-number-input-text-right group-hover/temp:border-border-light h-auto w-12 border-0',
-                ),
-              )}
+              variant="option"
+              className="w-12"
             />
           </div>
         </div>

@@ -223,8 +223,7 @@ describe('applyPendingAction — subagent-nested tool calls', () => {
     expect(result).not.toBe(message); // new reference
 
     const parentToolCall = getToolCall(result.content?.[0] as TMessageContentParts) as
-      | { subagent_content?: TMessageContentParts[] }
-      | undefined;
+      { subagent_content?: TMessageContentParts[] } | undefined;
     const nested = parentToolCall?.subagent_content?.[0];
     expect(getToolCall(nested)?.approval).toMatchObject({ actionId: 'a1' });
     // The retry loop's "all tagged" check is now reachable for the nested call.
@@ -246,8 +245,7 @@ describe('applyPendingAction — subagent-nested tool calls', () => {
     });
     const result = applyPendingAction(message, childAction());
     const parentToolCall = getToolCall(result.content?.[1] as TMessageContentParts) as
-      | { subagent_content?: TMessageContentParts[] }
-      | undefined;
+      { subagent_content?: TMessageContentParts[] } | undefined;
     expect(getToolCall(parentToolCall?.subagent_content?.[0])?.approval).toMatchObject({
       actionId: 'a1',
     });

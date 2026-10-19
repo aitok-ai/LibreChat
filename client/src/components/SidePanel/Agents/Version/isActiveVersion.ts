@@ -38,10 +38,7 @@ const instructionsPromptMatch = (
 const instructionsPromptMatchStrict = (
   versionPrompt: AgentInstructionsPrompt | RestrictedAgentInstructionsPrompt | null | undefined,
   otherVersionPrompt:
-    | AgentInstructionsPrompt
-    | RestrictedAgentInstructionsPrompt
-    | null
-    | undefined,
+    AgentInstructionsPrompt | RestrictedAgentInstructionsPrompt | null | undefined,
 ): boolean => {
   if (
     isRestrictedInstructionsPrompt(versionPrompt) ||

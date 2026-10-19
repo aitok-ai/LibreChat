@@ -4,7 +4,6 @@ import {
   VerifyEmail,
   Registration,
   ResetPassword,
-  ApiErrorWatcher,
   TwoFactorScreen,
   TwoFactorSetupScreen,
   RequestPasswordReset,
@@ -12,13 +11,13 @@ import {
 import { OAuthSuccess, OAuthError } from '~/components/OAuth';
 import Recommendations from '~/components/ui/Recommendations';
 import { AuthContextProvider } from '~/hooks/AuthContext';
-import Leaderboard from '~/components/ui/Leaderboard';
 import { importWithRecovery } from '~/lib/assets/lazy';
+import Leaderboard from '~/components/ui/Leaderboard';
 import RouteErrorBoundary from './RouteErrorBoundary';
 import SharedConvo from '~/components/ui/SharedConvo';
 import StartupLayout from './Layouts/Startup';
-import Profile from '../components/Profile';
 import MarketplaceRoute from './Marketplace';
+import Profile from '../components/Profile';
 import LoginLayout from './Layouts/Login';
 import dashboardRoutes from './Dashboard';
 import WithRum from '~/lib/rum/WithRum';
@@ -32,7 +31,6 @@ const AuthLayout = () => (
     <WithRum>
       <Outlet />
     </WithRum>
-    <ApiErrorWatcher />
   </AuthContextProvider>
 );
 

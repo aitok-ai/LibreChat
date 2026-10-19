@@ -1,9 +1,9 @@
 import { memo, useEffect, useState } from 'react';
-import { useRecoilValue } from 'recoil';
+import { useAtomValue } from 'jotai';
 import { useTranslation } from 'react-i18next';
+import { submissionStartFamily } from '@librechat/chat/react';
 import { getElapsedDurationLabels } from '~/utils';
 import { useLocalize } from '~/hooks';
-import store from '~/store';
 
 const elapsedSeconds = (start: number): number =>
   Math.max(0, Math.floor((Date.now() - start) / 1000));
@@ -49,7 +49,7 @@ export const shouldShowElapsed = ({
  * settled state for the animation to misrepresent.
  */
 const Elapsed = memo(function Elapsed({ index }: { index: number }) {
-  const submissionStart = useRecoilValue(store.submissionStartFamily(index));
+  const submissionStart = useAtomValue(submissionStartFamily(index));
   return <ElapsedTimer start={submissionStart ?? undefined} />;
 });
 

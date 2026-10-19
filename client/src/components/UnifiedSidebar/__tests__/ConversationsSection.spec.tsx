@@ -33,12 +33,10 @@ type ProjectsResult = {
   isSuccess: boolean;
   isError?: boolean;
 };
-const mockUseProjectsInfiniteQuery = jest.fn(
-  (): ProjectsResult => ({
-    data: { pages: [{ projects: [], nextCursor: null }], pageParams: [undefined] },
-    isSuccess: true,
-  }),
-);
+const mockUseProjectsInfiniteQuery = jest.fn((): ProjectsResult => ({
+  data: { pages: [{ projects: [], nextCursor: null }], pageParams: [undefined] },
+  isSuccess: true,
+}));
 /** What the chats list asks the server for, captured per render. */
 const mockListParams = jest.fn();
 const mockSetChatsExpanded = jest.fn();
@@ -53,8 +51,7 @@ const mockUseTitleGeneration = jest.fn(() => {
  *  guarantee below depends on. */
 const mockConversationsResult = {
   data: { pages: [{ conversations: [] as unknown[], nextCursor: null }] } as
-    | { pages: Array<{ conversations: unknown[]; nextCursor: string | null }> }
-    | undefined,
+    { pages: Array<{ conversations: unknown[]; nextCursor: string | null }> } | undefined,
   fetchNextPage: jest.fn(),
   refetch: jest.fn(),
   isFetchingNextPage: false,

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { timingSafeEqual } from 'node:crypto';
 import { logger, hashToken, getRandomValues, isValidObjectIdString } from '@librechat/data-schemas';
 import type { EmailChangeErrorCode, TCustomConfig } from 'librechat-data-provider';
+import { getSafeErrorMetadata } from '../utils/errors';
 import { isEmailDomainAllowed } from './domain';
 import { isEnabled } from '../utils/common';
 
@@ -90,8 +91,7 @@ export interface EmailChangeUser {
 
 /** `lean()` yields a Map for a Mongoose map field, so reads tolerate either shape. */
 export type EmailChangeTokenMetadata =
-  | { requestIp?: string; passwordFingerprint?: string }
-  | Map<string, unknown>;
+  { requestIp?: string; passwordFingerprint?: string } | Map<string, unknown>;
 
 export interface EmailChangeToken {
   userId: string;
@@ -274,7 +274,10 @@ async function sendSecurityNotification(
   try {
     await deps.sendEmail(data);
   } catch (error) {
-    logger.error(`[emailChange] Failed to send ${logContext} notification`, error);
+    logger.error(
+      `[emailChange] Failed to send ${logContext} notification`,
+      getSafeErrorMetadata(error),
+    );
   }
 }
 
@@ -343,7 +346,7 @@ async function deleteTokensOrLog(
   try {
     await deps.deleteTokens(query, tenantId);
   } catch (error) {
-    logger.error(`[emailChange] Failed to clean up ${context}`, error);
+    logger.error(`[emailChange] Failed to clean up ${context}`, getSafeErrorMetadata(error));
   }
 }
 
@@ -361,7 +364,7 @@ async function claimTokenIfCurrent(
     const { deletedCount } = await deps.deleteTokens(query, tenantId);
     return deletedCount ? 'claimed' : 'superseded';
   } catch (error) {
-    logger.error('[emailChange] Failed to claim the pending token', error);
+    logger.error('[emailChange] Failed to claim the pending token', getSafeErrorMetadata(error));
     return 'unavailable';
   }
 }
@@ -398,7 +401,7 @@ async function restoreClaimedToken(
       tenantId,
     );
   } catch (error) {
-    logger.error('[emailChange] Failed to restore the claimed token', error);
+    logger.error('[emailChange] Failed to restore the claimed token', getSafeErrorMetadata(error));
   }
 }
 
@@ -444,9 +447,7 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
     }
 
     const ip = input.ip ?? 'unknown';
-    logger.info(
-      `[emailChange] Change requested [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
-    );
+    logger.info(`[emailChange] Change requested [User ID: ${userId}] [IP: ${ip}]`);
     await sendSecurityNotification(
       deps,
       {
@@ -466,16 +467,12 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
 
     const passwordMatches = await deps.verifyPassword(user, parsed.data.currentPassword);
     if (!passwordMatches) {
-      logger.warn(
-        `[emailChange] Incorrect password [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Incorrect password [User ID: ${userId}] [IP: ${ip}]`);
       return result(403, 'Current password is incorrect', 'current_password_invalid');
     }
 
     if (!isEmailDomainAllowed(newEmail, input.allowedDomains)) {
-      logger.warn(
-        `[emailChange] Domain not allowed [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Domain not allowed [User ID: ${userId}] [IP: ${ip}]`);
       return result(403, 'Email domain is not allowed', 'email_domain_not_allowed');
     }
 
@@ -491,9 +488,7 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
     ]);
 
     if (existingUser && userIdOf(existingUser) !== userId) {
-      logger.warn(
-        `[emailChange] Email already in use [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Email already in use [User ID: ${userId}] [IP: ${ip}]`);
       return result(409, 'Email address is already linked to another account', 'email_in_use');
     }
 
@@ -510,9 +505,7 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
     /** The re-read above guards delivery: an account change during request validation must not
      * produce a verification message whose link can never be used. */
     if (!accountMatchesRequest(latestUser, userId, oldEmail, user.password)) {
-      logger.warn(
-        `[emailChange] Account changed while issuing [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Account changed while issuing [User ID: ${userId}] [IP: ${ip}]`);
       return result(409, 'Account was modified during the request', 'account_modified');
     }
 
@@ -532,8 +525,8 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
       });
     } catch (error) {
       logger.error(
-        `[emailChange] Verification delivery failed [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
-        error,
+        `[emailChange] Verification delivery failed [User ID: ${userId}] [IP: ${ip}]`,
+        getSafeErrorMetadata(error),
       );
       return result(500, 'Failed to send verification email', 'email_delivery_failed');
     }
@@ -569,7 +562,7 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
     }
     if (!replacedToken) {
       logger.warn(
-        `[emailChange] Competing request completed first [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
+        `[emailChange] Competing request completed first [User ID: ${userId}] [IP: ${ip}]`,
       );
       return result(409, 'Another email change request completed first', 'request_in_progress');
     }
@@ -579,15 +572,11 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
     const committedUser = await deps.getUserById(input.userId, input.tenantId);
     if (!accountMatchesRequest(committedUser, userId, oldEmail, user.password)) {
       await deleteTokensOrLog(deps, tokenQuery, user.tenantId, 'token bound to a stale address');
-      logger.warn(
-        `[emailChange] Account changed while issuing [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Account changed while issuing [User ID: ${userId}] [IP: ${ip}]`);
       return result(409, 'Account was modified during the request', 'account_modified');
     }
 
-    logger.info(
-      `[emailChange] Verification issued [User ID: ${userId}] [New Email: ${newEmail}] [IP: ${ip}]`,
-    );
+    logger.info(`[emailChange] Verification issued [User ID: ${userId}] [IP: ${ip}]`);
     return result(200, 'Verification link sent to your new email address');
   }
 
@@ -622,9 +611,7 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
       isTokenExpired(emailChangeToken) ||
       !(await tokenMatches(token, emailChangeToken.token))
     ) {
-      logger.warn(
-        `[emailChange] Invalid confirmation [User ID: ${userId}] [New Email: ${email}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Invalid confirmation [User ID: ${userId}] [IP: ${ip}]`);
       return unresolvedLink();
     }
 
@@ -643,9 +630,7 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
       normalizeEmail(emailChangeToken.email ?? '') !== email ||
       normalizeEmail(emailChangeToken.identifier ?? '') !== oldEmail
     ) {
-      logger.warn(
-        `[emailChange] Stale confirmation [User ID: ${userId}] [New Email: ${email}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Stale confirmation [User ID: ${userId}] [IP: ${ip}]`);
       return unresolvedLink();
     }
 
@@ -660,9 +645,7 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
     }
 
     if (!isEmailDomainAllowed(email, policy.allowedDomains)) {
-      logger.warn(
-        `[emailChange] Domain no longer allowed [User ID: ${userId}] [New Email: ${email}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Domain no longer allowed [User ID: ${userId}] [IP: ${ip}]`);
       return result(403, 'Email domain is not allowed', 'email_domain_not_allowed');
     }
 
@@ -682,15 +665,11 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
       tenantId,
     );
     if (claim === 'unavailable') {
-      logger.error(
-        `[emailChange] Token claim failed [User ID: ${userId}] [New Email: ${email}] [IP: ${ip}]`,
-      );
+      logger.error(`[emailChange] Token claim failed [User ID: ${userId}] [IP: ${ip}]`);
       return result(500, 'Failed to change email address');
     }
     if (claim === 'superseded') {
-      logger.warn(
-        `[emailChange] Superseded confirmation [User ID: ${userId}] [New Email: ${email}] [IP: ${ip}]`,
-      );
+      logger.warn(`[emailChange] Superseded confirmation [User ID: ${userId}] [IP: ${ip}]`);
       return result(400, EMAIL_CHANGE_ERROR_MESSAGE, 'invalid_token');
     }
 
@@ -713,8 +692,8 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
         return result(409, 'Email address is already linked to another account', 'email_in_use');
       }
       logger.error(
-        `[emailChange] Update failed [User ID: ${userId}] [New Email: ${email}] [IP: ${ip}]`,
-        error,
+        `[emailChange] Update failed [User ID: ${userId}] [IP: ${ip}]`,
+        getSafeErrorMetadata(error),
       );
       await restoreClaimedToken(deps, emailChangeToken, scope, tenantId);
       return result(500, 'Failed to change email address');
@@ -778,9 +757,7 @@ export function createEmailChangeService(deps: EmailChangeDeps): {
       ),
     ]);
 
-    logger.info(
-      `[emailChange] Change completed [User ID: ${userId}] [Old Email: ${oldEmail}] [New Email: ${email}] [IP: ${ip}]`,
-    );
+    logger.info(`[emailChange] Change completed [User ID: ${userId}] [IP: ${ip}]`);
     return result(200, 'Email address changed successfully');
   }
 

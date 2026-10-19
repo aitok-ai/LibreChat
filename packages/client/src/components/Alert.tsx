@@ -9,6 +9,7 @@ const alertVariants: (
     | ({
         variant?: 'info' | 'success' | 'warning' | 'error' | 'neutral' | null | undefined;
         elevation?: 'flat' | 'raised' | null | undefined;
+        size?: 'default' | 'roomy' | null | undefined;
       } & ClassProp)
     | undefined,
 ) => string = cva('relative flex gap-3 rounded-xl border border-border-light px-4 py-3 text-sm', {
@@ -25,10 +26,16 @@ const alertVariants: (
       flat: '',
       raised: 'shadow-xs',
     },
+    /** `roomy` gives a standalone notice, such as a form's outcome, more air than an inline one. */
+    size: {
+      default: '',
+      roomy: 'px-6 py-4',
+    },
   },
   defaultVariants: {
     variant: 'info',
     elevation: 'flat',
+    size: 'default',
   },
 });
 
@@ -43,22 +50,24 @@ const defaultIcons: Record<AlertVariant, React.ComponentType<{ className?: strin
 };
 
 export interface AlertProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof alertVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof alertVariants> {
   /** Override the default per-variant icon, or pass `false` to hide it. */
   icon?: React.ReactNode | false;
 }
 
 const Alert: React.ForwardRefExoticComponent<AlertProps & React.RefAttributes<HTMLDivElement>> =
   React.forwardRef<HTMLDivElement, AlertProps>(
-    ({ className, variant = 'info', elevation, icon, role = 'alert', children, ...props }, ref) => {
+    (
+      { className, variant = 'info', elevation, size, icon, role = 'alert', children, ...props },
+      ref,
+    ) => {
       const resolvedVariant = (variant ?? 'info') as AlertVariant;
       const DefaultIcon = defaultIcons[resolvedVariant];
       return (
         <div
           ref={ref}
           role={role}
-          className={cn(alertVariants({ variant, elevation }), className)}
+          className={cn(alertVariants({ variant, elevation, size }), className)}
           {...props}
         >
           {icon !== false && (

@@ -1753,9 +1753,8 @@ describe('useFileHandling', () => {
     it('does not recover pasted text after a separate file form removes the pending attachment', async () => {
       const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => undefined);
       const recovery = jest.fn();
-      const { default: useFileHandling, useFileHandlingNoChatContext } = await import(
-        '../useFileHandling'
-      );
+      const { default: useFileHandling, useFileHandlingNoChatContext } =
+        await import('../useFileHandling');
       const { result: uploadResult } = renderHook(() => useFileHandling());
 
       await act(async () => {

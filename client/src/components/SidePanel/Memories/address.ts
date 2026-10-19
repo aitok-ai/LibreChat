@@ -2,8 +2,7 @@ import type { TUserMemory } from 'librechat-data-provider';
 
 export type MemoryAddress = { id: string } | { key: string };
 export type MemoryUpdateAddress =
-  | { id: string; key?: string }
-  | { key: string; originalKey?: string };
+  { id: string; key?: string } | { key: string; originalKey?: string };
 
 /** Uses the opaque record id whenever the key cannot safely address the record. */
 export function getMemoryAddress(memory: TUserMemory): MemoryAddress | null {

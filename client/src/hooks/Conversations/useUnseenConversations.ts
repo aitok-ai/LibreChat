@@ -138,9 +138,7 @@ type ArrivalMode = 'server' | 'local' | 'none';
 
 const snapshotForQuery = (query: Query): ArrivalSnapshot | null => {
   const data = query.state.data as
-    | InfiniteData<ConversationCursorData>
-    | PinnedConversationsData
-    | undefined;
+    InfiniteData<ConversationCursorData> | PinnedConversationsData | undefined;
   if (!data) {
     return null;
   }

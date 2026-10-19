@@ -3,7 +3,6 @@ import { useRecoilValue } from 'recoil';
 import type { TMessageAudio } from '~/common';
 import { BrowserTTS, ExternalTTS } from '~/components/Audio/TTS';
 import { TTSEndpoints } from '~/common';
-import { cn } from '~/utils';
 import store from '~/store';
 
 function MessageAudio(props: TMessageAudio) {

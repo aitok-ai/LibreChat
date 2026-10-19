@@ -7,6 +7,8 @@ import { normalizeEndpointName } from './utils';
 
 /** Parallel storage deletions during rollback of a failed skill archive import. */
 export const DEFAULT_SKILL_IMPORT_CLEANUP_CONCURRENCY = 8;
+/** Parallel provider deletions during a whole-Skill cleanup pass. */
+export const DEFAULT_SKILL_DELETION_CLEANUP_CONCURRENCY = 8;
 
 export const supportsFiles = {
   [EModelEndpoint.openAI]: true,
@@ -158,15 +160,7 @@ export const imageExtRegex = /\.(jpg|jpeg|png|gif|webp|heic|heif)$/i;
 
 /** @see https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_DocumentBlock.html */
 export type BedrockDocumentFormat =
-  | 'pdf'
-  | 'csv'
-  | 'doc'
-  | 'docx'
-  | 'xls'
-  | 'xlsx'
-  | 'html'
-  | 'txt'
-  | 'md';
+  'pdf' | 'csv' | 'doc' | 'docx' | 'xls' | 'xlsx' | 'html' | 'txt' | 'md';
 
 /** Maps MIME types to Bedrock Converse API document format values */
 export const bedrockDocumentFormats: Record<string, BedrockDocumentFormat> = {
@@ -623,6 +617,7 @@ export const fileConfig = {
   skills: {
     fileSizeLimit: defaultSkillImportSizeLimit,
     importCleanupConcurrency: DEFAULT_SKILL_IMPORT_CLEANUP_CONCURRENCY,
+    deletionCleanupConcurrency: DEFAULT_SKILL_DELETION_CLEANUP_CONCURRENCY,
   },
   serverFileSizeLimit: defaultSizeLimit,
   avatarSizeLimit: mbToBytes(2),
@@ -689,6 +684,7 @@ export const endpointFileConfigSchema = z.object({
 const skillFileConfigSchema = z.object({
   fileSizeLimit: z.number().min(0).optional(),
   importCleanupConcurrency: z.number().int().positive().optional(),
+  deletionCleanupConcurrency: z.number().int().positive().optional(),
 });
 
 export const fileConfigSchema = z.object({
@@ -1339,6 +1335,13 @@ function buildMergedFileConfig(dynamic: DynamicFileConfig | undefined): FileConf
     mergedConfig.skills = {
       ...mergedConfig.skills,
       importCleanupConcurrency: dynamic.skills.importCleanupConcurrency,
+    };
+  }
+
+  if (dynamic.skills?.deletionCleanupConcurrency !== undefined) {
+    mergedConfig.skills = {
+      ...mergedConfig.skills,
+      deletionCleanupConcurrency: dynamic.skills.deletionCleanupConcurrency,
     };
   }
 

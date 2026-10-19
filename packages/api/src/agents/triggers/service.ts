@@ -54,6 +54,7 @@ export interface AgentTriggerServiceOptions {
   completionResultBatchSize?: number;
   completionReceiptBatching?: boolean;
   address?: BoundAddress | string | null;
+  deadLetterRetentionDays?: number;
   idlePolling?: {
     queuedTurnMaxIntervalMs?: number;
     maintenanceMaxIntervalMs?: number;
@@ -64,8 +65,7 @@ export interface AgentTriggerServiceOptions {
 
 /** A principal's deliveries resuming one conversation, or exact deliveries. */
 export type AgentTriggerCompletionExpedite =
-  | { user: string; conversationId: string; taskIds?: string[] }
-  | { deliveryKeys: string[] };
+  { user: string; conversationId: string; taskIds?: string[] } | { deliveryKeys: string[] };
 
 export interface AgentTriggerServiceDeps {
   fetch?: AgentTriggerExecutionHostDeps['fetch'];
@@ -679,6 +679,9 @@ export function createAgentTriggerService(deps: AgentTriggerServiceDeps = {}): A
           },
           {
             ...deps.deliveryOptions,
+            ...(options.deadLetterRetentionDays != null && {
+              deadLetterRetentionMs: options.deadLetterRetentionDays * 24 * 60 * 60_000,
+            }),
             ...(options.idlePolling?.deliveryMaxIntervalMs != null && {
               maxIdleTickMs: options.idlePolling.deliveryMaxIntervalMs,
             }),

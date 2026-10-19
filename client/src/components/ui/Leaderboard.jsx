@@ -1,191 +1,145 @@
+import React, { useState } from 'react';
+import { GoldMedal, SilverMedal, BronzeMedal } from '@librechat/client';
 import { useGetLeaderboardQuery } from 'librechat-data-provider/react-query';
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
-
-import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
-import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import { GoldMedal } from '@librechat/client';
-import { SilverMedal } from '@librechat/client';
-import { BronzeMedal } from '@librechat/client';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
 import { useLocalize } from '~/hooks';
 
-/*
-Adapted from Stack Overflow
-URL: https://stackoverflow.com/a/1038781
-Author: Travis (https://stackoverflow.com/users/307338/travis)
-Last edited: Jul 31, 2017 at 20:40
-*/
-function getWidth() {
-  return Math.max(
-    document.body.scrollWidth,
-    document.documentElement.scrollWidth,
-    document.body.offsetWidth,
-    document.documentElement.offsetWidth,
-    document.documentElement.clientWidth,
-  );
-}
+const PLACE_ICONS = [
+  <GoldMedal key="gold" />,
+  <SilverMedal key="silver" />,
+  <BronzeMedal key="bronze" />,
+];
 
-function placeCellRenderer(place) {
-  switch (place) {
-    default:
-      return place + 1;
-
-    case 0:
-      return (
-        <div className="justify-left relative flex items-center">
-          <GoldMedal />
-        </div>
-      );
-
-    case 1:
-      return (
-        <div className="justify-left relative flex items-center">
-          <SilverMedal />
-        </div>
-      );
-
-    case 2:
-      return (
-        <div className="justify-left relative flex items-center">
-          <BronzeMedal />
-        </div>
-      );
-  }
-}
-
-function userCellRenderer(user) {
-  const { name, username } = user;
-  const icon = (
+function Avatar({ name, username }) {
+  const seed = name || username || '?';
+  return (
     <img
-      className="rounded-sm"
-      style={{ width: 30, height: 30 }}
-      src={`https://api.dicebear.com/6.x/initials/svg?seed=${name}&fontFamily=Verdana&fontSize=36`}
-      alt="avatar"
+      className="h-9 w-9 rounded-full"
+      src={`https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(seed)}&fontFamily=Verdana&fontSize=36`}
+      alt={username}
     />
   );
-  return (
-    <div className="justify-left relative flex items-center gap-2">
-      {icon}
-      {username}
-    </div>
-  );
+}
+
+function sortRows(rows, key, direction) {
+  const sorted = [...rows].sort((a, b) => {
+    if (key === 'referrals') {
+      return direction === 'asc' ? a.referrals - b.referrals : b.referrals - a.referrals;
+    }
+    return direction === 'asc' ? a.index - b.index : b.index - a.index;
+  });
+  return sorted;
 }
 
 export default function Leaderboard() {
   const localize = useLocalize();
-  const getLeaderboardQuery = useGetLeaderboardQuery();
-  const initColWidth = getWidth();
-
-  const gridRef = useRef();
-  const [rowData, setRowData] = useState(); // Set rowData to Array of Objects, one Object per Row
-
-  // Each Column Definition results in one Column.
-  const [columnDefs, setColumnDefs] = useState([
-    {
-      field: '名次',
-      cellRenderer: (params) => placeCellRenderer(params.value),
-      minWidth: 70,
-      width: (initColWidth * 2) / 10,
-    },
-    {
-      field: '用户',
-      cellRenderer: (params) => userCellRenderer(params.value),
-      minWidth: 160,
-      width: (initColWidth * 4.8) / 10,
-    },
-    {
-      field: '邀请人数',
-      minWidth: 100,
-      width: (initColWidth * 3) / 10,
-    },
-  ]);
-
-  // DefaultColDef sets props common to all Columns
-  const defaultColDef = useMemo(() => ({
-    maxWidth: 200,
-    sortable: true,
-    suppressMovable: true,
-    resizable: true,
-  }));
+  const query = useGetLeaderboardQuery();
+  const [sortKey, setSortKey] = useState('referrals');
+  const [sortDir, setSortDir] = useState('desc');
 
   useDocumentTitle(localize('com_ui_leaderboard'));
 
-  useEffect(() => {
-    function updateSize() {
-      const colWidth = getWidth();
-      const newColDefs = [
-        {
-          field: '名次',
-          cellRenderer: (params) => placeCellRenderer(params.value),
-          minWidth: 70,
-          width: (colWidth * 2) / 10,
-        },
-        {
-          field: '用户',
-          cellRenderer: (params) => userCellRenderer(params.value),
-          minWidth: 180,
-          width: (colWidth * 4.8) / 10,
-        },
-        {
-          field: '邀请人数',
-          minWidth: 100,
-          width: (colWidth * 3) / 10,
-        },
-      ];
+  const rows = query.data
+    ? query.data.map((u, i) => ({
+        index: i,
+        name: u.name,
+        username: u.username,
+        referrals: u.numOfReferrals ?? 0,
+      }))
+    : [];
 
-      setColumnDefs(newColDefs);
+  const sorted = rows.length ? sortRows(rows, sortKey, sortDir) : [];
+
+  const toggleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
     }
+  };
 
-    window.addEventListener('resize', updateSize);
-
-    return () => window.removeEventListener('resize', updateSize);
-  }, [
-    document.body.scrollWidth,
-    document.documentElement.scrollWidth,
-    document.body.offsetWidth,
-    document.documentElement.offsetWidth,
-    document.documentElement.clientWidth,
-  ]);
-
-  useEffect(() => {
-    if (getLeaderboardQuery.isSuccess) {
-      let userList = [];
-      for (let i = 0; i < getLeaderboardQuery.data.length; i++) {
-        const name = getLeaderboardQuery.data[i].name;
-        const username = getLeaderboardQuery.data[i].username;
-        const numOfReferrals = getLeaderboardQuery.data[i].numOfReferrals;
-        userList.push({
-          名次: i,
-          用户: { name, username },
-          邀请人数: numOfReferrals,
-        });
-      }
-
-      setRowData(userList);
-    }
-  }, [getLeaderboardQuery.isSuccess, getLeaderboardQuery.data]);
+  const sortArrow = (key) => {
+    if (sortKey !== key) return <span className="text-text-tertiary">↕</span>;
+    return sortDir === 'desc' ? '↓' : '↑';
+  };
 
   return (
-    <div className="flex h-full flex-col items-center overflow-y-auto pt-0 text-sm dark:bg-gray-800">
+    <div className="bg-surface-primary flex h-full flex-col items-center overflow-y-auto pt-0 text-sm">
       <h1
         id="landing-title"
-        className="mt-3 mr-auto mb-5 ml-auto flex items-center justify-center gap-2 text-center text-4xl font-semibold sm:mb-8 md:mt-[5vh] dark:text-gray-200"
+        className="text-text-primary mb-6 text-center text-4xl font-semibold md:mt-[5vh]"
       >
-        邀请排行榜
+        {localize('com_ui_leaderboard')}
       </h1>
-      <div className="flex justify-center" style={{ width: '100%', height: '100%' }}>
-        {/* On div wrapping Grid a) specify theme CSS Class Class and b) sets Grid size */}
-        <div className="ag-theme-alpine" style={{ width: 605, height: 500 }}>
-          <AgGridReact
-            ref={gridRef}
-            rowData={rowData} // Row Data for Rows
-            columnDefs={columnDefs} // Column Defs for Columns
-            defaultColDef={defaultColDef} // Default Column Properties
-            animateRows={true} // Optional - set to 'true' to have rows animate when sorted
-          />
+
+      {query.isLoading ? (
+        <div className="bg-surface-tertiary h-48 w-full max-w-3xl animate-pulse rounded-xl" />
+      ) : (
+        <div className="border-border-light bg-surface-primary w-full max-w-3xl overflow-hidden rounded-xl border shadow-sm">
+          {/* Header */}
+          <div className="border-border-light bg-surface-secondary text-text-secondary grid grid-cols-[3rem_1fr_7rem] border-b text-sm font-semibold">
+            <button
+              onClick={() => toggleSort('index')}
+              className="hover:text-text-primary flex items-center gap-1 px-4 py-3 text-left"
+            >
+              #<span className="text-xs">{sortArrow('index')}</span>
+            </button>
+            <button
+              onClick={() => toggleSort('index')}
+              className="hover:text-text-primary px-4 py-3 text-left"
+            >
+              {localize('com_ui_user')}
+            </button>
+            <button
+              onClick={() => toggleSort('referrals')}
+              className="hover:text-text-primary flex items-center justify-end gap-1 px-4 py-3 text-right"
+            >
+              {localize('com_ui_referrals')}
+              <span className="text-xs">{sortArrow('referrals')}</span>
+            </button>
+          </div>
+
+          {/* Rows */}
+          <div className="divide-border-light divide-y">
+            {sorted.length === 0 && (
+              <div className="text-text-tertiary px-6 py-10 text-center">
+                {localize('com_ui_no_data')}
+              </div>
+            )}
+            {sorted.map((row) => (
+              <div
+                key={row.username}
+                className="hover:bg-surface-hover grid grid-cols-[3rem_1fr_7rem] items-center px-4 py-3 transition-colors"
+              >
+                {/* Rank */}
+                <div className="flex items-center">
+                  {row.index < 3 ? (
+                    PLACE_ICONS[row.index]
+                  ) : (
+                    <span className="text-text-secondary w-7 text-center text-sm font-medium">
+                      {row.index + 1}
+                    </span>
+                  )}
+                </div>
+
+                {/* User */}
+                <div className="flex items-center gap-3 px-2">
+                  <Avatar name={row.name} username={row.username} />
+                  <span className="text-text-primary truncate font-medium">{row.username}</span>
+                </div>
+
+                {/* Referrals */}
+                <div className="text-right">
+                  <span className="bg-status-info-subtle text-text-secondary inline-flex h-6 min-w-[3rem] items-center justify-center rounded-full px-2 text-sm font-semibold">
+                    {row.referrals}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

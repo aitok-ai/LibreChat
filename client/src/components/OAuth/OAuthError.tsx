@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@librechat/client';
 import { useSearchParams } from 'react-router-dom';
+import { announceOAuthSettled } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 
 export default function OAuthError() {
   const localize = useLocalize();
   const [searchParams] = useSearchParams();
   const error = searchParams.get('error') || 'unknown_error';
+  const flowId = searchParams.get('flow') ?? undefined;
+
+  useEffect(() => {
+    /** Ends the watch on this sign-in in the window that started it, which no longer polls. */
+    announceOAuthSettled({ outcome: 'failed', flowId });
+  }, [flowId]);
 
   const getErrorMessage = (error: string): string => {
     switch (error) {

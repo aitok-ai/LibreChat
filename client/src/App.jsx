@@ -4,8 +4,8 @@ import { DndProvider } from 'react-dnd';
 import { RouterProvider } from 'react-router-dom';
 import * as RadixToast from '@radix-ui/react-toast';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import { Toast, ToastViewport, ToastProvider, useInputModality } from '@librechat/client';
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
 import { ScreenshotProvider, useApiErrorBoundary } from './hooks';
 import WakeLockManager from '~/components/System/WakeLockManager';
 import QueryDevtoolsGate from '~/components/QueryDevtoolsGate';
@@ -13,7 +13,8 @@ import LanguageSync from '~/components/System/LanguageSync';
 import DeploymentTheme from '~/Providers/DeploymentTheme';
 import UiScaleSync from '~/components/System/UiScaleSync';
 import { initializeFontSize } from '~/store/fontSize';
-import SetLanguage from './utils/setLang.jsx';
+import { reopenTermsOnRefusal } from '~/utils/terms';
+import SetLanguage from '~/utils/setLang';
 import { LiveAnnouncer } from '~/a11y';
 import { router } from './routes';
 
@@ -37,6 +38,11 @@ const App = () => {
         if (error?.response?.status === 401) {
           setError(error);
         }
+      },
+    }),
+    mutationCache: new MutationCache({
+      onError: (error) => {
+        reopenTermsOnRefusal(queryClient, error?.response?.data);
       },
     }),
   });

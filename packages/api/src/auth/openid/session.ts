@@ -1,3 +1,4 @@
+import { SESSION_HINT_COOKIE } from 'librechat-data-provider';
 import type {
   AuthIdentityContext,
   AuthIdentitySource,
@@ -85,6 +86,7 @@ interface OpenIDSessionRefreshDeps {
     res: OpenIDResponse,
     args: {
       userId?: string;
+      tenantId?: string;
       expires: Date;
       refreshExpiryMs: number;
       refreshToken: string;
@@ -754,16 +756,16 @@ export function createOpenIDSessionRefreshService(
       getPredecessorRefreshTokenMarker(resolvedTokens) ?? predecessorOverride;
     const refreshTokenAdvanced = Boolean(
       predecessorRefreshToken &&
-        existing.refreshToken &&
-        existing.refreshToken !== predecessorRefreshToken &&
-        existing.refreshToken !== resolvedTokens.refresh_token,
+      existing.refreshToken &&
+      existing.refreshToken !== predecessorRefreshToken &&
+      existing.refreshToken !== resolvedTokens.refresh_token,
     );
     const predecessorAccessToken = resolvedTokens.__predecessorAccessToken;
     const accessTokenAdvanced = Boolean(
       predecessorAccessToken &&
-        existing.accessToken &&
-        existing.accessToken !== predecessorAccessToken &&
-        existing.accessToken !== resolvedTokens.access_token,
+      existing.accessToken &&
+      existing.accessToken !== predecessorAccessToken &&
+      existing.accessToken !== resolvedTokens.access_token,
     );
     return refreshTokenAdvanced || accessTokenAdvanced;
   }
@@ -898,6 +900,7 @@ export function createOpenIDSessionRefreshService(
       setRefreshTokenCookie(res, newRefreshToken, expirationDate);
       setOpenIDMarkerCookies(res, {
         userId,
+        tenantId,
         expires: expirationDate,
         refreshExpiryMs: expiryInMilliseconds,
         refreshToken: newRefreshToken,
@@ -1341,8 +1344,8 @@ export function createOpenIDSessionRefreshService(
         const current = req.session.openidTokens;
         shouldClearExpressSession = Boolean(
           current &&
-            current.accessToken === resolvedTokens?.access_token &&
-            current.refreshToken === successorRefreshToken,
+          current.accessToken === resolvedTokens?.access_token &&
+          current.refreshToken === successorRefreshToken,
         );
       } catch {
         shouldClearExpressSession = true;
@@ -1378,6 +1381,7 @@ export function createOpenIDSessionRefreshService(
         'openid_id_token',
         'openid_user_id',
         'token_provider',
+        SESSION_HINT_COOKIE,
       ]) {
         res?.clearCookie?.(name);
       }
@@ -1780,15 +1784,15 @@ export function createOpenIDSessionRefreshService(
     const existing = req.session.openidTokens ?? {};
     const generationDiffers = Boolean(
       publicationGeneration &&
-        existing.publicationFlightKey &&
-        (existing.publicationFlightKey !== publicationGeneration.key ||
-          existing.publicationFlightOwnerId !== publicationGeneration.ownerId),
+      existing.publicationFlightKey &&
+      (existing.publicationFlightKey !== publicationGeneration.key ||
+        existing.publicationFlightOwnerId !== publicationGeneration.ownerId),
     );
     const existingGenerationIsNewer = Boolean(
       generationDiffers &&
-        existing.publicationFlightCreatedAt != null &&
-        (publicationGeneration?.createdAt == null ||
-          existing.publicationFlightCreatedAt >= publicationGeneration.createdAt),
+      existing.publicationFlightCreatedAt != null &&
+      (publicationGeneration?.createdAt == null ||
+        existing.publicationFlightCreatedAt >= publicationGeneration.createdAt),
     );
     if (existingGenerationIsNewer) {
       logger.info(
@@ -2021,8 +2025,8 @@ export function createOpenIDSessionRefreshService(
         const currentSessionTokens = req.session?.openidTokens;
         const alreadyCurrent = Boolean(
           currentSessionTokens?.accessToken === resolvedTokens?.access_token &&
-            currentSessionTokens?.refreshToken ===
-              (resolvedTokens?.refresh_token ?? predecessorRefreshToken),
+          currentSessionTokens?.refreshToken ===
+            (resolvedTokens?.refresh_token ?? predecessorRefreshToken),
         );
         if (alreadyCurrent) {
           if (resolvedTokens?.__flightOwnerId) {

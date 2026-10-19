@@ -34,6 +34,7 @@ const SOURCE_ROOTS = [
   'packages/data-provider/src',
   'packages/data-schemas/src',
   'packages/client/src',
+  'packages/chat/src',
 ];
 
 const SOURCE_DIRS = SOURCE_ROOTS.map((rel) => resolve(ROOT, rel));
@@ -91,15 +92,9 @@ function sortSegment(stmts: Stmt[]): string[] {
       if (aReact !== bReact) return aReact - bReact;
       return a.len - b.len;
     });
-  const g2 = stmts
-    .filter((s) => s.isType && !s.isLocal)
-    .sort((a, b) => b.len - a.len);
-  const g3 = stmts
-    .filter((s) => s.isType && s.isLocal)
-    .sort((a, b) => b.len - a.len);
-  const g4 = stmts
-    .filter((s) => !s.isType && s.isLocal)
-    .sort((a, b) => b.len - a.len);
+  const g2 = stmts.filter((s) => s.isType && !s.isLocal).sort((a, b) => b.len - a.len);
+  const g3 = stmts.filter((s) => s.isType && s.isLocal).sort((a, b) => b.len - a.len);
+  const g4 = stmts.filter((s) => !s.isType && s.isLocal).sort((a, b) => b.len - a.len);
   return [...g1, ...g2, ...g3, ...g4].map((s) => s.raw);
 }
 
@@ -119,7 +114,7 @@ function sortFileImports(content: string): string | null {
       t.startsWith('/*') ||
       t.startsWith('*') ||
       t.startsWith('*/') ||
-      t.startsWith('\'use ') ||
+      t.startsWith("'use ") ||
       t.startsWith('"use ')
     ) {
       i++;
@@ -184,11 +179,7 @@ function sortFileImports(content: string): string | null {
   if (originalRaws.length < 2) return null;
   if (originalRaws.join('\n') === emitted.join('\n')) return null;
 
-  return [
-    ...lines.slice(0, importStart),
-    ...emitted,
-    ...lines.slice(importEnd),
-  ].join('\n');
+  return [...lines.slice(0, importStart), ...emitted, ...lines.slice(importEnd)].join('\n');
 }
 
 /** Recursively yields absolute paths of every source file under `dir`. */

@@ -5,6 +5,7 @@ import type {
   GeneratedReasoningLabel,
   GenerateReasoningLabelPayload,
   ReasoningLabelAttemptEvent,
+  ReasoningLabelResetEvent,
   ReasoningLabelEvent,
   ReasoningLabelHostDeps,
   ReasoningLabelStatus,
@@ -89,7 +90,8 @@ export interface ReasoningLabelHostScope {
   detach?: () => void;
 }
 
-type ReasoningLabelDurableEvent = ReasoningLabelAttemptEvent | ReasoningLabelEvent;
+type ReasoningLabelDurableEvent =
+  ReasoningLabelAttemptEvent | ReasoningLabelEvent | (ReasoningLabelResetEvent & { reset: true });
 
 export interface CreateReasoningLabelHostWiringOptions {
   config: ResolvedReasoningLabelConfig;
@@ -197,6 +199,8 @@ export function createReasoningLabelHostWiring({
     getStepIndex,
     emitAttemptEvent: (event) => emitEvent(ReasoningLabelEvents.ON_REASONING_LABEL_ATTEMPT, event),
     emitLabelEvent: (event) => emitEvent(ReasoningLabelEvents.ON_REASONING_LABEL, event),
+    emitResetEvent: (event) =>
+      emitEvent(ReasoningLabelEvents.ON_REASONING_LABEL, { ...event, reset: true }),
     trackPendingFill,
     generateLabel,
   });
@@ -213,8 +217,7 @@ export function createReasoningLabelHostWiring({
 function extractLLMCompletionText(output: ReasoningLabelLLMOutput): string | undefined {
   const generations = output.generations;
   const generation = generations[generations.length - 1]?.[0] as
-    | { message?: { content?: unknown }; text?: unknown }
-    | undefined;
+    { message?: { content?: unknown }; text?: unknown } | undefined;
   const content = generation?.message?.content;
   if (typeof content === 'string') {
     return content;

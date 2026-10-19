@@ -313,8 +313,7 @@ export interface InternalToolCallPart {
 export interface InternalMessage {
   role: 'system' | 'user' | 'assistant';
   content:
-    | string
-    | Array<{ type: string; text?: string; image_url?: unknown } | InternalToolCallPart>;
+    string | Array<{ type: string; text?: string; image_url?: unknown } | InternalToolCallPart>;
   name?: string;
 }
 
@@ -466,16 +465,6 @@ function collectFunctionCallOutputs(input: InputItem[]): Map<string, string> {
     }
   }
   return outputs;
-}
-
-/**
- * Merge previous conversation messages with new input
- */
-export function mergeMessagesWithInput(
-  previousMessages: InternalMessage[],
-  newInput: InternalMessage[],
-): InternalMessage[] {
-  return [...previousMessages, ...newInput];
 }
 
 /* =============================================================================

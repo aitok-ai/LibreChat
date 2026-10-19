@@ -33,8 +33,7 @@ export default function UserKeyError({ json, message }: ErrorRendererProps) {
   const localize = useLocalize();
   const [dialogOpen, setDialogOpen] = useState(false);
   const code = (readString(json, 'code') ?? readString(json, 'type')) as
-    | UserKeyErrorCode
-    | undefined;
+    UserKeyErrorCode | undefined;
   /** An expired key's payload names the endpoint whose key expired, which outranks the row's. */
   const payloadEndpoint =
     code === ErrorTypes.EXPIRED_USER_KEY ? readString(json, 'endpoint') : undefined;

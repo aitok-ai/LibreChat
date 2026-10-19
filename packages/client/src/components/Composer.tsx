@@ -80,8 +80,7 @@ export interface ComposerProps {
  * never render without an accessible name.
  */
 export type ComposerStopProps =
-  | { onStop: () => void; stopLabel: string }
-  | { onStop?: undefined; stopLabel?: undefined };
+  { onStop: () => void; stopLabel: string } | { onStop?: undefined; stopLabel?: undefined };
 
 export type ComposerPropsWithStop = ComposerProps & ComposerStopProps;
 

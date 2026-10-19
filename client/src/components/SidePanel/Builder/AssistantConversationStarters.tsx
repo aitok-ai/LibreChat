@@ -36,11 +36,6 @@ const AssistantConversationStarters: React.FC<AssistantConversationStartersProps
     const newValues = field.value.filter((_, i) => i !== index);
     field.onChange(newValues);
   };
-  const defaultStyle = {
-    transition: 'opacity 200ms ease-in-out',
-    opacity: 0,
-  };
-
   const triggerShake = (element: HTMLElement) => {
     element.classList.remove('shake');
     void element.offsetWidth;
@@ -48,13 +43,6 @@ const AssistantConversationStarters: React.FC<AssistantConversationStartersProps
     setTimeout(() => {
       element.classList.remove('shake');
     }, 200);
-  };
-
-  const transitionStyles = {
-    entering: { opacity: 1 },
-    entered: { opacity: 1 },
-    exiting: { opacity: 0 },
-    exited: { opacity: 0 },
   };
 
   const hasReachedMax = field.value.length >= Constants.MAX_CONVO_STARTERS;
@@ -103,12 +91,11 @@ const AssistantConversationStarters: React.FC<AssistantConversationStartersProps
             {(state: string) => (
               <div
                 ref={nodeRef}
-                style={{
-                  ...defaultStyle,
-                  ...transitionStyles[state as keyof typeof transitionStyles],
-                  transition: state === 'entering' ? 'none' : defaultStyle.transition,
-                }}
-                className="absolute top-1 right-1"
+                className={`absolute top-1 right-1 ${
+                  state === 'entering'
+                    ? 'transition-none'
+                    : 'transition-opacity duration-200 ease-in-out'
+                } ${state === 'entering' || state === 'entered' ? 'opacity-100' : 'opacity-0'}`}
               >
                 <TooltipAnchor
                   side="top"

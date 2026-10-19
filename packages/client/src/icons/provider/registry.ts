@@ -13,8 +13,7 @@ import XAIcon from '../../svgs/XAIcon';
 type ProviderArtComponent = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
 
 export type ProviderArt =
-  | { kind: 'component'; Component: ProviderArtComponent }
-  | { kind: 'asset'; src: string };
+  { kind: 'component'; Component: ProviderArtComponent } | { kind: 'asset'; src: string };
 
 export interface ProviderIconDef {
   art: ProviderArt;

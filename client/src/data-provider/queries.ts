@@ -15,7 +15,6 @@ import type {
   ConversationListParams,
   MessagesListParams,
   MessagesListResponse,
-  Assistant,
   AssistantListParams,
   AssistantListResponse,
   AssistantDocument,
@@ -119,42 +118,40 @@ export const useRunningConversationsQuery = (
 ): t.TConversation[] => {
   const queryClient = useQueryClient();
   const results = useQueries({
-    queries: conversationIds.map(
-      (conversationId): UseQueryOptions<t.TConversation | null> => ({
-        queryKey: [QueryKeys.runningConversation, conversationId],
-        queryFn: async ({ signal }): Promise<t.TConversation | null> => {
-          try {
-            const [conversation, isShared] = await Promise.all([
-              dataService.getConversationById(conversationId, signal),
-              hasActiveSharedLink(conversationId, signal),
-            ]);
-            signal?.throwIfAborted();
-            return isShared === undefined ? conversation : { ...conversation, isShared };
-          } catch (error) {
-            if (isNotFoundError(error)) {
-              return null;
-            }
-            throw error;
+    queries: conversationIds.map((conversationId): UseQueryOptions<t.TConversation | null> => ({
+      queryKey: [QueryKeys.runningConversation, conversationId],
+      queryFn: async ({ signal }): Promise<t.TConversation | null> => {
+        try {
+          const [conversation, isShared] = await Promise.all([
+            dataService.getConversationById(conversationId, signal),
+            hasActiveSharedLink(conversationId, signal),
+          ]);
+          signal?.throwIfAborted();
+          return isShared === undefined ? conversation : { ...conversation, isShared };
+        } catch (error) {
+          if (isNotFoundError(error)) {
+            return null;
           }
-        },
-        onSuccess: (conversation: t.TConversation | null) => {
-          if (
-            !conversation ||
-            !acceptRunningConversation(queryClient, conversationId, conversation)
-          ) {
-            return;
-          }
-          const conversationKey = [QueryKeys.conversation, conversationId];
-          if (queryClient.getQueryData(conversationKey) === undefined) {
-            queryClient.setQueryData(conversationKey, conversation);
-          }
-        },
-        staleTime: RUNNING_CONVERSATION_REFRESH_MS,
-        refetchInterval: (data: t.TConversation | null | undefined) =>
-          data === null ? RUNNING_CONVERSATION_MISSING_RETRY_MS : RUNNING_CONVERSATION_REFRESH_MS,
-        refetchOnWindowFocus: false,
-      }),
-    ),
+          throw error;
+        }
+      },
+      onSuccess: (conversation: t.TConversation | null) => {
+        if (
+          !conversation ||
+          !acceptRunningConversation(queryClient, conversationId, conversation)
+        ) {
+          return;
+        }
+        const conversationKey = [QueryKeys.conversation, conversationId];
+        if (queryClient.getQueryData(conversationKey) === undefined) {
+          queryClient.setQueryData(conversationKey, conversation);
+        }
+      },
+      staleTime: RUNNING_CONVERSATION_REFRESH_MS,
+      refetchInterval: (data: t.TConversation | null | undefined) =>
+        data === null ? RUNNING_CONVERSATION_MISSING_RETRY_MS : RUNNING_CONVERSATION_REFRESH_MS,
+      refetchOnWindowFocus: false,
+    })),
   });
 
   const recordsRef = useRef<t.TConversation[]>(noRunningConversations);
@@ -448,73 +445,6 @@ export const useListAssistantsQuery = <TData = AssistantListResponse>(
   );
 };
 
-/*
-export const useListAssistantsInfiniteQuery = (
-  params?: AssistantListParams,
-  config?: UseInfiniteQueryOptions<AssistantListResponse, Error>,
-) => {
-  const queryClient = useQueryClient();
-  const endpointsConfig = queryClient.getQueryData<TEndpointsConfig>([QueryKeys.endpoints]);
-  const keyExpiry = queryClient.getQueryData<TCheckUserKeyResponse>([
-    QueryKeys.name,
-    EModelEndpoint.assistants,
-  ]);
-  const userProvidesKey = !!endpointsConfig?.[EModelEndpoint.assistants]?.userProvide;
-  const keyProvided = userProvidesKey ? !!keyExpiry?.expiresAt : true;
-  const enabled = !!endpointsConfig?.[EModelEndpoint.assistants] && keyProvided;
-  return useInfiniteQuery<AssistantListResponse, Error>(
-    ['assistantsList', params],
-    ({ pageParam = '' }) => dataService.listAssistants({ ...params, after: pageParam }),
-    {
-      getNextPageParam: (lastPage) => {
-        // lastPage is of type AssistantListResponse, you can use the has_more and last_id from it directly
-        if (lastPage.has_more) {
-          return lastPage.last_id;
-        }
-        return undefined;
-      },
-      ...config,
-      enabled: config?.enabled !== undefined ? config?.enabled && enabled : enabled,
-    },
-  );
-};
-*/
-
-/**
- * Hook for retrieving details about a single assistant
- */
-export const useGetAssistantByIdQuery = (
-  endpoint: t.AssistantsEndpoint,
-  assistant_id: string,
-  config?: UseQueryOptions<Assistant>,
-): QueryObserverResult<Assistant> => {
-  const queryClient = useQueryClient();
-  const endpointsConfig = queryClient.getQueryData<TEndpointsConfig>([QueryKeys.endpoints]);
-  const keyExpiry = queryClient.getQueryData<TCheckUserKeyResponse>([QueryKeys.name, endpoint]);
-  const userProvidesKey = endpointsConfig?.[endpoint]?.userProvide ?? false;
-  const keyProvided = userProvidesKey ? !!keyExpiry?.expiresAt : true;
-  const enabled = !!endpointsConfig?.[endpoint] && keyProvided;
-  const version = endpointsConfig?.[endpoint]?.version ?? defaultAssistantsVersion[endpoint];
-  return useQuery<Assistant>(
-    [QueryKeys.assistant, assistant_id],
-    () =>
-      dataService.getAssistantById({
-        endpoint,
-        assistant_id,
-        version,
-      }),
-    {
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false,
-      retry: false,
-      ...config,
-      // Query will not execute until the assistant_id exists
-      enabled: config?.enabled !== undefined ? config.enabled && enabled : enabled,
-    },
-  );
-};
-
 /**
  * Hook for retrieving user's saved Assistant Actions
  */
@@ -584,23 +514,6 @@ export const useVoicesQuery = (
     retry: false,
     ...config,
   });
-};
-
-/* Custom config speech */
-export const useCustomConfigSpeechQuery = (
-  config?: UseQueryOptions<t.TCustomConfigSpeechResponse>,
-): QueryObserverResult<t.TCustomConfigSpeechResponse> => {
-  return useQuery<t.TCustomConfigSpeechResponse>(
-    [QueryKeys.customConfigSpeech],
-    () => dataService.getCustomConfigSpeech(),
-    {
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false,
-      retry: false,
-      ...config,
-    },
-  );
 };
 
 /** Prompt */
@@ -698,24 +611,6 @@ export const useGetCategories = <TData = t.TGetCategoriesResponse>(
   return useQuery<t.TGetCategoriesResponse, unknown, TData>(
     [QueryKeys.categories],
     () => dataService.getCategories(),
-    {
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false,
-      retry: false,
-      ...config,
-      enabled: config?.enabled !== undefined ? config.enabled : true,
-    },
-  );
-};
-
-export const useGetRandomPrompts = (
-  filter: t.TGetRandomPromptsRequest,
-  config?: UseQueryOptions<t.TGetRandomPromptsResponse>,
-): QueryObserverResult<t.TGetRandomPromptsResponse> => {
-  return useQuery<t.TGetRandomPromptsResponse>(
-    [QueryKeys.randomPrompts],
-    () => dataService.getRandomPrompts(filter),
     {
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,

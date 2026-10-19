@@ -473,11 +473,7 @@ export const subagentControlStateByTask = atomFamily<
 });
 
 /** Stable identity for one subagent invocation in the parent conversation. */
-export const subagentProgressKey = (
-  parentMessageId: string,
-  toolCallId: string,
-  partIndex: number,
-) => `${parentMessageId}\u0000${toolCallId}\u0000${partIndex}`;
+export { subagentProgressKey } from '@librechat/chat';
 
 /** Progress state keyed by one concrete tool-call content-part occurrence. */
 export const subagentProgressByToolCallId = atomFamily((_key: string) =>
@@ -1069,7 +1065,7 @@ function foldReplaySegments(
       segments.push({ from: sequence, through: sequence, progress });
     }
     segments.sort((left, right) => left.from - right.from);
-    for (let index = 1; index < segments.length; ) {
+    for (let index = 1; index < segments.length;) {
       const left = segments[index - 1];
       const right = segments[index];
       if (left.through + 1 !== right.from) {

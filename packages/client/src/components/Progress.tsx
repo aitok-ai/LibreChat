@@ -25,7 +25,8 @@ const progressIndicatorVariants: (
 });
 
 export interface ProgressProps
-  extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,
+  extends
+    React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,
     VariantProps<typeof progressIndicatorVariants> {}
 
 const Progress: React.ForwardRefExoticComponent<

@@ -156,17 +156,15 @@ describe('deriveSelectedItems', () => {
     const serverNames = ['foo mcp bar', 'foo_mcp_bar'];
     const catalog: AgentItem[] = [
       ...sampleCatalog,
-      ...serverNames.map(
-        (serverName): AgentItem => ({
-          kind: 'mcp',
-          id: serverName,
-          name: serverName,
-          description: '',
-          iconKey: 'mcp',
-          server: makeMcpServer({ serverName }),
-          toolCount: 0,
-        }),
-      ),
+      ...serverNames.map((serverName): AgentItem => ({
+        kind: 'mcp',
+        id: serverName,
+        name: serverName,
+        description: '',
+        iconKey: 'mcp',
+        server: makeMcpServer({ serverName }),
+        toolCount: 0,
+      })),
     ];
 
     const result = deriveSelectedItems(

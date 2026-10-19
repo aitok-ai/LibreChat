@@ -38,13 +38,7 @@ interface ErrorDisplayProps {
 
 /** Which failure this is: drives the icon, the tone, and whether retrying can help. */
 type ErrorKind =
-  | 'network'
-  | 'timeout'
-  | 'rate_limit'
-  | 'server'
-  | 'not_found'
-  | 'bad_request'
-  | 'generic';
+  'network' | 'timeout' | 'rate_limit' | 'server' | 'not_found' | 'bad_request' | 'generic';
 
 /**
  * One heading plus one line. The old three-tier title/message/suggestion stack

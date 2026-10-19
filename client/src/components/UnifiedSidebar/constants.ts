@@ -1,4 +1,4 @@
-export const COLLAPSED_WIDTH = 52;
+export const COLLAPSED_WIDTH = 56;
 export const EXPANDED_MIN = 360;
 
 /**

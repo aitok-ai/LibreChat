@@ -57,7 +57,7 @@ export default function Item({ apiKey }: ItemProps) {
       </div>
       <Button
         ref={deleteButtonRef}
-        variant="destructive"
+        variant="destructive-soft"
         size="icon"
         onClick={() => setDeleteOpen(true)}
         aria-label={localize('com_ui_api_key_delete_name', { 0: apiKey.name })}

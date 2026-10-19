@@ -1,8 +1,8 @@
 import { forwardRef } from 'react';
 import { Input, Label, SecretInput } from '@librechat/client';
-import type { ChangeEvent, FC, Ref } from 'react';
-import { cn } from '~/utils/';
+import type { ChangeEvent } from 'react';
 import { useLocalize } from '~/hooks';
+import { cn } from '~/utils/';
 
 interface InputWithLabelProps {
   id: string;
@@ -13,10 +13,9 @@ interface InputWithLabelProps {
   labelClassName?: string;
   inputClassName?: string;
   secret?: boolean;
-  ref?: Ref<HTMLInputElement>;
 }
 
-const InputWithLabel: FC<InputWithLabelProps> = forwardRef((props, ref) => {
+const InputWithLabel = forwardRef<HTMLInputElement, InputWithLabelProps>((props, ref) => {
   const {
     id,
     value,
@@ -35,7 +34,9 @@ const InputWithLabel: FC<InputWithLabelProps> = forwardRef((props, ref) => {
           {label}
         </Label>
         {subLabel && (
-          <Label className="text-text-secondary mx-1 text-right text-sm">{subLabel}</Label>
+          <Label variant="secondary" className="mx-1 text-right text-sm">
+            {subLabel}
+          </Label>
         )}
         <br />
       </div>

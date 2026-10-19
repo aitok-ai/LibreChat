@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Spinner } from '@librechat/client';
 import { CSSTransition } from 'react-transition-group';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TConversation, TUser, TMessage } from 'librechat-data-provider';
-import { useLikeConversationMutation } from 'librechat-data-provider/react-query';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
-import OldMultiMessage from '../Messages/MultiMessage';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { useGetFiles } from '~/data-provider';
 import { useScreenshot } from '~/hooks/';
 import { mapFiles } from '~/utils';
 // import { useRecoilValue } from 'recoil';
 import { useLocalize } from '~/hooks';
-import { Plugin } from '@librechat/client';
 // import { alternateName } from '~/utils/';
 import { alternateName, buildTree } from 'librechat-data-provider';
 import MessagesView from '../Share/MessagesView';
@@ -26,34 +23,20 @@ export default function SharedConvo() {
   const [copied, setCopied] = useState<boolean>(false);
   const [shareLink, setShareLink] = useState<string>('');
   localStorage.setItem('isSharedPage', 'true');
-  const [liked, setLiked] = useState<boolean>(false);
-  const [numOfLikes, setNumOfLikes] = useState<number>(0);
-  const [showRegMsg, setShowRegMsg] = useState<boolean>(false);
+  const [showRegMsg] = useState<boolean>(false);
   const localize = useLocalize();
 
   const { screenshotTargetRef } = useScreenshot();
   const { token } = useAuthContext();
   const { conversationId } = useParams();
-  const likeConversationMutation = useLikeConversationMutation(conversationId || '');
   const navigate = useNavigate();
   const { data: fileMap } = useGetFiles({
     select: mapFiles,
   });
   const [viewCount, setViewCount] = useState<number>(0);
 
-  const plugins = (
-    <>
-      <Plugin className="" /> <span className="px-1">•</span>
-      <span className="ml-1 rounded bg-blue-200 px-1 py-0.25 text-[10px] font-semibold text-[#4559A4] uppercase">
-        {localize('com_ui_beta')}
-      </span>
-      <span className="px-1">•</span>
-      {localize('com_ui_model')}: {conversation ? conversation.model : localize('com_ui_no_model')}
-    </>
-  );
-
   const getConversationTitle = () => {
-    const convo: TConversation = conversation ? conversation : {};
+    const convo: TConversation = conversation ?? ({} as TConversation);
     const { endpoint, model } = convo;
     let _title = `${alternateName[endpoint ?? 'openAI'] ?? endpoint}`;
 
@@ -74,20 +57,6 @@ export default function SharedConvo() {
       if (modelLabel) {
         _title += ` as ${modelLabel}`;
       }
-    } else if (endpoint === 'bingAI') {
-      const { jailbreak, toneStyle } = convo;
-      if (toneStyle) {
-        _title += `: ${toneStyle}`;
-      }
-      if (jailbreak) {
-        _title += ' as Sydney';
-      }
-    } else if (endpoint === 'chatGPTBrowser') {
-      if (model) {
-        _title += `: ${model}`;
-      }
-    } else if (endpoint === 'gptPlugins') {
-      return plugins;
     } else if (endpoint === null) {
       null;
     } else {
@@ -101,52 +70,6 @@ export default function SharedConvo() {
     navigate(`/profile/${convoUser?.id}`);
   };
 
-  // Displays message suggesting the viewer to register
-  const showRegMsgHandler = () => {
-    if (showRegMsg) {
-      return;
-    }
-    setShowRegMsg(true);
-    setTimeout(() => setShowRegMsg(false), 2000);
-  };
-
-  // Likes the conversation
-  const likeHandler = async () => {
-    // if (!conversation || !user) {
-    if (!conversation) {
-      return;
-    }
-
-    // update component state
-    setLiked(!liked);
-
-    // Initiate these properties if they do not exist
-    if (!conversation.likedBy) {
-      conversation.likedBy = {};
-    }
-    if (!conversation.likes) {
-      conversation.likes = 0;
-    }
-
-    // update state object
-    if (liked) {
-      setNumOfLikes(numOfLikes - 1);
-      conversation.likes = conversation.likes - 1;
-      // delete conversation.likedBy[user.id];
-    } else {
-      setNumOfLikes(numOfLikes + 1);
-      conversation.likes = conversation.likes + 1;
-      // conversation.likedBy[user.id] = new Date();
-    }
-
-    // update database
-    likeConversationMutation.mutate({
-      conversationId: conversation.conversationId,
-      // userId: user?.id,
-      liked: !liked,
-    });
-  };
-
   const copyShareLinkHandler = () => {
     if (copied) {
       return;
@@ -157,7 +80,7 @@ export default function SharedConvo() {
   };
 
   // Fetch the shared conversation
-  async function fetchConversation() {
+  const fetchConversation = useCallback(async () => {
     try {
       const response = await fetch(`/api/convos/share/${conversationId}`, {
         method: 'GET',
@@ -177,58 +100,64 @@ export default function SharedConvo() {
       console.error('Error fetching conversation:', error);
       setConversation(null);
     }
-  }
+  }, [conversationId, token]);
 
   // Fetch messages of the current conversation
-  async function fetchMessagesByConvoId(id: string) {
-    setMsgTree(null);
-    try {
-      const response = await fetch(`/api/messages/shared/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        console.error('Failed to fetch messages:', response.status);
+  const fetchMessagesByConvoId = useCallback(
+    async (id: string) => {
+      setMsgTree(null);
+      try {
+        const response = await fetch(`/api/messages/shared/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          console.error('Failed to fetch messages:', response.status);
+          setMsgTree([]);
+          return;
+        }
+        const responseObject = await response.json();
+        setMsgTree(buildTree({ messages: responseObject, fileMap }) || []);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
         setMsgTree([]);
-        return;
       }
-      const responseObject = await response.json();
-      setMsgTree(buildTree({ messages: responseObject, fileMap }) || []);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-      setMsgTree([]);
-    }
-  }
+    },
+    [token, fileMap],
+  );
 
   // Fetch the user who owns the current conversation
-  async function fetchConvoUser(id: string | undefined) {
-    setConvoUser(null);
-    try {
-      const response = await fetch(`/api/user/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        console.error('Failed to fetch convo user:', response.status);
-        setConvoUser(null);
-        return;
-      }
-      const responseObject = await response.json();
-      setConvoUser(responseObject);
-    } catch (error) {
-      console.error('Error fetching convo user:', error);
+  const fetchConvoUser = useCallback(
+    async (id: string | undefined) => {
       setConvoUser(null);
-    }
-  }
+      try {
+        const response = await fetch(`/api/user/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          console.error('Failed to fetch convo user:', response.status);
+          setConvoUser(null);
+          return;
+        }
+        const responseObject = await response.json();
+        setConvoUser(responseObject);
+      } catch (error) {
+        console.error('Error fetching convo user:', error);
+        setConvoUser(null);
+      }
+    },
+    [token],
+  );
 
   // increase view count
-  async function incrementViewCount() {
+  const incrementViewCount = useCallback(async () => {
     try {
       console.log('[SharedConvo] Incrementing view count for:', conversationId);
       const response = await fetch(`/api/convos/${conversationId}/viewcount/increment`, {
@@ -249,21 +178,21 @@ export default function SharedConvo() {
     } catch (error) {
       console.error('[SharedConvo] Error incrementing view count:', error);
     }
-  }
+  }, [conversationId, token]);
 
   // increase view count upon page load
   useEffect(() => {
     if (conversationId) {
       incrementViewCount();
     }
-  }, [conversationId]);
+  }, [conversationId, incrementViewCount]);
 
   // Get recommendations on mount
   useEffect(() => {
     localStorage.setItem('isSharedPage', 'true');
     fetchConversation();
     localStorage.setItem('isSharedPage', 'false');
-  }, []);
+  }, [fetchConversation]);
 
   // Check if the conversation has been set as private
   useEffect(() => {
@@ -278,7 +207,6 @@ export default function SharedConvo() {
           window.location.host +
           `/chat/share/${conversation.conversationId}`,
       );
-      setNumOfLikes(conversation.likes || 0);
       setViewCount(conversation.viewCount || 0);
 
       // if (user && conversation.likedBy) {
@@ -288,7 +216,7 @@ export default function SharedConvo() {
       setIsPrivate(true);
       setPageTitle(localize('com_ui_private_conversation'));
     }
-  }, [conversation]);
+  }, [conversation, fetchMessagesByConvoId, fetchConvoUser, localize]);
 
   useDocumentTitle(pageTitle);
   return (
@@ -305,7 +233,7 @@ export default function SharedConvo() {
             </div>
           ) : (
             <>
-              <div className="grid-row sticky top-0 z-30 grid w-full items-center justify-center gap-1 bg-white text-gray-800 dark:bg-gray-800 dark:text-gray-100">
+              <div className="bg-surface-primary text-text-primary sticky top-0 z-30 grid w-full items-center justify-center gap-1">
                 <h1
                   id="landing-title"
                   className="mt-0.5 mr-auto ml-auto flex gap-2 text-center text-2xl font-semibold"
@@ -318,7 +246,7 @@ export default function SharedConvo() {
                       {/*Conversation author*/}
                       <button
                         onClick={navigateToProfile}
-                        className="mx-2 flex flex-row items-center gap-1 px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        className="hover:bg-surface-hover mx-2 flex flex-row items-center gap-1 px-2 py-1"
                       >
                         <div
                           title={convoUser?.username}
@@ -348,7 +276,7 @@ export default function SharedConvo() {
                       <div className="flex flex-row items-center gap-1 px-2">
                         {/*Share button*/}
                         <button
-                          className="flex flex-row items-center gap-1 p-1 hover:bg-gray-200 dark:hover:bg-gray-600"
+                          className="hover:bg-surface-hover flex flex-row items-center gap-1 p-1"
                           onClick={copyShareLinkHandler}
                         >
                           <svg
@@ -408,10 +336,10 @@ export default function SharedConvo() {
                 </div>
               </div>
               <div
-                className="dark:gpt-dark-gray mb-32 h-auto w-full md:mb-48"
+                className="dark:bg-surface-primary mb-32 h-auto w-full md:mb-48"
                 ref={screenshotTargetRef}
               >
-                <div className="dark:gpt-dark-gray flex h-auto flex-col items-center text-sm">
+                <div className="dark:bg-surface-primary flex h-auto flex-col items-center text-sm">
                   {conversation && msgTree ? (
                     <MessagesView
                       messagesTree={msgTree}
@@ -436,26 +364,16 @@ export default function SharedConvo() {
                   )}
                 </div>
               </div>
-              <CSSTransition
-                in={copied}
-                timeout={2000}
-                classNames="copied-toast"
-                unmountOnExit={false}
-              >
+              <CSSTransition in={copied} timeout={2000} unmountOnExit={false}>
                 <div className="invisible flex flex-col items-center opacity-0">
-                  <div className="text-md absolute bottom-20 rounded-full bg-gray-200 px-3 py-1 text-black">
+                  <div className="bg-border-chrome text-text-primary absolute bottom-20 rounded-full px-3 py-1 text-sm">
                     {localize('com_ui_copied')}
                   </div>
                 </div>
               </CSSTransition>
-              <CSSTransition
-                in={showRegMsg}
-                timeout={2000}
-                classNames="copied-toast"
-                unmountOnExit={false}
-              >
+              <CSSTransition in={showRegMsg} timeout={2000} unmountOnExit={false}>
                 <div className="invisible flex flex-col items-center opacity-0">
-                  <div className="text-md absolute bottom-20 rounded-full bg-gray-200 px-3 py-1 text-black">
+                  <div className="bg-border-chrome text-text-primary absolute bottom-20 rounded-full px-3 py-1 text-sm">
                     {localize('com_ui_register_before_like')}
                   </div>
                 </div>

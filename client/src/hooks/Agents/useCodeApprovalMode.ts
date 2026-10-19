@@ -43,8 +43,7 @@ export default function useCodeApprovalMode(
   const { agent: primaryAgent } = useAgentToolPermissions(conversation?.agent_id);
   const { agent: addedAgent } = useAgentToolPermissions(addedConversation?.agent_id);
   const statefulCodeSessions = agentsConfig?.statefulCodeSessions as
-    | TConfig['statefulCodeSessions']
-    | undefined;
+    TConfig['statefulCodeSessions'] | undefined;
   const environments = statefulCodeSessions?.environments;
   const reachable = useMemo(
     () =>

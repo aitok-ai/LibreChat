@@ -157,6 +157,10 @@ export namespace Agents {
       remember_unavailable?: 'connection' | 'disabled' | 'storage' | 'background';
       /** Server-authored: an `approve` may carry `scope: 'session'` for this call. */
       allow_always?: boolean;
+      /** The reviewer's decision once submitted; absent while the call still awaits review. */
+      decision?: ToolApprovalDecisionType;
+      /** The reason the reviewer gave with the decision. */
+      reason?: string;
     };
   };
 
@@ -564,8 +568,7 @@ export namespace Agents {
    * so the SDK's `Run.getInterrupt()` output can be embedded directly.
    */
   export type HumanInterruptPayload =
-    | ToolApprovalInterruptPayload
-    | AskUserQuestionInterruptPayload;
+    ToolApprovalInterruptPayload | AskUserQuestionInterruptPayload;
 
   /**
    * Server-side record of a job that is waiting for user input.
@@ -1052,8 +1055,7 @@ export const agentGitIdentitySchema: z.ZodType<AgentGitIdentity | undefined> = z
 
 /** Selects which revision of a linked prompt group an agent's instructions follow. */
 export type AgentInstructionsPromptSelection =
-  | { type: 'production' }
-  | { type: 'exact'; promptId: string };
+  { type: 'production' } | { type: 'exact'; promptId: string };
 
 /** A link from an agent to a native LibreChat prompt group used as its instructions. */
 export type AgentInstructionsPrompt = {

@@ -98,7 +98,7 @@ function Files({
           <input
             multiple={true}
             type="file"
-            style={{ display: 'none' }}
+            className="hidden"
             tabIndex={-1}
             ref={fileInputRef}
             disabled={uploadDisabled}

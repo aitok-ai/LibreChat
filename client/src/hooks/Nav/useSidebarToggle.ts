@@ -65,8 +65,7 @@ export default function useSidebarToggle(): SidebarToggle {
     ({ snapshot }) =>
       () => {
         const committed = snapshot.getLoadable(store.sidebarExpanded).valueMaybe() as
-          | boolean
-          | undefined;
+          boolean | undefined;
         setSidebarOpen(!(getPendingDrawerFlip() ?? committed ?? false));
       },
     [setSidebarOpen],

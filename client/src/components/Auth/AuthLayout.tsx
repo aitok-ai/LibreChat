@@ -4,7 +4,6 @@ import { ErrorMessage } from '~/components/Auth/ErrorMessage';
 import { hasPublishedPolicies } from '~/utils/policies';
 import { TranslationKeys, useLocalize } from '~/hooks';
 import SocialLoginRender from './SocialLoginRender';
-import { BlinkAnimation } from './BlinkAnimation';
 import LegalConsent from './LegalConsent';
 import { Banner } from '../Banners';
 import Footer from './Footer';
@@ -112,10 +111,7 @@ function AuthLayout({
           )}
         >
           {!hasStartupConfigError && !isFetching && header && (
-            <h1
-              className="text-text-primary mb-4 text-center text-3xl font-semibold"
-              style={{ userSelect: 'none' }}
-            >
+            <h1 className="text-text-primary mb-4 text-center text-3xl font-semibold select-none">
               {header}
             </h1>
           )}

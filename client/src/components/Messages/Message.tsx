@@ -1,14 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
-import { useGetConversationByIdQuery } from 'librechat-data-provider/react-query';
-import { useSetRecoilState, useRecoilState, useRecoilValue } from 'recoil';
 import copy from 'copy-to-clipboard';
+import { useSetRecoilState, useRecoilState, useRecoilValue } from 'recoil';
+import { useGetConversationByIdQuery } from 'librechat-data-provider/react-query';
 import { SubRow, Plugin, MessageContent } from './Content';
-
-import MultiMessage from './MultiMessage';
-import HoverButtons from './HoverButtons';
 import SiblingSwitch from '../Chat/Messages/SiblingSwitch';
 import { Icon } from '~/components/Endpoints';
+import MultiMessage from './MultiMessage';
+import HoverButtons from './HoverButtons';
 // import { useMessageHandler, useConversation, useNewConvo } from '~/hooks';
 import { useMessageHandler, useNewConvo } from '~/hooks';
 import type { TMessageProps } from '~/common';
@@ -34,7 +33,7 @@ export default function Message(props: TMessageProps) {
   const setLatestMessage = useSetRecoilState(store.latestMessage);
   const [abortScroll, setAbortScroll] = useRecoilState(store.abortScroll);
   const [isLiked, setIsLiked] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const { isSubmitting, ask, regenerate, handleContinue } = useMessageHandler();
   //const { switchToConversation } = useConversation();
   const { switchToConversation } = useNewConvo();

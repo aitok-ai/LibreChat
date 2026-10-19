@@ -85,9 +85,10 @@ export default function ToolSection({ item }: Props) {
             {localize('com_ui_tools_info_configured')}
           </span>
           <Button
-            variant="ghost"
+            variant="quiet"
+            size="xs"
             onClick={() => setEditing(true)}
-            className="text-text-secondary h-auto rounded-md px-2 py-1 text-xs font-medium"
+            className="h-auto px-2 py-1 font-medium"
           >
             {localize('com_ui_edit')}
           </Button>

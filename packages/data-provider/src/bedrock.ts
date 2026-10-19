@@ -303,14 +303,6 @@ export function clampOutputConfigEffort(model: string, outputConfig: unknown): v
   outputConfig.effort = clampEffortForDisabledThinking(model, outputConfig.effort);
 }
 
-/** Whether a resolved thinking config is an explicit `{ type: 'disabled' }`. */
-export function isThinkingDisabled(thinking: unknown): boolean {
-  if (typeof thinking !== 'object' || thinking === null || !('type' in thinking)) {
-    return false;
-  }
-  return thinking.type === 'disabled';
-}
-
 /** Whether a resolved thinking config asks for mid-thinking display updates (beta-gated). */
 export function requestsThinkingDisplayUpdates(thinking: unknown): boolean {
   if (typeof thinking !== 'object' || thinking === null || !('display' in thinking)) {
@@ -614,8 +606,7 @@ export const bedrockInputParser = s.tConversationSchema
         /** Persisted AMRF is spread into the final request, so clearing only
          * `additionalFields` leaves a stale value from a prior selection. */
         const persistedAmrf = typedData.additionalModelRequestFields as
-          | Record<string, unknown>
-          | undefined;
+          Record<string, unknown> | undefined;
         const thinkingDisabled =
           additionalFields.thinking === false && !hasAlwaysOnThinking(typedData.model as string);
         const effort = additionalFields.effort;
@@ -665,10 +656,7 @@ export const bedrockInputParser = s.tConversationSchema
            * clobbered by the Opus 4.7+ auto → 'summarized' fallback.
            */
           const topLevelDisplay = additionalFields.thinkingDisplay as
-            | s.ThinkingDisplay
-            | string
-            | null
-            | undefined;
+            s.ThinkingDisplay | string | null | undefined;
           const persistedDisplay = extractPersistedDisplay(typedData.additionalModelRequestFields);
           const thinkingConfig: ThinkingConfig = { type: 'adaptive' };
           if (bindsThinkingBlocks(typedData.model as string)) {
@@ -703,8 +691,7 @@ export const bedrockInputParser = s.tConversationSchema
          * not inherit an adaptive/disabled thinking object or `output_config`
          * persisted from another model; this branch's own fields are authoritative. */
         const persistedAmrf = typedData.additionalModelRequestFields as
-          | Record<string, unknown>
-          | undefined;
+          Record<string, unknown> | undefined;
         if (persistedAmrf) {
           delete persistedAmrf.thinking;
           delete persistedAmrf.output_config;

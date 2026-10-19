@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Label, SelectDropDown } from '@librechat/client';
-import { cn } from '~/utils';
-import { MessagesSquared } from '@librechat/client';
-import EndpointOptionsPopover from '~/components/Endpoints/EndpointOptionsPopover';
 import { useRecoilState } from 'recoil';
+import { MessagesSquared } from '@librechat/client';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Label, SelectDropDown } from '@librechat/client';
+import EndpointOptionsPopover from '~/components/Endpoints/EndpointOptionsPopover';
+import { cn } from '~/utils';
 import store from '~/store';
 
 type Cache = {
@@ -21,7 +21,7 @@ function CodingAssistant() {
   const [widget, setWidget] = useRecoilState(store.widget);
   const [inputTitle, setInputTitle] = useState<string>('用途');
   // const [text, setText] = useRecoilState(store.text);
-  const [text, setText] = useRecoilState(store.textByIndex(0));
+  const [, setText] = useRecoilState(store.textByIndex(0));
   const [cache, setCache] = useState<Cache>({
     lang: '',
     type: '',

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { logger } from '@librechat/data-schemas';
 import { createHash, randomBytes } from 'node:crypto';
-import { isTwoFactorPolicyProvider } from 'librechat-data-provider';
+import { SESSION_HINT_COOKIE, isTwoFactorPolicyProvider } from 'librechat-data-provider';
 import type { TwoFactorEnrollmentGuard, TwoFactorEnrollmentUpdate } from '@librechat/data-schemas';
 import type { NextFunction, Request, Response } from 'express';
 import type { UserDocumentId } from '~/auth/verification';
@@ -139,8 +139,7 @@ export type TwoFactorAcknowledgeResult =
   | TwoFactorEnrollmentFailure;
 
 export type TwoFactorFinalizeResult =
-  | { ok: true; user: StoredTwoFactorAccount }
-  | TwoFactorEnrollmentFailure;
+  { ok: true; user: StoredTwoFactorAccount } | TwoFactorEnrollmentFailure;
 
 const fail = (message: string): TwoFactorEnrollmentFailure => ({ ok: false, status: 400, message });
 
@@ -264,6 +263,7 @@ export async function withdrawMintedSession(
 ): Promise<void> {
   res.clearCookie('refreshToken');
   res.clearCookie('token_provider');
+  res.clearCookie(SESSION_HINT_COOKIE);
   deps.clearCloudFrontCookies(res, {
     userId,
     tenantId: user.tenantId ?? user.orgId,

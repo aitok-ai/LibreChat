@@ -6,7 +6,7 @@ interface DragDropOverlayProps {
   onDismiss?: () => void;
 }
 
-const DragDropOverlay = memo(({ isActive, onDismiss }: DragDropOverlayProps) => {
+const DragDropOverlay = memo(({ isActive, onDismiss: _onDismiss }: DragDropOverlayProps) => {
   const localize = useLocalize();
   return (
     <>

@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Label, SelectDropDown } from '@librechat/client';
-import { cn } from '~/utils';
-import { MessagesSquared } from '@librechat/client';
-import EndpointOptionsPopover from '~/components/Endpoints/EndpointOptionsPopover';
+import { useState } from 'react';
 import { useRecoilState } from 'recoil';
+import { MessagesSquared } from '@librechat/client';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Label, SelectDropDown } from '@librechat/client';
+import EndpointOptionsPopover from '~/components/Endpoints/EndpointOptionsPopover';
+import { cn } from '~/utils';
 import store from '~/store';
 
 type Cache = {
@@ -20,7 +20,7 @@ function AskMeAnything() {
   const [showExample, setShowExample] = useState<boolean>(false);
   const [widget, setWidget] = useRecoilState(store.widget);
   // const [text, setText] = useRecoilState(store.text);
-  const [text, setText] = useRecoilState(store.textByIndex(0));
+  const [, setText] = useRecoilState(store.textByIndex(0));
   const [cache, setCache] = useState<Cache>({
     type: '',
     topic: '',

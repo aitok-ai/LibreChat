@@ -53,7 +53,9 @@ export default function Background() {
         <div className="flex items-center space-x-2">
           <div className="text-sm">{localize('com_ui_code_background')}</div>
           <HoverCardTrigger>
-            <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
+            <span className="text-text-tertiary">
+              <CircleHelpIcon className="h-4 w-4" />
+            </span>
           </HoverCardTrigger>
         </div>
         <HoverCardPortal>

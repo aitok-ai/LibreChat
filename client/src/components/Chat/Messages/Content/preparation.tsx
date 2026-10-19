@@ -5,8 +5,10 @@ import { areToolCallArgsComplete } from './Parts/parseJsonField';
 import { getToolDisplayLabel } from '~/utils/toolLabels';
 import { useLocalize } from '~/hooks';
 
-export interface ToolPreparationInput
-  extends Pick<PartMetadata, 'toolPreparationStartedAt' | 'toolDispatchedAt' | 'runStepStatus'> {
+export interface ToolPreparationInput extends Pick<
+  PartMetadata,
+  'toolPreparationStartedAt' | 'toolDispatchedAt' | 'runStepStatus'
+> {
   args?: string | Record<string, unknown>;
   output?: string | null;
   progress?: number;

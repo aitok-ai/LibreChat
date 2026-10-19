@@ -15,7 +15,6 @@ import {
   Archive,
   ChevronRight,
   CircleHelp,
-  FileText,
   Files,
   Keyboard,
   LifeBuoy,
@@ -64,7 +63,7 @@ function HelpSubmenu({
       <Menu.Menu
         portal
         gutter={12}
-        className="account-settings-popover popover-ui popover-from-left z-[126] w-[min(15.25rem,90vw)] rounded-lg"
+        className="popover-ui popover-from-left z-[126] w-[min(15.25rem,90vw)] rounded-lg"
       >
         {hasHelpFaq && (
           <Menu.MenuItem
@@ -150,19 +149,19 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
       </Menu.MenuButton>
       <Menu.Menu
         portal
-        className="account-settings-popover popover-ui z-[125] w-[min(19.0625rem,90vw)] rounded-lg md:w-[min(15.25rem,90vw)]"
+        className="popover-ui z-[125] w-[min(19.0625rem,90vw)] rounded-lg md:w-[min(15.25rem,90vw)]"
         style={{
           transformOrigin: collapsed ? 'left bottom' : 'bottom',
           translate: collapsed ? '4px 0' : '0 -4px',
         }}
       >
-        <div className="text-token-text-secondary mr-2 ml-3 py-2 text-sm" role="note">
+        <div className="text-text-secondary mr-2 ml-3 py-2 text-sm" role="note">
           {user.email ?? localize('com_nav_user')}
         </div>
         <DropdownMenuSeparator />
         {startupConfig?.balance?.enabled === true && balanceQuery.data != null && (
           <>
-            <div className="text-token-text-secondary mr-2 ml-3 py-2 text-sm" role="note">
+            <div className="text-text-secondary mr-2 ml-3 py-2 text-sm" role="note">
               {localize('com_nav_balance')}:{' '}
               {new Intl.NumberFormat().format(Math.round(balanceQuery.data.tokenCredits))}
             </div>
@@ -184,10 +183,10 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
           <LeaderboardIcon className="icon-md" aria-hidden={true} />
           {localize('com_ui_referrals_leaderboard')}
         </Menu.MenuItem>
-        <Menu.MenuItem onClick={() => setShowFiles(true)} className="select-item text-sm">
+        {/* <Menu.MenuItem onClick={() => setShowFiles(true)} className="select-item text-sm">
           <FileText className="icon-md" aria-hidden="true" />
           {localize('com_nav_my_files')}
-        </Menu.MenuItem>
+        </Menu.MenuItem> */}
         {/* <div className="text-text-secondary mr-2 ml-3 py-2 text-sm" role="note">
           {user?.email ?? localize('com_nav_user')}
         </div> */}

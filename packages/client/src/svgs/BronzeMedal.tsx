@@ -4,8 +4,8 @@ export default function BronzeMedal(): JSX.Element {
   return (
     <svg
       width="24px"
-      height="24px"
-      viewBox="-3.5 0 32 32"
+      height="32px"
+      viewBox="0 0 24 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >

@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@librechat/client';
-import { cn } from '~/utils';
-import useDocumentTitle from '~/hooks/useDocumentTitle';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Spinner } from '@librechat/client';
+import { UserIcon } from '@librechat/client';
+import { EditIcon } from '@librechat/client';
+import { CheckMark } from '@librechat/client';
 import { TUser } from 'librechat-data-provider';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Tabs, TabsList, TabsTrigger } from '@librechat/client';
 import {
   useFollowUserMutation,
   //useGetStartupConfig,
   useGetUserByIdQuery,
 } from 'librechat-data-provider/react-query';
+import useDocumentTitle from '~/hooks/useDocumentTitle';
+import PublicConversations from './PublicConversations';
 import { useGetStartupConfig } from '~/data-provider';
 import { useAuthContext } from '~/hooks/AuthContext';
 import LikedConversations from './LikedConversation';
-import PublicConversations from './PublicConversations';
-import { Spinner } from '@librechat/client';
-import { UserIcon } from '@librechat/client';
-import { CheckMark } from '@librechat/client';
-import { EditIcon } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 
 function ProfileContent() {

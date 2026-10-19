@@ -157,7 +157,7 @@ export default function VariableForm({
             ]}
             /** @ts-ignore */
             components={{ code: codeNoExecution, p: PromptVariableGfm }}
-            className="markdown prose dark:prose-invert light my-1 max-h-[50vh] max-w-full break-words"
+            className="markdown prose light my-1 max-h-[50vh] max-w-full break-words"
           >
             {generateHighlightedMarkdown()}
           </ReactMarkdown>

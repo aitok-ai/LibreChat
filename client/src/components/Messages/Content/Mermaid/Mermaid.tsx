@@ -42,8 +42,10 @@ interface MermaidProps {
   rowTitle?: string;
 }
 
-interface MermaidRendererProps
-  extends Omit<MermaidProps, 'artifact' | 'onDownload' | 'onRowModeChange' | 'rowTitle'> {
+interface MermaidRendererProps extends Omit<
+  MermaidProps,
+  'artifact' | 'onDownload' | 'onRowModeChange' | 'rowTitle'
+> {
   fillContainer?: boolean;
   onExpand?: () => void;
   onExportReady?: (data: ProcessedMermaidSvg | null) => void;
@@ -457,10 +459,10 @@ export const MermaidRenderer = memo(function MermaidRenderer({
                 {localize('com_ui_mermaid_failed')}
               </span>
               <Button
-                variant="ghost"
+                variant="quiet"
                 size="sm"
                 onClick={handleRetry}
-                className="text-text-secondary hover:bg-surface-hover h-auto gap-1 rounded px-2 py-1 text-xs"
+                className="h-auto gap-1 rounded px-2 py-1 text-xs"
               >
                 <RefreshCw className="h-3 w-3" aria-hidden="true" />
                 {localize('com_ui_retry')}

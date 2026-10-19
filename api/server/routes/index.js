@@ -29,6 +29,7 @@ const openapi = require('./openapi');
 const search = require('./search');
 const models = require('./models');
 const convos = require('./convos');
+const pullRequests = require('./pullRequests');
 const traces = require('./traces');
 const config = require('./config');
 const leaderboard = require('./leaderboard');
@@ -48,6 +49,7 @@ const rum = require('./rum');
 const insights = require('./insights');
 
 module.exports = {
+  pullRequests,
   insights,
   rum,
   mcp,

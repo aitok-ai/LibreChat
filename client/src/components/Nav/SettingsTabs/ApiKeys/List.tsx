@@ -19,7 +19,7 @@ export default function List({ onCreate, headingId }: ListProps) {
         data-testid="api-keys-loading"
         className="border-border-light flex items-center justify-center rounded-xl border py-12"
       >
-        <Spinner className="text-text-secondary h-6 w-6" />
+        <Spinner tone="secondary" className="h-6 w-6" />
       </div>
     );
   }

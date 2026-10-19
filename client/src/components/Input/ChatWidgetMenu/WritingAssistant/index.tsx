@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { Label } from '~/components/ui/Label';
-import { SelectDropDown } from '@librechat/client';
-import EssayTemplate from './EssayTemplate';
-import { cn } from '~/utils';
 import { useRecoilState } from 'recoil';
+import { SelectDropDown } from '@librechat/client';
 import { MessagesSquared } from '@librechat/client';
 import EndpointOptionsPopover from '~/components/Endpoints/EndpointOptionsPopover';
-
+import EssayTemplate from './EssayTemplate';
+import { cn } from '~/utils';
 import store from '~/store';
 
 /*
@@ -18,7 +16,7 @@ function WritingAssistant() {
   const [type, setType] = useState<string>('作文');
   const [showExample, setShowExample] = useState<boolean>(false);
   // const [text, setText] = useRecoilState(store.text);
-  const [text, setText] = useRecoilState(store.textByIndex(0));
+  const [, setText] = useRecoilState(store.textByIndex(0));
   const [widget, setWidget] = useRecoilState(store.widget);
   const allTemplates = {
     作文: EssayTemplate({ type }),

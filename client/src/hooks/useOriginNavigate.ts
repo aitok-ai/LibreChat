@@ -9,7 +9,11 @@ const useOriginNavigate = () => {
       return;
     }
     const path = location.pathname.match(/^\/[^/]+\//);
-    _navigate(`${path ? (path[0] == '/profile/' ? '/c/' : path[0]) : '/c/'}${url}`, opts);
+    let prefix = '/c/';
+    if (path) {
+      prefix = path[0] === '/profile/' ? '/c/' : path[0];
+    }
+    _navigate(`${prefix}${url}`, opts);
   };
 
   return navigate;

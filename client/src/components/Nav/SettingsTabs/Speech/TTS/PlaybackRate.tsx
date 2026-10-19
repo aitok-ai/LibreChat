@@ -1,7 +1,6 @@
 import React from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { Slider, InputNumber } from '@librechat/client';
-import { cn, defaultTextProps, optionText } from '~/utils';
 import { useLocalize } from '~/hooks';
 import store from '~/store';
 
@@ -39,13 +38,8 @@ export default function DecibelSelector() {
           min={0.1}
           max={2}
           aria-labelledby="playback-rate-label"
-          className={cn(
-            defaultTextProps,
-            cn(
-              optionText,
-              'reset-rc-number-input reset-rc-number-input-text-right group-hover/temp:border-border-light h-auto w-12 border-0',
-            ),
-          )}
+          variant="option"
+          className="w-12"
         />
       </div>
     </div>

@@ -208,8 +208,7 @@ export default function useCodeWorkspace(
   const { agent: primaryAgent } = useAgentToolPermissions(conversation?.agent_id);
   const { agent: addedAgent } = useAgentToolPermissions(addedConversation?.agent_id);
   const statefulCodeSessions = agentsConfig?.statefulCodeSessions as
-    | TConfig['statefulCodeSessions']
-    | undefined;
+    TConfig['statefulCodeSessions'] | undefined;
   const reachable = useMemo(
     () =>
       collectReachableAgents([primaryAgent, addedAgent], agentsMap, [

@@ -127,7 +127,7 @@ export default function PromptsView() {
 
           <div
             className={cn(
-              'scrollbar-gutter-stable min-w-0 flex-1 overflow-y-auto',
+              'min-w-0 flex-1 scrollbar-gutter-stable overflow-y-auto',
               isDetailView ? 'block' : 'hidden md:block',
             )}
           >

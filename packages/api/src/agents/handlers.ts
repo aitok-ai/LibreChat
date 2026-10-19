@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
 import { Types } from 'mongoose';
-import { GraphEvents, Constants, ToolEndHandler } from '@librechat/agents';
+import { Constants, ToolEndHandler } from '@librechat/agents';
 import {
   logger,
   normalizeSkillFrontmatterKeys,
@@ -3157,8 +3157,7 @@ function getAuthoredSkillId(
   mergedConfigurable: Record<string, unknown> | undefined,
 ): string | undefined {
   const authoredIds = mergedConfigurable?.authoredSkillIdsByName as
-    | Record<string, string>
-    | undefined;
+    Record<string, string> | undefined;
   const id = authoredIds?.[skillName];
   return typeof id === 'string' && id.length > 0 ? id : undefined;
 }
@@ -3836,6 +3835,9 @@ async function writeBundledSkillFile({
           ? `File already exists: ${displayPath}. Re-read it and pass overwrite: true to replace.`
           : `Skill file changed while editing. Re-read ${displayPath} and retry.`,
       );
+    }
+    if (error instanceof Error && 'code' in error && error.code === 'SKILL_DELETING') {
+      return errorResult(tc, `Skill is being deleted. Re-read ${displayPath} before retrying.`);
     }
     throw error;
   }
@@ -5865,8 +5867,7 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
               (mergedConfigurable?.thread_id as string | undefined) ??
               (
                 (mergedConfigurable?.req as ServerRequest | undefined)?.body as
-                  | { conversationId?: string }
-                  | undefined
+                  { conversationId?: string } | undefined
               )?.conversationId;
             const markCodeSandboxWarm = (): void => {
               if (runtimeSessionHint) {
@@ -5896,8 +5897,7 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
              * per-tool opt-in (a tool not in the set never had the param).
              */
             const backgroundToolNames = mergedConfigurable?.backgroundToolNames as
-              | string[]
-              | undefined;
+              string[] | undefined;
             const backgroundEnabledForRun = (backgroundToolNames?.length ?? 0) > 0;
             const backgroundControlEnabled = backgroundEnabledForRun || subagentTasks != null;
             const backgroundToolSet: ReadonlySet<string> = backgroundEnabledForRun
@@ -5923,8 +5923,7 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
              * `toolCallId` so graph re-execution (resume/replay) never double-fires.
              */
             const backgroundRunId = (metadata as Record<string, unknown>)?.run_id as
-              | string
-              | undefined;
+              string | undefined;
             const dispatchBackgroundToolCall = async (
               tc: ToolCallRequest,
             ): Promise<ToolExecuteResult> => {
@@ -6178,8 +6177,7 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
                 /** The task's own terminal result, recorded before its (possibly slow)
                  *  persistence starts, so a shutdown flush can store it durably. */
                 let settledReceipt:
-                  | { status: 'completed' | 'error' | 'cancelled'; output?: string }
-                  | undefined;
+                  { status: 'completed' | 'error' | 'cancelled'; output?: string } | undefined;
                 /** Persists the settled result onto the dispatch turn's message
                  *  (patch the tool-call part's output, persist generated files,
                  *  append attachments), so a backgrounded code call reads like a
@@ -7430,11 +7428,9 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
                           },
                           {
                             run_id: (metadata as Record<string, unknown>)?.run_id as
-                              | string
-                              | undefined,
+                              string | undefined,
                             thread_id: (metadata as Record<string, unknown>)?.thread_id as
-                              | string
-                              | undefined,
+                              string | undefined,
                             ...metadata,
                             executingAgentId: agentId,
                             stepId: tc.stepId,
@@ -7512,11 +7508,9 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
                       tc.name === Constants.PROGRAMMATIC_TOOL_CALLING
                     ) {
                       const toolRegistry = mergedConfigurable?.toolRegistry as
-                        | LCToolRegistry
-                        | undefined;
+                        LCToolRegistry | undefined;
                       const ptcToolMap = mergedConfigurable?.ptcToolMap as
-                        | Map<string, StructuredToolInterface>
-                        | undefined;
+                        Map<string, StructuredToolInterface> | undefined;
                       if (toolRegistry) {
                         const activeCodeExecutionToolNames = callerCapabilityProjection
                           ? new Set(callerCapabilityProjection.codeExecutionToolNames)
@@ -7596,8 +7590,7 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
                               toolMap: eligiblePtcToolMap,
                               toolCallId: tc.id,
                               runId: (metadata as Record<string, unknown>)?.run_id as
-                                | string
-                                | undefined,
+                                string | undefined,
                               includePreviews: !hasActivePiiFields(ptcArgumentPii, [
                                 'name',
                                 'arguments',
@@ -7727,11 +7720,9 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
                         },
                         {
                           run_id: (metadata as Record<string, unknown>)?.run_id as
-                            | string
-                            | undefined,
+                            string | undefined,
                           thread_id: (metadata as Record<string, unknown>)?.thread_id as
-                            | string
-                            | undefined,
+                            string | undefined,
                           ...metadata,
                           executingAgentId: agentId,
                           stepId: tc.stepId,
@@ -7862,17 +7853,5 @@ export function createToolExecuteHandler(options: ToolExecuteOptions): EventHand
         reject(outerError as Error);
       }
     },
-  };
-}
-
-/**
- * Creates a handlers object that includes ON_TOOL_EXECUTE.
- * Can be merged with other handler objects.
- */
-export function createToolExecuteHandlers(
-  options: ToolExecuteOptions,
-): Record<string, EventHandler> {
-  return {
-    [GraphEvents.ON_TOOL_EXECUTE]: createToolExecuteHandler(options),
   };
 }

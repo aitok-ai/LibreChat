@@ -16,15 +16,7 @@ export const FOOT_Y = 57;
 export const HEAD_ROWS = FOOT_Y - BY;
 
 export type FeetMode =
-  | 'stand'
-  | 'walk'
-  | 'run'
-  | 'march'
-  | 'slide'
-  | 'tap'
-  | 'dangle'
-  | 'tiptoe'
-  | 'hidden';
+  'stand' | 'walk' | 'run' | 'march' | 'slide' | 'tap' | 'dangle' | 'tiptoe' | 'hidden';
 
 export function drawBody(c: Ctx, led: string) {
   const x = BX;

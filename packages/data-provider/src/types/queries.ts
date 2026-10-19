@@ -57,6 +57,10 @@ export type MinimalConversation = Pick<
   | 'lastResponseIsManual'
   | 'isMarkedUnread'
   | 'lastSeenAt'
+  /** Lets a row tell a code conversation, the only kind that can have a pull request. */
+  | 'codeEnvironmentMode'
+  | 'codeWorkspaces'
+  | 'codeDecisionListed'
 >;
 
 export type ConversationListResponse = {
@@ -293,11 +297,7 @@ export interface MCPServerStatus {
   configurationState?: 'configured' | 'needs_configuration';
   connectionState: 'disconnected' | 'connecting' | 'connected' | 'error';
   authorizationState?:
-    | 'not_required'
-    | 'authorizing'
-    | 'authorized'
-    | 'needs_authorization'
-    | 'error';
+    'not_required' | 'authorizing' | 'authorized' | 'needs_authorization' | 'error';
   /** Shared credential/catalog generation observed by the status endpoint. */
   authorizationGeneration?: string;
 }
@@ -307,17 +307,6 @@ export interface MCPConnectionStatusResponse {
   connectionStatus: Record<string, MCPServerStatus>;
   /** Server-configured OAuth completion window in ms (`MCP_OAUTH_HANDLING_TIMEOUT`) */
   oauthTimeout?: number;
-}
-
-export interface MCPServerConnectionStatusResponse {
-  success: boolean;
-  serverName: string;
-  requiresOAuth: boolean;
-  requestScoped?: boolean;
-  configurationState?: MCPServerStatus['configurationState'];
-  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
-  authorizationState?: MCPServerStatus['authorizationState'];
-  authorizationGeneration?: string;
 }
 
 export interface MCPAuthValuesResponse {

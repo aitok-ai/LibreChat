@@ -551,7 +551,7 @@ export default function ScheduleDialog({
   const timezoneField = (
     <fieldset className="space-y-2">
       <legend>
-        <Label id="schedule-timezone-label" className="text-text-primary text-sm font-medium">
+        <Label id="schedule-timezone-label" className="text-sm font-medium">
           {localize('com_ui_schedule_timezone')}
         </Label>
       </legend>
@@ -605,7 +605,7 @@ export default function ScheduleDialog({
             <div className="space-y-1.5">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="schedule-name" className="text-text-primary text-sm font-medium">
+                  <Label htmlFor="schedule-name" className="text-sm font-medium">
                     {localize('com_ui_name')}
                   </Label>
                   <Input
@@ -619,7 +619,7 @@ export default function ScheduleDialog({
                   <FieldMessage id="schedule-name-message" message={errors.name?.message} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="schedule-agent" className="text-text-primary text-sm font-medium">
+                  <Label htmlFor="schedule-agent" className="text-sm font-medium">
                     {localize('com_ui_agent')}
                   </Label>
                   <Controller
@@ -656,10 +656,7 @@ export default function ScheduleDialog({
                   <FieldMessage id="schedule-agent-message" message={errors.agent_id?.message} />
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="schedule-project"
-                    className="text-text-primary text-sm font-medium"
-                  >
+                  <Label htmlFor="schedule-project" className="text-sm font-medium">
                     {localize('com_ui_project')}
                   </Label>
                   {pinnedProjectId != null ? (
@@ -775,10 +772,7 @@ export default function ScheduleDialog({
 
             <fieldset className="space-y-2">
               <legend>
-                <Label
-                  id="schedule-frequency-label"
-                  className="text-text-primary text-sm font-medium"
-                >
+                <Label id="schedule-frequency-label" className="text-sm font-medium">
                   {localize('com_ui_schedule_frequency')}
                 </Label>
               </legend>
@@ -803,7 +797,7 @@ export default function ScheduleDialog({
             {frequency === 'cron' ? (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="schedule-cron" className="text-text-primary text-sm font-medium">
+                  <Label htmlFor="schedule-cron" className="text-sm font-medium">
                     {localize('com_ui_schedule_cron_expression')}
                   </Label>
                   <Input
@@ -847,10 +841,7 @@ export default function ScheduleDialog({
                 {frequency === 'weekly' && (
                   <fieldset className="space-y-2">
                     <legend>
-                      <Label
-                        id="schedule-days-label"
-                        className="text-text-primary text-sm font-medium"
-                      >
+                      <Label id="schedule-days-label" className="text-sm font-medium">
                         {localize('com_ui_schedule_days')}
                       </Label>
                     </legend>
@@ -905,10 +896,7 @@ export default function ScheduleDialog({
                 )}
                 <fieldset className="space-y-2">
                   <legend>
-                    <Label
-                      id="schedule-time-label"
-                      className="text-text-primary text-sm font-medium"
-                    >
+                    <Label id="schedule-time-label" className="text-sm font-medium">
                       {localize(
                         frequency === 'hourly'
                           ? 'com_ui_schedule_minutes_past_hour'

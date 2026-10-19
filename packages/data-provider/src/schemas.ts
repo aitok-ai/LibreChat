@@ -585,9 +585,6 @@ export const getGoogleThinkingBudgetBounds = (
   return undefined;
 };
 
-export const getGoogleThinkingBudgetMax = (modelName: string): number | undefined =>
-  getGoogleThinkingBudgetBounds(modelName)?.max;
-
 export const googleSettings = {
   model: {
     default: 'gemini-1.5-flash-latest' as const,
@@ -1154,12 +1151,7 @@ export const coerceNumber = z.union([z.number(), z.string()]).transform((val) =>
 });
 
 type DocumentTypeValue =
-  | null
-  | boolean
-  | number
-  | string
-  | DocumentTypeValue[]
-  | { [key: string]: DocumentTypeValue };
+  null | boolean | number | string | DocumentTypeValue[] | { [key: string]: DocumentTypeValue };
 
 const DocumentType: z.ZodType<DocumentTypeValue> = z.lazy(() =>
   z.union([
@@ -1195,6 +1187,8 @@ export const tConversationSchema = z.object({
   pinned: z.boolean().optional(),
   /** Server-derived: an active shared link exists for this conversation. Not persisted. */
   isShared: z.boolean().optional(),
+  /** Server-derived on list rows: the listing replica returned the code decision. Not persisted. */
+  codeDecisionListed: z.boolean().optional(),
   codeApprovalMode: z.enum(CODE_APPROVAL_MODES).optional(),
   codeEnvironmentMode: z.enum(CODE_ENVIRONMENT_MODES).optional(),
   codeWorkspaces: z
@@ -1578,34 +1572,6 @@ export const googleBaseSchema = tConversationSchema.pick({
 export const googleSchema = googleBaseSchema
   .transform((obj: Partial<TConversation>) => removeNullishValues(obj, true))
   .catch(() => ({}));
-
-/**
-   * TODO: Map the following fields:
-  - presence_penalty -> presencePenalty
-  - frequency_penalty -> frequencyPenalty
-  - stop -> stopSequences
-   */
-export const googleGenConfigSchema = z
-  .object({
-    maxOutputTokens: coerceNumber.optional(),
-    temperature: coerceNumber.optional(),
-    topP: coerceNumber.optional(),
-    topK: coerceNumber.optional(),
-    presencePenalty: coerceNumber.optional(),
-    frequencyPenalty: coerceNumber.optional(),
-    stopSequences: z.array(z.string()).optional(),
-    thinkingConfig: z
-      .object({
-        includeThoughts: z.boolean().optional(),
-        thinkingBudget: coerceNumber.optional(),
-        thinkingLevel: z.string().optional(),
-      })
-      .optional(),
-    web_search: z.boolean().optional(),
-    url_context: z.boolean().optional(),
-  })
-  .strip()
-  .optional();
 
 export function removeNullishValues<T extends Record<string, unknown>>(
   obj: T,

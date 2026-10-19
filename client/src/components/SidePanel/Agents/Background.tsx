@@ -66,7 +66,9 @@ export default function Background({ toolIds, switchId, labelKey, infoKey }: Pro
         <div className="flex items-center space-x-2">
           <div className="text-sm">{localize(labelKey)}</div>
           <HoverCardTrigger>
-            <CircleHelpIcon className="text-text-tertiary h-4 w-4" />
+            <span className="text-text-tertiary">
+              <CircleHelpIcon className="h-4 w-4" />
+            </span>
           </HoverCardTrigger>
         </div>
         <HoverCardPortal>

@@ -1514,5 +1514,6 @@
   "com_ui_video_uploading_assets": "请等待所有文件上传完成后再提交。",
   "com_ui_video_job_failed": "视频任务启动失败。",
   "com_ui_video_stream_disconnected": "视频任务流已断开。",
+  "com_ui_referrals": "邀请人数",
   "com_user_message": "您"
 }

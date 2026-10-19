@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { cn, disabledFillClasses, peerDisabledInkClasses } from '~/utils';
 
-export interface FilterInputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'placeholder'> {
+export interface FilterInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'placeholder'
+> {
   /** The label text shown in the floating label */
   label: string;
   /** Unique identifier for the input - used to link label */
