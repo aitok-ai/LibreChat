@@ -270,7 +270,7 @@
   },
   "client/src/components/Chat/Messages/Content/DialogImage.tsx": {
     "shadcn/no-arbitrary-values": {
-      "count": 2
+      "count": 1
     },
     "shadcn/no-inline-styles": {
       "count": 1
@@ -563,9 +563,6 @@
     }
   },
   "client/src/components/Chat/Subagents/SubagentConversation.tsx": {
-    "shadcn/no-restyle": {
-      "count": 4
-    },
     "shadcn/require-static-classes": {
       "count": 1
     }
@@ -582,7 +579,7 @@
   },
   "client/src/components/Chat/Trace/Ledger.tsx": {
     "shadcn/no-inline-styles": {
-      "count": 4
+      "count": 2
     }
   },
   "client/src/components/Chat/Trace/Viewer.tsx": {
@@ -632,7 +629,7 @@
   },
   "client/src/components/Conversations/ProjectsSection.tsx": {
     "shadcn/no-restyle": {
-      "count": 7
+      "count": 6
     }
   },
   "client/src/components/Conversations/RenameForm.tsx": {
@@ -647,7 +644,7 @@
   },
   "client/src/components/Endpoints/ConvoIcon.tsx": {
     "shadcn/no-restyle": {
-      "count": 2
+      "count": 1
     }
   },
   "client/src/components/Endpoints/EndpointOptionsPopover.tsx": {
@@ -685,9 +682,6 @@
   "client/src/components/Endpoints/Settings/Assistants.tsx": {
     "shadcn/no-restyle": {
       "count": 1
-    },
-    "shadcn/require-static-classes": {
-      "count": 4
     }
   },
   "client/src/components/Endpoints/Settings/Examples.tsx": {
@@ -898,7 +892,7 @@
   },
   "client/src/components/Nav/AccountSettings.tsx": {
     "shadcn/no-inline-styles": {
-      "count": 3
+      "count": 1
     }
   },
   "client/src/components/Nav/KeyboardShortcutsDialog.tsx": {
@@ -1031,16 +1025,6 @@
       "count": 1
     }
   },
-  "client/src/components/Projects/ProjectResources.tsx": {
-    "shadcn/no-restyle": {
-      "count": 1
-    }
-  },
-  "client/src/components/Projects/ProjectWorkspace.tsx": {
-    "shadcn/no-restyle": {
-      "count": 2
-    }
-  },
   "client/src/components/Projects/ProjectsView.tsx": {
     "shadcn/no-restyle": {
       "count": 1
@@ -1083,17 +1067,17 @@
   },
   "client/src/components/Prompts/fields/Command.tsx": {
     "shadcn/no-restyle": {
-      "count": 2
+      "count": 1
     }
   },
   "client/src/components/Prompts/fields/Description.tsx": {
     "shadcn/no-restyle": {
-      "count": 2
+      "count": 1
     }
   },
   "client/src/components/Prompts/fields/PromptName.tsx": {
     "shadcn/no-restyle": {
-      "count": 9
+      "count": 8
     }
   },
   "client/src/components/Prompts/forms/CreatePromptForm.tsx": {
@@ -1156,14 +1140,6 @@
     },
     "shadcn/require-static-classes": {
       "count": 2
-    }
-  },
-  "client/src/components/Sharing/PeoplePicker/SearchPicker.tsx": {
-    "shadcn/no-restyle": {
-      "count": 3
-    },
-    "shadcn/require-static-classes": {
-      "count": 1
     }
   },
   "client/src/components/Sharing/PeoplePicker/SelectedPrincipalsList.tsx": {
@@ -1364,19 +1340,6 @@
       "count": 8
     }
   },
-  "client/src/components/SidePanel/Builder/AssistantPanel.tsx": {
-    "shadcn/no-restyle": {
-      "count": 4
-    },
-    "shadcn/require-static-classes": {
-      "count": 1
-    }
-  },
-  "client/src/components/SidePanel/Builder/AssistantSelect.tsx": {
-    "shadcn/no-restyle": {
-      "count": 7
-    }
-  },
   "client/src/components/SidePanel/Builder/Retrieval.tsx": {
     "design/disabled-recipe": {
       "count": 1
@@ -1429,7 +1392,7 @@
   },
   "client/src/components/SidePanel/Parameters/DynamicDropdown.tsx": {
     "shadcn/no-restyle": {
-      "count": 2
+      "count": 1
     }
   },
   "client/src/components/SidePanel/Parameters/DynamicInput.tsx": {
@@ -1503,11 +1466,6 @@
   "client/src/components/Skills/forms/SkillForm.tsx": {
     "shadcn/no-restyle": {
       "count": 5
-    }
-  },
-  "client/src/components/Skills/lists/SkillListItem.tsx": {
-    "shadcn/no-inline-styles": {
-      "count": 1
     }
   },
   "client/src/components/Skills/tree/SkillFileEditor.tsx": {
@@ -1630,7 +1588,7 @@
   },
   "client/src/routes/Root.tsx": {
     "shadcn/no-inline-styles": {
-      "count": 2
+      "count": 1
     }
   },
   "client/src/routes/RouteErrorBoundary.tsx": {
@@ -1664,11 +1622,6 @@
   },
   "packages/client/src/components/Badge.tsx": {
     "design/disabled-recipe": {
-      "count": 1
-    }
-  },
-  "packages/client/src/components/Combobox.tsx": {
-    "shadcn/no-inline-styles": {
       "count": 1
     }
   },

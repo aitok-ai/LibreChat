@@ -80,7 +80,8 @@ export interface ComposerProps {
  * never render without an accessible name.
  */
 export type ComposerStopProps =
-  { onStop: () => void; stopLabel: string } | { onStop?: undefined; stopLabel?: undefined };
+  | { onStop: () => void; stopLabel: string }
+  | { onStop?: undefined; stopLabel?: undefined };
 
 export type ComposerPropsWithStop = ComposerProps & ComposerStopProps;
 
@@ -135,7 +136,7 @@ const Composer: ForwardRefExoticComponent<
       disabled={disabled || !canSubmit}
       onClick={() => onSubmit()}
       data-testid="composer-send-button"
-      className={cn(CONTROL_CLASS, offeredActions.length > 0 && 'ml-auto')}
+      className={cn(CONTROL_CLASS, offeredActions.length > 0 && 'ms-auto')}
     >
       <SendIcon className="size-6" />
     </button>
@@ -206,7 +207,7 @@ const Composer: ForwardRefExoticComponent<
         {showStop ? (
           <TooltipAnchor
             description={stopLabel}
-            className="ml-auto"
+            className="ms-auto"
             render={
               <button
                 type="button"
@@ -241,7 +242,7 @@ const Composer: ForwardRefExoticComponent<
               offeredActions.length > 0 ? (
                 sendButton
               ) : (
-                <TooltipAnchor description={submitLabel} className="ml-auto" render={sendButton} />
+                <TooltipAnchor description={submitLabel} className="ms-auto" render={sendButton} />
               )
             }
           />

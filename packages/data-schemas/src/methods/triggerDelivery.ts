@@ -281,11 +281,13 @@ export interface UpdateAgentEventActorDetachedActionInput extends GetAgentEventA
   observedAt: Date;
 }
 
-export interface MarkAgentEventActorDetachedActionRunningInput extends UpdateAgentEventActorDetachedActionInput {
+export interface MarkAgentEventActorDetachedActionRunningInput
+  extends UpdateAgentEventActorDetachedActionInput {
   recoveryAfter: Date;
 }
 
-export interface SettleAgentEventActorDetachedActionInput extends UpdateAgentEventActorDetachedActionInput {
+export interface SettleAgentEventActorDetachedActionInput
+  extends UpdateAgentEventActorDetachedActionInput {
   status: 'succeeded' | 'failed' | 'cancelled';
   result?: string;
   error?: string;
@@ -4825,7 +4827,7 @@ export function createAgentTriggerDeliveryMethods(
     const ownsFence = await mongoose.models.User.exists({
       _id: user,
       agentTriggerDeletionStartedAt: fenceStartedAt,
-    });
+    }).read('primary');
     if (ownsFence == null) {
       throw new Error('Cannot prepare trigger purge without owning the user deletion fence');
     }
@@ -4854,7 +4856,7 @@ export function createAgentTriggerDeliveryMethods(
     const ownsLiveFence = await mongoose.models.User.exists({
       _id: user,
       agentTriggerDeletionStartedAt: fenceStartedAt,
-    });
+    }).read('primary');
     if (ownsLiveFence == null) {
       return false;
     }
@@ -4910,6 +4912,7 @@ export function createAgentTriggerDeliveryMethods(
     const users =
       markers.length > 0
         ? await mongoose.models.User.find({ _id: { $in: markers.map((marker) => marker._id) } })
+            .read('primary')
             .select('agentTriggerDeletionStartedAt')
             .lean<Array<{ _id: Types.ObjectId; agentTriggerDeletionStartedAt?: Date }>>()
         : [];

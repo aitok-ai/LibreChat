@@ -46,7 +46,7 @@ const TagPrimitiveRoot = React.forwardRef<HTMLDivElement, TagProps>(
           className,
         )}
       >
-        <div className={cn('ml-1 px-2 py-1 whitespace-pre-wrap', labelClassName)}>
+        <div className={cn('ms-1 px-2 py-1 whitespace-pre-wrap', labelClassName)}>
           {LabelNode ? <>{LabelNode} </> : null}
           {label}
         </div>
@@ -56,7 +56,7 @@ const TagPrimitiveRoot = React.forwardRef<HTMLDivElement, TagProps>(
               <IconButton
                 label={`Remove ${label}`}
                 size="xs"
-                className="hover:bg-surface-hover/50 mr-0.5 text-current"
+                className="hover:bg-surface-hover/50 me-0.5 text-current"
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemove(e);

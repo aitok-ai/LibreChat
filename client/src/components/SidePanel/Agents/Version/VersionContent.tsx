@@ -47,7 +47,7 @@ function VersionListSkeleton() {
             {i < 2 && <div className="bg-border-light absolute top-0 -bottom-3 w-px" />}
             <div className="border-border-light bg-surface-secondary relative z-10 mt-4 size-5 shrink-0 rounded-full border-2" />
           </div>
-          <div className="border-border-light mb-2 ml-2 flex flex-1 flex-col gap-2 rounded-xl border bg-transparent p-3">
+          <div className="border-border-light ms-2 mb-2 flex flex-1 flex-col gap-2 rounded-xl border bg-transparent p-3">
             <div className="bg-surface-secondary h-3 w-24 animate-pulse rounded" />
             <div className="bg-surface-secondary h-3 w-40 animate-pulse rounded" />
           </div>

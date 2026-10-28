@@ -5,6 +5,7 @@ export * from './balance';
 export * from './config';
 export * from './footer';
 export * from './theme';
+export * from './themes';
 export * from './langchain';
 export * from './filters';
 export * from './file-config';
@@ -93,6 +94,7 @@ export * from './providers';
 export * from './svg';
 /* general helpers */
 export * from './utils';
+export * from './zod';
 export * from './actions';
 export * from './twoFactor';
 export { default as createPayload } from './createPayload';
@@ -112,3 +114,5 @@ export * from './code/workspace';
 export * from './types/scheduleConsent';
 
 export * from './approval';
+
+export * from './codeSetup';

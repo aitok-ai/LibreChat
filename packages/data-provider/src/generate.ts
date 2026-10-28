@@ -4,7 +4,14 @@ import type { TConversation, TSetOption, TPreset } from './schemas';
 import { tConversationSchema } from './schemas';
 
 export type ComponentType =
-  'input' | 'textarea' | 'slider' | 'checkbox' | 'switch' | 'dropdown' | 'combobox' | 'tags';
+  | 'input'
+  | 'textarea'
+  | 'slider'
+  | 'checkbox'
+  | 'switch'
+  | 'dropdown'
+  | 'combobox'
+  | 'tags';
 
 export type OptionType = 'conversation' | 'model' | 'custom';
 
@@ -231,9 +238,9 @@ export function generateDynamicSchema(settings: SettingsConfiguration) {
 }
 
 const ZodTypeToSettingType: Record<string, string | undefined> = {
-  ZodString: 'string',
-  ZodNumber: 'number',
-  ZodBoolean: 'boolean',
+  string: 'string',
+  number: 'number',
+  boolean: 'boolean',
 };
 
 const minColumns = 1;
@@ -493,7 +500,7 @@ export function validateSettingDefinitions(settings: SettingsConfiguration): voi
           path: ['optionType'],
         });
       } else {
-        const zodType = conversationSchema._def.typeName;
+        const zodType = conversationSchema.def.type;
         const settingTypeEquivalent = ZodTypeToSettingType[zodType] || null;
         if (settingTypeEquivalent !== setting.type) {
           errors.push({

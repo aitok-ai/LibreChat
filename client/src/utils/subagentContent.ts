@@ -1,5 +1,10 @@
 import { ContentTypes, ToolCallTypes, getToolTimingDurations } from 'librechat-data-provider';
-import type { SubagentUpdateEvent, ToolTimingStamps } from 'librechat-data-provider';
+import type {
+  SubagentUpdateEvent,
+  ToolTimingStamps,
+  TSteerAppliedEvent,
+} from 'librechat-data-provider';
+import { strongDirection } from './direction';
 
 /**
  * Client-side helpers for rendering the live `SubagentCall` UI while
@@ -113,7 +118,7 @@ type ToolCallPart = {
 
 /** Single content-part-shaped entry produced by the aggregator. The union
  *  matches the subset of `TMessageContentParts` a subagent run emits. */
-export type SubagentContentPart = TextPart | ThinkPart | ToolCallPart;
+export type SubagentContentPart = TextPart | ThinkPart | ToolCallPart | TSteerAppliedEvent['part'];
 
 const extractTextChunk = (
   data: MessageDeltaData | undefined,
@@ -178,6 +183,11 @@ export interface SubagentAggregatorState {
   idlessTextPhase?: AssistantTextPhase;
   /** `tool_call.id` → its index in `contentParts` for O(1) updates. */
   toolCallIndexById: Record<string, number>;
+  /**
+   * Tool calls bounding dropped from `contentParts`, with their scope, so the
+   * files they saved keep an owner after their parts are gone. Bounded too.
+   */
+  evictedToolCalls?: Array<{ id: string; agentId?: string; stepId?: string }>;
 }
 
 /** Initial empty aggregator state. */
@@ -211,6 +221,25 @@ export function foldSubagentEvent(
   state: SubagentAggregatorState,
   event: SubagentUpdateEvent,
 ): { parts: SubagentContentPart[]; state: SubagentAggregatorState } {
+  if (event.phase === 'steer_applied') {
+    const data = event.data as TSteerAppliedEvent | undefined;
+    if (
+      data?.part?.type !== ContentTypes.STEER ||
+      typeof data.part.steer !== 'string' ||
+      !Number.isSafeInteger(data.index) ||
+      data.index < 0
+    )
+      return { parts, state };
+    if (
+      parts.some((part) => part?.type === ContentTypes.STEER && part.steerId === data.part.steerId)
+    )
+      return { parts, state };
+    const next = [...parts, data.part];
+    return {
+      parts: next,
+      state: { ...state, openTextIdx: null, openThinkIdx: null, idlessTextPhase: undefined },
+    };
+  }
   if (event.phase === 'message_delta') {
     const data = event.data as MessageDeltaData | undefined;
     const extracted = extractTextChunk(data);
@@ -705,11 +734,22 @@ export function initSubagentTickerState(): SubagentTickerState {
 }
 
 /** Generous tail window so wide ticker containers aren't half-empty.
- *  The component applies CSS tail-ellipsis (`dir="rtl"` +
- *  `text-overflow: ellipsis`) so narrow viewports clip from the oldest
- *  side; we deliberately DON'T prepend a data-level `…` on top of that
- *  CSS ellipsis — double-eliding would render a stray dot character
- *  right next to the "Writing:" / "Reasoning:" label. */
+ *  The component applies CSS tail-ellipsis: the outer box runs opposite to the
+ *  text's own direction (see `tailOverflowDirection`) so narrow viewports clip
+ *  from the oldest side; we deliberately DON'T prepend a data-level `…` on top
+ *  of that CSS ellipsis, which would render a stray dot next to the
+ *  "Writing:" / "Reasoning:" label. */
+/** Direction of the first strongly directional character, as the browser's `dir="auto"` resolves it. */
+export const textDirection = (text: string): 'ltr' | 'rtl' => strongDirection(text) ?? 'ltr';
+
+/**
+ * Direction for the outer box of a tail-ellipsis line. The newest text sits at the
+ * end of the content, so the box runs opposite to the content and the overflow
+ * (and the ellipsis) lands on the oldest side.
+ */
+export const tailOverflowDirection = (text: string): 'ltr' | 'rtl' =>
+  textDirection(text) === 'rtl' ? 'ltr' : 'rtl';
+
 const PREVIEW_MAX_CHARS = 300;
 const PREVIEW_BUFFER_MAX_CHARS = PREVIEW_MAX_CHARS * 4;
 const truncatePreview = (input: string): string => {

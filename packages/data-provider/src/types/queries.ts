@@ -135,6 +135,25 @@ export type ToolCallPartResponse = {
   tool_call: FullToolCall;
 };
 
+/** A file whose owner a client resolves: the tool call it was saved under, with its scope. */
+export type SubagentAttachmentFile = { toolCallId: string; agentId?: string; stepId?: string };
+
+export type SubagentAttachmentCallsParams = {
+  conversationId: string;
+  messageId: string;
+  files: SubagentAttachmentFile[];
+};
+
+export type SubagentAttachmentCallsResponse = {
+  /** Each subagent call of the stored message whose transcript holds a call the files name. */
+  parts: Array<{
+    toolCallId: string;
+    stepId?: string;
+    agentId?: string;
+    calls: a.Agents.SubagentAttachmentCall[];
+  }>;
+};
+
 /* Shared Links */
 export type SharedMessagesResponse = Omit<s.TSharedLink, 'messages'> & {
   messages: s.TMessage[];
@@ -297,7 +316,11 @@ export interface MCPServerStatus {
   configurationState?: 'configured' | 'needs_configuration';
   connectionState: 'disconnected' | 'connecting' | 'connected' | 'error';
   authorizationState?:
-    'not_required' | 'authorizing' | 'authorized' | 'needs_authorization' | 'error';
+    | 'not_required'
+    | 'authorizing'
+    | 'authorized'
+    | 'needs_authorization'
+    | 'error';
   /** Shared credential/catalog generation observed by the status endpoint. */
   authorizationGeneration?: string;
 }

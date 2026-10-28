@@ -7,10 +7,11 @@ import type React from 'react';
 import { MorphIcon } from './MorphIcon';
 import { cn } from '~/utils';
 
-interface BadgeProps extends Omit<
-  ButtonHTMLAttributes<HTMLButtonElement>,
-  'onAnimationStart' | 'onDragStart' | 'onDragEnd' | 'onDrag'
-> {
+interface BadgeProps
+  extends Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onAnimationStart' | 'onDragStart' | 'onDragEnd' | 'onDrag'
+  > {
   icon?: LucideIcon;
   label: string;
   id?: string;
@@ -93,7 +94,7 @@ export default function Badge({
       {isEditing && !isDragging && (
         <motion.button
           type="button"
-          className="bg-surface-secondary-alt text-text-primary absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full shadow-xs"
+          className="bg-surface-secondary-alt text-text-primary absolute -inset-e-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full shadow-xs"
           aria-label={isAvailable ? `Remove ${label}` : `Restore ${label}`}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}

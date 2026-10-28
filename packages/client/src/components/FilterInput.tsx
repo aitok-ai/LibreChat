@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { cn, disabledFillClasses, peerDisabledInkClasses } from '~/utils';
 
-export interface FilterInputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  'placeholder'
-> {
+export interface FilterInputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'placeholder'> {
   /** The label text shown in the floating label */
   label: string;
   /** Unique identifier for the input - used to link label */
@@ -59,7 +57,7 @@ const FilterInput: React.ForwardRefExoticComponent<
           htmlFor={inputId}
           className={cn(
             peerDisabledInkClasses,
-            'text-text-secondary pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm transition-all duration-200 peer-focus:top-0 peer-focus:bg-inherit peer-focus:px-1 peer-focus:text-xs peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:bg-inherit peer-[:not(:placeholder-shown)]:px-1 peer-[:not(:placeholder-shown)]:text-xs',
+            'text-text-secondary pointer-events-none absolute inset-s-3 top-1/2 -translate-y-1/2 text-sm transition-all duration-200 peer-focus:top-0 peer-focus:bg-inherit peer-focus:px-1 peer-focus:text-xs peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:bg-inherit peer-[:not(:placeholder-shown)]:px-1 peer-[:not(:placeholder-shown)]:text-xs',
           )}
         >
           {label}

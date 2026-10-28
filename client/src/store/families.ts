@@ -163,7 +163,12 @@ type VideoJobUIState = {
 
 type VideoPlatformPreset = 'douyin' | 'tiktok' | 'xiaohongshu' | 'youtube_shorts';
 type VideoTemplateType =
-  'talking_head' | 'product_review' | 'storyboard' | 'image_mix' | 'broll_subtitles' | 'beat_cut';
+  | 'talking_head'
+  | 'product_review'
+  | 'storyboard'
+  | 'image_mix'
+  | 'broll_subtitles'
+  | 'beat_cut';
 
 const videoModeByConvoId = atomFamily<boolean, string>({
   key: 'videoModeByConvoId',
@@ -248,11 +253,6 @@ const globalAudioFetchingFamily = atomFamily<boolean, string | number | null>({
 const globalAudioPlayingFamily = atomFamily<boolean, string | number | null>({
   key: 'globalAudioisPlayingByIndex',
   default: false,
-});
-
-const activeRunFamily = atomFamily<string | null, string | number | null>({
-  key: 'activeRunByIndex',
-  default: null,
 });
 
 const audioRunFamily = atomFamily<string | null, string | number | null>({
@@ -358,7 +358,6 @@ export default {
   useSetConversationAtom,
   showMentionPopoverFamily,
   globalAudioURLFamily,
-  activeRunFamily,
   audioRunFamily,
   globalAudioPlayingFamily,
   globalAudioFetchingFamily,

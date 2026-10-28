@@ -40,6 +40,7 @@ import {
   createGitHubRepoAdapter,
 } from './adapters/github';
 import { DEFAULT_SKILL_IMPORT_LIMITS } from '../limits';
+import { makeSourceAuthorId } from '~/utils/author';
 import { withSkillUploadIntent } from '../intent';
 import { parseSkillMarkdown } from '../parse';
 import { normalizeRepoPath } from './path';
@@ -304,18 +305,6 @@ function makeUpstreamId(source: SkillSyncGitHubSourceConfig, rootPath: string): 
   return `${source.id}:${rootPath}`;
 }
 
-function makeSourceAuthorId(source: SkillSyncGitHubSourceConfig): Types.ObjectId {
-  // Fold the tenant into the synthetic author so the same source mirrored into
-  // different tenants gets distinct author ids (clearer audits, no cross-tenant
-  // author collisions). The tenant suffix is omitted when absent so single-tenant
-  // author ids stay stable.
-  const seed = source.tenantId
-    ? `${PROVIDER}:${source.id}:${source.tenantId}`
-    : `${PROVIDER}:${source.id}`;
-  const digest = crypto.createHash('sha256').update(seed).digest('hex').slice(0, 24);
-  return new Types.ObjectId(digest);
-}
-
 function toSkillName(value: string): string {
   const normalized = value
     .toLowerCase()
@@ -487,12 +476,14 @@ function escapeDiagnosticControlCharacters(value: string): string {
   let escaped = '';
   for (const character of value) {
     const codePoint = character.charCodeAt(0);
-    if (!(
-      (codePoint >= 0 && codePoint <= 0x1f) ||
-      (codePoint >= 0x7f && codePoint <= 0x9f) ||
-      codePoint === 0x2028 ||
-      codePoint === 0x2029
-    )) {
+    if (
+      !(
+        (codePoint >= 0 && codePoint <= 0x1f) ||
+        (codePoint >= 0x7f && codePoint <= 0x9f) ||
+        codePoint === 0x2028 ||
+        codePoint === 0x2029
+      )
+    ) {
       escaped += character;
       continue;
     }
@@ -870,7 +861,7 @@ function makeCreateInput(
     ...(update as Omit<UpdateSkillInput, 'source'>),
     name: update.name ?? fallbackName,
     description: update.description ?? fallbackName,
-    author: makeSourceAuthorId(source),
+    author: makeSourceAuthorId(PROVIDER, source.id, source.tenantId),
     authorName: SYSTEM_AUTHOR_NAME,
     source: PROVIDER,
     tenantId: source.tenantId,
@@ -1959,7 +1950,8 @@ async function syncSource(params: {
         };
         let fileCounts: SyncSkillFilesResult;
         let staleConflictCleanup:
-          Awaited<ReturnType<typeof deleteNameConflictingStaleSkill>> | undefined;
+          | Awaited<ReturnType<typeof deleteNameConflictingStaleSkill>>
+          | undefined;
         try {
           fileCounts = await syncSkillFiles({
             deps,

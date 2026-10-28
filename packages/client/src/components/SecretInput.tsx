@@ -8,10 +8,8 @@ import './Field.css';
 import { fieldControl, fieldInvalid } from './Field';
 import { INPUT_VARIANTS } from './Input';
 
-export interface SecretInputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  'type'
-> {
+export interface SecretInputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
   colorTransition?: boolean;
   /** Follows the `Input` variants; `floating` is the sign-in form field whose label rests inside it. */
   variant?: keyof typeof INPUT_VARIANTS;
@@ -98,7 +96,7 @@ const SecretInput: React.ForwardRefExoticComponent<
             fieldInvalid,
             INPUT_VARIANTS[variant],
             className ?? '',
-            copyButton != null || showCopy ? 'pr-20' : 'pr-11',
+            copyButton != null || showCopy ? 'pe-20' : 'pe-11',
           )}
           ref={ref}
           disabled={disabled}
@@ -115,8 +113,8 @@ const SecretInput: React.ForwardRefExoticComponent<
         )}
         <div
           className={cn(
-            'pointer-events-none absolute inset-y-0 right-1.5 flex items-center gap-0.5 [&_button]:pointer-events-auto',
-            isFloating && 'right-2',
+            'pointer-events-none absolute inset-y-0 inset-e-1.5 flex items-center gap-0.5 [&_button]:pointer-events-auto',
+            isFloating && 'inset-e-2',
             controlsOnHover &&
               'opacity-0 transition-opacity duration-150 group-focus-within/secret-input:opacity-100 group-hover/secret-input:opacity-100',
             controlsClassName,

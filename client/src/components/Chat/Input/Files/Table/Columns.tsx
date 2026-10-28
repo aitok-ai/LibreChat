@@ -98,7 +98,7 @@ export const columns: ColumnDef<TFile>[] = [
               aria-current={sortState ? 'true' : 'false'}
             >
               {localize('com_ui_name')}
-              <SortIcon className="ml-2 h-3 w-4 sm:h-4 sm:w-4" />
+              <SortIcon className="ms-2 h-3 w-4 sm:h-4 sm:w-4" />
             </Button>
           }
         />
@@ -158,7 +158,7 @@ export const columns: ColumnDef<TFile>[] = [
               aria-current={sortState ? 'true' : 'false'}
             >
               {localize('com_ui_date')}
-              <SortIcon className="ml-2 h-3 w-4 sm:h-4 sm:w-4" />
+              <SortIcon className="ms-2 h-3 w-4 sm:h-4 sm:w-4" />
             </Button>
           }
         />
@@ -277,7 +277,7 @@ export const columns: ColumnDef<TFile>[] = [
               aria-current={sortState ? 'true' : 'false'}
             >
               {localize('com_ui_size')}
-              <SortIcon className="ml-2 h-3 w-4 sm:h-4 sm:w-4" />
+              <SortIcon className="ms-2 h-3 w-4 sm:h-4 sm:w-4" />
             </Button>
           }
         />

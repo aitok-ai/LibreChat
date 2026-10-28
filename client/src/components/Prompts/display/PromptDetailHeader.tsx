@@ -1,9 +1,10 @@
 import { format } from 'date-fns';
 import { TooltipAnchor } from '@librechat/client';
-import { User, Calendar, EarthIcon, BarChart3 } from 'lucide-react';
+import { User, Calendar, EarthIcon, BarChart3, Cloud } from 'lucide-react';
 import type { TPromptGroup } from 'librechat-data-provider';
 import { useLocalize, useAuthContext } from '~/hooks';
 import CategoryIcon from '../utils/CategoryIcon';
+import { isExternalPromptGroup } from '~/utils';
 
 interface PromptDetailHeaderProps {
   group: TPromptGroup;
@@ -16,6 +17,7 @@ const PromptDetailHeader = ({ group }: PromptDetailHeaderProps) => {
   const isSharedPrompt = group.author !== user?.id && Boolean(group.authorName);
 
   const isGlobalGroup = group.isPublic === true;
+  const isExternal = isExternalPromptGroup(group);
 
   return (
     <div className="flex flex-col gap-3 py-2 sm:flex-row sm:items-center sm:gap-4">
@@ -38,6 +40,18 @@ const PromptDetailHeader = ({ group }: PromptDetailHeaderProps) => {
                 <EarthIcon
                   className="text-accent-primary h-5 w-5 shrink-0"
                   aria-label={localize('com_ui_sr_global_prompt')}
+                />
+              }
+            />
+          )}
+          {isExternal && (
+            <TooltipAnchor
+              description={localize('com_ui_prompt_source_langfuse')}
+              side="top"
+              render={
+                <Cloud
+                  className="text-text-secondary h-5 w-5 shrink-0"
+                  aria-label={localize('com_ui_prompt_source_langfuse')}
                 />
               }
             />

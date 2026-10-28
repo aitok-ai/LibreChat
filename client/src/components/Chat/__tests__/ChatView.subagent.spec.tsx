@@ -27,27 +27,38 @@ jest.mock('librechat-data-provider', () => ({
   buildTree: ({ messages }: { messages: unknown[] }) => messages,
 }));
 
-jest.mock('~/hooks', () => ({
-  useAddedResponse: () => ({}),
-  useResumeOnLoad: jest.fn(),
-  useAdaptiveSSE: jest.fn(),
+jest.mock('@librechat/chat/react', () => ({
+  ...jest.requireActual('@librechat/chat/react'),
   useQueueDrain: jest.fn(),
   useQueuedTurnReveal: jest.fn(),
+}));
+
+jest.mock('~/hooks', () => ({
+  useAddedResponse: () => ({}),
   useScrollbarGutterSeed: jest.fn(),
   useLocalize: () => (key: string) => key,
-  useChatHelpers: () => ({
+}));
+
+jest.mock('~/hooks/Chat/useChatHelpers', () => ({
+  __esModule: true,
+  default: () => ({
     conversation: mockConversation,
     getMessages: jest.fn(),
     ask: jest.fn(),
   }),
 }));
 
+jest.mock('~/hooks/SSE', () => ({
+  useAdaptiveSSE: jest.fn(),
+  useResumeOnLoad: jest.fn(),
+}));
+
 jest.mock('~/Providers', () => {
   const Passthrough = ({ children }: { children: React.ReactNode }) => <>{children}</>;
   const Context = { Provider: Passthrough };
   return {
-    ChatContext: Context,
     AddedChatContext: Context,
+    useChatContext: jest.requireActual('~/Providers/ChatContext').useChatContext,
     ChatFormProvider: Passthrough,
     ComposerRestoreProvider: Passthrough,
     useFileMapContext: () => new Map(),

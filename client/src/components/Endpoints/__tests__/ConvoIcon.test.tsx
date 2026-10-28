@@ -92,9 +92,9 @@ describe('ConvoIcon', () => {
     );
   });
 
-  it('keeps Cohere landing padding off other contexts and on landing', () => {
+  it('renders Cohere unpadded in every context', () => {
     const { container: landing } = renderIcon(cohereConversation);
-    expect(landing.querySelector('img')).toHaveClass('p-2');
+    expect(landing.querySelector('[role="img"]')).not.toHaveClass('p-2');
 
     const { container: nav } = render(
       <ConvoIcon
@@ -106,6 +106,6 @@ describe('ConvoIcon', () => {
         size={20}
       />,
     );
-    expect(nav.querySelector('img')).not.toHaveClass('p-2');
+    expect(nav.querySelector('[role="img"]')).not.toHaveClass('p-2');
   });
 });

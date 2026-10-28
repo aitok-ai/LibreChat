@@ -75,7 +75,8 @@ export function findToolCallArgs(
     for (const part of message.content ?? []) {
       if (part?.type !== ContentTypes.TOOL_CALL) continue;
       const call = part[ContentTypes.TOOL_CALL] as
-        { id?: string; stepId?: string; args?: ToolCallArgs } | undefined;
+        | { id?: string; stepId?: string; args?: ToolCallArgs }
+        | undefined;
       if (call?.id == null) continue;
       const keys = new Set([
         toolCallKey(message.messageId, call.id, call.stepId),
@@ -130,6 +131,7 @@ const subagentRow = (child: ParentSubagentSummary, stopping: ReadonlySet<string>
     id: `subagent:${subagentTaskKey(child.threadId, taskId)}`,
     kind: 'subagent',
     name: child.title,
+    taskId,
     messageId: child.parentMessageId,
     toolCallId: child.parentToolCallId,
     threadId: child.threadId,

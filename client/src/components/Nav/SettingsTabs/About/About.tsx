@@ -40,7 +40,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
       <dt className="text-text-secondary">{label}</dt>
-      <dd className="text-text-primary text-right font-mono text-xs break-all">{value}</dd>
+      <dd className="text-text-primary text-end font-mono text-xs break-all">{value}</dd>
     </div>
   );
 }
@@ -106,7 +106,7 @@ function About() {
           isCopied={isCopied}
           onClick={handleCopy}
           label={localize('com_nav_about_diagnostics_copy')}
-          className="border-border-light bg-surface-secondary text-text-primary hover:bg-surface-tertiary ml-0 shrink-0 gap-2 self-start rounded-lg border px-3 py-1.5 text-xs font-medium sm:self-auto"
+          className="border-border-light bg-surface-secondary text-text-primary hover:bg-surface-tertiary ms-0 shrink-0 gap-2 self-start rounded-lg border px-3 py-1.5 text-xs font-medium sm:self-auto"
         />
         <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           {isCopied ? localize('com_ui_copied') : ''}

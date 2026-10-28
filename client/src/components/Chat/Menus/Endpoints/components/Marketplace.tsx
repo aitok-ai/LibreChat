@@ -49,7 +49,7 @@ export default function MarketplaceItem({
         <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <LayoutGrid className="text-text-primary h-5 w-5" aria-hidden="true" />
         </div>
-        <span className="truncate text-left">{label}</span>
+        <span className="truncate text-start">{label}</span>
       </div>
     </MenuItem>
   );

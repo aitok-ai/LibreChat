@@ -52,6 +52,7 @@ import { createChatExpirationDate, createTempChatExpirationDate } from '~/utils/
 import { isAgentFadingTier, isAgentFadingTierEntries } from '~/utils/fading';
 import { isCompactionSemanticIndexProjection } from '~/types/compaction';
 import { withoutMeiliIndexing } from '~/models/plugins/mongoMeili';
+import { prepareSubagentContentDeletion } from './subagentContent';
 import { tenantSafeBulkWrite } from '~/utils/tenantBulkWrite';
 import { isValidObjectIdString } from '~/utils/objectId';
 import { decrementTagCounts } from './conversationTag';
@@ -545,7 +546,10 @@ export interface ConversationMethods {
     checkpoint: IAgentEventActorReconciliation['checkpoint'];
     expectedActionAdmitted?: boolean;
     resolution:
-      'checkpoint_verified' | 'action_compensated' | 'history_repaired' | 'invocation_abandoned';
+      | 'checkpoint_verified'
+      | 'action_compensated'
+      | 'history_repaired'
+      | 'invocation_abandoned';
   }): Promise<boolean>;
   clearAgentEventActorReconciliation(input: {
     user: string;
@@ -643,10 +647,8 @@ export interface ConversationMethods {
   archiveAllConvos(user: string): Promise<{ archivedCount: number }>;
 }
 
-export interface ConversationMethodDeps extends Pick<
-  MessageMethods,
-  'getMessages' | 'deleteMessages'
-> {
+export interface ConversationMethodDeps
+  extends Pick<MessageMethods, 'getMessages' | 'deleteMessages'> {
   searchMessages?: MessageMethods['searchMessages'];
   deleteAgentQueuedTurns?: (
     user: string,
@@ -1688,7 +1690,10 @@ export function createConversationMethods(
     checkpoint: IAgentEventActorReconciliation['checkpoint'];
     expectedActionAdmitted?: boolean;
     resolution:
-      'checkpoint_verified' | 'action_compensated' | 'history_repaired' | 'invocation_abandoned';
+      | 'checkpoint_verified'
+      | 'action_compensated'
+      | 'history_repaired'
+      | 'invocation_abandoned';
   }): Promise<boolean> {
     if (input.checkpoint.threadId !== input.conversationId) {
       throw new Error('Event actor reconciliation changed its logical thread');
@@ -1991,7 +1996,8 @@ export function createConversationMethods(
     const cutoff = new Date(now.getTime() - AGENT_EVENT_ACTOR_RECEIPT_RETENTION_MS);
     const Conversation = mongoose.models.Conversation as Model<IConversation>;
     const Delivery = mongoose.models.AgentTriggerDelivery as
-      Model<IAgentTriggerDeliveryDocument> | undefined;
+      | Model<IAgentTriggerDeliveryDocument>
+      | undefined;
     if (Delivery == null) {
       return 0;
     }
@@ -4135,6 +4141,12 @@ export function createConversationMethods(
         );
         await options?.beforeDelete?.(waveIds);
         await deps?.prepareAgentTriggerConversationResultErasure?.(user, waveIds);
+        await retryCascadeOperation(() =>
+          prepareSubagentContentDeletion(mongoose, {
+            user,
+            conversationId: { $in: waveIds },
+          }),
+        );
         const result = await Conversation.deleteMany({ user, conversationId: { $in: waveIds } });
         if (result.deletedCount > 0) {
           /** Result erasure is irreversible. Keep receipts intact when a

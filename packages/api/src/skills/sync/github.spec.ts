@@ -201,7 +201,7 @@ function makeSkill(input: CreateSkillInput): ISkill & { _id: Types.ObjectId } {
     description: input.description,
     body: input.body ?? '',
     frontmatter: input.frontmatter ?? {},
-    author: input.author,
+    author: new Types.ObjectId(input.author),
     authorName: input.authorName,
     version: 1,
     source: input.source ?? 'inline',
@@ -1010,17 +1010,19 @@ describe('createGitHubSkillSyncRunner', () => {
     }));
     const deps = createDeps({
       fetchFn: multiSkillFetch(skills),
-      createSkill: jest.fn(async (input: CreateSkillInput): Promise<CreateSkillResult> => ({
-        skill: makeSkill(input),
-        warnings: [
-          {
-            field: `frontmatter.${'f'.repeat(300)}`,
-            code: 'UNKNOWN_KEY',
-            severity: 'warning',
-            message: `Unknown key ${'m'.repeat(1000)}`,
-          },
-        ],
-      })),
+      createSkill: jest.fn(
+        async (input: CreateSkillInput): Promise<CreateSkillResult> => ({
+          skill: makeSkill(input),
+          warnings: [
+            {
+              field: `frontmatter.${'f'.repeat(300)}`,
+              code: 'UNKNOWN_KEY',
+              severity: 'warning',
+              message: `Unknown key ${'m'.repeat(1000)}`,
+            },
+          ],
+        }),
+      ),
     });
     const warn = jest.spyOn(logger, 'warn').mockImplementation(() => logger);
 

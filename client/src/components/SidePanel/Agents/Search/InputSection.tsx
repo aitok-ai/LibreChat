@@ -65,7 +65,7 @@ export default function InputSection({
                 className="border-border-light text-text-secondary flex items-center rounded-md border px-3 py-1 text-sm"
               >
                 {selectedOption?.label}
-                <ChevronDown className="ml-1 h-4 w-4" />
+                <ChevronDown className="ms-1 h-4 w-4" />
               </Menu.MenuButton>
             }
           />

@@ -167,7 +167,7 @@ export function CompositeCitation(props: CompositeCitationProps) {
                   className="size-7"
                   aria-label="Previous source"
                 >
-                  <ChevronLeft className="size-3.5" aria-hidden="true" />
+                  <ChevronLeft className="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
                 </Button>
                 {sources.map((source, i) => (
                   <button
@@ -197,7 +197,7 @@ export function CompositeCitation(props: CompositeCitationProps) {
                   className="size-7"
                   aria-label="Next source"
                 >
-                  <ChevronRight className="size-3.5" aria-hidden="true" />
+                  <ChevronRight className="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
                 </Button>
               </div>
             )}
@@ -207,9 +207,9 @@ export function CompositeCitation(props: CompositeCitationProps) {
             <div className="mb-1.5 overflow-hidden text-sm">
               <FaviconImage
                 domain={getCleanDomain(currentSource.link || '')}
-                className="float-left mt-0.5 mr-2"
+                className="float-start me-2 mt-0.5"
               />
-              <span className="text-text-secondary float-right ml-2 max-w-[40%] truncate text-xs">
+              <span className="text-text-secondary float-end ms-2 max-w-[40%] truncate text-xs">
                 {getCleanDomain(currentSource.link || '')}
               </span>
               <a
@@ -236,7 +236,7 @@ export function CompositeCitation(props: CompositeCitationProps) {
                   className="size-7"
                   aria-label="Previous source"
                 >
-                  <ChevronLeft className="size-3.5" aria-hidden="true" />
+                  <ChevronLeft className="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
                 </Button>
                 {sources.map((source, i) => (
                   <button
@@ -266,7 +266,7 @@ export function CompositeCitation(props: CompositeCitationProps) {
                   className="size-7"
                   aria-label="Next source"
                 >
-                  <ChevronRight className="size-3.5" aria-hidden="true" />
+                  <ChevronRight className="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
                 </Button>
               </div>
             )}

@@ -105,7 +105,7 @@ const VersionCard = ({
       <button
         type="button"
         className={cn(
-          'group mb-2 ml-2 flex flex-1 flex-col rounded-lg border p-3 text-left',
+          'group ms-2 mb-2 flex flex-1 flex-col rounded-lg border p-3 text-start',
           isSelected
             ? 'border-status-success-border bg-status-success-subtle'
             : 'border-border-medium hover:border-border-heavy hover:bg-surface-hover bg-transparent',

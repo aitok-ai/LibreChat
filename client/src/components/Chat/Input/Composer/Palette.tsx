@@ -416,6 +416,7 @@ function Palette({
   );
   const isUnifiedMode = isUnifiedUploadMode(endpointFileConfig, canAttach);
   const attach = useAttachItems({
+    index,
     agentId,
     endpoint,
     endpointType,
@@ -1054,7 +1055,7 @@ function Palette({
             {checked && (
               <span
                 aria-hidden="true"
-                className="bg-text-primary absolute inset-y-1 left-0 w-0.5 rounded-full"
+                className="bg-text-primary absolute inset-y-1 inset-s-0 w-0.5 rounded-full"
               />
             )}
             <Button
@@ -1131,7 +1132,7 @@ function Palette({
             </div>
           )}
           {canFavorite && (
-            <div role="gridcell" className="flex shrink-0 items-center pr-1">
+            <div role="gridcell" className="flex shrink-0 items-center pe-1">
               <span className={ROW_ACTION_REVEAL}>
                 <IconButton
                   size="xs"

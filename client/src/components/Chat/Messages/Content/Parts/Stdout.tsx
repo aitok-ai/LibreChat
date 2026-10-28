@@ -18,7 +18,7 @@ export default function Stdout({ output = '' }: StdoutProps) {
   }
 
   return (
-    <pre className="text-text-primary shrink-0 font-mono break-words whitespace-pre-wrap">
+    <pre dir="ltr" className="text-text-primary shrink-0 font-mono break-words whitespace-pre-wrap">
       {processedContent}
     </pre>
   );

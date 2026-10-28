@@ -630,7 +630,8 @@ export interface SteerEnqueueResult {
 }
 
 export type TerminalSteerAdmissionResult =
-  { outcome: 'claimed'; items: SteerQueueItem[] } | { outcome: 'open' | 'sealed' | 'unavailable' };
+  | { outcome: 'claimed'; items: SteerQueueItem[] }
+  | { outcome: 'open' | 'sealed' | 'unavailable' };
 
 export interface TerminalSteerAdmissionPolicy {
   allowClaim: boolean;
@@ -821,6 +822,8 @@ export interface UsageMetadata {
   input_token_details?: {
     /** Tokens written to cache */
     cache_creation?: number;
+    /** Subset of `cache_creation` written to Anthropic's 1-hour cache (see `getModelEndUsage`) */
+    cache_creation_1h?: number;
     /** Tokens read from cache */
     cache_read?: number;
     /** OpenAI GPT-5.6+ cache-write tokens (billed above the input rate) */

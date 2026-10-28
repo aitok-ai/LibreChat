@@ -16,25 +16,31 @@ import {
   showStopButtonByIndex,
   revealedQueuedTurnFamily,
 } from '@librechat/chat/react';
+import {
+  getReasoningStateKey,
+  pendingQuotesByConvoId,
+  pendingManualSkillsByConvoId,
+  pendingReasoningOverrideFamily,
+} from '@librechat/chat/react';
 import type {
   TMessage,
   TSubmission,
   TConversation,
   TEndpointsConfig,
 } from 'librechat-data-provider';
-import type { SetterOrUpdater } from 'recoil';
+import type { Dispatch, SetStateAction } from 'react';
 import type { TAskFunction, ExtendedFile } from '~/common';
 import {
-  getReasoningStateKey,
-  pendingQuotesByConvoId,
-  pendingManualSkillsByConvoId,
-  pendingReasoningOverrideFamily,
-} from '~/components/Chat/Input/Composer/state';
+  logger,
+  requestChatFocus,
+  markPasteSubmitted,
+  isSubmittableMessage,
+  bindComposerLaunch,
+} from '~/utils';
 import {
   withSubmittedCodeDecision,
   resolveSubmittedCodeApprovalMode,
 } from '~/hooks/Agents/codeDecision';
-import { logger, requestChatFocus, markPasteSubmitted, isSubmittableMessage } from '~/utils';
 import { activeUsageResponseIdFamily } from '~/components/Chat/Input/TokenUsage/store';
 import useFocusRegeneratedResponse from '~/hooks/Chat/useFocusRegeneratedResponse';
 import useGetConversation from '~/hooks/Conversations/useGetConversation';
@@ -76,11 +82,11 @@ export default function useChatFunctions({
   getMessages: (conversationId?: string | null) => TMessage[] | undefined;
   setMessages: (messages: TMessage[]) => void;
   files?: Map<string, ExtendedFile>;
-  setFiles?: SetterOrUpdater<Map<string, ExtendedFile>>;
-  setSubmission: SetterOrUpdater<TSubmission | null>;
+  setFiles?: Dispatch<SetStateAction<Map<string, ExtendedFile>>>;
+  setSubmission: Dispatch<SetStateAction<TSubmission | null>>;
   /** Supplied by the host that owns the conversation atom, so a send records the decision it
    *  established without this hook becoming a second writer of that state. */
-  setConversation: SetterOrUpdater<TConversation | null>;
+  setConversation: Dispatch<SetStateAction<TConversation | null>>;
 }) {
   const navigate = useNavigate();
   const reasoningStore = useStore();
@@ -460,6 +466,7 @@ export default function useChatFunctions({
      *  completion synchronously, which is the whole window it has to cover. */
     askInFlightRef.current = true;
     setSubmissionStart(Date.now());
+    bindComposerLaunch(submission.conversation, index);
     setSubmission(submission);
     logger.dir('message_stream', {
       conversationId,

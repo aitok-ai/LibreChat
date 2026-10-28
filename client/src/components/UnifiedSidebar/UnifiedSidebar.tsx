@@ -17,15 +17,17 @@ import {
   DRAWER_UNPAINTED,
 } from './constants';
 import { filesDialogTriggerAtom, showFilesDialogAtom } from '~/store/filesDialog';
-import { ChatContext, ChatFormProvider, ActivePanelProvider } from '~/Providers';
 import { MobileHeader, MobileBottomBar, MobileShortcutTargets } from './mobile';
 import AgentMarketplaceButton from '~/components/Nav/AgentMarketplaceButton';
 import { MyFilesModal } from '~/components/Chat/Input/Files/MyFilesModal';
 import useUnifiedSidebarLinks from '~/hooks/Nav/useUnifiedSidebarLinks';
+import { ChatFormProvider, ActivePanelProvider } from '~/Providers';
 import useSidebarToggle from '~/hooks/Nav/useSidebarToggle';
 import useSidebarState from '~/hooks/Nav/useSidebarState';
-import { useChatHelpers, useLocalize } from '~/hooks';
 import SidePanelNav from '~/components/SidePanel/Nav';
+import { ChatProvider } from '~/hooks/Chat/provider';
+import { createResizeMeasure } from './resize';
+import { useLocalize } from '~/hooks';
 import Sidebar from './Sidebar';
 import { cn } from '~/utils';
 
@@ -35,17 +37,16 @@ function getInitialWidth(): number {
 }
 
 /**
- * Isolates useChatHelpers Recoil subscriptions from the sidebar layout.
- * Atom changes (e.g. during streaming) only re-render this component
- * and the active panel — not the sidebar shell, resize logic, or icon strip.
- * This works because Recoil subscriptions don't propagate to parent components.
+ * Isolates the root pane's chat contract subscriptions from the sidebar layout.
+ * Atom changes (e.g. during streaming) only re-render `ChatProvider` and the
+ * active panel, not the sidebar shell, resize logic, or icon strip, because
+ * atom subscriptions don't propagate to parent components.
  */
 function SidebarChatProvider({ children }: { children: ReactNode }) {
-  const chatHelpers = useChatHelpers(0);
   const sidebarFormMethods = useForm<ChatFormValues>({ defaultValues: { text: '' } });
   return (
     <ChatFormProvider {...sidebarFormMethods}>
-      <ChatContext.Provider value={chatHelpers}>{children}</ChatContext.Provider>
+      <ChatProvider index={0}>{children}</ChatProvider>
     </ChatFormProvider>
   );
 }
@@ -114,45 +115,49 @@ function UnifiedSidebar({
     handleExpand();
   }, [handleExpand, handleLeaveInsights, isInsightsRoute]);
 
-  const handleResizeStart = useCallback(() => {
-    setIsResizing(true);
-    document.body.style.userSelect = 'none';
-    const maxWidth = (window.innerWidth * 0.4) / remScale;
-    /** The scaled minimum can exceed the viewport cap, so it yields to the cap. */
-    const minWidth = Math.min(EXPANDED_MIN, maxWidth);
-    let rafId: number | null = null;
+  const handleResizeStart = useCallback(
+    (event: React.MouseEvent<HTMLElement>) => {
+      setIsResizing(true);
+      document.body.style.userSelect = 'none';
+      const maxWidth = (window.innerWidth * 0.4) / remScale;
+      /** The scaled minimum can exceed the viewport cap, so it yields to the cap. */
+      const minWidth = Math.min(EXPANDED_MIN, maxWidth);
+      const measure = createResizeMeasure(event.currentTarget);
+      let rafId: number | null = null;
 
-    const move = (e: MouseEvent) => {
-      if (rafId != null) {
-        return;
-      }
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const next = Math.max(minWidth, Math.min(e.clientX / remScale, maxWidth));
-        setSidebarWidth(next);
-      });
-    };
+      const move = (e: MouseEvent) => {
+        if (rafId != null) {
+          return;
+        }
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          const next = Math.max(minWidth, Math.min(measure(e.clientX) / remScale, maxWidth));
+          setSidebarWidth(next);
+        });
+      };
 
-    const up = () => {
-      if (rafId != null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      document.body.style.userSelect = '';
-      setIsResizing(false);
-      resizeHandlers.current = null;
-      setSidebarWidth((w) => {
-        localStorage.setItem('side:width', String(Math.round(w)));
-        return w;
-      });
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-    };
+      const up = () => {
+        if (rafId != null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+        document.body.style.userSelect = '';
+        setIsResizing(false);
+        resizeHandlers.current = null;
+        setSidebarWidth((w) => {
+          localStorage.setItem('side:width', String(Math.round(w)));
+          return w;
+        });
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      };
 
-    resizeHandlers.current = { move, up };
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
-  }, [remScale]);
+      resizeHandlers.current = { move, up };
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    },
+    [remScale],
+  );
 
   const handleResizeKeyboard = useCallback(
     (direction: 'shrink' | 'grow') => {
@@ -218,13 +223,13 @@ function UnifiedSidebar({
          * a site banner above that container stays above the drawer too
          * instead of covering its header strip, as it already does for the
          * scrim and the pane. */
-        'bg-surface-sidebar text-text-primary absolute inset-y-0 left-0 flex touch-pan-y touch-pinch-zoom flex-col',
+        'bg-surface-sidebar text-text-primary absolute inset-y-0 inset-s-0 flex touch-pan-y touch-pinch-zoom flex-col',
         /** In dark mode the scrim and the drawer are both near-black, and no
          *  scrim opacity separates them by 3:1, so the drawer draws its own
          *  edge. Light palettes get that separation from the scrim, so the
          *  `drawer-edge` role defaults to the drawer's own fill there. */
-        'border-drawer-edge border-r',
-        expanded ? 'translate-x-0' : '-translate-x-full',
+        'border-drawer-edge border-e',
+        expanded ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
       )}
       style={{
         width: MOBILE_DRAWER_WIDTH,

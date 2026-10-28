@@ -21,7 +21,7 @@ function TimestampText({
       className={cn(
         'message-timestamp text-text-secondary text-xs font-normal',
         revealOnHover &&
-          'duration-theme-normal ml-2 transition-opacity ease-out motion-reduce:transition-none',
+          'duration-theme-normal ms-2 transition-opacity ease-out motion-reduce:transition-none',
         className,
       )}
     >

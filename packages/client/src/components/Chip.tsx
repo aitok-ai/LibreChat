@@ -43,7 +43,8 @@ const chipVariants: (props?: ChipVariantProps & ClassProp) => string = cva(
 );
 
 export interface ChipProps
-  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'>, ChipVariantProps {
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'>,
+    ChipVariantProps {
   children: React.ReactNode;
   onRemove?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   removeLabel?: string;
@@ -77,7 +78,7 @@ const Chip: React.ForwardRefExoticComponent<ChipProps & React.RefAttributes<HTML
             label={removeLabel}
             size="xs"
             shape={shape === 'theme' ? 'theme' : 'round'}
-            className="hover:bg-surface-hover/50 -mr-1 text-current"
+            className="hover:bg-surface-hover/50 -me-1 text-current"
             onClick={(event) => {
               event.stopPropagation();
               onRemove(event);

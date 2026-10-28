@@ -25,8 +25,7 @@ const progressIndicatorVariants: (
 });
 
 export interface ProgressProps
-  extends
-    React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,
+  extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,
     VariantProps<typeof progressIndicatorVariants> {}
 
 const Progress: React.ForwardRefExoticComponent<
@@ -37,7 +36,7 @@ const Progress: React.ForwardRefExoticComponent<
       ref={ref}
       value={value}
       className={cn(
-        'bg-surface-tertiary relative h-2 w-full overflow-hidden rounded-full',
+        'bg-surface-tertiary dir-rtl:-scale-x-100 relative h-2 w-full overflow-hidden rounded-full',
         className,
       )}
       {...props}

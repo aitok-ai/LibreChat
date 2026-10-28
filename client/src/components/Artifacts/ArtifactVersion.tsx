@@ -82,7 +82,7 @@ export default function ArtifactVersion({
         />
       }
       items={dropdownItems}
-      className={isSmallScreen ? '' : 'absolute top-0 right-0 mt-2'}
+      className={isSmallScreen ? '' : 'absolute inset-e-0 top-0 mt-2'}
     />
   );
 }
