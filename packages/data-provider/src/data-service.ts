@@ -20,6 +20,7 @@ import type * as t from './types';
 import { codeSetupAttemptSchema, codeSetupApprovalRequestSchema } from './codeSetup';
 import { TOOL_CALL_PREVIEWS_PARAM, TOOL_CALL_PREVIEWS_VERSION } from './previews';
 import * as permissions from './accessPermissions';
+import { setClientLimits } from './clientLimits';
 import * as endpoints from './api-endpoints';
 import { uploadEventStream } from './upload';
 import * as mcp from './types/mcpServers';
@@ -468,7 +469,12 @@ export const getStartupConfig = (
     mcpCustomUserVars?: Record<string, { title: string; description: string }>;
   }
 > => {
-  return request.get(endpoints.config(options?.context));
+  return request
+    .get<config.TStartupConfig>(endpoints.config(options?.context))
+    .then((startupConfig) => {
+      setClientLimits(startupConfig?.clientLimits);
+      return startupConfig;
+    });
 };
 
 export const getRecommendations = (type: string): Promise<t.TConversation[]> => {
@@ -1395,6 +1401,10 @@ export function resolvePromptGroup(
   version?: number,
 ): Promise<t.TResolvedPromptResponse> {
   return request.get(endpoints.resolvePromptGroup(id, version));
+}
+
+export function getPromptGroupRevisions(id: string): Promise<t.TPromptRevisionChoicesResponse> {
+  return request.get(endpoints.getPromptGroupRevisions(id));
 }
 
 export function createPrompt(payload: t.TCreatePrompt): Promise<t.TCreatePromptResponse> {

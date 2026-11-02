@@ -231,7 +231,10 @@ function SharedView() {
           langfuseSessionUrl={data.langfuseSessionUrl}
           onContinue={handleContinue}
           isContinuing={forkShare.isLoading}
-          analyticsConfigured={hasAnalyticsGtmId(config?.analyticsGtmId)}
+          analyticsConfigured={
+            hasAnalyticsGtmId(config?.analyticsGtmId) &&
+            config?.interface?.analyticsConsent !== false
+          }
         />
         <ShareMessagesProvider messages={data.messages}>
           <MessagesView messagesTree={messagesTree} conversationId={SHARED_CONVO_KEY} />
@@ -263,7 +266,10 @@ function SharedView() {
       <div className="text-text-primary relative flex h-full min-h-0 flex-col" role="presentation">
         {content}
         {footer}
-        <AnalyticsConsent gtmId={config?.analyticsGtmId} />
+        <AnalyticsConsent
+          gtmId={config?.analyticsGtmId}
+          consentRequired={config?.interface?.analyticsConsent !== false}
+        />
       </div>
     </div>
   );

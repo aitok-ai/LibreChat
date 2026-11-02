@@ -1,5 +1,4 @@
-import React from 'react';
-import DragDropOverlay from '~/components/Chat/Input/Files/DragDropOverlay';
+import { DragDropOverlay } from '@librechat/chat/components';
 import DragDropModal from '~/components/Chat/Input/Files/DragDropModal';
 import { DragDropProvider, UploadModalProvider } from '~/Providers';
 import { useDragHelpers } from '~/hooks';
