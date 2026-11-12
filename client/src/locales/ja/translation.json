@@ -2113,7 +2113,6 @@
   "com_ui_video_enable_hint": "動画生成を有効化",
   "com_ui_video_enable": "動画を有効化",
   "com_ui_video_enable_desc": "素材を使って短い動画を生成します",
-  "com_ui_video_requires_mode": "アップロードした動画/音声は、動画生成モードが有効な場合のみ処理されます。",
   "com_ui_video_template": "テンプレート",
   "com_ui_video_platform": "プラットフォーム",
   "com_ui_video_template_talking_head": "トーキングヘッド / 解説",

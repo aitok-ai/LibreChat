@@ -1215,7 +1215,6 @@
   "com_ui_video_enable_hint": "Habilitar generación de vídeo",
   "com_ui_video_enable": "Habilitar vídeo",
   "com_ui_video_enable_desc": "Usa recursos para generar un vídeo corto",
-  "com_ui_video_requires_mode": "Los vídeos/audios subidos solo se procesan cuando el modo de vídeo está activado.",
   "com_ui_video_template": "Plantilla",
   "com_ui_video_platform": "Plataforma",
   "com_ui_video_template_talking_head": "Cabeza parlante / Explicación",

@@ -2096,7 +2096,6 @@
   "com_ui_video_enable_hint": "Ativar geração de vídeo",
   "com_ui_video_enable": "Ativar vídeo",
   "com_ui_video_enable_desc": "Use recursos para gerar um vídeo curto",
-  "com_ui_video_requires_mode": "Vídeos/áudios enviados só são processados quando o modo de vídeo está ativado.",
   "com_ui_video_template": "Modelo",
   "com_ui_video_platform": "Plataforma",
   "com_ui_video_template_talking_head": "Talking head / Explicação",

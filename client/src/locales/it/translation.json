@@ -2245,7 +2245,6 @@
   "com_ui_video_enable_hint": "Abilita generazione video",
   "com_ui_video_enable": "Abilita video",
   "com_ui_video_enable_desc": "Usa risorse per generare un video breve",
-  "com_ui_video_requires_mode": "I video/audio caricati vengono elaborati solo quando la modalità video è attiva.",
   "com_ui_video_template": "Modello",
   "com_ui_video_platform": "Piattaforma",
   "com_ui_video_template_talking_head": "Testa parlante / Spiegazione",

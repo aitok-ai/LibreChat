@@ -2378,7 +2378,6 @@
   "com_ui_video_enable_hint": "Omogoči ustvarjanje videa",
   "com_ui_video_enable": "Omogoči video",
   "com_ui_video_enable_desc": "Uporabite sredstva za ustvarjanje kratkega videa",
-  "com_ui_video_requires_mode": "Naloženi video/zvok se obdeluje le, ko je omogočen video način.",
   "com_ui_video_template": "Predloga",
   "com_ui_video_platform": "Platforma",
   "com_ui_video_template_talking_head": "Govoreča glava / Razlaga",

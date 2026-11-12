@@ -1324,7 +1324,6 @@
   "com_ui_video_enable_hint": "Aktiver videogenerering",
   "com_ui_video_enable": "Aktiver video",
   "com_ui_video_enable_desc": "Bruk filer til å generere en kort video",
-  "com_ui_video_requires_mode": "Opplastet video/lyd behandles bare når videomodus er aktivert.",
   "com_ui_video_template": "Mal",
   "com_ui_video_platform": "Plattform",
   "com_ui_video_template_talking_head": "Snakkende hode / Forklaring",

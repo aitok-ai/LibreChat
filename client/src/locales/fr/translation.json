@@ -1497,7 +1497,6 @@
   "com_ui_video_enable_hint": "Activer la génération de vidéo",
   "com_ui_video_enable": "Activer la vidéo",
   "com_ui_video_enable_desc": "Utilisez des éléments pour générer une courte vidéo",
-  "com_ui_video_requires_mode": "Les vidéos/audio importés ne sont traités que lorsque le mode vidéo est activé.",
   "com_ui_video_template": "Modèle",
   "com_ui_video_platform": "Plateforme",
   "com_ui_video_template_talking_head": "Face caméra / Explication",

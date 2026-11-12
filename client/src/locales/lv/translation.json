@@ -3881,7 +3881,6 @@
   "com_ui_video_enable_hint": "Ieslēgt video ģenerēšanu",
   "com_ui_video_enable": "Ieslēgt video",
   "com_ui_video_enable_desc": "Izmantojiet resursus īsa video izveidei",
-  "com_ui_video_requires_mode": "Augšupielādētie video/audio tiek apstrādāti tikai tad, kad ir ieslēgts video režīms.",
   "com_ui_video_template": "Veidne",
   "com_ui_video_platform": "Platforma",
   "com_ui_video_template_talking_head": "Runājoša galva / Skaidrojums",

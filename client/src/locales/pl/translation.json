@@ -2074,7 +2074,6 @@
   "com_ui_video_enable_hint": "Włącz generowanie wideo",
   "com_ui_video_enable": "Włącz wideo",
   "com_ui_video_enable_desc": "Użyj zasobów, aby wygenerować krótkie wideo",
-  "com_ui_video_requires_mode": "Przesłane wideo/audio jest przetwarzane tylko po włączeniu trybu wideo.",
   "com_ui_video_template": "Szablon",
   "com_ui_video_platform": "Platforma",
   "com_ui_video_template_talking_head": "Gadająca głowa / Wyjaśnienie",

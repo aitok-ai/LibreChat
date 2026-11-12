@@ -880,7 +880,6 @@
   "com_ui_video_enable_hint": "Luba videogenereerimine",
   "com_ui_video_enable": "Luba video",
   "com_ui_video_enable_desc": "Kasuta materjale lühivideo loomiseks",
-  "com_ui_video_requires_mode": "Üles laaditud video/heli töödeldakse ainult siis, kui videorežiim on lubatud.",
   "com_ui_video_template": "Mall",
   "com_ui_video_platform": "Platvorm",
   "com_ui_video_template_talking_head": "Rääkiv pea / Selgitus",

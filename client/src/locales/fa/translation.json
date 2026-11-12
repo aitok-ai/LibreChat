@@ -1438,7 +1438,6 @@
   "com_ui_video_enable_hint": "فعالسازی تولید ویدئو",
   "com_ui_video_enable": "فعالسازی ویدئو",
   "com_ui_video_enable_desc": "برای تولید یک ویدئوی کوتاه از منابع استفاده کنید",
-  "com_ui_video_requires_mode": "ویدئو/صوت بارگذاری‌شده فقط زمانی پردازش می‌شود که حالت ویدئو فعال باشد.",
   "com_ui_video_template": "قالب",
   "com_ui_video_platform": "پلتفرم",
   "com_ui_video_template_talking_head": "گوینده روبه‌دوربین / توضیح",

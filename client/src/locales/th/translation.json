@@ -810,7 +810,6 @@
   "com_ui_video_enable_hint": "เปิดใช้งานการสร้างวิดีโอ",
   "com_ui_video_enable": "เปิดใช้งานวิดีโอ",
   "com_ui_video_enable_desc": "ใช้ทรัพยากรเพื่อสร้างวิดีโอสั้น",
-  "com_ui_video_requires_mode": "วิดีโอ/เสียงที่อัปโหลดจะถูกประมวลผลเมื่อเปิดโหมดวิดีโอเท่านั้น",
   "com_ui_video_template": "เทมเพลต",
   "com_ui_video_platform": "แพลตฟอร์ม",
   "com_ui_video_template_talking_head": "พูดคุย / อธิบาย",

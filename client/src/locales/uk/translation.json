@@ -1176,7 +1176,6 @@
   "com_ui_video_enable_hint": "Увімкнути генерацію відео",
   "com_ui_video_enable": "Увімкнути відео",
   "com_ui_video_enable_desc": "Використовуйте ресурси для створення короткого відео",
-  "com_ui_video_requires_mode": "Завантажені відео/аудіо обробляються лише коли увімкнено режим відео.",
   "com_ui_video_template": "Шаблон",
   "com_ui_video_platform": "Платформа",
   "com_ui_video_template_talking_head": "Говорча голова / Пояснення",

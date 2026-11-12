@@ -858,7 +858,6 @@
   "com_ui_video_enable_hint": "Aktivér videogenerering",
   "com_ui_video_enable": "Aktivér video",
   "com_ui_video_enable_desc": "Brug filer til at generere en kort video",
-  "com_ui_video_requires_mode": "Uploadet video/lyd behandles kun, når videotilstand er aktiveret.",
   "com_ui_video_template": "Skabelon",
   "com_ui_video_platform": "Platform",
   "com_ui_video_template_talking_head": "Talking head / Forklaring",

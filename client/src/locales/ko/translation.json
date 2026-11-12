@@ -1311,7 +1311,6 @@
   "com_ui_video_enable_hint": "비디오 생성 활성화",
   "com_ui_video_enable": "비디오 활성화",
   "com_ui_video_enable_desc": "소재를 사용해 짧은 영상을 생성합니다",
-  "com_ui_video_requires_mode": "업로드한 영상/오디오는 비디오 생성 모드가 활성화된 경우에만 처리됩니다.",
   "com_ui_video_template": "템플릿",
   "com_ui_video_platform": "플랫폼",
   "com_ui_video_template_talking_head": "말하는 화면 / 해설",

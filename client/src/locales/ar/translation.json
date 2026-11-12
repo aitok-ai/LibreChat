@@ -699,7 +699,6 @@
   "com_ui_video_enable_hint": "تمكين إنشاء الفيديو",
   "com_ui_video_enable": "تفعيل الفيديو",
   "com_ui_video_enable_desc": "استخدم الملفات لإنشاء فيديو قصير",
-  "com_ui_video_requires_mode": "يتم معالجة الفيديو/الصوت المرفوع فقط عند تفعيل وضع الفيديو.",
   "com_ui_video_template": "القالب",
   "com_ui_video_platform": "المنصة",
   "com_ui_video_template_talking_head": "حديث أمام الكاميرا / شرح",

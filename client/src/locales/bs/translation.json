@@ -3,7 +3,6 @@
   "com_ui_video_enable_hint": "Omogući generiranje видеа",
   "com_ui_video_enable": "Omogući video",
   "com_ui_video_enable_desc": "Koristite materijale za generisanje kratkog videa",
-  "com_ui_video_requires_mode": "Učitani video/audio se obrađuju samo kada je video način uključen.",
   "com_ui_video_template": "Predložak",
   "com_ui_video_platform": "Platforma",
   "com_ui_video_template_talking_head": "Govorna glava / Objašnjenje",

@@ -1887,7 +1887,6 @@
   "com_ui_video_enable_hint": "Video oluşturmayı etkinleştir",
   "com_ui_video_enable": "Videoyu Etkinleştir",
   "com_ui_video_enable_desc": "Kısa bir video oluşturmak için varlıkları kullanın",
-  "com_ui_video_requires_mode": "Yüklenen video/ses yalnızca video modu etkin olduğunda işlenir.",
   "com_ui_video_template": "Şablon",
   "com_ui_video_platform": "Platform",
   "com_ui_video_template_talking_head": "Konuşan Kafa / Video Anlatım",

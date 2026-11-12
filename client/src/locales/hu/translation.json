@@ -767,7 +767,6 @@
   "com_ui_video_enable_hint": "Videógenerálás engedélyezése",
   "com_ui_video_enable": "Videó engedélyezése",
   "com_ui_video_enable_desc": "Használj eszközöket egy rövid videó készítéséhez",
-  "com_ui_video_requires_mode": "A feltöltött videó/hang csak akkor kerül feldolgozásra, ha a videó mód be van kapcsolva.",
   "com_ui_video_template": "Sablon",
   "com_ui_video_platform": "Platform",
   "com_ui_video_template_talking_head": "Beszélő fej / Magyarázat",

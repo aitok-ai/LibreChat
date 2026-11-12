@@ -568,7 +568,6 @@
   "com_ui_video_enable_hint": "Ota videon generointi käyttöön",
   "com_ui_video_enable": "Ota video käyttöön",
   "com_ui_video_enable_desc": "Käytä aineistoja lyhyen videon luomiseen",
-  "com_ui_video_requires_mode": "Ladatut video-/äänitiedostot käsitellään vain, kun videotila on käytössä.",
   "com_ui_video_template": "Malli",
   "com_ui_video_platform": "Alusta",
   "com_ui_video_template_talking_head": "Puhuva pää / Selitys",

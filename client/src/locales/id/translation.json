@@ -273,7 +273,6 @@
   "com_ui_video_enable_hint": "Aktifkan pembuatan video",
   "com_ui_video_enable": "Aktifkan Video",
   "com_ui_video_enable_desc": "Gunakan aset untuk membuat video pendek",
-  "com_ui_video_requires_mode": "Video/audio yang diunggah hanya diproses saat mode video diaktifkan.",
   "com_ui_video_template": "Template",
   "com_ui_video_platform": "Platform",
   "com_ui_video_template_talking_head": "Kepala Bicara / Penjelasan",

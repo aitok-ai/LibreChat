@@ -1134,7 +1134,6 @@
   "com_ui_video_enable_hint": "Videogeneratie inschakelen",
   "com_ui_video_enable": "Video inschakelen",
   "com_ui_video_enable_desc": "Gebruik assets om een korte video te maken",
-  "com_ui_video_requires_mode": "Geüploade video/audio wordt alleen verwerkt wanneer de videomodus is ingeschakeld.",
   "com_ui_video_template": "Sjabloon",
   "com_ui_video_platform": "Platform",
   "com_ui_video_template_talking_head": "Talking head / Uitleg",

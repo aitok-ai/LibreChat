@@ -3823,7 +3823,6 @@
   "com_ui_video_enable_hint": "Videogenerierung aktivieren",
   "com_ui_video_enable": "Video aktivieren",
   "com_ui_video_enable_desc": "Assets verwenden, um ein kurzes Video zu erstellen",
-  "com_ui_video_requires_mode": "Hochgeladene Videos/Audios werden nur verarbeitet, wenn der Videomodus aktiviert ist.",
   "com_ui_video_template": "Vorlage",
   "com_ui_video_platform": "Plattform",
   "com_ui_video_template_talking_head": "Talking-Head / Erklärung",

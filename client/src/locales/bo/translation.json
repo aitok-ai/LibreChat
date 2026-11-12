@@ -3,7 +3,6 @@
   "com_ui_video_enable_hint": "བརྙན་འཕྲིན་བཟོ་བ་སྒོ་འབྱེད",
   "com_ui_video_enable": "བརྙན་འཕྲིན་སྒོ་འབྱེད",
   "com_ui_video_enable_desc": "མཁོ་ཆས་བེད་སྤྱོད་ནས་ཐུང་མོའི་བརྙན་འཕྲིན་བཟོ།",
-  "com_ui_video_requires_mode": "ཡར་བསྐྱར་བཟོས་པའི་བརྙན་འཕྲིན/སྒྲ་ནི་བརྙན་འཕྲིན་མོད་ལྟར་སྒོ་འབྱེད་པ་ཡོད་སྐབས་མ་གཏོགས་བསྒྲུབ་མི་ཐུབ།",
   "com_ui_video_template": "སྒྲིག་དཔེ",
   "com_ui_video_platform": "མཐུན་རྟེན",
   "com_ui_video_template_talking_head": "གསུང་བཤད་མགོ / བཤད་རྒྱུ",

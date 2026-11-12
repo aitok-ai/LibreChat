@@ -1496,7 +1496,6 @@
   "com_ui_video_enable_hint": "启用视频生成",
   "com_ui_video_enable": "启用视频",
   "com_ui_video_enable_desc": "使用素材生成短视频",
-  "com_ui_video_requires_mode": "上传的视频/音频仅在启用视频生成模式时才会处理。",
   "com_ui_video_template": "模板",
   "com_ui_video_platform": "平台",
   "com_ui_video_template_talking_head": "口播/解说",
