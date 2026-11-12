@@ -8,6 +8,7 @@ export * from './SeriesLabel';
 export * from './Checkbox';
 export * from './DisclosureChevron';
 export * from './HoverCard';
+export * from './Popover';
 export * from './Field';
 export * from './Focus';
 export * from './Input';

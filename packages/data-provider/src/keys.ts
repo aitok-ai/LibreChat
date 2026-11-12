@@ -183,6 +183,7 @@ export enum MutationKeys {
   updateRole = 'updateRole',
   enableTwoFactor = 'enableTwoFactor',
   verifyTwoFactor = 'verifyTwoFactor',
+  cancelTwoFactorSetup = 'cancelTwoFactorSetup',
   registerPasskey = 'registerPasskey',
   renamePasskey = 'renamePasskey',
   deletePasskey = 'deletePasskey',

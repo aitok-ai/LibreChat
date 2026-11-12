@@ -1,3 +1,4 @@
+import { isInlineablePastedText } from '@librechat/chat';
 import {
   Tools,
   LocalStorageKeys,
@@ -26,17 +27,12 @@ import type {
 import type { QueryClient } from '@tanstack/react-query';
 import type { ExtendedFile } from '~/common';
 
-/** Text-routed images use the file action so their extracted preview is reachable. */
-export function usesImagePreview(file: Partial<Pick<TFile, 'type' | 'llmDeliveryPath'>>): boolean {
-  return file.type?.startsWith('image/') === true && file.llmDeliveryPath !== 'text';
-}
-
-export { hydrateFileDeliveryMetadata } from '@librechat/chat';
+export { hydrateFileDeliveryMetadata, usesImagePreview } from '@librechat/chat';
 export type { FileDeliveryMetadataMap } from '@librechat/chat';
 
 export function hasIncompleteFiles(files: Map<string, ExtendedFile>): boolean {
   for (const file of files.values()) {
-    if (file.progress < 1) {
+    if (file.progress < 1 && !isInlineablePastedText(file)) {
       return true;
     }
   }

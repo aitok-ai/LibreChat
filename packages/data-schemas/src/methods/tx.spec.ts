@@ -2859,6 +2859,21 @@ describe('Mistral Large Pricing', () => {
     });
   });
 
+  it('should price Mistral Large 4 at its list $1.36 / $4.18 per MTok', () => {
+    const modelVariations = ['mistral-large-4', 'mistral-large-4-0', 'mistralai/mistral-large-4'];
+
+    modelVariations.forEach((model) => {
+      expect(getValueKey(model)).toBe('mistral-large-4');
+      expect(getMultiplier({ model, tokenType: 'prompt' })).toBe(1.36);
+      expect(getMultiplier({ model, tokenType: 'completion' })).toBe(4.18);
+    });
+  });
+
+  it('should not let Mistral Large 4 shadow the Mistral Large 3 rates', () => {
+    expect(getValueKey('mistral-large-2512')).not.toBe('mistral-large-4');
+    expect(getMultiplier({ model: 'mistral-large-latest', tokenType: 'prompt' })).toBe(0.5);
+  });
+
   it('should keep Mistral Large 2.1 (2411) at $2 / $6 per MTok', () => {
     expect(getValueKey('mistral-large-2411')).toBe('mistral-large-2411');
     expect(getMultiplier({ model: 'mistral-large-2411', tokenType: 'prompt' })).toBe(2);
@@ -3238,6 +3253,21 @@ describe('dot-prefixed Kimi K3 aliases', () => {
       expect(getMultiplier({ model, tokenType: 'completion' })).not.toBe(
         tokenValues['moonshot'].completion,
       );
+    }
+  });
+});
+
+describe('Bedrock NVIDIA Nemotron pricing', () => {
+  it.each([
+    ['nvidia.nemotron-super-3-120b', 0.15, 0.65],
+    ['nvidia.nemotron-nano-3-30b', 0.06, 0.24],
+    ['nvidia.nemotron-nano-9b-v2', 0.06, 0.23],
+    ['nvidia.nemotron-nano-12b-v2', 0.2, 0.6],
+  ])('bills %s at its Bedrock rate, not the default', (model, prompt, completion) => {
+    for (const id of [model, `us.${model}`]) {
+      expect(getValueKey(id)).toBe(model);
+      expect(getMultiplier({ model: id, tokenType: 'prompt' })).toBe(prompt);
+      expect(getMultiplier({ model: id, tokenType: 'completion' })).toBe(completion);
     }
   });
 });

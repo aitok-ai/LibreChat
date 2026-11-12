@@ -24,6 +24,9 @@ import 'jest-canvas-mock';
 // Mock ResizeObserver
 import './resizeObserver.mock';
 
+// Mock IntersectionObserver
+import './intersectionObserver.mock';
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
