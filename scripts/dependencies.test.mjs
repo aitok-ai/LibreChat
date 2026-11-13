@@ -48,10 +48,9 @@ function patched(consumer, dependency, major) {
 
 test('Glob consumers resolve patched majors without changing unrelated matchers', () => {
   for (const [, consumer] of globConsumers) patched(consumer, 'glob', 14);
-  for (const name of ['test-exclude', '@typescript-eslint/typescript-estree']) {
+  for (const name of ['test-exclude', '@typescript-eslint/typescript-estree', 'nodemon']) {
     patched(from(name), 'minimatch', 11);
   }
-  assert.match(from('nodemon')('minimatch/package.json').version, /^10\./);
   for (const name of ['eslint-plugin-import', 'eslint-plugin-react', 'eslint-plugin-jsx-a11y']) {
     const minimatch = from(name)('minimatch');
     assert.equal(typeof minimatch, 'function', name);
@@ -164,6 +163,28 @@ test('follow-redirects strips cross-realm sensitive headers on cross-origin redi
   for (const headers of received) {
     assert.equal(headers['x-api-key'], undefined);
     assert.equal(headers['x-harmless'], 'retained');
+  }
+});
+
+test('Node and Undici enforce integrity metadata separated by ASCII whitespace', async (t) => {
+  const server = createServer((req, res) => res.end('security-regression'));
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  const url = `http://127.0.0.1:${server.address().port}/`;
+  const digest = 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=';
+
+  for (const [name, fetch] of [
+    ['Node', globalThis.fetch],
+    ['Undici', require('undici').fetch],
+  ]) {
+    for (const whitespace of [' ', '\t', '\n', '\f', '\r']) {
+      await assert.rejects(
+        fetch(url, { integrity: `${whitespace}${digest}${whitespace}` }),
+        (error) => error.cause?.message === 'integrity mismatch',
+        `${name}: ${JSON.stringify(whitespace)}`,
+      );
+    }
   }
 });
 

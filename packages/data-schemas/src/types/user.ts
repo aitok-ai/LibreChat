@@ -75,6 +75,8 @@ export interface IUser extends Document {
   termsAcceptedSource?: 'migration';
   /** Internal fence that prevents agent-trigger admission during account deletion. */
   agentTriggerDeletionStartedAt?: Date;
+  /** Durable identity shared by every offline recovery of this erasure attempt. */
+  agentTriggerDeletionAttemptId?: string;
   /** Expiring fences closing subagent admission while bulk deletions drain. */
   subagentAdmissionFences?: Array<{
     token: string;
@@ -163,7 +165,8 @@ export type NewUserData = Partial<UserFields> & { email: string };
 
 /** The created user, or `user_exists` when an account already holds its email or provider identity. */
 export type CreateUserIfAbsentResult =
-  { ok: true; value: UserRecord } | { ok: false; error: { code: 'user_exists' } };
+  | { ok: true; value: UserRecord }
+  | { ok: false; error: { code: 'user_exists' } };
 
 export interface UserDeleteResult {
   deletedCount: number;

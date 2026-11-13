@@ -21,6 +21,7 @@ const {
   sendEvent,
   getModelEndUsage,
   computeUsageCostUSD,
+  captureResponseAccountingUsage,
   GenerationJobManager,
   waitForGenerationSettled,
   writeAttachmentEvent,
@@ -195,6 +196,7 @@ class ModelEndHandler {
                 ? {
                     cache_creation,
                     cache_creation_1h: taggedUsage.input_token_details?.cache_creation_1h,
+                    cache_creation_12h: taggedUsage.input_token_details?.cache_creation_12h,
                     cache_read,
                   }
                 : undefined,
@@ -1581,7 +1583,7 @@ function markSummarizationUsage(usage, metadata) {
  * not consistently include it, and cache normalization depends on it.
  */
 function contextualizeModelUsage(usage, metadata, agentContext = {}) {
-  const taggedUsage = { ...usage };
+  const taggedUsage = captureResponseAccountingUsage(usage, metadata, agentContext);
   const context = agentContext ?? {};
   const invokedProvider = metadata?.__invoked_provider;
   const invokedModel = metadata?.__invoked_model;

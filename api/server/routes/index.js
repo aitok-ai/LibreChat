@@ -37,6 +37,7 @@ const files = require('./files');
 const webhooks = require('./webhooks');
 const share = require('./share');
 const agents = require('./agents');
+const channels = require('./channels');
 const roles = require('./roles');
 const oauth = require('./oauth');
 const tags = require('./tags');
@@ -77,6 +78,7 @@ module.exports = {
   openapi,
   agents,
   videoJobs,
+  channels,
   convos,
   traces,
   search,

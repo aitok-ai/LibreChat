@@ -1194,7 +1194,7 @@ function Palette({
               open/dictating state, rather than restyling the button itself. */}
           <span
             className={cn(
-              'group inline-flex rounded-full',
+              'group rounded-theme-control-round inline-flex',
               (open || dictating) && 'bg-surface-hover',
             )}
           >
@@ -1225,7 +1225,7 @@ function Palette({
               render={
                 <TooltipAnchor
                   description={disclosureLabel}
-                  render={<IconButton label={disclosureLabel} size="md" />}
+                  render={<IconButton label={disclosureLabel} size="md" shape="theme" />}
                 />
               }
               data-testid="composer-palette-button"
