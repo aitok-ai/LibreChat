@@ -32,7 +32,7 @@ import type {
   FormattedMemoriesResult,
   AppConfig,
 } from '@librechat/data-schemas';
-import type { TAttachment, FiltersConfig, MemoryArtifact } from 'librechat-data-provider';
+import type { Agent, TAttachment, FiltersConfig, MemoryArtifact } from 'librechat-data-provider';
 import type { BaseMessage, ToolMessage } from '@librechat/agents/langchain/messages';
 import type { DynamicStructuredTool } from '@librechat/agents/langchain/tools';
 import type { Response as ServerResponse } from 'express';
@@ -788,6 +788,7 @@ export async function processMemory({
   streamId = null,
   jobCreatedAt,
   user,
+  primaryAgent,
   tenantId,
   appConfig,
   isTemporary,
@@ -799,6 +800,7 @@ export async function processMemory({
   userId: string | ObjectId;
   /** Agent partition; omit for the shared personal pool */
   agentId?: string;
+  primaryAgent?: Partial<Agent>;
   memory: string;
   messageId: string;
   conversationId: string;
@@ -953,6 +955,7 @@ ${memory ?? 'No existing memories'}`;
       user: user ? createSafeUser(user) : undefined,
       tenantId,
       body: { conversationId, messageId },
+      agent: primaryAgent,
     });
 
     const artifactPromises: Promise<TAttachment | null>[] = [];
@@ -1084,6 +1087,7 @@ export async function createMemoryProcessor({
   streamId = null,
   jobCreatedAt,
   user,
+  primaryAgent,
   tenantId,
   appConfig,
   isTemporary,
@@ -1095,6 +1099,8 @@ export async function createMemoryProcessor({
   userId: string | ObjectId;
   /** Agent partition; omit for the shared personal pool */
   agentId?: string;
+  /** The primary agent whose turn triggered extraction — see {@link processMemory}. */
+  primaryAgent?: Partial<Agent>;
   memoryMethods: RequiredMemoryMethods;
   /** Reuses the request-scoped formatted snapshot for the chat context. */
   req?: object;
@@ -1179,6 +1185,7 @@ export async function createMemoryProcessor({
           setMemory: memoryMethods.setMemory,
           deleteMemory: memoryMethods.deleteMemory,
           user,
+          primaryAgent,
           tenantId,
           appConfig,
           isTemporary,

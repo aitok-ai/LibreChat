@@ -11,22 +11,19 @@ import {
 import { OAuthSuccess, OAuthError } from '~/components/OAuth';
 import Recommendations from '~/components/ui/Recommendations';
 import { AuthContextProvider } from '~/hooks/AuthContext';
-import ResponseReviewRoute from './ResponseReviewRoute';
 import { importWithRecovery } from '~/lib/assets/lazy';
 import Leaderboard from '~/components/ui/Leaderboard';
 import RouteErrorBoundary from './RouteErrorBoundary';
 import SharedConvo from '~/components/ui/SharedConvo';
 import ChannelLinkRoute from './ChannelLinkRoute';
 import StartupLayout from './Layouts/Startup';
-import MarketplaceRoute from './Marketplace';
 import { codeSetupRoute } from './CodeSetup';
 import Profile from '../components/Profile';
 import LoginLayout from './Layouts/Login';
 import dashboardRoutes from './Dashboard';
 import WithRum from '~/lib/rum/WithRum';
-import ShareRoute from './ShareRoute';
+import ShareEntry from './ShareEntry';
 import ChatRoute from './ChatRoute';
-import Search from './Search';
 import Root from './Root';
 
 const AuthLayout = () => (
@@ -62,6 +59,20 @@ const loadProjectWorkspace = () =>
     Component: m.ProjectWorkspace,
   }));
 
+/** These render messages (search results and reviewed conversations) or the agent marketplace,
+ *  none of which a fresh chat shows, so they load when first visited; `ShareEntry` does the
+ *  same for shared links. */
+const loadResponseReview = () =>
+  importWithRecovery(() => import('./ResponseReviewRoute')).then((m) => ({
+    Component: m.default,
+  }));
+
+const loadSearch = () =>
+  importWithRecovery(() => import('./Search')).then((m) => ({ Component: m.default }));
+
+const loadMarketplace = () =>
+  importWithRecovery(() => import('./Marketplace')).then((m) => ({ Component: m.default }));
+
 const baseEl = document.querySelector('base');
 const baseHref = baseEl?.getAttribute('href') || '/';
 
@@ -69,7 +80,7 @@ export const router = createBrowserRouter(
   [
     {
       path: 'responses/:responseId/review',
-      element: <ResponseReviewRoute />,
+      lazy: loadResponseReview,
       errorElement: <RouteErrorBoundary />,
     },
     {
@@ -79,7 +90,7 @@ export const router = createBrowserRouter(
     },
     {
       path: 'share/:shareId',
-      element: <ShareRoute />,
+      element: <ShareEntry />,
       errorElement: <RouteErrorBoundary />,
     },
     {
@@ -147,88 +158,88 @@ export const router = createBrowserRouter(
             },
             dashboardRoutes,
             codeSetupRoute,
-          ],
-        },
-        {
-          path: '/',
-          element: <Root />,
-          children: [
             {
-              index: true,
-              element: <Navigate to="/c/new" replace={true} />,
-            },
-            {
-              path: 'c/:conversationId?',
-              element: <ChatRoute />,
-            },
-            {
-              path: 'leaderboard',
-              element: <Leaderboard />,
-            },
-            {
-              path: 'home',
-              element: <Recommendations />,
-            },
-            {
-              path: 'profile/:userId?',
-              element: <Profile />,
-            },
-            {
-              path: 'search',
-              element: <Search />,
-            },
-            {
-              path: 'prompts',
-              element: <Navigate to="/c/new" replace={true} />,
-            },
-            {
-              /** Prompts are created from a dialog, so there is no "new" page to land on */
-              path: 'prompts/new',
-              element: <Navigate to="/c/new" replace={true} />,
-            },
-            {
-              path: 'prompts/:promptId',
-              lazy: loadInlinePromptsView,
-            },
-            {
-              path: 'skills',
-              lazy: loadSkillsView,
-            },
-            {
-              path: 'insights',
-              lazy: loadInsightsView,
-            },
-            {
-              path: 'skills/new',
-              lazy: loadSkillsView,
-            },
-            {
-              path: 'skills/:skillId',
-              lazy: loadSkillsView,
-            },
-            {
-              path: 'skills/:skillId/edit',
-              lazy: loadSkillsView,
-            },
-            {
-              path: 'projects',
-              lazy: loadProjectsView,
-            },
-            {
-              path: 'projects/:projectId',
-              lazy: loadProjectWorkspace,
-            },
-            {
-              path: 'agents',
-              element: <MarketplaceRoute />,
-            },
-            {
-              path: 'agents/:category',
-              element: <MarketplaceRoute />,
-            },
-            {
-              path: 'chat/share/:conversationId',
-              element: <SharedConvo />,
+              path: '/',
+              element: <Root />,
+              children: [
+                {
+                  index: true,
+                  element: <Navigate to="/c/new" replace={true} />,
+                },
+                {
+                  path: 'c/:conversationId?',
+                  element: <ChatRoute />,
+                },
+                {
+                  path: 'leaderboard',
+                  element: <Leaderboard />,
+                },
+                {
+                  path: 'home',
+                  element: <Recommendations />,
+                },
+                {
+                  path: 'profile/:userId?',
+                  element: <Profile />,
+                },
+                {
+                  path: 'search',
+                  lazy: loadSearch,
+                },
+                {
+                  path: 'prompts',
+                  element: <Navigate to="/c/new" replace={true} />,
+                },
+                {
+                  /** Prompts are created from a dialog, so there is no "new" page to land on */
+                  path: 'prompts/new',
+                  element: <Navigate to="/c/new" replace={true} />,
+                },
+                {
+                  path: 'prompts/:promptId',
+                  lazy: loadInlinePromptsView,
+                },
+                {
+                  path: 'skills',
+                  lazy: loadSkillsView,
+                },
+                {
+                  path: 'insights',
+                  lazy: loadInsightsView,
+                },
+                {
+                  path: 'skills/new',
+                  lazy: loadSkillsView,
+                },
+                {
+                  path: 'skills/:skillId',
+                  lazy: loadSkillsView,
+                },
+                {
+                  path: 'skills/:skillId/edit',
+                  lazy: loadSkillsView,
+                },
+                {
+                  path: 'projects',
+                  lazy: loadProjectsView,
+                },
+                {
+                  path: 'projects/:projectId',
+                  lazy: loadProjectWorkspace,
+                },
+                {
+                  path: 'agents',
+                  lazy: loadMarketplace,
+                },
+                {
+                  path: 'agents/:category',
+                  lazy: loadMarketplace,
+                },
+                {
+                  path: 'chat/share/:conversationId',
+                  element: <SharedConvo />,
+                },
+              ],
             },
           ],
         },

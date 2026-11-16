@@ -478,6 +478,8 @@ interface CacheStore {
   opts?: {
     store?: {
       keys?: () => IterableIterator<string>;
+      /** Local retention policy; Redis and custom stores keep their existing behavior. */
+      configure?: (limits?: TCustomConfig['configCache']) => void;
     };
   };
 }
@@ -622,7 +624,7 @@ export function _resetOverrideStrictCache(): void {
   _warnedNoTenantInStrictMode = false;
 }
 
-/** Versioned so older heads cannot supply entries built without the local base identity. */
+/** Versioned so older replicas expecting config objects cannot read base-config sentinels. */
 function overrideCacheKey(
   role: string | undefined,
   userId: string | undefined,
@@ -632,7 +634,7 @@ function overrideCacheKey(
   const tenant = tenantId ? `${tenantId}:tenant` : '__default__:global';
   const principal =
     userId && role ? `${role}:${userId}` : userId || role || BASE_CONFIG_PRINCIPAL_ID;
-  return `_OVERRIDE_:${tenant}:${principal}:base-v2:${scopeVersion}`;
+  return `_OVERRIDE_:${tenant}:${principal}:base-v3:${scopeVersion}`;
 }
 
 /**
@@ -889,6 +891,7 @@ export function createAppConfigService(deps: AppConfigServiceDeps): {
     if (generation !== baseGeneration) {
       return baseConfig;
     }
+    cache.opts?.store?.configure?.(baseConfig.config?.configCache);
     if ((await cache.set(BASE_CONFIG_KEY, baseConfig)) === false) {
       throw new Error('Base cache refused configuration publication.');
     }

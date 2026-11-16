@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import type { PaletteListProps, PaletteSources, PaletteSourcesInput } from './palette';
 import type { ComposerBindings } from '../core/shortcuts';
 import { NO_HOST_BINDINGS } from '../core/shortcuts';
 
@@ -34,6 +35,16 @@ export interface ComposerHost {
   useShortcutAriaKey: (action: ComposerShortcutAction) => string | undefined;
   /** Renders a command popover's options through a windowed list; without it every row renders. */
   renderCommandList?: (props: CommandListProps) => ReactNode;
+  /**
+   * Favorites, upload destinations, recent files and the show-all dialogs. The palette calls this
+   * on every render. Without it the palette still opens over the rows it was given.
+   */
+  usePaletteSources?: (input: PaletteSourcesInput) => PaletteSources;
+  /** Renders the palette's rows through a windowed list; without it every row renders. */
+  renderPaletteList?: (props: PaletteListProps) => ReactNode;
+  /** Renders app-owned controls under the palette's rows (fork: the video
+   *  options menu); without it the palette shows no footer row. */
+  renderPaletteTools?: () => ReactNode;
 }
 
 /** Without a host the composer keeps the stock chords and advertises no rebound ones. */
