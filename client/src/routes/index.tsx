@@ -9,16 +9,12 @@ import {
   RequestPasswordReset,
 } from '~/components/Auth';
 import { OAuthSuccess, OAuthError } from '~/components/OAuth';
-import Recommendations from '~/components/ui/Recommendations';
 import { AuthContextProvider } from '~/hooks/AuthContext';
 import { importWithRecovery } from '~/lib/assets/lazy';
-import Leaderboard from '~/components/ui/Leaderboard';
 import RouteErrorBoundary from './RouteErrorBoundary';
-import SharedConvo from '~/components/ui/SharedConvo';
 import ChannelLinkRoute from './ChannelLinkRoute';
 import StartupLayout from './Layouts/Startup';
 import { codeSetupRoute } from './CodeSetup';
-import Profile from '../components/Profile';
 import LoginLayout from './Layouts/Login';
 import dashboardRoutes from './Dashboard';
 import WithRum from '~/lib/rum/WithRum';
@@ -72,6 +68,26 @@ const loadSearch = () =>
 
 const loadMarketplace = () =>
   importWithRecovery(() => import('./Marketplace')).then((m) => ({ Component: m.default }));
+
+const loadLeaderboard = () =>
+  importWithRecovery(() => import('~/components/ui/Leaderboard')).then((m) => ({
+    Component: m.default,
+  }));
+
+const loadRecommendations = () =>
+  importWithRecovery(() => import('~/components/ui/Recommendations')).then((m) => ({
+    Component: m.default,
+  }));
+
+const loadProfile = () =>
+  importWithRecovery(() => import('../components/Profile')).then((m) => ({
+    Component: m.default,
+  }));
+
+const loadSharedConvo = () =>
+  importWithRecovery(() => import('~/components/ui/SharedConvo')).then((m) => ({
+    Component: m.default,
+  }));
 
 const baseEl = document.querySelector('base');
 const baseHref = baseEl?.getAttribute('href') || '/';
@@ -172,15 +188,15 @@ export const router = createBrowserRouter(
                 },
                 {
                   path: 'leaderboard',
-                  element: <Leaderboard />,
+                  lazy: loadLeaderboard,
                 },
                 {
                   path: 'home',
-                  element: <Recommendations />,
+                  lazy: loadRecommendations,
                 },
                 {
                   path: 'profile/:userId?',
-                  element: <Profile />,
+                  lazy: loadProfile,
                 },
                 {
                   path: 'search',
@@ -237,7 +253,7 @@ export const router = createBrowserRouter(
                 },
                 {
                   path: 'chat/share/:conversationId',
-                  element: <SharedConvo />,
+                  lazy: loadSharedConvo,
                 },
               ],
             },

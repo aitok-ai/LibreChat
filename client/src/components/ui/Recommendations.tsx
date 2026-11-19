@@ -1,10 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Spinner } from '@librechat/client';
 import { useNavigate } from 'react-router-dom';
 import { alternateName } from 'librechat-data-provider';
-import { Tabs, TabsList, TabsTrigger, useToastContext } from '@librechat/client';
+import { Heart, MessagesSquare, Share2, Eye } from 'lucide-react';
 import { useLikeConversationMutation } from 'librechat-data-provider/react-query';
 import { TConversation, TMessage, TUser, buildTree } from 'librechat-data-provider';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Avatar,
+  Button,
+  EmptyState,
+  Spinner,
+  useToastContext,
+} from '@librechat/client';
 import useDocumentTitle from '~/hooks/useDocumentTitle';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { useScreenshot, useLocalize } from '~/hooks';
@@ -86,7 +95,7 @@ export default function Recommendations() {
       if (modelLabel) _title += ` as ${modelLabel}`;
     }
 
-    if (_title.length > 16) _title = _title.slice(0, 16) + '...';
+    if (_title.length > 28) _title = _title.slice(0, 28) + '…';
     return _title;
   };
 
@@ -256,9 +265,7 @@ export default function Recommendations() {
       setNumOfLikes(convoData[convoIdx].likes || 0);
 
       const isoDate = new Date(convoData[convoIdx].createdAt);
-      setConvoCreatedDate(
-        `${isoDate.getFullYear()}-${isoDate.getMonth() + 1}-${isoDate.getDate()}`,
-      );
+      setConvoCreatedDate(isoDate.toISOString().slice(0, 10));
 
       const likedBy = convoData[convoIdx].likedBy;
       setLiked(likedBy ? !!likedBy[user.id] : false);
@@ -293,9 +300,7 @@ export default function Recommendations() {
   const renderMessages = () => {
     if (convoData?.length === 0) {
       return (
-        <div className="text-text-tertiary flex h-[300px] items-center justify-center">
-          {emptyMessage()}
-        </div>
+        <EmptyState icon={MessagesSquare} description={emptyMessage()} className="min-h-[300px]" />
       );
     }
     if (hasConvo && msgTree && convoUser) {
@@ -317,9 +322,9 @@ export default function Recommendations() {
   };
 
   return (
-    <div className="flex flex-col gap-4 overflow-y-auto pt-4">
-      {/* Tab bar */}
-      <div className="mx-auto w-full max-w-3xl">
+    <div className="bg-surface-canvas flex h-full flex-col overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pt-4 pb-8">
+        {/* Tab bar */}
         <Tabs value={tabValue} className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="recent" className={tabClasses} onClick={tabClickHandler('recent')}>
@@ -341,106 +346,101 @@ export default function Recommendations() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
-      </div>
 
-      {/* Conversation card */}
-      <div className="border-border-light bg-surface-primary mx-auto w-full max-w-3xl overflow-hidden rounded-xl border shadow-sm">
-        {/* Card header */}
-        <div className="border-border-light bg-surface-secondary border-b px-5 py-3">
-          <div className="flex items-center justify-between gap-3">
-            {/* Title + author */}
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              {convoUser && (
-                <button
-                  onClick={navigateToProfile}
-                  className="hover:bg-surface-hover flex shrink-0 items-center gap-2 rounded-lg px-2 py-1 transition-colors"
-                >
-                  <img
-                    className="h-7 w-7 rounded-full"
-                    src={
-                      convoUser?.avatar ||
-                      `https://api.dicebear.com/6.x/initials/svg?seed=${convoUser?.name}&fontFamily=Verdana&fontSize=36`
-                    }
-                    alt="avatar"
-                  />
-                  <span className="text-text-secondary truncate text-sm font-medium">
-                    {convoUser?.username}
-                  </span>
-                </button>
-              )}
-              <span className="bg-surface-tertiary text-text-secondary shrink-0 rounded-md px-2 py-0.5 text-xs font-medium">
-                {getConversationTitle()}
-              </span>
-            </div>
+        {/* Conversation card */}
+        <div className="border-border-light bg-surface-primary w-full overflow-hidden rounded-xl border shadow-sm">
+          {/* Card header */}
+          <div className="border-border-light bg-surface-secondary border-b px-5 py-4">
+            <div className="flex items-start justify-between gap-4">
+              {/* Title + author */}
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  {convoUser && (
+                    <button
+                      type="button"
+                      onClick={navigateToProfile}
+                      aria-label={`${localize('com_ui_profile')}: ${convoUser.username ?? ''}`}
+                      className="hover:bg-surface-hover flex shrink-0 items-center gap-2 rounded-lg px-1 py-1 transition-colors"
+                    >
+                      <Avatar user={convoUser} size={28} />
+                      <span className="text-text-primary truncate text-sm font-medium">
+                        {convoUser?.username}
+                      </span>
+                    </button>
+                  )}
+                  {getConversationTitle() && (
+                    <span className="bg-surface-tertiary text-text-primary max-w-full truncate rounded-full px-2.5 py-0.5 text-xs font-medium">
+                      {getConversationTitle()}
+                    </span>
+                  )}
+                </div>
+                {hasConvo && currentConvo?.title && (
+                  <h2 className="text-text-primary line-clamp-2 text-base font-semibold">
+                    {currentConvo.title}
+                  </h2>
+                )}
+                <div className="text-text-secondary flex items-center gap-2 text-xs">
+                  <span>{ConvoCreatedDate}</span>
+                </div>
+              </div>
 
-            {/* Actions */}
-            <div className="flex shrink-0 items-center gap-1">
-              <button
-                onClick={copyShareLinkHandler}
-                className="text-text-tertiary hover:bg-surface-hover hover:text-text-secondary flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+              {/* Actions */}
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  variant="subtle"
+                  size="sm"
+                  onClick={copyShareLinkHandler}
+                  aria-label={localize('com_ui_share')}
                 >
-                  <path
-                    d="M9 6L12 3M12 3L15 6M12 3V13M7 10C6.068 10 5.602 10 5.235 10.152C4.745 10.355 4.355 10.745 4.152 11.235C4 11.602 4 12.068 4 13V17.8C4 18.92 4 19.48 4.218 19.908C4.41 20.284 4.715 20.59 5.092 20.782C5.519 21 6.079 21 7.197 21H16.804C17.922 21 18.481 21 18.908 20.782C19.284 20.59 19.591 20.284 19.782 19.908C20 19.48 20 18.921 20 17.803V13C20 12.068 19.999 11.602 19.848 11.235C19.645 10.745 19.255 10.355 18.765 10.152C18.398 10 17.932 10 17 10"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                {localize('com_ui_share')}
-              </button>
-
-              <button
-                onClick={likeConversation}
-                className="hover:bg-surface-hover flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm transition-colors"
-              >
-                <svg
-                  className="h-4 w-4"
-                  stroke="currentColor"
-                  fill={liked ? 'currentColor' : 'none'}
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                </svg>
-                <span className={liked ? 'text-status-error font-medium' : 'text-text-tertiary'}>
-                  {localize('com_ui_number_of_likes', {
+                  <Share2 className="size-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">{localize('com_ui_share')}</span>
+                </Button>
+                <Button
+                  variant="subtle"
+                  size="sm"
+                  onClick={likeConversation}
+                  aria-label={localize('com_ui_number_of_likes', {
                     0: numOfLikes ? numOfLikes.toString() : '0',
                   })}
+                  aria-pressed={liked}
+                >
+                  <Heart
+                    className={`size-4 ${liked ? 'text-status-error fill-current' : ''}`}
+                    aria-hidden="true"
+                  />
+                  <span className={liked ? 'text-status-error font-medium' : ''}>
+                    {localize('com_ui_number_of_likes', {
+                      0: numOfLikes ? numOfLikes.toString() : '0',
+                    })}
+                  </span>
+                </Button>
+                <span
+                  className="text-text-primary flex items-center gap-1 px-2 text-sm"
+                  title={localize('com_ui_number_of_views', {
+                    0: viewCount ? viewCount.toString() : '0',
+                  })}
+                >
+                  <Eye className="size-4" aria-hidden="true" />
+                  {localize('com_ui_number_of_views', {
+                    0: viewCount ? viewCount.toString() : '0',
+                  })}
                 </span>
-              </button>
-
-              <span className="text-text-tertiary px-2 text-sm">
-                {localize('com_ui_number_of_views', { 0: viewCount ? viewCount.toString() : '0' })}
-              </span>
+              </div>
             </div>
           </div>
 
-          {/* Meta row */}
-          {hasConvo && currentConvo?.title && (
-            <div className="text-text-primary mt-2 text-sm font-semibold">{currentConvo.title}</div>
-          )}
-          <div className="text-text-tertiary mt-1 text-xs">{ConvoCreatedDate}</div>
-        </div>
+          {/* Messages */}
+          <div className="relative min-h-[300px] overflow-hidden" ref={screenshotTargetRef}>
+            {renderMessages()}
 
-        {/* Messages */}
-        <div className="relative min-h-[300px] overflow-hidden" ref={screenshotTargetRef}>
-          {renderMessages()}
-
-          {/* Page switchers */}
-          {hasConvo && convoDataLength > 1 && (
-            <>
-              <SwitchPage key="left_switch" switchHandler={prevConvo} direction="left" />
-              <SwitchPage key="right_switch" switchHandler={nextConvo} direction="right" />
-            </>
-          )}
+            {/* Page switchers */}
+            {hasConvo && convoDataLength > 1 && (
+              <>
+                <SwitchPage key="left_switch" switchHandler={prevConvo} direction="left" />
+                <SwitchPage key="right_switch" switchHandler={nextConvo} direction="right" />
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -557,6 +557,23 @@ describe('createLoadConfigModels – scoped discovery', () => {
     });
   });
 
+  it('serves a slash-delimited default model from a non-fetching custom endpoint', async () => {
+    const fetchModels = jest.fn();
+    const load = createLoadConfigModels({
+      getAppConfig: jest.fn(),
+      getUserKeyValues: jest.fn(),
+      fetchModels,
+    });
+    const magpie = endpoint('Magpie', {
+      models: { default: ['group/magpie-model'], fetch: false },
+    });
+
+    await expect(load(request([magpie]), 'Magpie')).resolves.toEqual({
+      Magpie: ['group/magpie-model'],
+    });
+    expect(fetchModels).not.toHaveBeenCalled();
+  });
+
   it('does not fall back to the aggregate for an unknown or differently cased name', async () => {
     const fetchModels = jest.fn();
     const getUserKeyValues = jest.fn();

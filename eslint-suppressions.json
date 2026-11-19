@@ -678,30 +678,6 @@
       "count": 8
     }
   },
-  "client/src/components/Profile/LikedConversation.tsx": {
-    "shadcn/no-raw-colors": {
-      "count": 6
-    }
-  },
-  "client/src/components/Profile/PublicConversations.tsx": {
-    "shadcn/no-raw-colors": {
-      "count": 8
-    }
-  },
-  "client/src/components/Profile/index.tsx": {
-    "shadcn/no-arbitrary-values": {
-      "count": 2
-    },
-    "shadcn/no-raw-colors": {
-      "count": 167
-    },
-    "shadcn/no-restyle": {
-      "count": 49
-    },
-    "shadcn/no-unknown-classes": {
-      "count": 1
-    }
-  },
   "client/src/components/Projects/ProjectChatOptions.tsx": {
     "shadcn/no-restyle": {
       "count": 1

@@ -41,6 +41,7 @@ const endpointsConfig: TEndpointsConfig = {
 };
 const startupConfig: TStartupConfig = {
   appTitle: 'Test',
+  proMemberPaymentURL: '',
   discordLoginEnabled: false,
   facebookLoginEnabled: false,
   githubLoginEnabled: false,
@@ -69,12 +70,12 @@ const startupConfig: TStartupConfig = {
   interface: configSchema.parse({ version: '1.3.18' }).interface,
 };
 
-function setup(startup = startupConfig) {
+function setup(startup = startupConfig, configuredEndpoints = endpointsConfig) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
     logger: { log: console.log, warn: console.warn, error: () => {} },
   });
-  client.setQueryData([QueryKeys.endpoints], endpointsConfig);
+  client.setQueryData([QueryKeys.endpoints], configuredEndpoints);
   client.setQueryData(startupConfigKey(false), startup);
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -211,6 +212,33 @@ describe('useModelCatalog', () => {
     await waitFor(() => expect(result.current.data.openAI).toEqual(['gpt-4o']));
     expect(getModels).toHaveBeenCalledTimes(1);
     expect(getModels).toHaveBeenCalledWith(EModelEndpoint.openAI);
+  });
+
+  it('loads a custom endpoint with a slash-delimited model id', async () => {
+    const magpieEndpoints: TEndpointsConfig = {
+      Magpie: { type: EModelEndpoint.custom, modelDisplayLabel: 'Magpie', order: 0 },
+    };
+    getModels.mockResolvedValue({ Magpie: ['group/magpie-model'] });
+    activateCatalog('models');
+    const { wrapper } = setup(startupConfig, magpieEndpoints);
+    const { result } = renderHook(
+      () =>
+        useEndpoints({
+          agents: [],
+          endpointsConfig: magpieEndpoints,
+          startupConfig,
+        }),
+      { wrapper },
+    );
+
+    await waitFor(() =>
+      expect(result.current.mappedEndpoints[0]).toMatchObject({
+        value: 'Magpie',
+        hasModels: true,
+        models: [{ name: 'group/magpie-model', isGlobal: false }],
+      }),
+    );
+    expect(getModels).toHaveBeenCalledWith('Magpie');
   });
 
   it('keeps endpoints visible while their independent model lists are unresolved', async () => {

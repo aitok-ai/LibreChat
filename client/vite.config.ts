@@ -627,7 +627,7 @@ function readLoadingLabels(): Record<string, string> {
  * build instead.
  */
 const LAZY_ONLY_PACKAGES =
-  /\/node_modules\/(?:@sentry|@hyperdx|@opentelemetry|katex|rehype-katex|highlight\.js|lowlight|rehype-highlight|mermaid|@codesandbox|@tanstack\/react-query-devtools|superjson|@mcp-ui|html-to-image|heic-to|monaco-editor)\//;
+  /\/node_modules\/(?:@sentry|@hyperdx|@opentelemetry|katex|rehype-katex|highlight\.js|lowlight|rehype-highlight|mermaid|@codesandbox|@tanstack\/react-query-devtools|superjson|@mcp-ui|html-to-image|heic-to|monaco-editor)\/(?!node_modules\/)/;
 
 /**
  * App modules that only message surfaces load. A static import of a barrel that registers them

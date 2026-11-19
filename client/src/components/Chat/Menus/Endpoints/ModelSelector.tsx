@@ -1,5 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { TooltipAnchor } from '@librechat/client';
+import { QueryKeys } from 'librechat-data-provider';
+import { useQueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 import type { ModelSelectorProps } from '~/common';
 import {
   renderModelSpecs,
@@ -17,15 +20,28 @@ import { isModelSelectorShown } from './shown';
 import DialogManager from './DialogManager';
 import { useLocalize } from '~/hooks';
 
-function activateSelectorCatalogs(open: boolean) {
+export function activateSelectorCatalogs(
+  open: boolean,
+  queryClient: Pick<QueryClient, 'invalidateQueries'>,
+) {
   if (!open) return;
   activateCatalog('models');
   activateCatalog('agents');
   activateCatalog('assistants');
+  /** Endpoint and startup config queries otherwise stay fresh forever. Refresh them when the
+   * selector opens so a backend restart or admin config change reaches the model menu. */
+  void queryClient.invalidateQueries([QueryKeys.endpoints]);
+  void queryClient.invalidateQueries([QueryKeys.startupConfig]);
+  void queryClient.invalidateQueries([QueryKeys.models]);
 }
 
 function ModelSelectorContent() {
   const localize = useLocalize();
+  const queryClient = useQueryClient();
+  const handleOpenChange = useCallback(
+    (open: boolean) => activateSelectorCatalogs(open, queryClient),
+    [queryClient],
+  );
   const modelSelectorHint = useShortcutHint('openModelSelector', localize('com_ui_select_model'));
   const modelSelectorAriaKey = useShortcutAriaKey('openModelSelector');
 
@@ -96,7 +112,7 @@ function ModelSelectorContent() {
   return (
     <div className="relative flex max-w-[60vw] min-w-0 flex-col items-center gap-2 sm:max-w-xs">
       <Menu
-        onOpenChange={activateSelectorCatalogs}
+        onOpenChange={handleOpenChange}
         values={selectedValues}
         onValuesChange={(values: Record<string, any>) => {
           setSelectedValues({

@@ -20,7 +20,7 @@ function PublicConversations() {
     return (
       <div className="group relative my-2 flex cursor-pointer flex-row items-center">
         <div
-          className="flex h-full w-full flex-row items-center gap-2 rounded-lg px-2 py-2 text-base hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
+          className="text-text-primary hover:bg-surface-hover flex h-full w-full flex-row items-center gap-2 rounded-lg px-2 py-2 text-base"
           onClick={() => {
             if (convo.conversationId) {
               navigate(`/chat/share/${convo.conversationId}`);
@@ -31,7 +31,7 @@ function PublicConversations() {
           <div className="w-56 truncate">{convo.title || 'New Chat'}</div>
         </div>
         <button
-          className="visible absolute right-1 z-10 rounded-md p-1 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-600"
+          className="text-text-primary hover:bg-surface-hover visible absolute right-1 z-10 rounded-md p-1"
           onClick={() => {
             if (copied === true || !convo.conversationId) {
               return;
@@ -104,7 +104,7 @@ function PublicConversations() {
 
   if (conversations.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+      <div className="text-text-tertiary flex flex-col items-center justify-center py-12">
         <svg
           className="mb-3 h-16 w-16 opacity-50"
           fill="none"

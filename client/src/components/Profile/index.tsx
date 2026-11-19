@@ -5,7 +5,7 @@ import { EditIcon } from '@librechat/client';
 import { CheckMark } from '@librechat/client';
 import { TUser } from 'librechat-data-provider';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Tabs, TabsList, TabsTrigger } from '@librechat/client';
+import { Tabs, TabsList, TabsTrigger, Avatar } from '@librechat/client';
 import {
   useFollowUserMutation,
   //useGetStartupConfig,
@@ -54,7 +54,7 @@ function ProfileContent() {
     return (
       <div className="group relative my-1 flex cursor-pointer flex-row items-center">
         <div
-          className="flex h-full w-full flex-row items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-base transition-all hover:border-gray-200 hover:bg-gray-50 hover:shadow-sm dark:text-gray-200 dark:hover:border-gray-700 dark:hover:bg-gray-800"
+          className="text-text-primary hover:border-border-medium hover:bg-surface-hover flex h-full w-full flex-row items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-base transition-all hover:shadow-sm"
           onClick={() => {
             navigate(`/profile/${id}`);
           }}
@@ -66,17 +66,15 @@ function ProfileContent() {
           tabIndex={0}
           role="button"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-sm">
+          <div className="bg-avatar-fill text-avatar-text flex h-10 w-10 items-center justify-center rounded-full shadow-sm">
             <UserIcon />
           </div>
-          <div className="flex-1 truncate font-medium text-gray-900 dark:text-gray-100">
-            {info.username}
-          </div>
+          <div className="text-text-primary flex-1 truncate font-medium">{info.username}</div>
         </div>
 
         {/*Copy profile URL button */}
         <button
-          className="absolute right-2 z-10 rounded-lg p-2 text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+          className="text-text-tertiary hover:bg-surface-hover hover:text-text-primary absolute right-2 z-10 rounded-lg p-2 opacity-0 transition-all group-hover:opacity-100"
           onClick={() => {
             if (copied === true) {
               return;
@@ -91,7 +89,7 @@ function ProfileContent() {
           aria-label="分享个人资料"
         >
           {copied ? (
-            <div className="flex flex-row items-center gap-1.5 text-sm font-medium text-green-600 dark:text-green-400">
+            <div className="text-status-success flex flex-row items-center gap-1.5 text-sm font-medium">
               <svg
                 stroke="currentColor"
                 fill="none"
@@ -163,7 +161,7 @@ function ProfileContent() {
   };
 
   // submit biography
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const requestBody = {
       biography: bio,
@@ -193,13 +191,13 @@ function ProfileContent() {
     }
   };
 
-  const handleUsernameChange = (e) => {
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Update the newUsername state as the user types
     setNewUsername(e.target.value);
   };
 
   // submit username
-  const handleChangeUsername = async (e) => {
+  const handleChangeUsername = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('newUsername', newUsername);
     const requestBody = {
@@ -310,7 +308,7 @@ function ProfileContent() {
   return (
     <>
       <button
-        className="absolute top-12 right-0 mx-2 my-1 flex w-fit flex-row items-center rounded-md px-3 py-2 text-gray-800 hover:bg-gray-200 md:top-1 md:left-12 dark:text-gray-200 dark:hover:bg-gray-600"
+        className="text-text-primary hover:bg-surface-hover absolute top-12 right-0 mx-2 my-1 flex w-fit flex-row items-center rounded-md px-3 py-2 md:top-1 md:left-12"
         onClick={() => {
           history.back();
         }}
@@ -334,28 +332,21 @@ function ProfileContent() {
       </button>
       <div className="flex h-full flex-col justify-center md:mx-36">
         <div className="mt-6 flex flex-col flex-wrap items-start md:my-4 md:flex-row md:gap-6">
-          <div className="row flex items-center">
+          <div className="flex items-center">
             <div
               title="User Icon"
               className="relative mx-4 my-1 flex items-center justify-center md:my-3 md:ml-12"
             >
-              <img
-                className="rounded-md"
-                src={
-                  profileUser?.avatar ||
-                  `https://api.dicebear.com/6.x/initials/svg?seed=${profileUser?.name}&fontFamily=Verdana&fontSize=36&size=96`
-                }
-                alt="avatar"
-              />
+              <Avatar user={profileUser ?? undefined} size={96} />
             </div>
-            <div className="mx-3 flex flex-col justify-center gap-4 text-xl dark:text-gray-200">
+            <div className="text-text-primary mx-3 flex flex-col justify-center gap-4 text-xl">
               <div>{profileUser?.name}</div>
               <div onClick={handleUsernameClick}>
                 {isEditing ? (
                   <div>
                     <form onSubmit={handleChangeUsername}>
                       <input
-                        className="pl-2 text-black"
+                        className="text-text-primary pl-2"
                         type="text"
                         id="newUsernameInput"
                         placeholder="Enter new username"
@@ -379,7 +370,7 @@ function ProfileContent() {
           {/*Copy profile page URL button */}
           <div className="flex flex-row items-center gap-4 self-center px-3 py-3 text-lg">
             <button
-              className="w-32 text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-gray-200"
+              className="text-text-secondary hover:text-text-primary w-32"
               onClick={() => {
                 if (copied) {
                   return;
@@ -436,7 +427,7 @@ function ProfileContent() {
             </button>
             {/*Number of followers */}
             <button
-              className="flex w-24 flex-col items-center leading-[22px] text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-gray-200"
+              className="text-text-secondary hover:text-text-primary flex w-24 flex-col items-center leading-6"
               onClick={() => {
                 setTabValue('followers');
               }}
@@ -447,7 +438,7 @@ function ProfileContent() {
             </button>
             {/*Number of following */}
             <button
-              className="flex w-24 flex-col items-center leading-[22px] text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-gray-200"
+              className="text-text-secondary hover:text-text-primary flex w-24 flex-col items-center leading-6"
               onClick={() => {
                 setTabValue('following');
               }}
@@ -460,7 +451,7 @@ function ProfileContent() {
           {/*Follow user button */}
           {userId !== user?.id && profileUser && user && (
             <button
-              className="w-24 self-center rounded-md bg-gray-200 px-3 py-1 text-center text-lg font-bold text-gray-800 hover:text-black dark:bg-gray-600 dark:text-gray-400 dark:hover:text-gray-200"
+              className="bg-surface-secondary text-text-primary hover:bg-surface-hover w-24 self-center rounded-md px-3 py-1 text-center text-lg font-bold"
               onClick={followUserController}
             >
               {isFollower ? localize('com_ui_unfollow') : localize('com_ui_follow')}
@@ -472,10 +463,10 @@ function ProfileContent() {
           <div className="mx-4 my-4 md:mx-12">
             {proMemberExpiredAt && proMemberExpiredAt > new Date() ? (
               // Pro会员卡片
-              <div className="rounded-xl border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 shadow-md dark:border-blue-400 dark:from-blue-900/20 dark:to-indigo-900/20">
+              <div className="border-status-info-border bg-status-info-subtle rounded-xl border p-6 shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-white">
+                    <div className="bg-status-info text-text-inverted flex h-12 w-12 items-center justify-center rounded-full">
                       <svg
                         className="h-6 w-6"
                         fill="none"
@@ -491,10 +482,10 @@ function ProfileContent() {
                       </svg>
                     </div>
                     <div>
-                      <div className="text-lg font-semibold text-blue-700 dark:text-blue-300">
+                      <div className="text-status-info text-lg font-semibold">
                         {localize('com_ui_pro_member')}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="text-text-secondary text-sm">
                         {localize('com_ui_pro_member_expired_at')}:{' '}
                         {proMemberExpiredAt.getFullYear()}-
                         {String(proMemberExpiredAt.getMonth() + 1).padStart(2, '0')}-
@@ -504,7 +495,7 @@ function ProfileContent() {
                   </div>
                   <button
                     type="button"
-                    className="rounded-lg bg-blue-500 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-95"
+                    className="bg-surface-submit text-text-on-status hover:bg-surface-submit-hover rounded-lg px-6 py-2.5 font-medium shadow-sm transition-all hover:shadow-md active:scale-95"
                     onClick={() =>
                       window.open(
                         `${startupConfig?.proMemberPaymentURL}?locale=${lang}&prefilled_email=${profileUser?.email}`,
@@ -517,10 +508,10 @@ function ProfileContent() {
               </div>
             ) : (
               // 免费会员卡片
-              <div className="rounded-xl border-2 border-gray-300 bg-gradient-to-r from-gray-50 to-slate-50 p-6 shadow-md dark:border-gray-600 dark:from-gray-800/50 dark:to-slate-800/50">
+              <div className="border-border-light bg-surface-secondary rounded-xl border p-6 shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-400 text-white dark:bg-gray-600">
+                    <div className="bg-avatar-fill text-avatar-text flex h-12 w-12 items-center justify-center rounded-full">
                       <svg
                         className="h-6 w-6"
                         fill="none"
@@ -536,17 +527,17 @@ function ProfileContent() {
                       </svg>
                     </div>
                     <div>
-                      <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                      <div className="text-text-secondary text-lg font-semibold">
                         {localize('com_ui_free_member')}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-text-tertiary text-sm">
                         {localize('com_ui_upgrade_message')}
                       </div>
                     </div>
                   </div>
                   <button
                     type="button"
-                    className="rounded-lg bg-blue-500 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-blue-600 hover:shadow-md active:scale-95"
+                    className="bg-surface-submit text-text-on-status hover:bg-surface-submit-hover rounded-lg px-6 py-2.5 font-medium shadow-sm transition-all hover:shadow-md active:scale-95"
                     onClick={() =>
                       window.open(
                         `${startupConfig?.proMemberPaymentURL}?locale=${lang}&prefilled_email=${profileUser?.email}`,
@@ -564,43 +555,38 @@ function ProfileContent() {
         {/* Monthly Quota Usage - 优化的使用情况表格 */}
         {Object.keys(quotaUsage).length > 0 && (
           <div className="mx-4 my-4 md:mx-12">
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            <div className="border-border-light bg-surface-primary overflow-hidden rounded-xl border shadow-sm">
+              <div className="border-border-light bg-surface-secondary border-b px-6 py-4">
+                <h3 className="text-text-primary text-lg font-semibold">
                   {localize('com_ui_usage_30days')}
                 </h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <tr className="border-border-light bg-surface-secondary border-b">
+                      <th className="text-text-secondary px-6 py-3 text-left text-sm font-semibold">
                         {localize('com_ui_model')}
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      <th className="text-text-secondary px-6 py-3 text-left text-sm font-semibold">
                         {localize('com_ui_usage_count')}
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      <th className="text-text-secondary px-6 py-3 text-left text-sm font-semibold">
                         {localize('com_ui_quota')}
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="divide-border-light divide-y">
                     {Object.entries(quotaUsage).map(([key, value]) => (
-                      <tr
-                        key={key}
-                        className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                      >
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {key}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                      <tr key={key} className="hover:bg-surface-hover transition-colors">
+                        <td className="text-text-primary px-6 py-4 text-sm font-medium">{key}</td>
+                        <td className="text-text-secondary px-6 py-4 text-sm">
                           <div className="flex items-center gap-2">
                             <span>{value.consumed}</span>
-                            <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div className="bg-surface-tertiary h-2 w-24 overflow-hidden rounded-full">
                               {}
                               <div
-                                className="h-full rounded-full bg-blue-500 transition-all"
+                                className="bg-status-info h-full rounded-full transition-all"
                                 style={{
                                   width: `${Math.min((value.consumed / value.quota) * 100, 100)}%`,
                                 }}
@@ -608,9 +594,7 @@ function ProfileContent() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                          {value.quota}
-                        </td>
+                        <td className="text-text-secondary px-6 py-4 text-sm">{value.quota}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -624,14 +608,14 @@ function ProfileContent() {
         <div className="mx-4 my-4 md:mx-12">
           {userId === user?.id ? (
             // Current user's profile view
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="border-border-light bg-surface-primary overflow-hidden rounded-xl border shadow-sm">
               {editMode ? (
                 // Edit mode
                 <form className="p-6" onSubmit={handleSubmit}>
                   <div className="mb-4">
                     <label
                       htmlFor="bio"
-                      className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                      className="text-text-secondary mb-2 block text-sm font-semibold"
                     >
                       {localize('com_ui_about_yourself')}
                     </label>
@@ -641,7 +625,7 @@ function ProfileContent() {
                       placeholder="分享一下你的兴趣、技能和人生态度..."
                       onChange={(e) => setBio(e.target.value)}
                       rows={6}
-                      className="w-full rounded-lg border border-gray-300 bg-transparent p-3 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:text-gray-100 dark:focus:border-blue-400"
+                      className="border-border-medium text-text-primary focus:border-border-heavy focus:ring-ring-primary w-full rounded-lg border bg-transparent p-3 focus:ring-2 focus:outline-none"
                     ></textarea>
                   </div>
 
@@ -649,13 +633,13 @@ function ProfileContent() {
                     <button
                       type="button"
                       onClick={handleEditProfile}
-                      className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                      className="border-border-medium text-text-secondary hover:bg-surface-hover rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
                     >
                       {localize('com_ui_back')}
                     </button>
                     <button
                       type="submit"
-                      className="rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95"
+                      className="bg-surface-submit text-text-on-status hover:bg-surface-submit-hover rounded-lg px-4 py-2 text-sm font-medium transition-all active:scale-95"
                     >
                       {localize('com_ui_save')}
                     </button>
@@ -666,16 +650,16 @@ function ProfileContent() {
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      <h3 className="text-text-secondary mb-3 text-sm font-semibold">
                         {localize('com_ui_bio')}
                       </h3>
-                      <div className="text-gray-600 dark:text-gray-400">
+                      <div className="text-text-secondary">
                         {expanded ? (
                           <div>
                             <p className="leading-relaxed whitespace-pre-wrap">{bio}</p>
                             {bio.length > 100 && (
                               <button
-                                className="mt-2 text-sm font-medium text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                                className="text-accent-primary hover:text-accent-primary-hover mt-2 text-sm font-medium"
                                 onClick={toggleExpand}
                               >
                                 {localize('com_ui_show_less')}
@@ -689,7 +673,7 @@ function ProfileContent() {
                             </p>
                             {bio.length > 100 && (
                               <button
-                                className="mt-2 text-sm font-medium text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                                className="text-accent-primary hover:text-accent-primary-hover mt-2 text-sm font-medium"
                                 onClick={toggleExpand}
                               >
                                 {localize('com_ui_show_more')}
@@ -700,7 +684,7 @@ function ProfileContent() {
                       </div>
                     </div>
                     <button
-                      className="ml-4 rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                      className="text-text-secondary hover:bg-surface-hover hover:text-text-primary ml-4 rounded-lg p-2 transition-colors"
                       onClick={handleEditProfile}
                       title="编辑简介"
                     >
@@ -712,13 +696,11 @@ function ProfileContent() {
             </div>
           ) : (
             // Other user's profile view
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <div className="border-border-light bg-surface-primary overflow-hidden rounded-xl border p-6 shadow-sm">
+              <h3 className="text-text-secondary mb-3 text-sm font-semibold">
                 {localize('com_ui_bio')}
               </h3>
-              <p className="leading-relaxed whitespace-pre-wrap text-gray-600 dark:text-gray-400">
-                {bio}
-              </p>
+              <p className="text-text-secondary leading-relaxed whitespace-pre-wrap">{bio}</p>
             </div>
           )}
         </div>
@@ -730,25 +712,16 @@ function ProfileContent() {
             onValueChange={(value: string) => setTabValue(value)}
             className="w-full"
           >
-            <TabsList className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
+            <TabsList className="h-12 w-full">
               {userId != user?.id && (
-                <TabsTrigger
-                  value="conversations"
-                  className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:text-gray-400 dark:hover:text-gray-200 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
-                >
-                  {localize('com_ui_conversations')}
+                <TabsTrigger value="conversations" className="flex-1">
+                  {localize('com_ui_chats')}
                 </TabsTrigger>
               )}
-              <TabsTrigger
-                value="followers"
-                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:text-gray-400 dark:hover:text-gray-200 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
-              >
+              <TabsTrigger value="followers" className="flex-1">
                 {localize('com_ui_followers')}
               </TabsTrigger>
-              <TabsTrigger
-                value="following"
-                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-all hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:text-gray-400 dark:hover:text-gray-200 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
-              >
+              <TabsTrigger value="following" className="flex-1">
                 {localize('com_ui_following')}
               </TabsTrigger>
             </TabsList>
@@ -765,7 +738,7 @@ function ProfileContent() {
           {tabValue === 'followers' && (
             <div className="space-y-1">
               {Object.keys(profileUser?.followers || {}).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+                <div className="text-text-tertiary flex flex-col items-center justify-center py-12">
                   <svg
                     className="mb-3 h-16 w-16 opacity-50"
                     fill="none"
@@ -791,7 +764,7 @@ function ProfileContent() {
           {tabValue === 'following' && (
             <div className="space-y-1">
               {Object.keys(profileUser?.following || {}).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+                <div className="text-text-tertiary flex flex-col items-center justify-center py-12">
                   <svg
                     className="mb-3 h-16 w-16 opacity-50"
                     fill="none"
