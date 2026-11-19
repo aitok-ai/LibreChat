@@ -44,6 +44,7 @@ import { createToolCallModel } from './toolCall';
 import { createAclEntryModel } from './aclEntry';
 import { createVideoJobModel } from './videoJob';
 import { createAuditLogModel } from './auditLog';
+import { createMCPNameModel } from './mcpName';
 import { createSessionModel } from './session';
 import { createPasskeyModel } from './passkey';
 import { createBalanceModel } from './balance';
@@ -92,6 +93,7 @@ export function createModels(mongoose: typeof import('mongoose')): {
   ChannelFeedbackEvent: ReturnType<typeof createChannelFeedbackEventModel>;
   ChannelFeedback: ReturnType<typeof createChannelFeedbackModel>;
   AgentCategory: ReturnType<typeof createAgentCategoryModel>;
+  MCPName: ReturnType<typeof createMCPNameModel>;
   MCPServer: ReturnType<typeof createMCPServerModel>;
   Role: ReturnType<typeof createRoleModel>;
   Action: ReturnType<typeof createActionModel>;
@@ -157,6 +159,7 @@ export function createModels(mongoose: typeof import('mongoose')): {
     ChannelFeedbackEvent: createChannelFeedbackEventModel(mongoose),
     ChannelFeedback: createChannelFeedbackModel(mongoose),
     AgentCategory: createAgentCategoryModel(mongoose),
+    MCPName: createMCPNameModel(mongoose),
     MCPServer: createMCPServerModel(mongoose),
     Role: createRoleModel(mongoose),
     Action: createActionModel(mongoose),

@@ -15,11 +15,13 @@ import type { Server } from 'node:http';
 import type { RemoteSdkFactoryInput, RemoteSdkLimits, RemoteSdkStart, SdkRun } from './types';
 import type { RuntimeRecoveryOptions } from './recovery/server';
 import type { SdkAgentIdentity } from './identity';
+import { policyDescriptorSchema, createWorkerProviderTextPolicy } from './policy';
 import { createRuntimeRecovery, recoveryClaimSchema } from './recovery/server';
 import { remoteSdkLimits, isRemoteSdkSecret } from './types';
 import { RECOVERY_HEADER_BYTES } from './recovery/socket';
 import { createWorkerToolService } from './hostTools';
 import { RemoteSdkCheckpointer } from './checkpoint';
+import { sendSnapshot } from './snapshot';
 import { createSdkPeer } from './peer';
 
 const identitySchema = z
@@ -42,6 +44,8 @@ const claimSchema = z.object({
   exp: z.number(),
 });
 const startSchema = z.object({
+  transportVersion: z.literal(2),
+  providerText: policyDescriptorSchema.optional(),
   hostTools: z
     .array(
       z.object({
@@ -217,21 +221,13 @@ export function createRemoteSdkServer(options: RemoteSdkServerOptions): {
         deny();
         return;
       }
-      const controller = recovered?.controller ?? new AbortController();
-      if (needsEngine) active.add(controller);
-      let upgraded = false;
-      socket.once('close', () => {
-        if (!upgraded) {
-          controller.abort();
-          active.delete(controller);
-        }
-      });
       sockets.handleUpgrade(req, socket, head, (ws) => {
-        upgraded = true;
         if (recovered && !needsEngine) {
           recovered.attach(ws, claim.recovery!.after);
           return;
         }
+        const controller = recovered?.controller ?? new AbortController();
+        active.add(controller);
         if (recovered) recovered.needsEngine = false;
         const transport = recovered?.socket ?? ws;
         let outcome: 'completed' | 'paused' | 'failed' | 'cancelled' = 'failed';
@@ -249,8 +245,8 @@ export function createRemoteSdkServer(options: RemoteSdkServerOptions): {
         };
         transport.once('close', cleanup);
         const workerTools = createWorkerToolService({
-          call: (method, data) =>
-            peer.call(method, data, method === 'tools' ? limits.maxRunMs : undefined),
+          call: (method, data, _timeoutMs, signal) =>
+            peer.call(method, data, method === 'tools' ? limits.maxRunMs : undefined, signal),
         });
         const peer = createSdkPeer(transport, {
           ...limits,
@@ -261,7 +257,8 @@ export function createRemoteSdkServer(options: RemoteSdkServerOptions): {
             throw new Error('Unexpected runtime frame');
           },
           onCall: async (method, data) => {
-            if (method === 'capabilities') return { hostTools: 1 };
+            if (method === 'capabilities')
+              return { transportVersion: 2, hostTools: 2, providerText: 1 };
             if (method === 'tool.result') return workerTools.accept(data);
             if (method === 'tool.session') return workerTools.accept(data, 'session');
             if (method !== 'run' || started) throw new Error('SDK execution already admitted');
@@ -334,6 +331,14 @@ export function createRemoteSdkServer(options: RemoteSdkServerOptions): {
                   service: workerTools.service,
                 })
               : undefined;
+            const providerTextProtection = request.providerText
+              ? createWorkerProviderTextPolicy({
+                  descriptor: request.providerText,
+                  identity,
+                  peer,
+                  limits,
+                })
+              : undefined;
             const execute = async () => {
               await recovered?.begin();
               const run = await options.createRun({
@@ -345,6 +350,7 @@ export function createRemoteSdkServer(options: RemoteSdkServerOptions): {
                   hooks,
                   humanInTheLoop: request.humanInTheLoop,
                   streamLimits: request.streamLimits,
+                  providerTextProtection,
                 },
                 compileOptions: request.checkpoint
                   ? { checkpointer: new RemoteSdkCheckpointer(peer.call) }
@@ -358,6 +364,11 @@ export function createRemoteSdkServer(options: RemoteSdkServerOptions): {
                 run.Graph?.defaultAgentId !== identity.agentId
               )
                 throw new Error('SDK runtime run identity mismatch');
+              if (
+                providerTextProtection &&
+                run.Graph.providerTextProtection !== providerTextProtection
+              )
+                throw new Error('SDK runtime omitted required provider protection');
               if (hostTools) {
                 const names = new Set(
                   run.Graph.agentContexts
@@ -383,9 +394,9 @@ export function createRemoteSdkServer(options: RemoteSdkServerOptions): {
                     )
                   : await run.processStream(request.input, callerOptions);
               outcome = run.getInterrupt() ? 'paused' : 'completed';
-              peer.send({
-                type: 'done',
-                data: {
+              await sendSnapshot(
+                peer,
+                {
                   content,
                   messages: run.getRunMessages(),
                   state: {
@@ -403,7 +414,9 @@ export function createRemoteSdkServer(options: RemoteSdkServerOptions): {
                   haltReason: run.getHaltReason(),
                   runSteps: run.Graph?.createRunStepResumeState(),
                 },
-              });
+                limits,
+                recovered ? () => recovered.socket.flush() : undefined,
+              );
             };
             running = true;
             void execute()

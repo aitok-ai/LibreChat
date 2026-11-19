@@ -1913,6 +1913,15 @@ export const agentsEndpointSchema = baseEndpointSchema
                     secret: z.string().min(1),
                     recovery: z
                       .object({
+                        routes: z
+                          .record(
+                            z.string().min(1).max(128),
+                            z
+                              .string()
+                              .url()
+                              .regex(/^wss?:\/\//),
+                          )
+                          .optional(),
                         maxDisconnectMs: z.number().int().min(100).max(120000).default(15000),
                         retryDelayMs: z.number().int().min(10).max(10000).default(250),
                         maxJournalBytes: z
@@ -2810,6 +2819,23 @@ export const modelListEndpointSchema = baseEndpointSchema.merge(
     models: z.array(z.string()).optional(),
   }),
 );
+
+export const googleEndpointSchema = modelListEndpointSchema.extend({
+  /** USD per million tokens, including an explicit cached-input rate for the billing tier. */
+  tokenConfig: z
+    .record(
+      z.string(),
+      z.object({
+        prompt: z.number().nonnegative(),
+        completion: z.number().nonnegative(),
+        cacheRead: z.number().nonnegative(),
+      }),
+    )
+    .optional(),
+});
+
+export type TGoogleEndpoint = z.infer<typeof googleEndpointSchema>;
+export type TGoogleTokenConfig = NonNullable<TGoogleEndpoint['tokenConfig']>;
 
 export const anthropicEndpointSchema = baseEndpointSchema.merge(
   z.object({
@@ -5079,7 +5105,7 @@ export const configSchema = z.object({
        */
       all: baseEndpointSchema.omit({ baseURL: true }).optional(),
       [EModelEndpoint.openAI]: modelListEndpointSchema.optional(),
-      [EModelEndpoint.google]: modelListEndpointSchema.optional(),
+      [EModelEndpoint.google]: googleEndpointSchema.optional(),
       [EModelEndpoint.anthropic]: anthropicEndpointSchema.optional(),
       [EModelEndpoint.azureOpenAI]: azureEndpointSchema.optional(),
       [EModelEndpoint.azureAssistants]: assistantEndpointSchema.optional(),
@@ -5338,6 +5364,7 @@ export const defaultModels = {
   ],
   [EModelEndpoint.google]: [
     // Gemini 4 Models
+    'gemini-4-hydrogen',
     'gemini-4-argon',
     // Gemini 3.8 Models
     'gemini-3.8-flash',
@@ -5957,7 +5984,7 @@ export enum Constants {
    */
   VERSION = '__LIBRECHAT_VERSION__',
   /** Key for the Custom Config's version (librechat.yaml). */
-  CONFIG_VERSION = '1.3.18',
+  CONFIG_VERSION = '1.3.19',
   /** Standard value for the first message's `parentMessageId` value, to indicate no parent exists. */
   NO_PARENT = '00000000-0000-0000-0000-000000000000',
   /** Standard value to use whatever the submission prelim. `responseMessageId` is */
